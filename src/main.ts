@@ -2,7 +2,7 @@ import '@fontsource/saira-condensed/latin-700.css';
 import '@fontsource/noto-sans/latin-400.css';
 import './ui/styles.css';
 
-import { ARENA_SEED, EMBER_COUNT } from './config/arena';
+import { EMBER_COUNT } from './config/battlefield';
 import { TICK_MS } from './config/sim';
 import { BUILD_ID } from './core/buildInfo';
 import { parseLaunchFlags } from './core/flags';
@@ -10,9 +10,13 @@ import { createGameLoop } from './core/loop';
 import { installErrorCapture } from './debug/errorCapture';
 import { createLogger } from './debug/log';
 import { createDebugOverlay, type DebugOverlay } from './debug/overlay';
-import { createArenaState, stepArena } from './game/arena';
-import { createMovementInput } from './input/movementInput';
-import { createArenaView } from './render/arenaView';
+import {
+  createBattlefieldState,
+  stepBattlefield,
+  type BattlefieldCommand,
+} from './game/battlefield';
+import { createTapInput } from './input/tapInput';
+import { createBattlefieldView } from './render/battlefieldView';
 import { countDisplayObjects, createStage, type StageMetrics } from './render/stage';
 import { showArenaHint } from './ui/arenaHint';
 import { runBootScreen } from './ui/bootScreen';
@@ -20,8 +24,10 @@ import { watchPlayability } from './ui/playability';
 
 /** Read-only hook for automated tests, only present with `?debug=1`. */
 interface DebugHook {
-  readonly playerLane: () => number;
-  readonly playerGuarding: () => boolean;
+  readonly selectedUnit: () => number | null;
+  /** Centre of a unit's body in CSS pixels, so tests can tap it. */
+  readonly unitScreenPoint: (unitId: number) => { x: number; y: number } | null;
+  readonly unitIds: () => readonly number[];
   readonly tick: () => number;
 }
 declare global {
@@ -43,11 +49,11 @@ async function boot(): Promise<void> {
   const host = document.getElementById('game-root');
   if (!host) throw new Error('Missing #game-root');
 
-  const arena = createArenaState({ seed: ARENA_SEED, fightersPerSide: flags.benchmark ? 3 : 1 });
+  const battlefield = createBattlefieldState({ benchmark: flags.benchmark });
   const ready = (async () => {
     const stage = await createStage(host);
-    const view = createArenaView(
-      arena,
+    const view = createBattlefieldView(
+      battlefield,
       flags.benchmark ? EMBER_COUNT.benchmark : EMBER_COUNT.normal,
     );
     stage.world.addChild(view.root);
@@ -59,29 +65,40 @@ async function boot(): Promise<void> {
     ready.then(() => undefined),
   );
   const { stage, view } = await ready;
-  document.body.dataset['scene'] = 'arena';
+  document.body.dataset['scene'] = 'battlefield';
 
   let metrics: StageMetrics = stage.fit();
   const paintBackdrop = (): void => {
     const started = performance.now();
-    view.resize(metrics.logicalWidth, metrics.pixelsPerUnit);
+    view.resize(metrics.logicalHeight, metrics.pixelsPerUnit);
     log.info(`Backdrop painted in ${Math.round(performance.now() - started)} ms`);
   };
   paintBackdrop();
   log.info(
-    `Renderer ${stage.app.renderer.name} @ ${stage.resolution}x, ${Math.round(metrics.logicalWidth)}×720 logical`,
+    `Renderer ${stage.app.renderer.name} @ ${stage.resolution}x, 720×${Math.round(metrics.logicalHeight)} logical`,
   );
 
-  const input = createMovementInput(stage.app.canvas, arena.controlledFighterId);
+  // Taps become commands applied on the next simulation tick, never direct state changes.
+  let pending: BattlefieldCommand[] = [];
+  const noCommands: readonly BattlefieldCommand[] = [];
+  createTapInput(stage.app.canvas, (cssX, cssY) => {
+    const unitId = view.unitAt(cssX / metrics.cssPerUnit, cssY / metrics.cssPerUnit);
+    pending.push({ kind: 'select', unitId });
+  });
 
   const loop = createGameLoop({
     update() {
-      stepArena(arena, input.drainCommands());
+      if (pending.length === 0) {
+        stepBattlefield(battlefield, noCommands);
+        return;
+      }
+      const commands = pending;
+      pending = [];
+      stepBattlefield(battlefield, commands);
     },
     render(alpha, frameDeltaMs) {
-      input.update(performance.now());
-      const timeSec = ((arena.tick + alpha) * TICK_MS) / 1000;
-      view.render(alpha, timeSec, frameDeltaMs / 1000);
+      const timeSec = ((battlefield.tick + alpha) * TICK_MS) / 1000;
+      view.render(timeSec, frameDeltaMs / 1000);
       stage.render();
     },
     frameMeasured(frameDeltaMs, workMs) {
@@ -90,20 +107,20 @@ async function boot(): Promise<void> {
   });
 
   overlay?.setStatsSource(() => ({
-    scene: 'arena-test',
+    scene: 'battlefield-test',
     renderer: stage.app.renderer.name,
     resolution: stage.resolution,
-    logicalWidth: metrics.logicalWidth,
+    logicalHeight: metrics.logicalHeight,
     displayObjects: countDisplayObjects(stage.app.stage),
-    fighters: arena.fighters.length,
+    units: battlefield.units.length,
   }));
 
   if (flags.debug) {
     window.__sovereigns = {
-      playerLane: () => arena.fighters.find((f) => f.id === arena.controlledFighterId)?.lane ?? -1,
-      playerGuarding: () =>
-        arena.fighters.find((f) => f.id === arena.controlledFighterId)?.guarding ?? false,
-      tick: () => arena.tick,
+      selectedUnit: () => battlefield.selectedUnitId,
+      unitIds: () => battlefield.units.map((unit) => unit.id),
+      unitScreenPoint: (unitId) => view.unitScreenPoint(unitId, metrics.cssPerUnit),
+      tick: () => battlefield.tick,
     };
   }
 
@@ -116,9 +133,10 @@ async function boot(): Promise<void> {
       resizeQueued = false;
       const next = stage.fit();
       if (
-        Math.abs(next.logicalWidth - metrics.logicalWidth) < 0.5 &&
+        Math.abs(next.logicalHeight - metrics.logicalHeight) < 0.5 &&
         Math.abs(next.pixelsPerUnit - metrics.pixelsPerUnit) < 0.01
       ) {
+        metrics = next;
         return;
       }
       metrics = next;
@@ -130,8 +148,8 @@ async function boot(): Promise<void> {
 
   watchPlayability((playable) => {
     if (playable) {
-      // Input that arrived while paused is stale; never replay it.
-      input.drainCommands();
+      // Taps that arrived while paused are stale; never replay them.
+      pending = [];
       loop.start();
       log.debug('Resumed');
     } else {

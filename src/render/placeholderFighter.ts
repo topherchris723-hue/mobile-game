@@ -166,7 +166,7 @@ function buildHead(look: FighterLook): Container {
   g.ellipse(0, -30, 19, 24).fill({ color: look.skin });
   g.ellipse(4, -28, 22, 26).stroke({ width: OUTLINE_WIDTH, color: CHARACTER.outline });
   // Eye (facing right) with a small highlight.
-  g.rect(12, -34, 6, 8).fill({ color: CHARACTER.outline });
+  g.rect(12, -34, 6, 8).fill({ color: look.eye });
   g.rect(13, -33, 2, 2).fill({ color: 0xffffff });
 
   const hairPoints: Point[] =

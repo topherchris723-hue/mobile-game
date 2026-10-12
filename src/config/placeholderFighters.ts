@@ -12,11 +12,13 @@ export interface FighterLook {
   readonly accent: number;
   readonly hair: number;
   readonly skin: number;
+  readonly eye: number;
   readonly feature: 'cape' | 'coatTails';
   readonly hairStyle: 'spikes' | 'ponytail';
 }
 
-export const PLACEHOLDER_LOOKS: readonly [FighterLook, FighterLook] = [
+/** Your team, one per slot in ALLY_SLOTS order. */
+export const ALLY_LOOKS: readonly FighterLook[] = [
   {
     id: 'placeholder-ember', // Energy realm · Fury
     outfit: WORLD.energy.dominant,
@@ -24,6 +26,7 @@ export const PLACEHOLDER_LOOKS: readonly [FighterLook, FighterLook] = [
     accent: TYPE_COLOR.fury,
     hair: 0x2a1d2e,
     skin: CHARACTER.skin,
+    eye: CHARACTER.outline,
     feature: 'cape',
     hairStyle: 'spikes',
   },
@@ -34,7 +37,43 @@ export const PLACEHOLDER_LOOKS: readonly [FighterLook, FighterLook] = [
     accent: TYPE_COLOR.swift,
     hair: WORLD.ocean.accent,
     skin: 0xe8b48e,
+    eye: CHARACTER.outline,
     feature: 'coatTails',
     hairStyle: 'ponytail',
   },
+  {
+    id: 'placeholder-grove', // Warrior clans · Guile
+    outfit: WORLD.clans.dominant,
+    legs: WORLD.clans.secondary,
+    accent: TYPE_COLOR.guile,
+    hair: 0x1f3a2a,
+    skin: 0xd9a07c,
+    eye: CHARACTER.outline,
+    feature: 'coatTails',
+    hairStyle: 'spikes',
+  },
+  {
+    id: 'placeholder-dawn', // Ocean crews · Radiant
+    outfit: 0xf1e6d2, // warm cloth white: cloud light pulled toward sandstone
+    legs: WORLD.ocean.accent,
+    accent: TYPE_COLOR.radiant,
+    hair: 0xf5d79a,
+    skin: CHARACTER.skin,
+    eye: CHARACTER.outline,
+    feature: 'cape',
+    hairStyle: 'ponytail',
+  },
 ];
+
+/** Rift-corrupted enemy: deep violet, glowing Void eyes. */
+export const ENEMY_LOOK: FighterLook = {
+  id: 'placeholder-rift-shade', // The Rift · Void
+  outfit: 0x4a3566,
+  legs: 0x241a33,
+  accent: TYPE_COLOR.void,
+  hair: 0x16101f,
+  skin: 0x8f7fa8,
+  eye: TYPE_COLOR.void,
+  feature: 'cape',
+  hairStyle: 'spikes',
+};

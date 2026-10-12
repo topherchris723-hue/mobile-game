@@ -1,11 +1,11 @@
 {
   "name": "Shattered Sovereigns",
   "short_name": "Sovereigns",
-  "description": "Real-time Rift Duels across shattered worlds.",
+  "description": "Turn-based Rift Timeline battles across shattered worlds.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
-  "orientation": "landscape",
+  "orientation": "portrait",
   "background_color": "#08090f",
   "theme_color": "#08090f",
   "icons": [

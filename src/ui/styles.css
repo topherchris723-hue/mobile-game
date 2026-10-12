@@ -174,7 +174,7 @@ button {
 .boot-title h1 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(36px, 9vh, 72px);
+  font-size: clamp(36px, 11vw, 64px);
   line-height: 1;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -206,7 +206,7 @@ button {
 
 .arena-hint {
   position: fixed;
-  top: calc(var(--safe-top) + var(--space-3));
+  bottom: calc(var(--safe-bottom) + var(--space-6));
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
@@ -250,18 +250,19 @@ button {
   animation: rotate-phone 2.4s var(--ease-out) infinite;
 }
 
+/* Starts sideways and turns upright: the motion the player should make. */
 @keyframes rotate-phone {
   0%,
   25% {
-    transform: rotate(0deg);
+    transform: rotate(-90deg);
   }
   60%,
   100% {
-    transform: rotate(-90deg);
+    transform: rotate(0deg);
   }
 }
 
-@media (orientation: portrait) {
+@media (orientation: landscape) {
   .rotate-prompt {
     display: flex;
   }
@@ -380,6 +381,6 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .rotate-phone {
     animation: none;
-    transform: rotate(-90deg);
+    transform: rotate(0deg);
   }
 }

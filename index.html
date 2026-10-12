@@ -10,7 +10,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta
       name="description"
-      content="Shattered Sovereigns — real-time Rift Duels across shattered worlds."
+      content="Shattered Sovereigns — turn-based Rift Timeline battles across shattered worlds."
     />
     <title>Shattered Sovereigns</title>
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -21,7 +21,7 @@
 
     <section id="boot-screen" class="boot-screen">
       <div class="boot-title">
-        <p class="kicker">Rift Duel · Arena test</p>
+        <p class="kicker">Rift Timeline · Battlefield test</p>
         <h1>Shattered Sovereigns</h1>
       </div>
       <button id="start-button" class="button-primary" type="button" disabled>Loading…</button>
@@ -29,13 +29,12 @@
     </section>
 
     <p id="arena-hint" class="panel-ink arena-hint" hidden>
-      Left half: swipe <span aria-label="up">↑</span> <span aria-label="down">↓</span> to change
-      lane · hold to guard
+      Tap a Sovereign or an enemy to select it
     </p>
 
     <section id="rotate-prompt" class="rotate-prompt" aria-live="polite">
       <div class="rotate-phone" aria-hidden="true"></div>
-      <p>Turn your phone sideways to play</p>
+      <p>Turn your phone upright to play</p>
     </section>
 
     <section id="error-panel" class="error-panel panel-light" role="alert" hidden>

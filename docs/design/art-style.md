@@ -103,8 +103,8 @@ Type is always shown by **colour and icon**, never colour alone.
   1. Sky and clouds.
   2. Far layer: floating islands and the Nexus citadel, with its beams.
   3. Mid layer: the stage's world landmark (volcano, harbour, cliff village).
-  4. Arena floor: three lane bands, low detail.
-- **Battle readability rule:** battle backgrounds are about 20% less saturated with a compressed value range compared with menu and story art, and the far layers are slightly softened. The floor stays calm so lane telegraphs read instantly. Characters and effects always win the contrast.
+  4. Battlefield floor: a calm, low-detail ground plane where both teams stand.
+- **Battle readability rule:** battle backgrounds are about 20% less saturated with a compressed value range compared with menu and story art, and the far layers are slightly softened. The floor stays calm so units, targets, and effects read instantly. Characters and effects always win the contrast.
 - **Foreground framing** (dark foliage and rocks) is used in menus, the home screen, and story scenes, but **not** in battle, where it would hide action.
 
 ## 8. Effects (VFX)
@@ -114,7 +114,7 @@ Type is always shown by **colour and icon**, never colour alone.
   - Energy realm: angular shards and aura flames.
   - Ocean crews: water arcs and foam rings.
   - Warrior clans: ink-brush slashes and leaves.
-- **Rift effects:** violet crystal fractures, white-violet light beams, and halo rings, as on the reference citadel. They are used for Rift Step, Rift Shards, Crossover Bursts, and summons.
+- **Rift effects:** violet crystal fractures, white-violet light beams, and halo rings, as on the reference citadel. They are used for Timeline manipulation (Shove, Rally), Rift Links, Crossover Bursts, and summons.
 - **Glow is used for cores only** (blast centres, beam cores). No glow on UI, outlines, or whole characters.
 
 ## 9. UI
@@ -154,27 +154,22 @@ Type is always shown by **colour and icon**, never colour alone.
 - **Timing:** drawn for 12 fps; holds are done by repeating frames in the timing data, not by duplicating drawings.
 - **Frames are trimmed and packed** into atlases by our pipeline, so artists deliver plain frames named `<clip>_<nn>.png`.
 
-| Clip             | Frames | Loops      |
-| ---------------- | ------ | ---------- |
-| `idle`           | 6      | yes        |
-| `step`           | 3      | no         |
-| `guard`          | 2      | holds last |
-| `guard_break`    | 4      | no         |
-| `hit_light`      | 3      | no         |
-| `hit_heavy`      | 4      | no         |
-| `knockdown`      | 5      | no         |
-| `getup`          | 4      | no         |
-| `strike_1`       | 4      | no         |
-| `strike_2`       | 4      | no         |
-| `strike_3`       | 5      | no         |
-| `blast`          | 6      | no         |
-| `signature`      | 10     | no         |
-| `crossover_pose` | 3      | holds last |
-| `ko`             | 5      | holds last |
-| `victory`        | 6      | yes        |
-| **Total**        | **74** |            |
+| Clip             | Frames | Loops      | Used for                            |
+| ---------------- | ------ | ---------- | ----------------------------------- |
+| `idle`           | 6      | yes        | Waiting on the field                |
+| `ready`          | 3      | holds last | Their turn comes up on the Timeline |
+| `strike`         | 6      | no         | Strike action                       |
+| `skill`          | 8      | no         | Skill action                        |
+| `super`          | 10     | no         | Super action (after the cut-in)     |
+| `guard`          | 2      | holds last | Guarding                            |
+| `hit`            | 3      | no         | Taking damage                       |
+| `broken`         | 4      | holds last | Poise broken (stagger)              |
+| `ko`             | 5      | holds last | Knocked out                         |
+| `victory`        | 6      | yes        | Battle won                          |
+| `crossover_pose` | 3      | holds last | Crossover Burst, beside the partner |
+| **Total**        | **56** |            |                                     |
 
-**Memory note:** 74 trimmed frames need about two 2048² atlas pages per Sovereign. Uncompressed, six Sovereigns in a duel would exceed the 128 MB texture budget, so battle atlases ship as **GPU-compressed textures (KTX2/Basis)**, which cut texture memory by about 4×. M1 verifies this on the owner's phone before any art is commissioned.
+**Memory note:** 56 trimmed frames need about one and a half 2048² atlas pages per Sovereign. A battle shows up to 7 units (4 Sovereigns + 3 enemies; repeated enemies share atlases). Uncompressed, that can exceed the 128 MB texture budget, so battle atlases ship as **GPU-compressed textures (KTX2/Basis)**, which cut texture memory by about 4×. This is verified on the owner's phone before any art is commissioned.
 
 ## 11. Placeholders
 

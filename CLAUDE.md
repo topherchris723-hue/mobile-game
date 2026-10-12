@@ -95,7 +95,7 @@ docs/
 
 ## 6. Touch controls
 
-- **Designed for two thumbs in landscape.** Movement and guard on the left half, cards and actions on the right half, all within comfortable thumb reach of the lower corners. Touch targets are at least **48 × 48 CSS px** with at least 8 px between them.
+- **Designed for one thumb in portrait.** Primary actions (action buttons, confirm) sit in the bottom third of the screen; information (Timeline, enemy status) sits at the top. Taps are the main input — the game never requires fast reflexes. Touch targets are at least **48 × 48 CSS px** with at least 8 px between them.
 - **Use Pointer Events** (`pointerdown/move/up/cancel`) with `setPointerCapture`, and support multi-touch by tracking `pointerId`. Always handle `pointercancel`.
 - **Kill browser interference on the game surface:** `touch-action: none`, `user-select: none`, `-webkit-tap-highlight-color: transparent`, prevent the context menu on long press, no pull-to-refresh / overscroll (`overscroll-behavior: none`).
 - **Respect safe areas.** `viewport-fit=cover` plus `env(safe-area-inset-*)` padding for HUD and controls so nothing is hidden behind notches, rounded corners, or the gesture bar.
@@ -103,7 +103,7 @@ docs/
 - **Buttons and cards** have a visible pressed state and a forgiving hit radius.
 - **Input is buffered and sampled into the simulation step**, never applied directly from event handlers into game state.
 - **Pause automatically** on `visibilitychange` (app switch, notification shade, screen lock) and on orientation change if the layout needs it.
-- The game is **landscape-only**: request landscape lock where the browser allows it (installed PWA / fullscreen) and show a "rotate your phone" screen in portrait, pausing the game.
+- The game is **portrait-only**: request portrait lock where the browser allows it (installed PWA / fullscreen) and show a "turn your phone upright" screen in landscape, pausing the game.
 
 ## 7. Performance
 
@@ -183,24 +183,24 @@ Emulated tests are not proof that it works on a real device. Report them as "pas
 
 ## 13. Project commands
 
-| Task                                     | Command                                                                                                                                                                  |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Install (clean, as CI does)              | `npm ci`                                                                                                                                                                 |
-| Add or upgrade a dependency              | `npx -y npm@11 install --save-exact <pkg>@<version>` (npm 10 has a peer-resolution bug with Vitest's optional peers; the lockfile it writes installs fine with `npm ci`) |
-| Dev server                               | `npm run dev`                                                                                                                                                            |
-| Typecheck                                | `npm run typecheck`                                                                                                                                                      |
-| Lint + format check                      | `npm run lint` (fix formatting with `npm run format`)                                                                                                                    |
-| Unit tests                               | `npm test`                                                                                                                                                               |
-| Production build                         | `npm run build`                                                                                                                                                          |
-| Download-size budget                     | `npm run check:size`                                                                                                                                                     |
-| Mobile e2e (Pixel 7 landscape emulation) | `npm run e2e` (needs a fresh `npm run build` first)                                                                                                                      |
-| Everything, in CI order                  | `npm run verify`                                                                                                                                                         |
+| Task                                    | Command                                                                                                                                                                  |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Install (clean, as CI does)             | `npm ci`                                                                                                                                                                 |
+| Add or upgrade a dependency             | `npx -y npm@11 install --save-exact <pkg>@<version>` (npm 10 has a peer-resolution bug with Vitest's optional peers; the lockfile it writes installs fine with `npm ci`) |
+| Dev server                              | `npm run dev`                                                                                                                                                            |
+| Typecheck                               | `npm run typecheck`                                                                                                                                                      |
+| Lint + format check                     | `npm run lint` (fix formatting with `npm run format`)                                                                                                                    |
+| Unit tests                              | `npm test`                                                                                                                                                               |
+| Production build                        | `npm run build`                                                                                                                                                          |
+| Download-size budget                    | `npm run check:size`                                                                                                                                                     |
+| Mobile e2e (Pixel 7 portrait emulation) | `npm run e2e` (needs a fresh `npm run build` first)                                                                                                                      |
+| Everything, in CI order                 | `npm run verify`                                                                                                                                                         |
 
 **Phone testing.** Every green push is deployed by `.github/workflows/ci.yml`:
 
 - `main` → `https://topherchris723-hue.github.io/mobile-game/`
 - any other branch → `https://topherchris723-hue.github.io/mobile-game/preview/<branch>/`
 
-Append `?debug=1` for the debug overlay and `?debug=1&bench=1` for the six-fighter benchmark. The run's summary page on GitHub shows the exact link. Pages must be served from the `gh-pages` branch (repository Settings → Pages → Source: _Deploy from a branch_ → `gh-pages` / root).
+Append `?debug=1` for the debug overlay and `?debug=1&bench=1` for the stress benchmark. The run's summary page on GitHub shows the exact link. Pages must be served from the `gh-pages` branch (repository Settings → Pages → Source: _Deploy from a branch_ → `gh-pages` / root).
 
 Pin dependency versions exactly, and prefer releases at least two weeks old.

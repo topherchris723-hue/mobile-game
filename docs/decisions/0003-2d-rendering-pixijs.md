@@ -6,7 +6,7 @@
 
 ## Context
 
-The owner switched Rift Duel from a 3D arena to **2D**. The game is a real-time landscape duel with lots of effects (blasts, auras, hit sparks, slow-motion) that must hold 60 fps on mid-range Android phones in Chrome, be built entirely from code in the cloud, and accept art the owner or a hired artist can produce without specialised tools.
+The owner switched the game from a 3D arena to **2D** (originally for the real-time Rift Duel; the battle system is now turn-based, see `0004-portrait-turn-based.md`). Battles have lots of effects (blasts, auras, hit sparks, slow-motion) that must hold 60 fps on mid-range Android phones in Chrome, be built entirely from code in the cloud, and accept art the owner or a hired artist can produce without specialised tools.
 
 ## Options considered
 
@@ -28,12 +28,12 @@ The owner switched Rift Duel from a 3D arena to **2D**. The game is a real-time 
 
 - PixiJS renders the arena, fighters, effects, and summon scenes.
 - Fighters animate from sprite sheets following a written sprite spec (canvas size, foot anchor, facing right, frames per clip, clip names). Placeholders are code-drawn cut-out figures using the same clip names, so real art drops in without code changes.
-- Three lanes are drawn as depth rows with slight scale and vertical offset; draw order is sorted by lane.
+- Units are drawn on a ground plane with slight depth scaling; draw order is sorted by depth.
 - HTML/CSS overlays handle text-heavy UI and menus.
 
 ## Consequences
 
 - Much lighter than 3D: smaller downloads, lower GPU load, less heat and battery drain.
 - Art is far more achievable; the owner can draw fighters on the phone.
-- Texture memory is the main budget to watch (about two 2048² atlas pages per fighter for the 74-frame sprite spec, so battle atlases use GPU-compressed KTX2/Basis textures to stay ≤ 128 MB in a duel); the M1 test confirms it on the owner's phone.
+- Texture memory is the main budget to watch (about one and a half 2048² atlas pages per fighter for the 56-frame sprite spec, so battle atlases use GPU-compressed KTX2/Basis textures to stay ≤ 128 MB in a duel); the M1 test confirms it on the owner's phone.
 - A move to 3D later would mean rewriting the presentation layer only — the simulation is renderer-independent.

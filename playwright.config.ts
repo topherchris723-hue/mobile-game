@@ -18,7 +18,7 @@ export default defineConfig({
       args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'],
     },
   },
-  projects: [{ name: 'pixel-7-landscape', use: { ...devices['Pixel 7 landscape'] } }],
+  projects: [{ name: 'pixel-7-portrait', use: { ...devices['Pixel 7'] } }],
   webServer: {
     command: `npx vite preview --port ${PORT} --strictPort`,
     port: PORT,

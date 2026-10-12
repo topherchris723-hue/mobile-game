@@ -1,10 +1,12 @@
 import { Application, Container } from 'pixi.js';
-import { LOGICAL_HEIGHT, MAX_RENDER_RESOLUTION } from '../config/display';
+import { LOGICAL_WIDTH, MAX_RENDER_RESOLUTION } from '../config/display';
 import { SKY } from '../config/palette';
 
 export interface StageMetrics {
-  /** Visible width in logical units (height is always LOGICAL_HEIGHT). */
-  readonly logicalWidth: number;
+  /** Visible height in logical units (width is always LOGICAL_WIDTH). */
+  readonly logicalHeight: number;
+  /** CSS pixels per logical unit, for converting taps. */
+  readonly cssPerUnit: number;
   /** Device pixels per logical unit, used to paint static layers at full sharpness. */
   readonly pixelsPerUnit: number;
 }
@@ -47,9 +49,13 @@ export async function createStage(host: HTMLElement): Promise<Stage> {
       const width = Math.max(1, host.clientWidth);
       const height = Math.max(1, host.clientHeight);
       app.renderer.resize(width, height);
-      const unitsToCss = height / LOGICAL_HEIGHT;
-      world.scale.set(unitsToCss);
-      return { logicalWidth: width / unitsToCss, pixelsPerUnit: unitsToCss * resolution };
+      const cssPerUnit = width / LOGICAL_WIDTH;
+      world.scale.set(cssPerUnit);
+      return {
+        logicalHeight: height / cssPerUnit,
+        cssPerUnit,
+        pixelsPerUnit: cssPerUnit * resolution,
+      };
     },
     render() {
       app.render();

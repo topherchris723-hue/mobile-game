@@ -1,4 +1,3 @@
-import { FLOOR_TOP_Y, LANES } from '../config/arena';
 import { SKY, WORLD } from '../config/palette';
 import type { Rng } from '../core/rng';
 import { battleBackground, mixColor, toCss } from './color';
@@ -7,7 +6,7 @@ import { battleBackground, mixColor, toCss } from './color';
  * PLACEHOLDER arena backdrop for the Nexus, painted procedurally with Canvas 2D (docs/assets.md).
  * It follows art-style.md §7: painterly golden-hour sky, cumulus with warm tops and violet
  * undersides, atmospheric fade on distant islands, the Nexus citadel on the horizon, and a calm
- * three-lane floor. All colours pass through battleBackground() for battle readability.
+ * battlefield floor. All colours pass through battleBackground() for battle readability.
  * Coordinates are logical units: the canvas context must already be scaled to logical space.
  */
 
@@ -20,8 +19,9 @@ export interface BackdropLayout {
   readonly haloRadiusY: number;
 }
 
-export function computeBackdropLayout(width: number): BackdropLayout {
-  const citadelBaseY = 300;
+/** Places the Nexus citadel above the horizon cloud bank, centred, for a portrait screen. */
+export function computeBackdropLayout(width: number, floorTopY: number): BackdropLayout {
+  const citadelBaseY = floorTopY - 200;
   return {
     citadelX: width * 0.52,
     citadelBaseY,
@@ -227,22 +227,24 @@ export function paintSkyLayer(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
+  floorTopY: number,
   rng: Rng,
 ): void {
-  const layout = computeBackdropLayout(width);
+  const layout = computeBackdropLayout(width, floorTopY);
 
-  ctx.fillStyle = verticalGradient(ctx, 0, height, [
+  // The sky's light falls off toward the horizon at the floor edge.
+  ctx.fillStyle = verticalGradient(ctx, 0, floorTopY + 40, [
     [0, bg(SKY.deep)],
-    [0.42, bg(SKY.mid)],
-    [0.62, bg(SKY.high)],
-    [0.74, bg(SKY.cloudShadowWarm)],
-    [0.82, bg(SKY.goldenGlow)],
+    [0.45, bg(SKY.mid)],
+    [0.7, bg(SKY.high)],
+    [0.86, bg(SKY.cloudShadowWarm)],
+    [1, bg(SKY.goldenGlow)],
   ]);
   ctx.fillRect(0, 0, width, height);
 
   // Low golden-hour sun behind the citadel, slightly right as in the reference.
   const sunX = layout.citadelX + 70;
-  const sunY = 420;
+  const sunY = floorTopY - 70;
   const glow = ctx.createRadialGradient(sunX, sunY, 10, sunX, sunY, 360);
   glow.addColorStop(0, bg(SKY.cloudLight, 0.95));
   glow.addColorStop(0.18, bg(SKY.goldenGlow, 0.7));
@@ -253,21 +255,29 @@ export function paintSkyLayer(
   // High stratus wisps.
   paintSoftLayer(ctx, 6, (layer) => {
     for (let i = 0; i < 6; i++) {
-      paintWisp(layer, rng.range(0, width), rng.range(60, 200), rng.range(180, 420));
+      paintWisp(
+        layer,
+        rng.range(0, width),
+        rng.range(height * 0.05, floorTopY * 0.45),
+        rng.range(160, 360),
+      );
     }
   });
 
   // Distant floating islands, kept clear of the citadel.
   for (let i = 0; i < 7; i++) {
-    let x = rng.range(40, width - 40);
-    if (Math.abs(x - layout.citadelX) < 170) x += x < layout.citadelX ? -170 : 170;
-    paintFloatingIsland(ctx, x, rng.range(150, 330), rng.range(26, 62), rng.range(0.45, 0.7), rng);
+    const x = rng.range(30, width - 30);
+    const y = rng.range(floorTopY * 0.18, floorTopY * 0.62);
+    // Keep the citadel's silhouette clear.
+    const nearCitadel = Math.abs(x - layout.citadelX) < 150 && y > layout.citadelTopY - 60;
+    if (nearCitadel) continue;
+    paintFloatingIsland(ctx, x, y, rng.range(24, 56), rng.range(0.45, 0.7), rng);
   }
 
   paintCitadel(ctx, layout, rng);
 
   // Horizon cloud bank: tall at the edges to frame the scene, lower in the middle.
-  const bankBase = FLOOR_TOP_Y + 20;
+  const bankBase = floorTopY + 20;
   paintSoftLayer(ctx, 2.5, (layer) => {
     paintCumulus(layer, width * 0.08, bankBase, width * 0.42, 220, rng);
     paintCumulus(layer, width * 0.94, bankBase, width * 0.4, 240, rng);
@@ -280,16 +290,17 @@ export function paintGroundLayer(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
+  floorTopY: number,
   rng: Rng,
 ): void {
   const stone = WORLD.ocean.secondary;
   const edge: number[] = [];
   const segments = Math.ceil(width / 40);
-  for (let i = 0; i <= segments; i++) edge.push(FLOOR_TOP_Y + rng.range(-5, 5));
+  for (let i = 0; i <= segments; i++) edge.push(floorTopY + rng.range(-5, 5));
 
   const tracePlatform = (): void => {
     ctx.beginPath();
-    ctx.moveTo(0, edge[0] ?? FLOOR_TOP_Y);
+    ctx.moveTo(0, edge[0] ?? floorTopY);
     edge.forEach((y, i) => {
       ctx.lineTo((i / segments) * width, y);
     });
@@ -299,39 +310,33 @@ export function paintGroundLayer(
   };
 
   tracePlatform();
-  ctx.fillStyle = verticalGradient(ctx, FLOOR_TOP_Y, height, [
+  ctx.fillStyle = verticalGradient(ctx, floorTopY, height, [
     [0, bg(mixColor(stone, SKY.goldenGlow, 0.35))],
     [0.35, bg(stone)],
     [1, bg(mixColor(stone, SKY.violetShadow, 0.6))],
   ]);
   ctx.fill();
 
-  // Lane dividers and a faint lit band per lane: readable but calm (style guide §7).
-  for (let i = 0; i < LANES.length; i++) {
-    const lane = LANES[i];
-    if (!lane) continue;
-    const prev = LANES[i - 1];
-    const top = prev ? (prev.floorY + lane.floorY) / 2 : FLOOR_TOP_Y + 8;
-    const next = LANES[i + 1];
-    const bottom = next ? (lane.floorY + next.floorY) / 2 : height;
-    ctx.fillStyle = bg(SKY.cloudLight, i % 2 === 0 ? 0.07 : 0.03);
-    ctx.fillRect(0, top, width, bottom - top);
-    if (next) {
-      ctx.strokeStyle = bg(SKY.violetShadow, 0.22);
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, bottom);
-      ctx.lineTo(width, bottom);
-      ctx.stroke();
-    }
-  }
+  // A faint sunlit sweep across the middle of the floor, where the two teams meet.
+  const sweep = ctx.createRadialGradient(
+    width * 0.5,
+    floorTopY + (height - floorTopY) * 0.3,
+    10,
+    width * 0.5,
+    floorTopY + (height - floorTopY) * 0.3,
+    width * 0.75,
+  );
+  sweep.addColorStop(0, bg(SKY.cloudLight, 0.14));
+  sweep.addColorStop(1, bg(SKY.cloudLight, 0));
+  ctx.fillStyle = sweep;
+  ctx.fillRect(0, floorTopY, width, height - floorTopY);
 
   // Worn stone cracks.
   ctx.strokeStyle = bg(SKY.violetShadow, 0.18);
   ctx.lineWidth = 1.5;
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < 34; i++) {
     let x = rng.range(0, width);
-    let y = rng.range(FLOOR_TOP_Y + 20, height);
+    let y = rng.range(floorTopY + 20, height);
     ctx.beginPath();
     ctx.moveTo(x, y);
     for (let s = 0; s < 3; s++) {
@@ -347,7 +352,7 @@ export function paintGroundLayer(
   for (let i = 0; i < bladeCount; i++) {
     const x = rng.range(0, width);
     const segment = Math.min(segments, Math.max(0, Math.round((x / width) * segments)));
-    const y = edge[segment] ?? FLOOR_TOP_Y;
+    const y = edge[segment] ?? floorTopY;
     const h = rng.range(2, 7);
     const lean = rng.range(-3, 3);
     ctx.fillStyle = bg(

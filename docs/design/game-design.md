@@ -1,94 +1,98 @@
 # Shattered Sovereigns — Game Design Document
 
 - **Title:** **Shattered Sovereigns** (chosen 2026-10-12). A web search found no game with this name; a formal trademark search (e.g. USPTO, EUIPO) and a Play Store search are required before public release.
-- **Genre:** Real-time 2D card-action duels with character collection (anime gacha RPG)
-- **Platform:** Mobile web / installable PWA, Android Chrome first, **landscape** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0003-2d-rendering-pixijs.md`)
-- **Status:** Approved by owner (2026-10-12).
-- **Inspirations (feel only, no borrowed content):** Dragon Ball Legends (real-time card-driven duels, cinematic specials), One Piece Treasure Cruise / Dokkan Battle / Naruto Blazing (team building, types, collection). The battle system — **Rift Duel** — is our own design. All characters, worlds, names, and art are original.
+- **Genre:** Turn-based team battler with character collection (anime gacha RPG)
+- **Platform:** Mobile web / installable PWA, Android Chrome first, **portrait, one hand** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0003-2d-rendering-pixijs.md`, `../decisions/0004-portrait-turn-based.md`)
+- **Status:** Battle system revised to **Rift Timeline** (2026-10-12) — awaiting owner approval of §4. Everything else approved.
+- **Inspirations (feel only, no borrowed content):** Dokkan Battle, One Piece Treasure Cruise, Naruto Blazing, Dragon Ball Legends (team building, types, cinematic supers, collection). The battle system — **Rift Timeline** — is our own design. All characters, worlds, names, and art are original.
 
 ## 1. Pitch
 
 Three worlds — a realm of energy-wielding martial artists, an ocean of rival adventure crews, and a land of elemental warrior clans — have shattered. Through the **Rift** between them, each world's greatest champions — its **Sovereigns** — are pulled into a shared battleground, the **Nexus**. Sovereigns who were never meant to meet must team up.
 
-Players collect Sovereigns from all three worlds, form teams of three, and fight fast real-time duels where **the whole team lives in your hand**: every card you play can pull a different fighter through the Rift to strike.
+Players collect Sovereigns from all three worlds, form teams of four, and fight turn-based battles where **time itself is the battlefield**: every move changes who acts next, and the best players bend the turn order so their heroes chain together and the enemy's deadliest attacks never land.
 
 ## 2. Target players and sessions
 
-- Fans of anime action and gacha games, ages 13+ (paid summons will require age-appropriate handling).
-- **Landscape, two thumbs**, played like a handheld console.
-- A duel lasts **60–120 seconds**; a story stage is 1–2 duels. Daily session 5–15 minutes.
+- Fans of anime gacha RPGs, ages 13+ (paid summons will require age-appropriate handling).
+- **Portrait, one thumb.** Playable on a bus with one hand; no reflexes required.
+- A battle stage takes **2–4 minutes** (2–3 waves, boss on the last). Safe to leave mid-battle: the game pauses and resumes exactly where it was. Daily session 5–15 minutes.
 
 ## 3. Core loop
 
 ```
-Duels (story, bosses, events) ──► earn Coins, training items, shards, some Gems
-      ▲                                           │
-      │                                           ▼
- Stronger team ◄──── level up / limit break / summon new fighters
+Battles (story, bosses, events) ──► earn Coins, training items, shards, some Gems
+      ▲                                            │
+      │                                            ▼
+ Stronger team ◄──── level up / limit break / summon new Sovereigns
 ```
 
-The duel must be fun on its own. Collection and progression make it meaningful, not the other way round.
+The battle must be fun on its own. Collection and progression make it meaningful, not the other way round.
 
-## 4. Battle system — Rift Duel
+## 4. Battle system — Rift Timeline
 
 ### 4.1 Setup
 
-- **3 fighters per side.** One is **active** on the field; the other two wait on the **bench**, ready to be pulled in.
-- **2D side-view arena**: your fighter on the left facing right, the opponent on the right, with a parallax background per world.
-- The arena floor has **three lanes** at different depths — **near, middle, far** (like a classic beat-'em-up). Fighters further back are drawn slightly smaller and higher up the screen.
-- Win by KO'ing all three enemy fighters, or by having more total remaining HP % when the **120 s** timer ends.
+- **Your team:** 4 Sovereigns. The first is the **Leader**, whose Leader Skill applies to the whole team.
+- **Enemies:** 1–3 per wave, 2–3 waves per stage. The last wave is usually a boss.
+- **Win** by defeating every wave. **Lose** when all four Sovereigns are knocked out.
 
-### 4.2 Screen layout (landscape)
+### 4.2 The Timeline
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│ [Your HP ▮▮▮▮▮▯] [bench][bench]  ⏱ 87  [bench][bench] [Enemy HP] │
-│                                                              │
-│   far lane    ─────────────────────────────────────────────  │
-│   mid lane    (you) ►                  ◄ (enemy)             │
-│   near lane   ──────────── lane telegraphs glow here ──────  │
-│  ◇◇◇ Rift Shards        Energy ▮▮▮▮▮▮▯▯▯▯     [CROSSOVER]     │
-│  LEFT THUMB: swipe ↑ ↓ to change lane, hold to guard         │
-│                      [card][card][card][card]  RIGHT THUMB   │
-└──────────────────────────────────────────────────────────────┘
-```
+Everyone — your Sovereigns and the enemies — sits on **one shared turn-order bar** at the top of the screen, showing the next 8 actions.
 
-### 4.3 Energy
+- The unit at the front of the bar acts. Afterwards it goes back into the line based on the **Weight** of what it did and its **Speed**: light moves come back around quickly, heavy moves take longer.
+- **Weight:** Strike 2 · Skill 3 · Super 4 (tunable).
+- **Speed** is a stat; faster units get more turns over a battle.
+- **Timeline preview:** while you pick a move, ghost markers show exactly where your Sovereign will land and how enemies will shift. Nothing about turn order is ever hidden or random.
 
-- **Rift Energy** bar from 0 to 10, regenerating continuously (≈1 per second, tunable).
-- Every card costs energy (1–4). Guarding drains energy.
-- Energy management is the core tension: spend now for pressure, or save for a big chain or for defence.
+### 4.3 Your turn
 
-### 4.4 Cards — "the whole team is in your hand"
+When one of your Sovereigns reaches the front, you choose one action:
 
-- Each fighter brings **5 technique cards**: 2 **Strike** (melee), 2 **Blast** (ranged), 1 **Signature** (unique move).
-- All three fighters' cards form one **15-card team deck**. You hold **4 cards**; each played card is replaced from the deck.
-- Every card shows its owner's portrait and world frame.
-- **Playing the active fighter's card** → they perform it immediately.
-- **Playing a benched fighter's card** → a **Tag Strike**: that fighter rifts in, performs the move, and returns to the bench. **Hold** the card instead to make them the new active fighter (swap). Swaps have a short cooldown.
-- Strikes dash into close range; Blasts fire down your current lane.
+| Action     | Weight | Effect                                                                              |
+| ---------- | ------ | ----------------------------------------------------------------------------------- |
+| **Strike** | 2      | Basic attack. +1 Rift Energy.                                                       |
+| **Skill**  | 3      | The Sovereign's signature technique; has a cooldown (in their own turns). See §4.4. |
+| **Super**  | 4      | Big attack with a short cut-in. Costs Rift Energy (4–6).                            |
 
-### 4.5 Combo grammar
+Then tap an enemy to target it (the most urgent enemy is pre-selected, so a single tap on the action button is often enough).
 
-- Up to 3 Strikes in a row form a chain; ending it with a Blast or Signature **launches** the opponent (bonus damage, brief recovery for them).
-- **Tag Chain:** cards from **different fighters** played back-to-back within a short window (≈1.5 s) earn **Rift Shards**. Cards from fighters of **different worlds** earn more.
-- So every hand poses a decision: a fast same-fighter combo for damage now, or a cross-team chain to build toward a Crossover Burst.
+### 4.4 Bending time — Skills
 
-### 4.6 Defence — lanes, guard, and the Rift Step
+Skills are what make the Timeline a game. Each Sovereign has one, built from a small set of timeline effects:
 
-- **Swipe up/down** (left side of the screen) to shift between far, middle, and near lanes. Lane shifts use **3 step charges** that refill over time, so dodging can't be spammed.
-- Incoming Blasts and heavy attacks **telegraph their lane on the arena floor** before landing. Readable at a glance, fair on a small screen.
-- **Rift Step:** shifting lanes in the last moment before a hit lands is a perfect dodge — time slows briefly, your next card costs less, and the first hit of your counter deals bonus damage.
-- **Hold** the left side of the screen to **guard**: reduces damage, drains energy. Guarding a Strike chain at the right moment staggers the attacker.
-- Some heavy attacks **track across lanes** — these must be guarded or Rift Stepped, not out-walked.
+- **Shove** — push an enemy back N places (e.g. "Quake Fist: damage + shove 2").
+- **Rally** — pull an ally forward N places.
+- **Haste / Slow** — change a unit's Speed for a few turns.
+- **Guard** — the Sovereign's next hit taken is halved, and they counter.
+- Plus ordinary effects: damage, heal, defence break.
 
-### 4.7 Crossover Burst (ultimate)
+### 4.5 Poise and Break
 
-- At **3 Rift Shards**, the Crossover button lights up.
-- Your active fighter and a benched fighter **from a different world** unleash a combined ultimate with a 2–3 s cinematic (skippable after first viewing).
-- The effect depends on the **pair of types** involved (e.g. Fury + Void = armour-breaking finisher, Swift + Radiant = heal and haste). Certain named pairs have **unique Crossovers** — discovering them is part of collecting.
+- Every enemy has a **Poise** bar under its HP.
+- Hits drain Poise; **type-advantaged hits drain double**, and Skills drain extra.
+- At 0 Poise the enemy is **Broken**: it is shoved to the back of the Timeline, takes +50% damage until it acts again, and **any telegraphed attack it was preparing is cancelled**.
+- Poise refills after the enemy's next action.
 
-### 4.8 Types
+### 4.6 Telegraphs — the boss puzzle
+
+- Enemies' dangerous moves appear **on the Timeline in advance** as a marked slot ("METEOR — 3 turns").
+- You have until that slot comes up to stop it: **Break** the enemy, **Shove** it back to buy time, or **Guard** the target it will hit.
+- Bosses have phases (e.g. at 50% HP they telegraph twice as often). Every boss fight is a readable puzzle, not a stat check.
+
+### 4.7 Rift Links — the multiverse mechanic
+
+- When two of your Sovereigns **from different worlds** act **back-to-back** on the Timeline, the second one gets a **Rift Link**: +25% damage and +1 extra Rift Energy.
+- Same-world back-to-back actions give no link, so team building across worlds — and ordering turns with Rally/Shove — matters.
+
+### 4.8 Rift Energy and Crossover Burst
+
+- **Rift Energy** is one shared team gauge (0–10). Earned from Strikes, Rift Links, and Breaking enemies.
+- Supers cost 4–6 energy.
+- **Crossover Burst** (10 energy): when two Sovereigns from different worlds are **next to each other at the front of the Timeline**, they can act together in one combined ultimate with a cinematic cut-in. The effect depends on their **type pair** (e.g. Fury + Void = armour-breaking finisher, Swift + Radiant = team heal and haste). Some named pairs have **unique Crossovers** — discovering them is part of collecting.
+
+### 4.9 Types
 
 Five original types, colour **and** icon coded (never colour alone):
 
@@ -100,24 +104,42 @@ Five original types, colour **and** icon coded (never colour alone):
 | Radiant | Void      | Void    |
 | Void    | Radiant   | Radiant |
 
-Real-time balance: advantage ×1.5 damage dealt, disadvantage ×0.75.
+Advantage ×1.5 damage and ×2 Poise damage; disadvantage ×0.75 damage.
 
-### 4.9 KO and switching
+### 4.10 Enemy behaviour
 
-- When the active fighter is KO'd, the player picks the next fighter (2 s window, then auto-pick). Their cards leave the deck.
-- A KO'd fighter's cards in hand are discarded and redrawn.
+- Enemies follow the same Timeline, Weight, and Speed rules as the player — no hidden extra turns.
+- Behaviour profiles: _Brute_ (heavy telegraphs), _Skirmisher_ (fast, light hits), _Warden_ (guards allies, slows you), _Riftcaller_ (manipulates the Timeline itself).
+- Difficulty comes from smarter targeting and nastier telegraph patterns, not inflated stats.
 
-### 4.10 Opponent AI
+### 4.11 Screen layout (portrait)
 
-- The AI plays by **exactly the same rules and inputs** as the player (energy, hand, step charges) — no hidden advantages, and it makes AI-vs-team PvP possible later.
-- Behaviour profiles: _Aggressor_, _Zoner_ (Blast-heavy), _Counter-puncher_, _Tactician_ (builds Crossovers).
-- Difficulty is tuned through reaction time, mistake rate, and how well it manages energy, not by stat cheating.
-- Bosses add scripted phases with clear telegraphs (e.g. at 50% HP, a lane-sweeping attack every 15 s).
+```
+┌──────────────────────────────┐
+│ ▶[Kai][Golem][Mira][☄][Sena] │  Timeline — next 8 actions
+│                              │
+│               (enemy) (boss) │  Enemies, upper right, facing left
+│          (enemy)             │
+│                              │
+│   (ally)  (ally)             │  Your four Sovereigns, lower left,
+│ (ally)  (ally)               │  facing right (side-view sprites)
+│                              │
+│ ┌──────────────────────────┐ │
+│ │ KAI  ▮▮▮▮▮▮▯ HP  ◆◆◆◇ RE │ │  Active Sovereign + Rift Energy
+│ │ [STRIKE] [SKILL] [SUPER] │ │  Action buttons in the thumb zone
+│ └──────────────────────────┘ │
+└──────────────────────────────┘
+```
+
+### 4.12 Pace and convenience
+
+- Every enemy action and animation is short (≤ 1.2 s), with a 2× speed toggle.
+- **Auto-battle** for cleared stages (later milestone) — never for first clears of bosses.
 
 ## 5. Fighters and collection
 
 - **Rarity:** 3★, 4★, 5★. Higher rarity = higher stat ceiling and stronger kit, never a different game.
-- **Each fighter has:** type, world, role (Striker / Zoner / Guardian / Support), stats (HP, ATK, DEF), 5 technique cards, a **Leader Skill** (applies when they lead the team), and a **Passive**.
+- **Each fighter has:** type, world, role (Striker / Breaker / Guardian / Support), stats (HP, ATK, DEF, SPD), a **Skill** (§4.4), a **Super**, a **Leader Skill** (applies when they lead the team), and a **Passive**.
 - **Progression per fighter:**
   - _Level_ — raised with Coins + training items.
   - _Limit Break_ — raises the level cap; uses **Shards**. Duplicate summons convert to shards, so duplicates are always useful.
@@ -155,18 +177,16 @@ Until then, all Gems are earned in-game and the economy runs locally; its rules 
 
 ## 7. Game modes (by phase)
 
-1. **Story** — chapters of 8–10 stages, each one or two duels, with short dialogue scenes between fighters from different worlds.
-2. **Boss battles** — tougher scripted opponents at the end of chapters.
+1. **Story** — chapters of 8–10 stages, with short dialogue scenes between Sovereigns from different worlds.
+2. **Boss battles** — scripted, telegraph-heavy fights at the end of chapters.
 3. **Events** (later) — limited-time bosses with a rewards track.
-4. **PvP** (later, in stages):
-   1. _Rift Arena_ — fight other players' teams controlled by the same AI as story opponents. No real-time server needed.
-   2. _Live PvP_ — real-time matches, only if the game grows; requires a game server, matchmaking, and anti-cheat. The simulation is designed as fixed-step and deterministic from day one to keep this possible.
+4. **PvP** (later) — _Rift Arena_: fight other players' teams controlled by the enemy AI. Turn-based play makes this possible without real-time servers.
 
 ## 8. Screens
 
-Home · Story map · Team select · Duel · Results · Fighter list · Fighter detail (with animated fighter preview) · Summon · Settings · (later) Shop, Events, Arena.
+Home · Story map · Team select · Battle · Results · Sovereign list · Sovereign detail (with animated preview) · Summon · Settings · (later) Shop, Events, Arena.
 
-The whole game runs in landscape; holding the phone upright shows a "rotate your phone" screen.
+The whole game runs in **portrait**; turning the phone sideways shows a "turn your phone upright" screen.
 
 ## 9. Art and audio direction
 
@@ -175,11 +195,11 @@ The whole game runs in landscape; holding the phone upright shows a "rotate your
 - **Look:** HD cel-shaded anime characters over painterly golden-hour backgrounds: huge sunlit clouds, saturated skies, warm light with violet shadows, floating islands, and the Nexus crystal citadel always on the horizon.
 - **Mood:** bright heroic adventure; the Rift brings deep violet drama for bosses, Crossovers, and story climaxes.
 - **Worlds** are told apart by palette and motifs: Energy realm (ember orange, lava red, basalt indigo), Ocean crews (sea blue, sandstone, terracotta), Warrior clans (canopy green, pagoda crimson).
-- **Two art tiers per Sovereign:** a detailed **splash art** illustration (summons, cards, cut-ins) plus animated **battle sprites** in the same style (74 frames across 16 named clips).
-- **Visual effects** (auras, blasts, hit sparks, Rift Step slow-mo, lane telegraphs) are built in code and can reach final quality while characters are still placeholders.
+- **Two art tiers per Sovereign:** a detailed **splash art** illustration (summons, cards, cut-ins) plus animated **battle sprites** in the same style (56 frames across 11 named clips).
+- **Visual effects** (auras, blasts, hit sparks, Break shatter, Timeline telegraphs, Rift Links) are built in code and can reach final quality while characters are still placeholders.
 - **Placeholders** are code-drawn figures that already follow the style guide, so the game looks coherent from day one. Real art replaces them by dropping in files that follow the artist specs — any artist, or the owner using a phone drawing app, can produce them.
 - **UI:** light cloud-white menu panels and dark ink battle HUD, crisp chamfered panels, Saira Condensed + Noto Sans.
-- **Audio:** punchy layered hit sounds, a distinct Rift Step "time-slip" sound, Crossover stingers, one battle theme per world. Separate music/SFX/haptics toggles.
+- **Audio:** punchy layered hit sounds, a distinct "time-slip" sound when the Timeline is bent, Crossover stingers, one battle theme per world. Separate music/SFX/haptics toggles.
 
 ## 10. Out of scope for the first playable build
 

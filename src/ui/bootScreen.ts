@@ -4,10 +4,10 @@ import type { Logger } from '../debug/log';
 type LockableOrientation = ScreenOrientation & { lock?: (orientation: string) => Promise<void> };
 
 /**
- * Best effort: go fullscreen (hides Chrome's address bar) and lock landscape. Both must happen
+ * Best effort: go fullscreen (hides Chrome's address bar) and lock portrait. Both must happen
  * inside a user gesture and either may be refused, so failures are logged, never fatal.
  */
-async function enterImmersiveLandscape(log: Logger): Promise<void> {
+async function enterImmersivePortrait(log: Logger): Promise<void> {
   const isInstalledApp = window.matchMedia('(display-mode: fullscreen)').matches;
   if (!isInstalledApp && !document.fullscreenElement && document.fullscreenEnabled) {
     try {
@@ -19,9 +19,9 @@ async function enterImmersiveLandscape(log: Logger): Promise<void> {
   const orientation = screen.orientation as LockableOrientation | undefined;
   if (orientation?.lock) {
     try {
-      await orientation.lock('landscape');
+      await orientation.lock('portrait');
     } catch (error) {
-      log.info(`Landscape lock not available: ${String(error)}`);
+      log.info(`Portrait lock not available: ${String(error)}`);
     }
   }
 }
@@ -51,7 +51,7 @@ export function runBootScreen(log: Logger, ready: Promise<void>): Promise<void> 
     button.addEventListener(
       'click',
       () => {
-        void enterImmersiveLandscape(log);
+        void enterImmersivePortrait(log);
         screen.classList.add('is-leaving');
         window.setTimeout(() => {
           screen.hidden = true;
