@@ -10,11 +10,13 @@ A mobile-first web game, developed and play-tested entirely from an Android phon
 
 ## Project status
 
-Pre-production: standards and platform decisions are in place; the game concept is being defined. No game code yet.
+Pre-production: a turn-based team battler with character collection, set in an original multiverse. Design draft and roadmap are written; no game code yet.
 
 ## Documentation
 
 - [`CLAUDE.md`](CLAUDE.md) — development standards (architecture, graphics, animation, touch controls, performance, debugging, testing).
+- [`docs/design/game-design.md`](docs/design/game-design.md) — game design document.
+- [`docs/roadmap.md`](docs/roadmap.md) — milestone plan.
 - [`docs/architecture.md`](docs/architecture.md) — current system map.
 - [`docs/decisions/`](docs/decisions/) — architecture decision records.
 - [`docs/assets.md`](docs/assets.md) — asset sources and licenses.
