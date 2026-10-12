@@ -10,7 +10,7 @@ A mobile-first web game, developed and play-tested entirely from an Android phon
 
 ## Project status
 
-Pre-production: a real-time 3D card-action duel game with character collection (**Rift Duel**), set in an original multiverse and played in landscape. Design draft and roadmap are written; no game code yet.
+Pre-production: a real-time 2D card-action duel game with character collection (**Rift Duel**), set in an original multiverse and played in landscape. Design draft and roadmap are written; no game code yet.
 
 ## Documentation
 

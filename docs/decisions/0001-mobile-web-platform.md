@@ -29,4 +29,4 @@ Build the game as a mobile-first web game in TypeScript, built and deployed by G
 
 ## Open questions
 
-- ~~Rendering approach~~ — resolved in `0002-3d-rendering-threejs.md` (real-time 3D with Three.js).
+- ~~Rendering approach~~ — resolved in `0003-2d-rendering-pixijs.md` (2D with PixiJS).

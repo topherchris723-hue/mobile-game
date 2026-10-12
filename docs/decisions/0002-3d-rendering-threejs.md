@@ -1,6 +1,6 @@
 # 0002 — Real-time 3D with Three.js
 
-- **Status:** Proposed — to be confirmed by the M1 on-device performance test
+- **Status:** Superseded by `0003-2d-rendering-pixijs.md` — the owner chose 2D before any 3D work began
 - **Date:** 2026-10-12
 
 ## Context

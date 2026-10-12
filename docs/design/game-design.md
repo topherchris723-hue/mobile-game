@@ -1,8 +1,8 @@
 # Game Design Document
 
 - **Working title:** Project Nexus (placeholder — final name to be chosen and checked for trademark conflicts)
-- **Genre:** Real-time 3D card-action duels with character collection (anime gacha RPG)
-- **Platform:** Mobile web / installable PWA, Android Chrome first, **landscape** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0002-3d-rendering-threejs.md`)
+- **Genre:** Real-time 2D card-action duels with character collection (anime gacha RPG)
+- **Platform:** Mobile web / installable PWA, Android Chrome first, **landscape** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0003-2d-rendering-pixijs.md`)
 - **Status:** Draft — awaiting owner approval
 - **Inspirations (feel only, no borrowed content):** Dragon Ball Legends (real-time card-driven duels, cinematic specials), One Piece Treasure Cruise / Dokkan Battle / Naruto Blazing (team building, types, collection). The battle system — **Rift Duel** — is our own design. All characters, worlds, names, and art are original.
 
@@ -33,8 +33,8 @@ The duel must be fun on its own. Collection and progression make it meaningful, 
 
 ### 4.1 Setup
 - **3 fighters per side.** One is **active** on the field; the other two wait on the **bench**, ready to be pulled in.
-- 3D arena, camera behind and slightly beside the player's active fighter, looking at the opponent.
-- The arena has **three lanes** (left, centre, right) running between the two fighters.
+- **2D side-view arena**: your fighter on the left facing right, the opponent on the right, with a parallax background per world.
+- The arena floor has **three lanes** at different depths — **near, middle, far** (like a classic beat-'em-up). Fighters further back are drawn slightly smaller and higher up the screen.
 - Win by KO'ing all three enemy fighters, or by having more total remaining HP % when the **120 s** timer ends.
 
 ### 4.2 Screen layout (landscape)
@@ -43,11 +43,11 @@ The duel must be fun on its own. Collection and progression make it meaningful, 
 ┌──────────────────────────────────────────────────────────────┐
 │ [Your HP ▮▮▮▮▮▯] [bench][bench]  ⏱ 87  [bench][bench] [Enemy HP] │
 │                                                              │
-│            (enemy fighter, lane telegraphs on floor)         │
-│                    (your fighter, back view)                 │
-│                                                              │
+│   far lane    ─────────────────────────────────────────────  │
+│   mid lane    (you) ►                  ◄ (enemy)             │
+│   near lane   ──────────── lane telegraphs glow here ──────  │
 │  ◇◇◇ Rift Shards        Energy ▮▮▮▮▮▮▯▯▯▯     [CROSSOVER]     │
-│  LEFT THUMB: swipe ← → to change lane, hold to guard         │
+│  LEFT THUMB: swipe ↑ ↓ to change lane, hold to guard         │
 │                      [card][card][card][card]  RIGHT THUMB   │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -71,7 +71,7 @@ The duel must be fun on its own. Collection and progression make it meaningful, 
 - So every hand poses a decision: a fast same-fighter combo for damage now, or a cross-team chain to build toward a Crossover Burst.
 
 ### 4.6 Defence — lanes, guard, and the Rift Step
-- **Swipe left/right** (left side of the screen) to shift lanes. Lane shifts use **3 step charges** that refill over time, so dodging can't be spammed.
+- **Swipe up/down** (left side of the screen) to shift between far, middle, and near lanes. Lane shifts use **3 step charges** that refill over time, so dodging can't be spammed.
 - Incoming Blasts and heavy attacks **telegraph their lane on the arena floor** before landing. Readable at a glance, fair on a small screen.
 - **Rift Step:** shifting lanes in the last moment before a hit lands is a perfect dodge — time slows briefly, your next card costs less, and the first hit of your counter deals bonus damage.
 - **Hold** the left side of the screen to **guard**: reduces damage, drains energy. Guarding a Strike chain at the right moment staggers the attacker.
@@ -151,20 +151,20 @@ Until then, all Gems are earned in-game and the economy runs locally; its rules 
 
 ## 8. Screens
 
-Home · Story map · Team select · Duel · Results · Fighter list · Fighter detail (with 3D model viewer) · Summon · Settings · (later) Shop, Events, Arena.
+Home · Story map · Team select · Duel · Results · Fighter list · Fighter detail (with animated fighter preview) · Summon · Settings · (later) Shop, Events, Arena.
 
 The whole game runs in landscape; holding the phone upright shows a "rotate your phone" screen.
 
 ## 9. Art and audio direction
 
-- **3D, toon-shaded anime style:** cel shading with outlines, bold silhouettes, expressive poses. One unified style across all three worlds; worlds are told apart by **palette and motifs**:
+- **2D anime style:** clean line art, cel shading, bold silhouettes, expressive poses, drawn side-on. One unified style across all three worlds; worlds are told apart by **palette and motifs**:
   - Energy realm — warm golds and oranges, aura effects, angular shapes.
   - Ocean crews — teals and sandy tones, rope/wood/brass motifs, rounded shapes.
   - Warrior clans — deep greens and crimsons, ink-brush strokes, sharp diagonals.
-- **Animation set per fighter (~15 clips):** idle, lane step, guard, guard-break, light hit, heavy hit, knockdown, get-up, 2–3 strikes, blast, signature, Crossover pose, KO, victory.
-- **Visual effects** (auras, blasts, hit sparks, Rift Step slow-mo, lane telegraphs) are built in code and can reach final quality even while character models are placeholders.
-- **Placeholder phase:** freely licensed (CC0) low-poly animated characters, recoloured per type and world, each clearly logged as placeholder in `../assets.md`. Real models replace them later by swapping files, provided they follow the published rig and animation-name spec.
-- **Production art risk:** custom anime-style 3D characters can't realistically be made on a phone. Final fighters will need a 3D artist (commissioned) or licensed models that fit the style. A model spec (triangle budget, texture size, skeleton, clip names) will be written before commissioning.
+- **Animation set per fighter (~15 clips, frame-by-frame):** idle, lane step, guard, guard-break, light hit, heavy hit, knockdown, get-up, 2–3 strikes, blast, signature, Crossover pose, KO, victory.
+- **Visual effects** (auras, blasts, hit sparks, Rift Step slow-mo, lane telegraphs) are built in code and can reach final quality even while characters are placeholders.
+- **Placeholder phase:** fighters drawn in code as clean layered silhouettes (head, torso, limbs) in their type and world colours, animated with code-driven poses. No external assets needed; each is logged as placeholder in `../assets.md`.
+- **Final art:** sprite sheets drawn to a published **sprite spec** (canvas size, facing direction, foot anchor point, frames per clip, clip names). Any artist — or the owner, using a drawing app on the phone — can produce them, and they replace placeholders by dropping in files, no code changes. The spec is written before any art is commissioned.
 - **UI:** dark, high-contrast HUD; menus use a restrained palette with type colours as accents. No neon overload.
 - **Audio:** punchy layered hit sounds, a distinct Rift Step "time-slip" sound, Crossover stingers, one battle theme per world. Separate music/SFX/haptics toggles.
 

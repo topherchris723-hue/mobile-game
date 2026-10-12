@@ -82,8 +82,8 @@ docs/
 - **One cohesive art direction**, defined in `docs/design/` before production art begins: palette (with hex values), outline/shading rules, scale of characters vs. world, font choices. Everything new must fit it.
 - **Readability first on a small screen.** Gameplay-critical objects must be identifiable at a glance at arm's length: strong silhouettes, value contrast against the background, no meaning conveyed by color alone.
 - **Resolution handling.** Size the renderer to the CSS viewport × `devicePixelRatio`, capped (usually at 2) and multiplied by the active quality tier's render scale. Handle resize and orientation change.
-- **3D rendering (Three.js, see `docs/decisions/0002-3d-rendering-threejs.md`).** Toon shading with inverted-hull outlines; blob shadows by default; no post-processing on the low tier. Models are glTF/GLB with skinned meshes and clip names that follow the model spec. Share materials and geometries; dispose GPU resources (geometries, materials, textures, render targets) when a scene unloads.
-- **Asset pipeline.** Textures compressed (KTX2/Basis) once real art arrives, power-of-two sizes, ≤ 1024² per fighter. UI images in atlases; SVG only for UI icons. Audio as OGG/M4A at sensible bitrates. Track every asset's source and license in `docs/assets.md`. Never use assets we don't have rights to.
+- **2D rendering (PixiJS, see `docs/decisions/0003-2d-rendering-pixijs.md`).** All sprites come from texture atlases; fighters animate frame-by-frame from sprite sheets that follow the sprite spec (anchor at the feet, facing right, named clips). Destroy textures and display objects when a scene unloads.
+- **Asset pipeline.** Atlas pages ≤ 2048², at most one page per fighter. Images as WebP/PNG; SVG only for UI icons. Audio as OGG/M4A at sensible bitrates. Track every asset's source and license in `docs/assets.md`. Never use assets we don't have rights to.
 - **No generic "AI look".** Avoid random gradients, glow on everything, oversized rounded buttons, inconsistent spacing. UI follows a defined system: spacing scale, type scale, button states (idle, pressed, disabled, loading), panel styles.
 
 ## 5. Animation and game feel
@@ -117,14 +117,14 @@ Budgets:
 | Frame time (JS) | ≤ 8 ms per frame for update + render calls |
 | Initial download | ≤ 5 MB (gzipped) before the first interactive screen; battle assets streamed after |
 | Draw calls (duel) | ≤ 100 per frame |
-| Triangles on screen | ≤ 150k; ≤ 20k per fighter |
+| Texture memory (duel) | ≤ 128 MB, measured on device |
 | Time to interactive | ≤ 3 s on 4G |
 | Memory | No growth over a 10-minute session |
 
 Practices:
 
 - **No allocations in the hot loop.** Reuse vectors, arrays, and objects; pool entities, particles, and projectiles.
-- **Batch draws** and minimize state and material changes; use instancing for repeated meshes and particles; avoid per-frame resizes, shader recompiles (warm up materials at load), and real-time shadow maps on low/medium tiers.
+- **Batch draws** and minimize state and material changes; use particle containers for effects; avoid per-frame resizes, filters on large areas, and texture uploads mid-battle (preload everything a duel needs before it starts).
 - **Quality tiers** (low/medium/high) adjust render scale, effect density, and bloom; picked automatically from measured frame time, overridable in Settings.
 - **Cull** off-screen objects from update and render where it's safe.
 - **Lazy-load** non-essential assets after the first playable screen.
