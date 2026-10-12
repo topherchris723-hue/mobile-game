@@ -9,12 +9,12 @@ The owner chose a real-time 3D duel game (Rift Duel, see `../design/game-design.
 
 ## Options considered
 
-| Option | Notes | Verdict |
-| --- | --- | --- |
-| **Three.js** | Code-only, widely used, strong glTF support, `AnimationMixer` for skeletal animation and blending, toon materials built in, works cleanly with Vite. We build our own game structure on top. | **Chosen** |
-| Babylon.js | Full engine with more built-in features (GUI, physics), but a heavier bundle and more engine conventions than this game needs. | Not chosen; reasonable fallback |
-| PlayCanvas | Strong mobile performance, but its workflow centres on a web editor that isn't practical on a phone. | Rejected |
-| Unity/Godot web export | Desktop editors; large web builds. | Rejected (see 0001) |
+| Option                 | Notes                                                                                                                                                                                        | Verdict                         |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| **Three.js**           | Code-only, widely used, strong glTF support, `AnimationMixer` for skeletal animation and blending, toon materials built in, works cleanly with Vite. We build our own game structure on top. | **Chosen**                      |
+| Babylon.js             | Full engine with more built-in features (GUI, physics), but a heavier bundle and more engine conventions than this game needs.                                                               | Not chosen; reasonable fallback |
+| PlayCanvas             | Strong mobile performance, but its workflow centres on a web editor that isn't practical on a phone.                                                                                         | Rejected                        |
+| Unity/Godot web export | Desktop editors; large web builds.                                                                                                                                                           | Rejected (see 0001)             |
 
 ## Decision
 

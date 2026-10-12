@@ -10,19 +10,19 @@ The owner switched Rift Duel from a 3D arena to **2D**. The game is a real-time 
 
 ## Options considered
 
-| Option | Notes | Verdict |
-| --- | --- | --- |
+| Option             | Notes                                                                                                                                                                        | Verdict    |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | **PixiJS (WebGL)** | Fast batched sprite rendering, particle containers, filters, texture atlases, small API. A renderer, not a framework, so game structure stays ours (matches `CLAUDE.md` §3). | **Chosen** |
-| Phaser | Full framework (scenes, physics, tweens, input). Its scene/game-object model would fight our separate simulation layer, and we'd use little of the rest. | Not chosen |
-| Plain Canvas 2D | No dependency, but no GPU batching; effect-heavy scenes struggle on mid-range phones. | Rejected |
+| Phaser             | Full framework (scenes, physics, tweens, input). Its scene/game-object model would fight our separate simulation layer, and we'd use little of the rest.                     | Not chosen |
+| Plain Canvas 2D    | No dependency, but no GPU batching; effect-heavy scenes struggle on mid-range phones.                                                                                        | Rejected   |
 
 ### Character animation format
 
-| Format | Notes | Verdict |
-| --- | --- | --- |
-| **Frame-by-frame sprite sheets** | The standard for anime fighters; any drawing app works (including on a phone); artists widely available. Costs texture memory, managed by atlas budgets. | **Chosen** for final art |
-| Skeletal (e.g. Spine) | Smooth and memory-light, but the editor is a paid desktop tool — breaks the phone-only workflow. | Rejected |
-| Code-driven cut-out (layered parts posed in code) | No external assets needed. Looks stiffer than drawn frames. | Used for **placeholders** only |
+| Format                                            | Notes                                                                                                                                                    | Verdict                        |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| **Frame-by-frame sprite sheets**                  | The standard for anime fighters; any drawing app works (including on a phone); artists widely available. Costs texture memory, managed by atlas budgets. | **Chosen** for final art       |
+| Skeletal (e.g. Spine)                             | Smooth and memory-light, but the editor is a paid desktop tool — breaks the phone-only workflow.                                                         | Rejected                       |
+| Code-driven cut-out (layered parts posed in code) | No external assets needed. Looks stiffer than drawn frames.                                                                                              | Used for **placeholders** only |
 
 ## Decision
 

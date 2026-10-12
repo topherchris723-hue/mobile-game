@@ -8,6 +8,7 @@
 The owner's reference is a painterly anime key visual: a lone caped hero on a cliff edge at golden hour, looking out over several worlds merged into one view. There are volcanic peaks, a harbour town on a bright sea, a cliffside village with tiered towers, and floating islands around a crystal citadel that shoots beams of light into the sky.
 
 **What we take:**
+
 - Painterly anime backgrounds with huge sunlit cumulus clouds and a deep, saturated sky.
 - **Golden-hour light**: warm gold and peach highlights, with **cool violet and indigo shadows** (never grey).
 - **Atmospheric depth**: distant layers fade toward blue-violet and lighter values; near layers are richer and darker.
@@ -16,6 +17,7 @@ The owner's reference is a painterly anime key visual: a lone caped hero on a cl
 - **The crystal citadel with its light beams and halo ring** becomes the visual identity of the **Nexus** and the **Rift**.
 
 **What we do not take:**
+
 - Any recognisable landmark or character from existing franchises. In particular the reference contains a cliff carved with giant faces, which is a direct nod to an existing anime and is **not** used in any form.
 - The reference image is a mood reference only. It is not stored in the repository and is never used as a game asset.
 
@@ -52,47 +54,47 @@ Hex values marked † were sampled from the reference image; the rest are derive
 
 ### 6.1 Shared sky and atmosphere
 
-| Role | Hex |
-| --- | --- |
-| Sky deep | `#1C5998` † |
-| Sky mid | `#5594BF` † |
-| Sky high | `#A5BCE0` † |
-| Cloud light | `#FEF3DF` † |
-| Cloud shadow (cool) | `#BFCAD9` † |
+| Role                      | Hex         |
+| ------------------------- | ----------- |
+| Sky deep                  | `#1C5998` † |
+| Sky mid                   | `#5594BF` † |
+| Sky high                  | `#A5BCE0` † |
+| Cloud light               | `#FEF3DF` † |
+| Cloud shadow (cool)       | `#BFCAD9` † |
 | Cloud shadow (warm peach) | `#FBD8BA` † |
-| Golden-hour glow | `#FCB68D` † |
-| Distant mountain indigo | `#34427C` † |
-| Violet shadow | `#503544` † |
-| Foreground ink | `#08090F` † |
+| Golden-hour glow          | `#FCB68D` † |
+| Distant mountain indigo   | `#34427C` † |
+| Violet shadow             | `#503544` † |
+| Foreground ink            | `#08090F` † |
 
 ### 6.2 World palettes
 
-| World | Dominant | Secondary | Accent | Shadow | Motifs |
-| --- | --- | --- | --- | --- | --- |
-| **Energy realm** (volcanic peaks) | Ember orange `#F87844` † | Basalt indigo `#34427C` † | Lava red `#F34F58` † | Ash mauve `#503544` † | Angular rock, cracks of light, rising embers, aura flames |
-| **Ocean crews** (harbour and sea) | Sea blue `#0DA0F2` † | Sandstone `#C1AD98` † | Terracotta `#C78C72` † | Deep sea `#1C5998` † | Sails, rope, brass, white stone, foam rings, rounded shapes |
-| **Warrior clans** (cliff village) | Canopy green `#3E7A2E` | Pagoda crimson `#B33A3A` | Sunlit leaf `#B8C424` | Forest ink `#0F2225` † | Tiered roofs, ink-brush strokes, leaves, sharp diagonals |
-| **The Nexus / Rift** | Rift violet `#9E8CCB` † | Rift beam blue `#2888EB` † | Glow white `#FEF3DF` † | Void black `#08090F` † | Crystal spires, light beams, halo rings, floating islands, fractures |
+| World                             | Dominant                 | Secondary                  | Accent                 | Shadow                 | Motifs                                                               |
+| --------------------------------- | ------------------------ | -------------------------- | ---------------------- | ---------------------- | -------------------------------------------------------------------- |
+| **Energy realm** (volcanic peaks) | Ember orange `#F87844` † | Basalt indigo `#34427C` †  | Lava red `#F34F58` †   | Ash mauve `#503544` †  | Angular rock, cracks of light, rising embers, aura flames            |
+| **Ocean crews** (harbour and sea) | Sea blue `#0DA0F2` †     | Sandstone `#C1AD98` †      | Terracotta `#C78C72` † | Deep sea `#1C5998` †   | Sails, rope, brass, white stone, foam rings, rounded shapes          |
+| **Warrior clans** (cliff village) | Canopy green `#3E7A2E`   | Pagoda crimson `#B33A3A`   | Sunlit leaf `#B8C424`  | Forest ink `#0F2225` † | Tiered roofs, ink-brush strokes, leaves, sharp diagonals             |
+| **The Nexus / Rift**              | Rift violet `#9E8CCB` †  | Rift beam blue `#2888EB` † | Glow white `#FEF3DF` † | Void black `#08090F` † | Crystal spires, light beams, halo rings, floating islands, fractures |
 
 ### 6.3 Type colours (gameplay)
 
 Type is always shown by **colour and icon**, never colour alone.
 
-| Type | Colour | Icon |
-| --- | --- | --- |
-| Fury | `#F25C3B` | Clenched fist |
-| Swift | `#1FB6E8` | Arrow wing |
-| Guile | `#5DBB46` | Spiral eye |
-| Radiant | `#F5C542` | Sunburst |
-| Void | `#8B5CF6` | Crescent |
+| Type    | Colour    | Icon          |
+| ------- | --------- | ------------- |
+| Fury    | `#F25C3B` | Clenched fist |
+| Swift   | `#1FB6E8` | Arrow wing    |
+| Guile   | `#5DBB46` | Spiral eye    |
+| Radiant | `#F5C542` | Sunburst      |
+| Void    | `#8B5CF6` | Crescent      |
 
 ### 6.4 Rarity frames
 
-| Rarity | Frame |
-| --- | --- |
-| 3★ | Bronze `#B07A4A` |
-| 4★ | Sky silver `#A5BCE0` |
-| 5★ | Gold `#F5C542` with a Rift-violet `#9E8CCB` glint |
+| Rarity | Frame                                             |
+| ------ | ------------------------------------------------- |
+| 3★     | Bronze `#B07A4A`                                  |
+| 4★     | Sky silver `#A5BCE0`                              |
+| 5★     | Gold `#F5C542` with a Rift-violet `#9E8CCB` glint |
 
 ## 7. Environments
 
@@ -152,31 +154,32 @@ Type is always shown by **colour and icon**, never colour alone.
 - **Timing:** drawn for 12 fps; holds are done by repeating frames in the timing data, not by duplicating drawings.
 - **Frames are trimmed and packed** into atlases by our pipeline, so artists deliver plain frames named `<clip>_<nn>.png`.
 
-| Clip | Frames | Loops |
-| --- | --- | --- |
-| `idle` | 6 | yes |
-| `step` | 3 | no |
-| `guard` | 2 | holds last |
-| `guard_break` | 4 | no |
-| `hit_light` | 3 | no |
-| `hit_heavy` | 4 | no |
-| `knockdown` | 5 | no |
-| `getup` | 4 | no |
-| `strike_1` | 4 | no |
-| `strike_2` | 4 | no |
-| `strike_3` | 5 | no |
-| `blast` | 6 | no |
-| `signature` | 10 | no |
-| `crossover_pose` | 3 | holds last |
-| `ko` | 5 | holds last |
-| `victory` | 6 | yes |
-| **Total** | **74** | |
+| Clip             | Frames | Loops      |
+| ---------------- | ------ | ---------- |
+| `idle`           | 6      | yes        |
+| `step`           | 3      | no         |
+| `guard`          | 2      | holds last |
+| `guard_break`    | 4      | no         |
+| `hit_light`      | 3      | no         |
+| `hit_heavy`      | 4      | no         |
+| `knockdown`      | 5      | no         |
+| `getup`          | 4      | no         |
+| `strike_1`       | 4      | no         |
+| `strike_2`       | 4      | no         |
+| `strike_3`       | 5      | no         |
+| `blast`          | 6      | no         |
+| `signature`      | 10     | no         |
+| `crossover_pose` | 3      | holds last |
+| `ko`             | 5      | holds last |
+| `victory`        | 6      | yes        |
+| **Total**        | **74** |            |
 
 **Memory note:** 74 trimmed frames need about two 2048² atlas pages per Sovereign. Uncompressed, six Sovereigns in a duel would exceed the 128 MB texture budget, so battle atlases ship as **GPU-compressed textures (KTX2/Basis)**, which cut texture memory by about 4×. M1 verifies this on the owner's phone before any art is commissioned.
 
 ## 11. Placeholders
 
 Until real art exists, Sovereigns are code-drawn layered figures that already follow this guide:
+
 - Correct proportions and silhouette feature.
 - Outline colour `#1E1424`.
 - World dominant colour, plus a type-colour accent.
@@ -187,11 +190,11 @@ Placeholder backgrounds use the §6.1 sky palette with simple layered shapes in 
 
 ## 12. Do and don't
 
-| Do | Don't |
-| --- | --- |
-| Warm highlights, violet shadows | Grey or pure-black shading |
-| Keep characters the highest-contrast element | Let backgrounds compete with fighters |
-| Keep the Rift violet special and dramatic | Use violet casually everywhere |
-| Use chamfered, crisp UI panels | Use pill buttons, random gradients, or glow on UI |
-| Read type by colour **and** icon | Rely on colour alone |
-| Use original landmarks and designs | Echo recognisable places or characters from other franchises |
+| Do                                           | Don't                                                        |
+| -------------------------------------------- | ------------------------------------------------------------ |
+| Warm highlights, violet shadows              | Grey or pure-black shading                                   |
+| Keep characters the highest-contrast element | Let backgrounds compete with fighters                        |
+| Keep the Rift violet special and dramatic    | Use violet casually everywhere                               |
+| Use chamfered, crisp UI panels               | Use pill buttons, random gradients, or glow on UI            |
+| Read type by colour **and** icon             | Rely on colour alone                                         |
+| Use original landmarks and designs           | Echo recognisable places or characters from other franchises |

@@ -9,12 +9,12 @@ The owner develops and tests the game **entirely from an Android phone**. There 
 
 ## Options considered
 
-| Option | Can be built from the phone? | Can be tested on the phone? | Verdict |
-| --- | --- | --- | --- |
-| Native Android (Kotlin, Android Studio) | No — needs a desktop IDE, or CI-built APKs side-loaded for every change | Only via repeated APK installs | Rejected: slow loop, no on-device debugging |
-| Unity / Godot | Only via CI export; editor is desktop-only | Via exported web/APK builds | Rejected: editor-centric workflows can't be used, scene files are hard to edit as text |
-| Roblox | No — Roblox Studio is Windows/macOS only | Can play, can't publish changes | Rejected under the phone-only constraint |
-| **Mobile web (TypeScript, built in CI, hosted on GitHub Pages)** | **Yes** — all source is text, built in the cloud | **Yes** — open a URL in Chrome; installable as a PWA | **Chosen** |
+| Option                                                           | Can be built from the phone?                                            | Can be tested on the phone?                          | Verdict                                                                                |
+| ---------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Native Android (Kotlin, Android Studio)                          | No — needs a desktop IDE, or CI-built APKs side-loaded for every change | Only via repeated APK installs                       | Rejected: slow loop, no on-device debugging                                            |
+| Unity / Godot                                                    | Only via CI export; editor is desktop-only                              | Via exported web/APK builds                          | Rejected: editor-centric workflows can't be used, scene files are hard to edit as text |
+| Roblox                                                           | No — Roblox Studio is Windows/macOS only                                | Can play, can't publish changes                      | Rejected under the phone-only constraint                                               |
+| **Mobile web (TypeScript, built in CI, hosted on GitHub Pages)** | **Yes** — all source is text, built in the cloud                        | **Yes** — open a URL in Chrome; installable as a PWA | **Chosen**                                                                             |
 
 ## Decision
 
