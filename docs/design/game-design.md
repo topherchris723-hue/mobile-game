@@ -169,7 +169,15 @@ Until then, all Gems are earned in-game and the economy runs locally; its rules 
 
 ## 8. Screens
 
-Home · Story map · Team select · Battle · Results · Sovereign list · Sovereign detail (with animated preview) · Summon · Settings · (later) Shop, Events, Arena.
+**Home menu** (the hub players return to after every battle), with large one-thumb tiles:
+
+- **Story** — chapter map and stages.
+- **Summon** — banners, rates, pity counter.
+- **Sovereigns** — collection, detail screens, team editor.
+- **Guilds** — join a guild with other players: shared chat, a weekly guild boss fought together, and guild rewards. Requires the online phase (accounts and a server), so until then the tile is shown **locked** with "Online — coming later"; nothing on it pretends to work.
+- Settings, and later Shop, Events, and Rift Arena.
+
+Other screens: Story map · Team select · Battle · Results · Sovereign detail (with animated preview) · Summon · Settings.
 
 The whole game runs in **portrait**; turning the phone sideways shows a "turn your phone upright" screen.
 
@@ -188,4 +196,4 @@ The whole game runs in **portrait**; turning the phone sideways shows a "turn yo
 
 ## 10. Out of scope for the first playable build
 
-Real-money purchases, accounts and servers, PvP of any kind, events, chat or guilds, voice acting.
+Real-money purchases, accounts and servers, PvP of any kind, events, guilds and chat (all need the online phase, M9+), voice acting.
