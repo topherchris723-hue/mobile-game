@@ -3,7 +3,7 @@
 - **Working title:** Project Nexus (placeholder — final name to be chosen and checked for trademark conflicts)
 - **Genre:** Real-time 2D card-action duels with character collection (anime gacha RPG)
 - **Platform:** Mobile web / installable PWA, Android Chrome first, **landscape** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0003-2d-rendering-pixijs.md`)
-- **Status:** Draft — awaiting owner approval
+- **Status:** Approved by owner (2026-10-12). Final name pending.
 - **Inspirations (feel only, no borrowed content):** Dragon Ball Legends (real-time card-driven duels, cinematic specials), One Piece Treasure Cruise / Dokkan Battle / Naruto Blazing (team building, types, collection). The battle system — **Rift Duel** — is our own design. All characters, worlds, names, and art are original.
 
 ## 1. Pitch
@@ -138,7 +138,7 @@ Requirements before any money is involved:
 Until then, all Gems are earned in-game and the economy runs locally; its rules live in a pure module (`src/game/economy/`) so they can move to the server unchanged.
 
 ### Stamina
-**Recommendation: no stamina system in early versions.** It limits play without making it more fun. Revisit only if events need pacing.
+**Decision: no stamina system in early versions.** It limits play without making it more fun. Revisit only if events need pacing.
 
 ## 7. Game modes (by phase)
 
