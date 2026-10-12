@@ -1,0 +1,385 @@
+/*
+ * Design tokens and screen styles. Values come from docs/design/art-style.md §6 and §9;
+ * change them there first.
+ */
+:root {
+  --ink: #08090f;
+  --ink-panel: rgb(8 9 15 / 0.85);
+  --cloud: #fef3df;
+  --text-dark: #1e2440;
+  --text-light: #fef3df;
+  --rift-violet: #9e8ccb;
+  --rift-violet-pressed: #8571bd;
+  --gold: #f5c542;
+  --sky-deep: #1c5998;
+  --sky-mid: #5594bf;
+  --sky-high: #a5bce0;
+  --golden-glow: #fcb68d;
+  --error: #f34f58;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --font-display: 'Saira Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Noto Sans', system-ui, sans-serif;
+
+  --duration-press: 140ms;
+  --duration-panel: 280ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Crisp panel with one 45° chamfered corner (top right), echoing Rift crystal shards. */
+  --chamfer: 12px;
+  --chamfer-shape: polygon(
+    0 0,
+    calc(100% - var(--chamfer)) 0,
+    100% var(--chamfer),
+    100% 100%,
+    0 100%
+  );
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--text-light);
+  font-family: var(--font-body);
+  font-size: 16px;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.game-root {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+}
+
+.game-root canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* ---------- Buttons ---------- */
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+}
+
+.button-primary {
+  min-height: 52px;
+  min-width: 200px;
+  padding: 0 var(--space-6);
+  background: var(--rift-violet);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  clip-path: var(--chamfer-shape);
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    background-color var(--duration-press) var(--ease-out);
+}
+
+.button-primary:active {
+  transform: scale(0.96);
+  background: var(--rift-violet-pressed);
+}
+
+.button-primary:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.button-quiet {
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  background: transparent;
+  color: var(--text-dark);
+  font-family: var(--font-display);
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+/* ---------- Panels ---------- */
+
+.panel-ink {
+  background: var(--ink-panel);
+  color: var(--text-light);
+  clip-path: var(--chamfer-shape);
+}
+
+.panel-light {
+  background: var(--cloud);
+  color: var(--text-dark);
+  clip-path: var(--chamfer-shape);
+}
+
+/* ---------- Boot screen ---------- */
+
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+  /* The sky's own vertical light falloff (style guide §6.1), not a decorative gradient. */
+  background: linear-gradient(
+    180deg,
+    var(--sky-deep) 0%,
+    var(--sky-mid) 45%,
+    var(--sky-high) 72%,
+    var(--golden-glow) 100%
+  );
+  transition: opacity var(--duration-panel) var(--ease-out);
+}
+
+.boot-screen.is-leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-title {
+  text-align: center;
+}
+
+.boot-title h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 9vh, 72px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--cloud);
+  text-shadow: 0 2px 0 rgb(30 20 36 / 0.6);
+}
+
+.kicker {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cloud);
+  opacity: 0.85;
+}
+
+.build-tag {
+  position: absolute;
+  right: calc(var(--safe-right) + var(--space-4));
+  bottom: calc(var(--safe-bottom) + var(--space-3));
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-dark);
+  opacity: 0.7;
+}
+
+/* ---------- Arena hint ---------- */
+
+.arena-hint {
+  position: fixed;
+  top: calc(var(--safe-top) + var(--space-3));
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 5;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  font-size: 14px;
+  line-height: 1.4;
+  pointer-events: none;
+  transition: opacity 400ms var(--ease-out);
+}
+
+.arena-hint.is-leaving {
+  opacity: 0;
+}
+
+/* ---------- Rotate prompt (portrait) ---------- */
+
+.rotate-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  background: var(--ink);
+  font-family: var(--font-display);
+  font-size: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.rotate-phone {
+  width: 44px;
+  height: 76px;
+  border: 3px solid var(--rift-violet);
+  border-radius: 6px;
+  animation: rotate-phone 2.4s var(--ease-out) infinite;
+}
+
+@keyframes rotate-phone {
+  0%,
+  25% {
+    transform: rotate(0deg);
+  }
+  60%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+
+@media (orientation: portrait) {
+  .rotate-prompt {
+    display: flex;
+  }
+}
+
+/* ---------- Error panel ---------- */
+
+.error-panel {
+  position: fixed;
+  z-index: 30;
+  top: calc(var(--safe-top) + var(--space-4));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(560px, calc(100vw - var(--safe-left) - var(--safe-right) - 32px));
+  max-height: calc(100vh - 32px);
+  padding: var(--space-4) var(--space-5);
+  overflow: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.error-panel h2 {
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: 24px;
+  text-transform: uppercase;
+  color: var(--error);
+}
+
+.error-panel p {
+  margin: 0 0 var(--space-3);
+  font-size: 14px;
+}
+
+.error-panel pre {
+  margin: 0 0 var(--space-3);
+  max-height: 30vh;
+  overflow: auto;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.error-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+/* ---------- Debug overlay (?debug=1, developer-only) ---------- */
+
+.debug-overlay {
+  position: fixed;
+  z-index: 25;
+  top: calc(var(--safe-top) + var(--space-2));
+  left: calc(var(--safe-left) + var(--space-2));
+  width: 210px;
+  padding: var(--space-1) var(--space-2);
+  background: rgb(8 9 15 / 0.7);
+  color: var(--text-light);
+  font:
+    11px/1.3 ui-monospace,
+    monospace;
+  /* Touches pass through to the game; only the copy button is interactive. */
+  pointer-events: none;
+}
+
+.debug-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.debug-fps {
+  font-size: 14px;
+  color: var(--gold);
+}
+
+.debug-graph {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin: 2px 0;
+  image-rendering: pixelated;
+}
+
+.debug-stats {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.debug-log {
+  max-height: 30px;
+  margin: var(--space-1) 0;
+  padding: 0 0 0 var(--space-4);
+  overflow-y: auto;
+}
+
+.debug-log-warn {
+  color: var(--gold);
+}
+
+.debug-log-error {
+  color: var(--error);
+}
+
+.debug-copy {
+  pointer-events: auto;
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  background: var(--rift-violet);
+  color: var(--ink);
+  font: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rotate-phone {
+    animation: none;
+    transform: rotate(-90deg);
+  }
+}

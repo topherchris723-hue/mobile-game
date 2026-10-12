@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="theme-color" content="#08090f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta
+      name="description"
+      content="Shattered Sovereigns — real-time Rift Duels across shattered worlds."
+    />
+    <title>Shattered Sovereigns</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+  </head>
+  <body data-scene="boot" data-paused="false">
+    <div id="game-root" class="game-root"></div>
+
+    <section id="boot-screen" class="boot-screen">
+      <div class="boot-title">
+        <p class="kicker">Rift Duel · Arena test</p>
+        <h1>Shattered Sovereigns</h1>
+      </div>
+      <button id="start-button" class="button-primary" type="button" disabled>Loading…</button>
+      <p id="boot-build" class="build-tag"></p>
+    </section>
+
+    <p id="arena-hint" class="panel-ink arena-hint" hidden>
+      Left half: swipe <span aria-label="up">↑</span> <span aria-label="down">↓</span> to change
+      lane · hold to guard
+    </p>
+
+    <section id="rotate-prompt" class="rotate-prompt" aria-live="polite">
+      <div class="rotate-phone" aria-hidden="true"></div>
+      <p>Turn your phone sideways to play</p>
+    </section>
+
+    <section id="error-panel" class="error-panel panel-light" role="alert" hidden>
+      <h2>Something went wrong</h2>
+      <p>Copy the details and send them to Claude so it can be fixed.</p>
+      <pre id="error-message"></pre>
+      <div class="error-actions">
+        <button id="error-copy" class="button-primary" type="button">Copy details</button>
+        <button id="error-dismiss" class="button-quiet" type="button">Dismiss</button>
+      </div>
+    </section>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

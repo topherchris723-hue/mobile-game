@@ -32,7 +32,7 @@ Rules for every task:
 - **Small, complete milestones.** Each one leaves `main` buildable, deployable, and playable. No half-wired features on `main`.
 - **Preserve working behavior.** Don't rewrite systems unrelated to the task. If a refactor is genuinely needed, say why and keep it in its own commit.
 - **Challenge weak ideas.** If a request would hurt the game, performance, or maintainability, say so and propose a better option.
-- **Never fabricate progress.** Don't claim something was tested unless it actually ran. Every delivery states: *verified*, *assumed*, and *needs testing on device*.
+- **Never fabricate progress.** Don't claim something was tested unless it actually ran. Every delivery states: _verified_, _assumed_, and _needs testing on device_.
 - **No placeholder code presented as finished.** No unexplained TODOs, no references to modules that don't exist, no fake functionality. Temporary art/audio is allowed only when labeled as placeholder in code and in `docs/assets.md`.
 
 ### Delivery format for a feature
@@ -111,15 +111,15 @@ Baseline device: a **mid-range Android phone** (≈4 GB RAM, mid-tier GPU) in Ch
 
 Budgets:
 
-| Metric | Target |
-| --- | --- |
-| Frame rate | 60 fps sustained; never below 30 |
-| Frame time (JS) | ≤ 8 ms per frame for update + render calls |
-| Initial download | ≤ 5 MB (gzipped) before the first interactive screen; battle assets streamed after |
-| Draw calls (duel) | ≤ 100 per frame |
-| Texture memory (duel) | ≤ 128 MB, measured on device |
-| Time to interactive | ≤ 3 s on 4G |
-| Memory | No growth over a 10-minute session |
+| Metric                | Target                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------- |
+| Frame rate            | 60 fps sustained; never below 30                                                   |
+| Frame time (JS)       | ≤ 8 ms per frame for update + render calls                                         |
+| Initial download      | ≤ 5 MB (gzipped) before the first interactive screen; battle assets streamed after |
+| Draw calls (duel)     | ≤ 100 per frame                                                                    |
+| Texture memory (duel) | ≤ 128 MB, measured on device                                                       |
+| Time to interactive   | ≤ 3 s on 4G                                                                        |
+| Memory                | No growth over a 10-minute session                                                 |
 
 Practices:
 
@@ -176,13 +176,31 @@ Emulated tests are not proof that it works on a real device. Report them as "pas
 ## 12. Git and repository hygiene
 
 - Develop on the designated feature branch; never push directly to `main` unless asked.
-- Commits are focused, with imperative-mood messages explaining *why* (e.g. "Clamp frame delta to prevent catch-up stutter after resume").
+- Commits are focused, with imperative-mood messages explaining _why_ (e.g. "Clamp frame delta to prevent catch-up stutter after resume").
 - Don't commit build output, `node_modules`, secrets, or large binaries that aren't game assets.
 - Keep `docs/architecture.md` current whenever a system is added or changed. Record significant technical decisions as a new file in `docs/decisions/`.
 - Dependencies: add only when they clearly earn their weight; pin versions; note why in the PR.
 
 ## 13. Project commands
 
-The toolchain is set up in the first implementation milestone, once the game concept is agreed. When it is, this section lists the exact commands for install, dev, typecheck, lint, test, e2e, and build, and the URL where each branch is deployed for phone testing.
+| Task                                     | Command                                                                                                                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Install (clean, as CI does)              | `npm ci`                                                                                                                                                                 |
+| Add or upgrade a dependency              | `npx -y npm@11 install --save-exact <pkg>@<version>` (npm 10 has a peer-resolution bug with Vitest's optional peers; the lockfile it writes installs fine with `npm ci`) |
+| Dev server                               | `npm run dev`                                                                                                                                                            |
+| Typecheck                                | `npm run typecheck`                                                                                                                                                      |
+| Lint + format check                      | `npm run lint` (fix formatting with `npm run format`)                                                                                                                    |
+| Unit tests                               | `npm test`                                                                                                                                                               |
+| Production build                         | `npm run build`                                                                                                                                                          |
+| Download-size budget                     | `npm run check:size`                                                                                                                                                     |
+| Mobile e2e (Pixel 7 landscape emulation) | `npm run e2e` (needs a fresh `npm run build` first)                                                                                                                      |
+| Everything, in CI order                  | `npm run verify`                                                                                                                                                         |
 
-Current state: **no game code yet** — the repository contains standards and documentation only. Game: **Shattered Sovereigns**. Design: `docs/design/game-design.md`; plan: `docs/roadmap.md`.
+**Phone testing.** Every green push is deployed by `.github/workflows/ci.yml`:
+
+- `main` → `https://topherchris723-hue.github.io/mobile-game/`
+- any other branch → `https://topherchris723-hue.github.io/mobile-game/preview/<branch>/`
+
+Append `?debug=1` for the debug overlay and `?debug=1&bench=1` for the six-fighter benchmark. The run's summary page on GitHub shows the exact link. Pages must be served from the `gh-pages` branch (repository Settings → Pages → Source: _Deploy from a branch_ → `gh-pages` / root).
+
+Pin dependency versions exactly, and prefer releases at least two weeks old.

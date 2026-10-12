@@ -10,7 +10,13 @@ A mobile-first web game, developed and play-tested entirely from an Android phon
 
 ## Project status
 
-Pre-production: a real-time 2D card-action duel game with character collection (**Rift Duel**), set in an original multiverse and played in landscape. Design draft and roadmap are written; no game code yet.
+Pre-production: a real-time 2D card-action duel game with character collection (**Rift Duel**), set in an original multiverse and played in landscape. Milestone 1 (foundation + arena test) is built; see `docs/roadmap.md`.
+
+## Play it
+
+- Latest `main`: https://topherchris723-hue.github.io/mobile-game/
+- Branch previews: `https://topherchris723-hue.github.io/mobile-game/preview/<branch>/`
+- Add `?debug=1` for the FPS overlay, `?debug=1&bench=1` for the performance benchmark.
 
 ## Documentation
 
