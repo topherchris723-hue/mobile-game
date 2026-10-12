@@ -157,19 +157,15 @@ The whole game runs in landscape; holding the phone upright shows a "rotate your
 
 ## 9. Art and audio direction
 
-- **2D anime style:** clean line art, cel shading, bold silhouettes, expressive poses, drawn side-on. One unified style across all three worlds; worlds are told apart by **palette and motifs**:
-  - Energy realm — warm golds and oranges, aura effects, angular shapes.
-  - Ocean crews — teals and sandy tones, rope/wood/brass motifs, rounded shapes.
-  - Warrior clans — deep greens and crimsons, ink-brush strokes, sharp diagonals.
-- **Two art tiers per Sovereign (decided 2026-10-12):**
-  - **Splash art** — one detailed illustration used for summons, cards, fighter detail, and Super/Crossover cut-ins. This is what sells the character.
-  - **Battle sprites** — animated sprites in the same style with less detail, so animation stays affordable.
-- **Rendering style and mood:** pending — the owner is providing reference images; the full style guide will live in `art-style.md`.
-- **Animation set per fighter (~15 clips, frame-by-frame):** idle, lane step, guard, guard-break, light hit, heavy hit, knockdown, get-up, 2–3 strikes, blast, signature, Crossover pose, KO, victory.
-- **Visual effects** (auras, blasts, hit sparks, Rift Step slow-mo, lane telegraphs) are built in code and can reach final quality even while characters are placeholders.
-- **Placeholder phase:** fighters drawn in code as clean layered silhouettes (head, torso, limbs) in their type and world colours, animated with code-driven poses. No external assets needed; each is logged as placeholder in `../assets.md`.
-- **Final art:** sprite sheets drawn to a published **sprite spec** (canvas size, facing direction, foot anchor point, frames per clip, clip names). Any artist — or the owner, using a drawing app on the phone — can produce them, and they replace placeholders by dropping in files, no code changes. The spec is written before any art is commissioned.
-- **UI:** dark, high-contrast HUD; menus use a restrained palette with type colours as accents. No neon overload.
+**The full, locked art direction is in [`art-style.md`](art-style.md)** (lighting, palettes with hex values, character rules, environments, effects, UI, artist specs). Summary:
+
+- **Look:** HD cel-shaded anime characters over painterly golden-hour backgrounds: huge sunlit clouds, saturated skies, warm light with violet shadows, floating islands, and the Nexus crystal citadel always on the horizon.
+- **Mood:** bright heroic adventure; the Rift brings deep violet drama for bosses, Crossovers, and story climaxes.
+- **Worlds** are told apart by palette and motifs: Energy realm (ember orange, lava red, basalt indigo), Ocean crews (sea blue, sandstone, terracotta), Warrior clans (canopy green, pagoda crimson).
+- **Two art tiers per Sovereign:** a detailed **splash art** illustration (summons, cards, cut-ins) plus animated **battle sprites** in the same style (74 frames across 16 named clips).
+- **Visual effects** (auras, blasts, hit sparks, Rift Step slow-mo, lane telegraphs) are built in code and can reach final quality while characters are still placeholders.
+- **Placeholders** are code-drawn figures that already follow the style guide, so the game looks coherent from day one. Real art replaces them by dropping in files that follow the artist specs — any artist, or the owner using a phone drawing app, can produce them.
+- **UI:** light cloud-white menu panels and dark ink battle HUD, crisp chamfered panels, Saira Condensed + Noto Sans.
 - **Audio:** punchy layered hit sounds, a distinct Rift Step "time-slip" sound, Crossover stingers, one battle theme per world. Separate music/SFX/haptics toggles.
 
 ## 10. Out of scope for the first playable build

@@ -35,5 +35,5 @@ The owner switched Rift Duel from a 3D arena to **2D**. The game is a real-time 
 
 - Much lighter than 3D: smaller downloads, lower GPU load, less heat and battery drain.
 - Art is far more achievable; the owner can draw fighters on the phone.
-- Texture memory is the main budget to watch (one 2048² atlas page per fighter, ≤ 128 MB in a duel); the M1 test confirms it on the owner's phone.
+- Texture memory is the main budget to watch (about two 2048² atlas pages per fighter for the 74-frame sprite spec, so battle atlases use GPU-compressed KTX2/Basis textures to stay ≤ 128 MB in a duel); the M1 test confirms it on the owner's phone.
 - A move to 3D later would mean rewriting the presentation layer only — the simulation is renderer-independent.

@@ -79,11 +79,11 @@ docs/
 
 ## 4. Graphics and art direction
 
-- **One cohesive art direction**, defined in `docs/design/` before production art begins: palette (with hex values), outline/shading rules, scale of characters vs. world, font choices. Everything new must fit it.
+- **One cohesive art direction**, locked in `docs/design/art-style.md`: lighting model, palettes (with hex values), outline/shading rules, environments, effects, UI, fonts, and artist specs. Everything new — including code-drawn placeholders — must follow it.
 - **Readability first on a small screen.** Gameplay-critical objects must be identifiable at a glance at arm's length: strong silhouettes, value contrast against the background, no meaning conveyed by color alone.
 - **Resolution handling.** Size the renderer to the CSS viewport × `devicePixelRatio`, capped (usually at 2) and multiplied by the active quality tier's render scale. Handle resize and orientation change.
 - **2D rendering (PixiJS, see `docs/decisions/0003-2d-rendering-pixijs.md`).** All sprites come from texture atlases; fighters animate frame-by-frame from sprite sheets that follow the sprite spec (anchor at the feet, facing right, named clips). Destroy textures and display objects when a scene unloads.
-- **Asset pipeline.** Atlas pages ≤ 2048², at most one page per fighter. Images as WebP/PNG; SVG only for UI icons. Audio as OGG/M4A at sensible bitrates. Track every asset's source and license in `docs/assets.md`. Never use assets we don't have rights to.
+- **Asset pipeline.** Atlas pages ≤ 2048², at most two pages per fighter, shipped as GPU-compressed textures (KTX2/Basis) for battle atlases. Images as WebP/PNG; SVG only for UI icons. Audio as OGG/M4A at sensible bitrates. Track every asset's source and license in `docs/assets.md`. Never use assets we don't have rights to.
 - **No generic "AI look".** Avoid random gradients, glow on everything, oversized rounded buttons, inconsistent spacing. UI follows a defined system: spacing scale, type scale, button states (idle, pressed, disabled, loading), panel styles.
 
 ## 5. Animation and game feel
