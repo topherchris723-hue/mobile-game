@@ -10,34 +10,31 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta
       name="description"
-      content="Shattered Sovereigns — turn-based Rift Timeline battles across shattered worlds."
+      content="Shattered Sovereigns — turn-based Rift Duels across shattered worlds."
     />
     <title>Shattered Sovereigns</title>
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="icon" type="image/png" href="./icons/icon-192.png" />
-    <script type="module" crossorigin src="./assets/index-BcKuPDaT.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/CanvasPool-Dkl10nkw.js">
-    <link rel="modulepreload" crossorigin href="./assets/canvasUtils-BNVjW89d.js">
-    <link rel="modulepreload" crossorigin href="./assets/RenderTargetSystem-kExQeus0.js">
-    <link rel="modulepreload" crossorigin href="./assets/getTextureBatchBindGroup-DmobWu4X.js">
-    <link rel="modulepreload" crossorigin href="./assets/BufferResource-DkritBPQ.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-CvrrPgVD.css">
+    <script type="module" crossorigin src="./assets/index-Ca2RXI6C.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/CanvasPool-BZOfdiYK.js">
+    <link rel="modulepreload" crossorigin href="./assets/canvasUtils-_2Xt0X_j.js">
+    <link rel="modulepreload" crossorigin href="./assets/RenderTargetSystem-k-tnMFYl.js">
+    <link rel="modulepreload" crossorigin href="./assets/getTextureBatchBindGroup-Bz0KTaOB.js">
+    <link rel="modulepreload" crossorigin href="./assets/BufferResource-7657QUKQ.js">
+    <link rel="stylesheet" crossorigin href="./assets/index-BlaI_4An.css">
   </head>
   <body data-scene="boot" data-paused="false">
     <div id="game-root" class="game-root"></div>
+    <div id="hud-root"></div>
 
     <section id="boot-screen" class="boot-screen">
       <div class="boot-title">
-        <p class="kicker">Rift Timeline · Battlefield test</p>
+        <p class="kicker">Rift Duel</p>
         <h1>Shattered Sovereigns</h1>
       </div>
       <button id="start-button" class="button-primary" type="button" disabled>Loading…</button>
       <p id="boot-build" class="build-tag"></p>
     </section>
-
-    <p id="arena-hint" class="panel-ink arena-hint" hidden>
-      Tap a Sovereign or an enemy to select it
-    </p>
 
     <section id="rotate-prompt" class="rotate-prompt" aria-live="polite">
       <div class="rotate-phone" aria-hidden="true"></div>

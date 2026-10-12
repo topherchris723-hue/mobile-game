@@ -1,7 +1,7 @@
 {
   "name": "Shattered Sovereigns",
   "short_name": "Sovereigns",
-  "description": "Turn-based Rift Timeline battles across shattered worlds.",
+  "description": "Turn-based Rift Duels across shattered worlds.",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
