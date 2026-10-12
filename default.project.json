@@ -1,0 +1,98 @@
+{
+  "name": "Tidebound",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      }
+    },
+    "ServerScriptService": {
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Client": {
+          "$path": "src/client"
+        }
+      }
+    },
+    "Workspace": {
+      "$properties": {
+        "StreamingEnabled": true
+      },
+      "Baseplate": {
+        "$className": "Part",
+        "$properties": {
+          "Anchored": true,
+          "Locked": true,
+          "Size": [512, 20, 512],
+          "Position": [0, -10, 0],
+          "Material": "Grass",
+          "Color": [0.42, 0.55, 0.33]
+        }
+      },
+      "SpawnLocation": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Size": [12, 1, 12],
+          "Position": [0, 0.5, 0],
+          "Material": "WoodPlanks",
+          "Color": [0.55, 0.42, 0.29],
+          "Duration": 0
+        }
+      },
+      "EnemySpawns": {
+        "$className": "Folder",
+        "DockThugSpawn1": {
+          "$className": "Part",
+          "$properties": {
+            "Anchored": true, "CanCollide": false, "CanQuery": false, "CanTouch": false,
+            "Transparency": 1, "Size": [4, 1, 4], "Position": [40, 0.5, 20],
+            "Tags": ["EnemySpawn"]
+          },
+          "$attributes": { "EnemyType": "DockThug" }
+        },
+        "DockThugSpawn2": {
+          "$className": "Part",
+          "$properties": {
+            "Anchored": true, "CanCollide": false, "CanQuery": false, "CanTouch": false,
+            "Transparency": 1, "Size": [4, 1, 4], "Position": [48, 0.5, -6],
+            "Tags": ["EnemySpawn"]
+          },
+          "$attributes": { "EnemyType": "DockThug" }
+        },
+        "DockThugSpawn3": {
+          "$className": "Part",
+          "$properties": {
+            "Anchored": true, "CanCollide": false, "CanQuery": false, "CanTouch": false,
+            "Transparency": 1, "Size": [4, 1, 4], "Position": [30, 0.5, -28],
+            "Tags": ["EnemySpawn"]
+          },
+          "$attributes": { "EnemyType": "DockThug" }
+        },
+        "DockThugSpawn4": {
+          "$className": "Part",
+          "$properties": {
+            "Anchored": true, "CanCollide": false, "CanQuery": false, "CanTouch": false,
+            "Transparency": 1, "Size": [4, 1, 4], "Position": [58, 0.5, 34],
+            "Tags": ["EnemySpawn"]
+          },
+          "$attributes": { "EnemyType": "DockThug" }
+        },
+        "HarborBruteSpawn1": {
+          "$className": "Part",
+          "$properties": {
+            "Anchored": true, "CanCollide": false, "CanQuery": false, "CanTouch": false,
+            "Transparency": 1, "Size": [4, 1, 4], "Position": [120, 0.5, 0],
+            "Tags": ["EnemySpawn"]
+          },
+          "$attributes": { "EnemyType": "HarborBrute" }
+        }
+      }
+    }
+  }
+}
