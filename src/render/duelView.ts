@@ -1,4 +1,4 @@
-import { Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, Texture, type Renderer } from 'pixi.js';
 import { LOGICAL_WIDTH, MAX_BACKDROP_TEXTURE_SIZE } from '../config/display';
 import {
   BATTLE_SEED,
@@ -13,7 +13,7 @@ import { createRng } from '../core/rng';
 import type { Effectiveness, Side } from '../game/duel/types';
 import { computeBackdropLayout, paintGroundLayer, paintSkyLayer } from './backdrop';
 import { createEmbers } from './embers';
-import { createPlaceholderFighter, type PlaceholderFighterView } from './placeholderFighter';
+import { drawPlaceholderFighter } from './placeholderFighter';
 import { createRiftEffects } from './riftEffects';
 import { createTweenRunner } from './tweens';
 
@@ -41,8 +41,13 @@ export interface DuelView {
 }
 
 interface FighterSlot {
-  readonly view: PlaceholderFighterView;
+  /** The fighter's single battle illustration (art-style.md §10.2); placeholders are baked into one. */
+  readonly sprite: Sprite;
   readonly holder: Container;
+  /** Translucent shield shown while guarding. */
+  readonly shield: Graphics;
+  /** Phase offset so idle motion isn't in lockstep. */
+  readonly phase: number;
   guardTarget: number;
   guardBlend: number;
 }
@@ -57,7 +62,10 @@ interface Station {
   readonly facing: 1 | -1;
 }
 
-const BODY_HEIGHT = 360;
+const BODY_HEIGHT = 390;
+/** Placeholder illustrations are baked at this resolution for crisp edges on 2× screens. */
+const BAKE_RESOLUTION = 2;
+const HIT_TINT = 0xff9a9a;
 const STATUS_COLOR = {
   focus: TYPE_COLOR.radiant,
   guard: TYPE_COLOR.swift,
@@ -84,7 +92,23 @@ function paintLayer(
   return sprite;
 }
 
+/** Draws a placeholder once and bakes it into a single texture anchored at the feet. */
+function bakeIllustration(renderer: Renderer, spec: FighterSpec): Sprite {
+  const drawing = drawPlaceholderFighter(spec.look);
+  const bounds = drawing.getLocalBounds();
+  const texture = renderer.generateTexture({
+    target: drawing,
+    resolution: BAKE_RESOLUTION,
+    antialias: true,
+  });
+  drawing.destroy({ children: true });
+  const sprite = new Sprite(texture);
+  sprite.anchor.set(-bounds.x / bounds.width, -bounds.y / bounds.height);
+  return sprite;
+}
+
 export function createDuelView(
+  renderer: Renderer,
   teams: Record<Side, readonly FighterSpec[]>,
   emberCount: number,
 ): DuelView {
@@ -104,14 +128,27 @@ export function createDuelView(
 
   const makeStation = (side: Side): Station => {
     const fighters = teams[side].map((spec, index) => {
-      const view = createPlaceholderFighter(spec.look, index * 0.9 + (side === 'enemy' ? 0.4 : 0));
+      const sprite = bakeIllustration(renderer, spec);
       const shadow = new Graphics()
         .ellipse(0, 0, 70, 13)
         .fill({ color: SKY.violetShadow, alpha: 0.38 });
+      // Hexagonal ward in front of the fighter (facing right; mirrored with the sprite's side).
+      const shield = new Graphics()
+        .poly([60, -330, 96, -300, 96, -150, 60, -120, 40, -150, 40, -300])
+        .fill({ color: TYPE_COLOR.swift, alpha: 0.22 })
+        .stroke({ width: 4, color: TYPE_COLOR.swift, alpha: 0.9 });
+      shield.alpha = 0;
       const holder = new Container();
-      holder.addChild(shadow, view.root);
+      holder.addChild(shadow, sprite, shield);
       fighterLayer.addChild(holder);
-      return { view, holder, guardTarget: 0, guardBlend: 0 };
+      return {
+        sprite,
+        holder,
+        shield,
+        phase: index * 0.9 + (side === 'enemy' ? 0.4 : 0),
+        guardTarget: 0,
+        guardBlend: 0,
+      };
     });
     return {
       side,
@@ -142,7 +179,9 @@ export function createDuelView(
       slot.holder.rotation = 0;
       slot.holder.position.set(station.homeX, station.homeY);
       slot.holder.scale.set(station.scale);
-      slot.view.root.scale.set(station.facing, 1);
+      slot.sprite.scale.set(station.facing, 1);
+      slot.sprite.tint = 0xffffff;
+      slot.shield.scale.x = station.facing;
     });
   };
 
@@ -176,7 +215,9 @@ export function createDuelView(
       },
     });
     label.anchor.set(0.5);
-    const start = chest(side);
+    // Numbers rise from just above the head so they never cover the face.
+    const station = stations[side];
+    const start = { x: station.homeX, y: station.homeY - BODY_HEIGHT * station.scale + 10 };
     const x = start.x + (side === 'enemy' ? -20 : 20);
     fxLayer.addChild(label);
     tweens.add(
@@ -298,7 +339,17 @@ export function createDuelView(
         for (const slot of station.fighters) {
           if (!slot.holder.visible) continue;
           slot.guardBlend += (slot.guardTarget - slot.guardBlend) * blendStep;
-          slot.view.pose(timeSec, slot.guardBlend, 0);
+          // Idle motion for a single illustration: breathing squash and a slight sway from the
+          // feet; guarding crouches a little behind the ward.
+          const t = timeSec + slot.phase;
+          const breath = Math.sin(t * 2.4);
+          const crouch = 1 - slot.guardBlend * 0.04;
+          slot.sprite.scale.set(
+            station.facing * (1 - breath * 0.006),
+            (1 + breath * 0.012) * crouch,
+          );
+          slot.sprite.rotation = Math.sin(t * 1.3) * 0.012 * station.facing;
+          slot.shield.alpha = slot.guardBlend * (0.75 + Math.sin(t * 6) * 0.15);
         }
       }
     },
@@ -328,8 +379,8 @@ export function createDuelView(
       tweens.add(300, (t) => {
         const k = Math.sin(t * Math.PI);
         slot.holder.position.x = station.homeX + push * k;
-        // Two quick blinks over 300 ms.
-        slot.holder.alpha = t < 0.8 && Math.floor(t * 8) % 2 === 1 ? 0.45 : 1;
+        // Two quick hit flashes over 300 ms.
+        slot.sprite.tint = t < 0.8 && Math.floor(t * 8) % 2 === 0 ? HIT_TINT : 0xffffff;
       });
       const color =
         effectiveness === 'advantage'
@@ -415,6 +466,9 @@ export function createDuelView(
 
     dispose() {
       tweens.finishAll();
+      for (const station of Object.values(stations)) {
+        for (const slot of station.fighters) slot.sprite.texture.destroy(true);
+      }
       embers.dispose();
       root.destroy({ children: true });
     },

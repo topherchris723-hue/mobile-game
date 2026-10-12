@@ -180,7 +180,7 @@ The whole game runs in **portrait**; turning the phone sideways shows a "turn yo
 - **Look:** HD cel-shaded anime characters over painterly golden-hour backgrounds: huge sunlit clouds, saturated skies, warm light with violet shadows, floating islands, and the Nexus crystal citadel always on the horizon.
 - **Mood:** bright heroic adventure; the Rift brings deep violet drama for bosses, Crossovers, and story climaxes.
 - **Worlds** are told apart by palette and motifs: Energy realm (ember orange, lava red, basalt indigo), Ocean crews (sea blue, sandstone, terracotta), Warrior clans (canopy green, pagoda crimson).
-- **Two art tiers per Sovereign:** a detailed **splash art** illustration (summons, cards, cut-ins) plus animated **battle sprites** in the same style (56 frames across 11 named clips).
+- **Two art tiers per Sovereign:** a detailed **splash art** illustration (summons, cards, cut-ins) plus one full-body **battle illustration** animated in code.
 - **Visual effects** (auras, blasts, hit sparks, Break shatter, Timeline telegraphs, Rift Links) are built in code and can reach final quality while characters are still placeholders.
 - **Placeholders** are code-drawn figures that already follow the style guide, so the game looks coherent from day one. Real art replaces them by dropping in files that follow the artist specs — any artist, or the owner using a phone drawing app, can produce them.
 - **UI:** light cloud-white menu panels and dark ink battle HUD, crisp chamfered panels, Saira Condensed + Noto Sans.

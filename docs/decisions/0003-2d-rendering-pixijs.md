@@ -1,6 +1,6 @@
 # 0003 — 2D side-view rendering with PixiJS
 
-- **Status:** Accepted (version pinned in M1; budgets confirmed by the M1 on-device test)
+- **Status:** Accepted (version pinned in M1). Character animation format revised by `0006-battle-art-single-illustration.md`.
 - **Date:** 2026-10-12
 - **Supersedes:** `0002-3d-rendering-threejs.md`
 

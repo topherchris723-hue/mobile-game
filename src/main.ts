@@ -55,6 +55,7 @@ async function boot(): Promise<void> {
     await document.fonts.load('700 64px "Saira Condensed"');
     const stage = await createStage(host);
     const view = createDuelView(
+      stage.app.renderer,
       { player: PLAYER_TEAM, enemy: ENEMY_TEAM },
       flags.benchmark ? EMBER_COUNT.benchmark : EMBER_COUNT.normal,
     );

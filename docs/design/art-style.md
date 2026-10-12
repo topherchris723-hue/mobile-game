@@ -145,41 +145,28 @@ Type is always shown by **colour and icon**, never colour alone.
   - **Summon reveal:** uses the full image.
 - **Background:** none. The game composites the character over world-themed backgrounds.
 
-### 10.2 Battle sprites
+### 10.2 Battle illustration (one per Sovereign)
 
-- **Frame canvas:** 512 × 512 px, transparent background.
-- **Character height:** about 360 px standing.
-- **Anchor:** feet centre at (256, 480).
-- **Facing:** right.
-- **Timing:** drawn for 12 fps; holds are done by repeating frames in the timing data, not by duplicating drawings.
-- **Frames are trimmed and packed** into atlases by our pipeline, so artists deliver plain frames named `<clip>_<nn>.png`.
+Decided 2026-10-12 (`../decisions/0006-battle-art-single-illustration.md`): each Sovereign appears in battle as **one full-body illustration**, animated in code (breathing, lunges, hit recoil, guard shields, auras, knockouts). No frame-by-frame sprite sheets.
 
-| Clip             | Frames | Loops      | Used for                            |
-| ---------------- | ------ | ---------- | ----------------------------------- |
-| `idle`           | 6      | yes        | Waiting on the field                |
-| `ready`          | 3      | holds last | Their turn comes up on the Timeline |
-| `strike`         | 6      | no         | Strike action                       |
-| `skill`          | 8      | no         | Skill action                        |
-| `super`          | 10     | no         | Super action (after the cut-in)     |
-| `guard`          | 2      | holds last | Guarding                            |
-| `hit`            | 3      | no         | Taking damage                       |
-| `broken`         | 4      | holds last | Poise broken (stagger)              |
-| `ko`             | 5      | holds last | Knocked out                         |
-| `victory`        | 6      | yes        | Battle won                          |
-| `crossover_pose` | 3      | holds last | Crossover Burst, beside the partner |
-| **Total**        | **56** |            |                                     |
+- **Canvas:** 1024 × 1024 px PNG, **transparent background**.
+- **Character:** full body, standing in a ready fighting stance, about **880 px tall**, three-quarter view **facing right**.
+- **Anchor:** feet centred at **(512, 990)**. Nothing important below the feet or touching the canvas edges, so code motion never clips the art.
+- **Lighting:** per §4 (warm key light from the upper left, violet cel shadows, gold rim on the back edge).
+- **Silhouette:** must pass the §5 silhouette test at 96 px tall.
+- **Optional, later:** the same picture split into layers (hair, cape, arms) as a PSD, if we ever add part-based motion.
 
-**Memory note:** 56 trimmed frames need about one and a half 2048² atlas pages per Sovereign. A battle shows up to 7 units (4 Sovereigns + 3 enemies; repeated enemies share atlases). Uncompressed, that can exceed the 128 MB texture budget, so battle atlases ship as **GPU-compressed textures (KTX2/Basis)**, which cut texture memory by about 4×. This is verified on the owner's phone before any art is commissioned.
+Memory: one 1024² texture per fighter (about 4 MB uncompressed, 7 at most in a battle), comfortably inside the texture budget.
 
 ## 11. Placeholders
 
 Until real art exists, Sovereigns are code-drawn layered figures that already follow this guide:
 
-- Correct proportions and silhouette feature.
+- Anime proportions (about 6.5 heads) and a distinctive silhouette feature.
 - Outline colour `#1E1424`.
 - World dominant colour, plus a type-colour accent.
 - Violet cel shadow and gold rim.
-- The same clip names and anchor as §10.2.
+- Drawn once and baked into a single texture, then animated exactly like a §10.2 illustration — so real art replaces it as a file swap.
 
 Placeholder backgrounds use the §6.1 sky palette with simple layered shapes in the §7 parallax structure. Every placeholder is logged in `../assets.md`.
 
