@@ -1,40 +1,88 @@
 # Game Design Document
 
 - **Working title:** Project Nexus (placeholder — final name to be chosen and checked for trademark conflicts)
-- **Genre:** Turn-based team battler with character collection (anime gacha RPG)
-- **Platform:** Mobile web / installable PWA, Android Chrome first (see `../decisions/0001-mobile-web-platform.md`)
+- **Genre:** Real-time 3D card-action duels with character collection (anime gacha RPG)
+- **Platform:** Mobile web / installable PWA, Android Chrome first, **landscape** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0002-3d-rendering-threejs.md`)
 - **Status:** Draft — awaiting owner approval
-- **Inspirations (feel only, no borrowed content):** One Piece Treasure Cruise (tap-timing team turns), Dragon Ball Z Dokkan Battle (type advantage, super attacks), Naruto Ultimate Ninja Blazing (team links), Dragon Ball Legends (cinematic specials). All characters, worlds, names, and art are original.
+- **Inspirations (feel only, no borrowed content):** Dragon Ball Legends (real-time card-driven duels, cinematic specials), One Piece Treasure Cruise / Dokkan Battle / Naruto Blazing (team building, types, collection). The battle system — **Rift Duel** — is our own design. All characters, worlds, names, and art are original.
 
 ## 1. Pitch
 
-Three worlds — a realm of energy-wielding martial artists, an ocean of rival adventure crews, and a land of elemental warrior clans — have been torn open by the **Rift** and pulled into a shared battleground, the **Nexus**. Fighters who were never meant to meet must team up. Players collect heroes from all three worlds, build teams of six, and fight through the Nexus in fast, tactile, turn-based battles where *how well you tap* matters as much as *who you bring*.
+Three worlds — a realm of energy-wielding martial artists, an ocean of rival adventure crews, and a land of elemental warrior clans — have been torn open by the **Rift** and pulled into a shared battleground, the **Nexus**. Fighters who were never meant to meet must team up.
+
+Players collect heroes from all three worlds, form teams of three, and fight fast real-time duels where **the whole team lives in your hand**: every card you play can pull a different fighter through the Rift to strike.
 
 ## 2. Target players and sessions
 
-- Fans of anime gacha games, ages 13+ (paid summons will require age-appropriate handling).
-- One-handed portrait play. A battle stage takes **1–3 minutes**; safe to quit between waves.
-- Daily session: 5–15 minutes; longer sessions for events and story chapters.
+- Fans of anime action and gacha games, ages 13+ (paid summons will require age-appropriate handling).
+- **Landscape, two thumbs**, played like a handheld console.
+- A duel lasts **60–120 seconds**; a story stage is 1–2 duels. Daily session 5–15 minutes.
 
 ## 3. Core loop
 
 ```
-Battle stages ──► earn Coins, training items, shards, (some) Gems
-      ▲                                  │
-      │                                  ▼
- Stronger team ◄── level up / limit break / summon new fighters
+Duels (story, bosses, events) ──► earn Coins, training items, shards, some Gems
+      ▲                                           │
+      │                                           ▼
+ Stronger team ◄──── level up / limit break / summon new fighters
 ```
 
-The battle must be fun on its own. Collection and progression make it *meaningful*, not the other way round.
+The duel must be fun on its own. Collection and progression make it meaningful, not the other way round.
 
-## 4. Battle system
+## 4. Battle system — Rift Duel
 
-### 4.1 Team
-- **5 fighters + 1 guest** (a support fighter borrowed from a preset/friend list).
-- Your **Leader** and the guest's leader each grant a **Leader Skill** (e.g. "Fury fighters +50% attack").
-- Formation shown in the lower half of the screen as six portrait tiles (thumb zone); enemies in the upper half.
+### 4.1 Setup
+- **3 fighters per side.** One is **active** on the field; the other two wait on the **bench**, ready to be pulled in.
+- 3D arena, camera behind and slightly beside the player's active fighter, looking at the opponent.
+- The arena has **three lanes** (left, centre, right) running between the two fighters.
+- Win by KO'ing all three enemy fighters, or by having more total remaining HP % when the **120 s** timer ends.
 
-### 4.2 Types
+### 4.2 Screen layout (landscape)
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ [Your HP ▮▮▮▮▮▯] [bench][bench]  ⏱ 87  [bench][bench] [Enemy HP] │
+│                                                              │
+│            (enemy fighter, lane telegraphs on floor)         │
+│                    (your fighter, back view)                 │
+│                                                              │
+│  ◇◇◇ Rift Shards        Energy ▮▮▮▮▮▮▯▯▯▯     [CROSSOVER]     │
+│  LEFT THUMB: swipe ← → to change lane, hold to guard         │
+│                      [card][card][card][card]  RIGHT THUMB   │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### 4.3 Energy
+- **Rift Energy** bar from 0 to 10, regenerating continuously (≈1 per second, tunable).
+- Every card costs energy (1–4). Guarding drains energy.
+- Energy management is the core tension: spend now for pressure, or save for a big chain or for defence.
+
+### 4.4 Cards — "the whole team is in your hand"
+- Each fighter brings **5 technique cards**: 2 **Strike** (melee), 2 **Blast** (ranged), 1 **Signature** (unique move).
+- All three fighters' cards form one **15-card team deck**. You hold **4 cards**; each played card is replaced from the deck.
+- Every card shows its owner's portrait and world frame.
+- **Playing the active fighter's card** → they perform it immediately.
+- **Playing a benched fighter's card** → a **Tag Strike**: that fighter rifts in, performs the move, and returns to the bench. **Hold** the card instead to make them the new active fighter (swap). Swaps have a short cooldown.
+- Strikes dash into close range; Blasts fire down your current lane.
+
+### 4.5 Combo grammar
+- Up to 3 Strikes in a row form a chain; ending it with a Blast or Signature **launches** the opponent (bonus damage, brief recovery for them).
+- **Tag Chain:** cards from **different fighters** played back-to-back within a short window (≈1.5 s) earn **Rift Shards**. Cards from fighters of **different worlds** earn more.
+- So every hand poses a decision: a fast same-fighter combo for damage now, or a cross-team chain to build toward a Crossover Burst.
+
+### 4.6 Defence — lanes, guard, and the Rift Step
+- **Swipe left/right** (left side of the screen) to shift lanes. Lane shifts use **3 step charges** that refill over time, so dodging can't be spammed.
+- Incoming Blasts and heavy attacks **telegraph their lane on the arena floor** before landing. Readable at a glance, fair on a small screen.
+- **Rift Step:** shifting lanes in the last moment before a hit lands is a perfect dodge — time slows briefly, your next card costs less, and the first hit of your counter deals bonus damage.
+- **Hold** the left side of the screen to **guard**: reduces damage, drains energy. Guarding a Strike chain at the right moment staggers the attacker.
+- Some heavy attacks **track across lanes** — these must be guarded or Rift Stepped, not out-walked.
+
+### 4.7 Crossover Burst (ultimate)
+- At **3 Rift Shards**, the Crossover button lights up.
+- Your active fighter and a benched fighter **from a different world** unleash a combined ultimate with a 2–3 s cinematic (skippable after first viewing).
+- The effect depends on the **pair of types** involved (e.g. Fury + Void = armour-breaking finisher, Swift + Radiant = heal and haste). Certain named pairs have **unique Crossovers** — discovering them is part of collecting.
+
+### 4.8 Types
 Five original types, colour **and** icon coded (never colour alone):
 
 | Type | Strong vs | Weak vs |
@@ -45,36 +93,25 @@ Five original types, colour **and** icon coded (never colour alone):
 | Radiant | Void | Void |
 | Void | Radiant | Radiant |
 
-Advantage: ×2 damage dealt. Disadvantage: ×0.5. Radiant/Void are mutually strong.
+Real-time balance: advantage ×1.5 damage dealt, disadvantage ×0.75.
 
-### 4.3 Player turn — tap timing and chains
-1. Tap a fighter tile. A **timing ring** shrinks around it; tap again when it hits the target ring.
-   - *Perfect* ×1.5 (+ burst charge), *Great* ×1.2, *Good* ×1.0, *Miss* ×0.8.
-2. Each consecutive Great/Perfect raises the **Chain multiplier** (×1.0 → ×1.5 → ×2.0 → ×2.5 cap). A Good or Miss resets growth.
-3. **World Link:** consecutive attackers from the same world add a link bonus, so tap *order* is a real decision.
-4. Players choose the order; all six act once per turn.
-5. A short "auto-timing" accessibility option gives guaranteed *Great* for players who can't use timing input.
+### 4.9 KO and switching
+- When the active fighter is KO'd, the player picks the next fighter (2 s window, then auto-pick). Their cards leave the deck.
+- A KO'd fighter's cards in hand are discarded and redrawn.
 
-### 4.4 Burst gauge and Super Attacks
-- Each fighter fills a **Burst gauge** from Perfect hits, taking damage, and certain skills.
-- When full, the tile glows; **hold** the tile to unleash a **Super Attack** with a short (≤1.5 s, skippable) cut-in.
-- Supers also have effects: damage, defence break, heal, type change, delay enemy turns.
-
-### 4.5 Enemy turn
-- Each enemy shows a **countdown** ("attacks in 2"). Reaching 0 = it attacks.
-- Bosses have scripted patterns (e.g. "at 50% HP, shields itself for 2 turns") telegraphed in advance, so players plan supers around them.
-
-### 4.6 Stage structure
-- 2–4 waves, last is a boss. Win = all waves cleared. Lose = team defeated.
-- Continue after defeat: costs Gems (offered once per stage; never pushed with countdown timers).
+### 4.10 Opponent AI
+- The AI plays by **exactly the same rules and inputs** as the player (energy, hand, step charges) — no hidden advantages, and it makes AI-vs-team PvP possible later.
+- Behaviour profiles: *Aggressor*, *Zoner* (Blast-heavy), *Counter-puncher*, *Tactician* (builds Crossovers).
+- Difficulty is tuned through reaction time, mistake rate, and how well it manages energy, not by stat cheating.
+- Bosses add scripted phases with clear telegraphs (e.g. at 50% HP, a lane-sweeping attack every 15 s).
 
 ## 5. Fighters and collection
 
 - **Rarity:** 3★, 4★, 5★. Higher rarity = higher stat ceiling and stronger kit, never a different game.
-- **Each fighter has:** type, world, role (Striker / Guardian / Support / Disruptor), stats (HP, ATK, DEF), Leader Skill, Super Attack, one Passive.
+- **Each fighter has:** type, world, role (Striker / Zoner / Guardian / Support), stats (HP, ATK, DEF), 5 technique cards, a **Leader Skill** (applies when they lead the team), and a **Passive**.
 - **Progression per fighter:**
   - *Level* — raised with Coins + training items.
-  - *Limit Break* — raises level cap; uses **Shards**. Duplicate summons convert to shards, so duplicates are always useful.
+  - *Limit Break* — raises the level cap; uses **Shards**. Duplicate summons convert to shards, so duplicates are always useful.
   - *Awaken* (later) — 4★ → 5★ path for favourite characters.
 - **Launch roster target:** 15 fighters (5 per world, all five types represented), expandable through data files only.
 
@@ -105,26 +142,32 @@ Until then, all Gems are earned in-game and the economy runs locally; its rules 
 
 ## 7. Game modes (by phase)
 
-1. **Story** — chapters of 8–10 stages each, with short dialogue scenes between fighters from different worlds.
-2. **Events** (later) — limited-time stages with a featured boss and a rewards track.
-3. **Challenge tower** (later) — harder, puzzle-like fights with rule modifiers.
-4. PvP — not planned; it needs servers and fair matchmaking, and the core game should prove itself first.
+1. **Story** — chapters of 8–10 stages, each one or two duels, with short dialogue scenes between fighters from different worlds.
+2. **Boss battles** — tougher scripted opponents at the end of chapters.
+3. **Events** (later) — limited-time bosses with a rewards track.
+4. **PvP** (later, in stages):
+   1. *Rift Arena* — fight other players' teams controlled by the same AI as story opponents. No real-time server needed.
+   2. *Live PvP* — real-time matches, only if the game grows; requires a game server, matchmaking, and anti-cheat. The simulation is designed as fixed-step and deterministic from day one to keep this possible.
 
 ## 8. Screens
 
-Home · Story map · Team select · Battle · Results · Fighter list · Fighter detail · Summon · Settings · (later) Shop, Events.
+Home · Story map · Team select · Duel · Results · Fighter list · Fighter detail (with 3D model viewer) · Summon · Settings · (later) Shop, Events, Arena.
+
+The whole game runs in landscape; holding the phone upright shows a "rotate your phone" screen.
 
 ## 9. Art and audio direction
 
-- **One unified style across all three worlds:** bold 2D anime-style character art, strong outlines, cel shading. Worlds are distinguished by **palette and motifs**, not by different art styles:
+- **3D, toon-shaded anime style:** cel shading with outlines, bold silhouettes, expressive poses. One unified style across all three worlds; worlds are told apart by **palette and motifs**:
   - Energy realm — warm golds and oranges, aura effects, angular shapes.
   - Ocean crews — teals and sandy tones, rope/wood/brass motifs, rounded shapes.
   - Warrior clans — deep greens and crimsons, ink-brush strokes, sharp diagonals.
-- **Placeholder phase:** each fighter is a clean, consistent placeholder (type colour + world motif + initials/silhouette), all clearly marked in `../assets.md`. Real art drops in later by replacing image files — no code changes.
-- **Art specs for the eventual artist** will be documented before production art begins (portrait sizes, full-body sizes, cut-in sizes, file formats).
-- **UI:** dark, high-contrast battle UI; menus use a restrained palette with type colours as accents. No neon overload.
-- **Audio:** punchy hit sounds layered by timing quality (Perfect sounds best), distinct super-attack stingers, one battle loop per world. Separate music/SFX/haptics toggles.
+- **Animation set per fighter (~15 clips):** idle, lane step, guard, guard-break, light hit, heavy hit, knockdown, get-up, 2–3 strikes, blast, signature, Crossover pose, KO, victory.
+- **Visual effects** (auras, blasts, hit sparks, Rift Step slow-mo, lane telegraphs) are built in code and can reach final quality even while character models are placeholders.
+- **Placeholder phase:** freely licensed (CC0) low-poly animated characters, recoloured per type and world, each clearly logged as placeholder in `../assets.md`. Real models replace them later by swapping files, provided they follow the published rig and animation-name spec.
+- **Production art risk:** custom anime-style 3D characters can't realistically be made on a phone. Final fighters will need a 3D artist (commissioned) or licensed models that fit the style. A model spec (triangle budget, texture size, skeleton, clip names) will be written before commissioning.
+- **UI:** dark, high-contrast HUD; menus use a restrained palette with type colours as accents. No neon overload.
+- **Audio:** punchy layered hit sounds, a distinct Rift Step "time-slip" sound, Crossover stingers, one battle theme per world. Separate music/SFX/haptics toggles.
 
 ## 10. Out of scope for the first playable build
 
-Real-money purchases, accounts and servers, events, PvP, chat or guilds, voice acting.
+Real-money purchases, accounts and servers, PvP of any kind, events, chat or guilds, voice acting.

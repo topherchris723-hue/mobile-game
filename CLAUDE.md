@@ -81,8 +81,9 @@ docs/
 
 - **One cohesive art direction**, defined in `docs/design/` before production art begins: palette (with hex values), outline/shading rules, scale of characters vs. world, font choices. Everything new must fit it.
 - **Readability first on a small screen.** Gameplay-critical objects must be identifiable at a glance at arm's length: strong silhouettes, value contrast against the background, no meaning conveyed by color alone.
-- **Resolution handling.** Size the canvas to the CSS viewport × `devicePixelRatio`, capped (usually at 2) to protect fill-rate. Handle resize and orientation change. Pixel art uses integer scaling and `imageSmoothingEnabled = false`.
-- **Asset pipeline.** Use texture atlases/sprite sheets, not hundreds of loose images. Prefer WebP/PNG for sprites, SVG only for UI icons. Audio as OGG/M4A at sensible bitrates. Track every asset's source and license in `docs/assets.md`. Never use assets we don't have rights to.
+- **Resolution handling.** Size the renderer to the CSS viewport × `devicePixelRatio`, capped (usually at 2) and multiplied by the active quality tier's render scale. Handle resize and orientation change.
+- **3D rendering (Three.js, see `docs/decisions/0002-3d-rendering-threejs.md`).** Toon shading with inverted-hull outlines; blob shadows by default; no post-processing on the low tier. Models are glTF/GLB with skinned meshes and clip names that follow the model spec. Share materials and geometries; dispose GPU resources (geometries, materials, textures, render targets) when a scene unloads.
+- **Asset pipeline.** Textures compressed (KTX2/Basis) once real art arrives, power-of-two sizes, ≤ 1024² per fighter. UI images in atlases; SVG only for UI icons. Audio as OGG/M4A at sensible bitrates. Track every asset's source and license in `docs/assets.md`. Never use assets we don't have rights to.
 - **No generic "AI look".** Avoid random gradients, glow on everything, oversized rounded buttons, inconsistent spacing. UI follows a defined system: spacing scale, type scale, button states (idle, pressed, disabled, loading), panel styles.
 
 ## 5. Animation and game feel
@@ -94,14 +95,15 @@ docs/
 
 ## 6. Touch controls
 
-- **Designed for thumbs.** Primary controls sit in the lower corners. Touch targets are at least **48 × 48 CSS px** with at least 8 px between them.
+- **Designed for two thumbs in landscape.** Movement and guard on the left half, cards and actions on the right half, all within comfortable thumb reach of the lower corners. Touch targets are at least **48 × 48 CSS px** with at least 8 px between them.
 - **Use Pointer Events** (`pointerdown/move/up/cancel`) with `setPointerCapture`, and support multi-touch by tracking `pointerId`. Always handle `pointercancel`.
 - **Kill browser interference on the game surface:** `touch-action: none`, `user-select: none`, `-webkit-tap-highlight-color: transparent`, prevent the context menu on long press, no pull-to-refresh / overscroll (`overscroll-behavior: none`).
 - **Respect safe areas.** `viewport-fit=cover` plus `env(safe-area-inset-*)` padding for HUD and controls so nothing is hidden behind notches, rounded corners, or the gesture bar.
-- **Virtual sticks/buttons** have a visible pressed state, a dead zone, and a forgiving hit radius. Floating sticks (spawn where the thumb lands) are preferred over fixed ones.
+- **Gestures** (swipes, holds) have tuned distance/time thresholds defined once in config, a visible response the moment they're recognised, and must never conflict with each other (a short swipe must not also count as a hold).
+- **Buttons and cards** have a visible pressed state and a forgiving hit radius.
 - **Input is buffered and sampled into the simulation step**, never applied directly from event handlers into game state.
 - **Pause automatically** on `visibilitychange` (app switch, notification shade, screen lock) and on orientation change if the layout needs it.
-- Test both portrait and landscape if both are supported; otherwise lock to one and show a "rotate your phone" prompt for the other.
+- The game is **landscape-only**: request landscape lock where the browser allows it (installed PWA / fullscreen) and show a "rotate your phone" screen in portrait, pausing the game.
 
 ## 7. Performance
 
@@ -113,14 +115,17 @@ Budgets:
 | --- | --- |
 | Frame rate | 60 fps sustained; never below 30 |
 | Frame time (JS) | ≤ 8 ms per frame for update + render calls |
-| Initial download | ≤ 5 MB (gzipped) before the first playable screen |
+| Initial download | ≤ 5 MB (gzipped) before the first interactive screen; battle assets streamed after |
+| Draw calls (duel) | ≤ 100 per frame |
+| Triangles on screen | ≤ 150k; ≤ 20k per fighter |
 | Time to interactive | ≤ 3 s on 4G |
 | Memory | No growth over a 10-minute session |
 
 Practices:
 
 - **No allocations in the hot loop.** Reuse vectors, arrays, and objects; pool entities, particles, and projectiles.
-- **Batch draws** and minimize state changes; avoid per-frame canvas resizes, `getImageData`, shadow blur, and filters.
+- **Batch draws** and minimize state and material changes; use instancing for repeated meshes and particles; avoid per-frame resizes, shader recompiles (warm up materials at load), and real-time shadow maps on low/medium tiers.
+- **Quality tiers** (low/medium/high) adjust render scale, effect density, and bloom; picked automatically from measured frame time, overridable in Settings.
 - **Cull** off-screen objects from update and render where it's safe.
 - **Lazy-load** non-essential assets after the first playable screen.
 - **Battery and heat matter.** Stop the loop when paused or hidden; don't render static menus at 60 fps.
@@ -146,7 +151,7 @@ Before any push, Claude runs everything that can run in the cloud:
 4. **Build** — production build succeeds and stays within the size budget.
 5. **Mobile smoke test** (Playwright with Chromium in an Android phone emulation profile) — the game boots without console errors, reaches the first playable screen, and responds to simulated taps. Screenshots are saved as CI artifacts.
 
-Then the **owner** verifies on the real phone using the deployed preview URL. Claude provides a short checklist per change covering: the feature itself, portrait/landscape, app switch and return, audio after resume, and frame rate in the debug overlay.
+Then the **owner** verifies on the real phone using the deployed preview URL. Claude provides a short checklist per change covering: the feature itself, rotating to portrait and back, app switch and return, audio after resume, and frame rate in the debug overlay.
 
 Emulated tests are not proof that it works on a real device. Report them as "passed in emulation", never as "works on Android".
 
@@ -180,4 +185,4 @@ Emulated tests are not proof that it works on a real device. Report them as "pas
 
 The toolchain is set up in the first implementation milestone, once the game concept is agreed. When it is, this section lists the exact commands for install, dev, typecheck, lint, test, e2e, and build, and the URL where each branch is deployed for phone testing.
 
-Current state: **no game code yet** — the repository contains standards and documentation only.
+Current state: **no game code yet** — the repository contains standards and documentation only. Design: `docs/design/game-design.md`; plan: `docs/roadmap.md`.

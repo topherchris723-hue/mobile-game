@@ -29,4 +29,4 @@ Build the game as a mobile-first web game in TypeScript, built and deployed by G
 
 ## Open questions
 
-- Rendering approach (plain Canvas 2D, PixiJS, Phaser, or Three.js) depends on the game concept and will be recorded in its own decision once the game is chosen.
+- ~~Rendering approach~~ — resolved in `0002-3d-rendering-threejs.md` (real-time 3D with Three.js).

@@ -4,21 +4,22 @@ Each milestone is playable from a URL on the phone and leaves `main` in a workin
 
 | # | Milestone | Playable result on the phone | Phase |
 | --- | --- | --- | --- |
-| M1 | **Foundation** — Vite + TypeScript + rendering library, CI (typecheck, lint, tests, build), GitHub Pages deploy, PWA manifest, debug overlay, on-screen error capture, build id | Open the link → branded boot screen; `?debug=1` shows FPS and build id; installable to home screen | Technical setup |
-| M2 | **Battle core** — 6-fighter team vs. waves, tap-timing ring, types, chain multiplier, world links, enemy countdowns, win/lose | Play a full stage with placeholder fighters | Core prototype |
-| M3 | **Battle feel** — Burst gauge, hold-to-Super with cut-in, damage numbers, hit effects, screen feedback, sounds, haptics | Battles feel punchy and readable | Core prototype |
-| M4 | **Fighters and saving** — 15-fighter data set, roster screen, fighter detail, team editor, leader skills, versioned save system | Build a team, close the app, come back to it | Production |
-| M5 | **Summons** — Gems, Standard banner, published rates, pity counter, summon animation, duplicates → shards | Spend earned gems and pull fighters | Production |
-| M6 | **Story chapter 1** — story map, 8–10 stages, dialogue scenes, rewards, levelling and limit break with Coins/shards | A complete first chapter loop | Production |
-| M7 | **Onboarding and polish** — guided first battle, settings (audio, haptics, reduce motion, auto-timing), UI polish pass, performance pass on device | **Playable alpha** to share | Presentation / QA |
-| M8+ | **Online and monetization** — backend choice, accounts, server-side economy and summons, real-money gems, compliance | Gems purchasable; saves backed up online | Production (online) |
+| M1 | **Foundation + 3D benchmark** — Vite + TypeScript + Three.js, CI (typecheck, lint, tests, build), GitHub Pages deploy, landscape PWA with rotate prompt, debug overlay, on-screen error capture, build id, benchmark arena with two animated placeholder fighters | Open the link in landscape → arena with two animated fighters; `?debug=1` shows FPS. **Real FPS on your phone decides the 3D budgets.** | Technical setup |
+| M2 | **Duel core (1v1)** — fixed-step simulation, lanes, energy, Strike/Blast cards, HP, guard, step charges, Rift Step, telegraphs, basic AI, timer, win/lose | Play a full 1v1 duel against the AI | Core prototype |
+| M3 | **Team duel (3v3)** — combined 15-card team deck, Tag Strikes, swapping, KO flow, combo grammar, Tag Chains, Rift Shards, Crossover Burst, types | The real Rift Duel, start to finish | Core prototype |
+| M4 | **Battle feel** — camera work, hit-stop, VFX, Rift Step slow-mo, Crossover cinematic, audio, haptics, AI behaviour profiles and difficulty | Duels look and feel like a finished game (with placeholder models) | Presentation |
+| M5 | **Fighters and saving** — 15-fighter data set, roster, fighter detail with 3D viewer, team editor, leader skills, versioned save system | Build your team, close the app, come back to it | Production |
+| M6 | **Summons** — Gems, Standard banner, published rates, pity counter, summon animation, duplicates → shards | Spend earned gems and pull fighters | Production |
+| M7 | **Story chapter 1** — story map, 8–10 stages, boss, dialogue scenes, rewards, levelling and limit break | A complete first chapter loop | Production |
+| M8 | **Onboarding and polish** — guided first duel, settings (audio, haptics, reduce motion, quality), UI polish, performance pass on device | **Playable alpha** to share | Presentation / QA |
+| M9+ | **Online** — backend choice, accounts, server-side economy and summons, real-money gems, Rift Arena (AI-controlled PvP); live PvP only if the game grows | Online saves, purchasable gems, PvP vs. other players' teams | Production (online) |
 
-## Proposed technology for M1 (to be confirmed in a decision record)
+## Technology (see `decisions/0002-3d-rendering-threejs.md`)
 
 - **Vite + TypeScript (strict)** for build tooling.
-- **PixiJS (WebGL)** for battle, effects, and summon animations: fast sprite/particle rendering on mid-range phones.
-- **HTML/CSS for menus and text-heavy screens** (crisp text, native scrolling, accessibility), sharing one design-token system with the canvas UI.
-- **Vitest** for unit tests, **Playwright** (Android phone emulation) for smoke tests.
+- **Three.js** for the 3D arena, fighters, effects, and summon scenes.
+- **HTML/CSS overlays** for HUD text and menus (crisp text, native scrolling, accessibility), sharing one design-token system with the 3D UI.
+- **Vitest** for unit tests, **Playwright** (Android landscape emulation) for smoke tests.
 
 ## Owner action needed in M1
 
