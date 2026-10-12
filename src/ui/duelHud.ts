@@ -1,7 +1,23 @@
 import type { CardKind, CardSpec, TypeId } from '../config/fighters';
-import { BATTLE_RULES, TECHNIQUE_TUNING } from '../config/battle';
+import {
+  BATTLE_RULES,
+  COMBO,
+  CROSSOVER,
+  CROSSOVER_PARTNER_EFFECT,
+  DRAIN,
+  TECHNIQUE_TUNING,
+} from '../config/battle';
 import { computeDamage } from '../game/duel/damage';
-import { activeFighter, playBlockedReason, switchBlockedReason } from '../game/duel/rules';
+import {
+  activeFighter,
+  cardContinuesCombo,
+  crossoverBlockedReason,
+  crossoverPartners,
+  playBlockedReason,
+  previewCrossover,
+  signatureThreat,
+  switchBlockedReason,
+} from '../game/duel/rules';
 import type { DuelEvent, DuelState, Side } from '../game/duel/types';
 
 /*
@@ -14,17 +30,22 @@ export interface DuelHudCallbacks {
   onPlayCard(handIndex: number): void;
   onSwitch(fighterIndex: number): void;
   onCharge(): void;
+  onCrossover(partnerIndex: number): void;
   onRestart(): void;
 }
 
 export interface DuelHud {
   /** Measured height of the player panel in CSS pixels (for laying out the battlefield). */
   readonly panelHeight: number;
+  /** Called whenever the panel's height changes, so the battlefield can re-lay itself out. */
+  onPanelResize(listener: (heightCss: number) => void): void;
   reset(state: DuelState): void;
   applyEvent(event: DuelEvent): void;
   /** Renders the player's options; `enabled` is false while animations or the enemy are running. */
   showControls(state: DuelState, enabled: boolean): void;
   toast(message: string): void;
+  /** Big centred title, e.g. a Crossover Burst's name. */
+  announce(title: string): void;
   showResult(winner: Side): void;
   dispose(): void;
 }
@@ -79,6 +100,8 @@ function techniqueText(card: CardSpec): string {
       return `Heal ${Math.round(TECHNIQUE_TUNING.healFraction * 100)}% HP`;
     case 'sap':
       return `Enemy DEF −${Math.round((1 - TECHNIQUE_TUNING.sapDefenceMultiplier) * 100)}%`;
+    case 'drain':
+      return `Steal ${DRAIN.steal} enemy energy`;
     default:
       return '';
   }
@@ -109,6 +132,8 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
   const enemyHpFill = element('div', 'hp-fill', enemyHpBar);
   const enemyHpText = element('span', 'hp-text', enemyHpBar);
   const enemyEnergy = element('div', 'energy-mini', enemyPanel);
+  const enemyThreat = element('div', 'threat', enemyPanel);
+  enemyThreat.hidden = true;
 
   const banner = element('div', 'turn-banner', root);
   const toastNode = element('div', 'toast', root);
@@ -120,14 +145,29 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
   const head = element('div', 'hud-row', panel);
   const name = element('span', 'hud-name', head);
   const type = element('span', 'type-chip', head);
-  const hpBar = element('div', 'hp-bar', panel);
+  // HP numbers sit in the header row so the bar can stay slim (keeps the panel compact).
+  const hpText = element('span', 'hp-text-inline', head);
+  const hpBar = element('div', 'hp-bar is-slim', panel);
   const hpFill = element('div', 'hp-fill', hpBar);
-  const hpText = element('span', 'hp-text', hpBar);
   const energyRow = element('div', 'energy', panel);
   element('span', 'energy-label', energyRow).textContent = 'Rift Energy';
   const pips = element('div', 'pips', energyRow);
   for (let i = 0; i < BATTLE_RULES.maxEnergy; i++) element('i', '', pips);
   const energyCount = element('b', 'energy-count', energyRow);
+  const crossoverRow = element('div', 'crossover', panel);
+  element('span', 'crossover-label', crossoverRow).textContent = 'Crossover';
+  const crossoverButtons = [0, 1].map(() => {
+    const button = element('button', 'crossover-button', crossoverRow);
+    button.type = 'button';
+    return button;
+  });
+  let crossoverTargets: number[] = [];
+  crossoverButtons.forEach((button, slot) => {
+    button.addEventListener('click', () => {
+      const partner = crossoverTargets[slot];
+      if (partner !== undefined) callbacks.onCrossover(partner);
+    });
+  });
   const hand = element('div', 'hand', panel);
   const cardButtons = Array.from({ length: BATTLE_RULES.handSize }, (_, index) => {
     const button = element('button', 'card', hand);
@@ -166,6 +206,7 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
     enemy: { fighters: [], active: 0, energy: 0 },
   };
   let benchTargets: number[] = [];
+  const disposers: (() => void)[] = [];
   let toastTimer = 0;
   let bannerTimer = 0;
 
@@ -249,6 +290,20 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
       return panel.getBoundingClientRect().height;
     },
 
+    onPanelResize(listener) {
+      let last = panel.getBoundingClientRect().height;
+      const observer = new ResizeObserver(() => {
+        const height = panel.getBoundingClientRect().height;
+        if (Math.abs(height - last) < 1) return;
+        last = height;
+        listener(height);
+      });
+      observer.observe(panel);
+      disposers.push(() => {
+        observer.disconnect();
+      });
+    },
+
     reset(state) {
       for (const side of ['player', 'enemy'] as const) {
         const team = state.teams[side];
@@ -282,7 +337,13 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
           break;
         case 'cardPlayed':
         case 'charge':
+        case 'crossover':
+        case 'energy':
           display[event.side].energy = event.energy;
+          break;
+        case 'drain':
+          display[event.side].energy = event.energy;
+          display[event.side === 'player' ? 'enemy' : 'player'].energy = event.gainerEnergy;
           break;
         case 'switch':
           display[event.side].active = event.to;
@@ -319,16 +380,21 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
         button.dataset['reason'] = reason ?? '';
         button.setAttribute('aria-disabled', String(reason !== null));
         button.classList.toggle('is-unaffordable', spec.cost > state.teams.player.energy);
+        const combo = enabled && cardContinuesCombo(state, 'player', index);
+        button.classList.toggle('is-combo', combo);
         let value: string;
         if (spec.power > 0) {
-          const preview = computeDamage(fighter, foe, spec);
+          const preview = computeDamage(fighter, foe, spec, { combo });
           const marker =
             preview.effectiveness === 'advantage'
               ? '<em class="is-up">▲ Strong</em>'
               : preview.effectiveness === 'disadvantage'
                 ? '<em class="is-down">▼ Weak</em>'
                 : '';
-          value = `<strong>${preview.amount}</strong> dmg ${marker}`;
+          const comboMarker = combo
+            ? `<em class="is-combo">+${Math.round(COMBO.bonus * 100)}% Combo</em>`
+            : '';
+          value = `<strong>${preview.amount}</strong> dmg ${marker}${comboMarker}`;
         } else {
           value = techniqueText(spec);
         }
@@ -338,9 +404,52 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
           <span class="card-name">${spec.name}</span>
           <span class="card-value">${value}</span>`;
       });
+      // Crossover bar: always shown while a partner exists, so players learn what to save for.
+      crossoverTargets = crossoverPartners(state, 'player');
+      crossoverRow.classList.toggle('is-empty', crossoverTargets.length === 0);
+      crossoverRow.classList.toggle(
+        'is-ready',
+        enabled && state.teams.player.energy >= CROSSOVER.cost,
+      );
+      crossoverButtons.forEach((button, slot) => {
+        const partnerIndex = crossoverTargets[slot];
+        const partner =
+          partnerIndex === undefined ? undefined : state.teams.player.fighters[partnerIndex];
+        if (partnerIndex === undefined || !partner) {
+          button.hidden = true;
+          return;
+        }
+        button.hidden = false;
+        const reason = enabled
+          ? crossoverBlockedReason(state, 'player', partnerIndex)
+          : 'Wait for your turn';
+        button.dataset['reason'] = reason ?? '';
+        button.setAttribute('aria-disabled', String(reason !== null));
+        const effect = CROSSOVER_PARTNER_EFFECT[partner.spec.type];
+        button.innerHTML = `<span>with ${partner.spec.name}</span><small>${previewCrossover(state, 'player', partnerIndex)} dmg · ${effect.text}</small>`;
+      });
+
+      // Telegraph: the enemy's Signature is coming next turn.
+      const threat = signatureThreat(state, 'enemy');
+      enemyThreat.hidden = threat === null;
+      enemyEnergy.hidden = threat !== null;
+      if (threat) {
+        enemyThreat.innerHTML = `<b>⚠ Next turn:</b> ${threat.card.name} · ${threat.damage} dmg to ${fighter.spec.name}`;
+      }
+
       chargeButton.dataset['reason'] = enabled ? '' : 'Wait for your turn';
       chargeButton.setAttribute('aria-disabled', String(!enabled));
       renderBench(state, enabled);
+    },
+
+    announce(title) {
+      window.clearTimeout(bannerTimer);
+      banner.textContent = title;
+      banner.dataset['side'] = 'crossover';
+      banner.classList.add('is-visible');
+      bannerTimer = window.setTimeout(() => {
+        banner.classList.remove('is-visible');
+      }, 1300);
     },
 
     toast(message) {
@@ -362,6 +471,7 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
     },
 
     dispose() {
+      for (const dispose of disposers) dispose();
       window.clearTimeout(toastTimer);
       window.clearTimeout(bannerTimer);
       root.remove();

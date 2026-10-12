@@ -26,6 +26,8 @@ export interface DuelView {
   readonly root: Container;
   /** `bottomReserved` = height of the player panel in logical units. */
   resize(logicalHeight: number, pixelsPerUnit: number, bottomReserved: number): void;
+  /** Re-places the fighters when only the player panel's height changed (no repaint). */
+  setBottomReserved(bottomReserved: number): void;
   /** Shows the given fighters as active, with everything else reset (start / restart). */
   reset(activePlayer: number, activeEnemy: number): void;
   render(timeSec: number, dtSec: number): void;
@@ -36,6 +38,10 @@ export interface DuelView {
   charge(side: Side): void;
   switchIn(side: Side, from: number, to: number): void;
   knockOut(side: Side): void;
+  /** Partner rushes in beside the active fighter; both strike together. */
+  crossover(side: Side, partnerIndex: number, leadType: TypeId, partnerType: TypeId): void;
+  /** Energy motes fly from the drained side to the other. */
+  drain(side: Side, amount: number): void;
   setGuardPose(side: Side, guarding: boolean): void;
   dispose(): void;
 }
@@ -188,7 +194,7 @@ export function createDuelView(
   const layout = (): void => {
     const floorTop = logicalHeight * FLOOR_TOP_FRACTION;
     stations.enemy.homeX = STATIONS.enemy.x * LOGICAL_WIDTH;
-    stations.enemy.homeY = floorTop + 150;
+    stations.enemy.homeY = floorTop + 120;
     stations.player.homeX = STATIONS.player.x * LOGICAL_WIDTH;
     stations.player.homeY = Math.max(stations.enemy.homeY + 170, logicalHeight - panelHeight - 30);
     placeHome(stations.player);
@@ -313,6 +319,12 @@ export function createDuelView(
       );
       rift.layout(computeBackdropLayout(LOGICAL_WIDTH, floorTop));
       embers.setBounds(LOGICAL_WIDTH, height);
+      layout();
+    },
+
+    setBottomReserved(bottomReserved) {
+      if (bottomReserved <= 0 || Math.abs(bottomReserved - panelHeight) < 1) return;
+      panelHeight = bottomReserved;
       layout();
     },
 
@@ -458,6 +470,69 @@ export function createDuelView(
         slot.holder.alpha = 1 - t;
       });
       floatText(side, 'K.O.', SKY.cloudLight, 70, 60);
+    },
+
+    crossover(side, partnerIndex, leadType, partnerType) {
+      const station = stations[side];
+      const partner = station.fighters[partnerIndex];
+      if (!partner || partnerIndex === station.active) return;
+      const behind = -110 * station.facing;
+      const enterFrom = side === 'player' ? -220 : LOGICAL_WIDTH + 220;
+      partner.holder.visible = true;
+      partner.holder.alpha = 1;
+      partner.holder.rotation = 0;
+      partner.holder.position.set(enterFrom, station.homeY - 20);
+      // Rush in beside the lead, strike together, then leave.
+      tweens.add(
+        1250,
+        (t) => {
+          const x =
+            t < 0.25
+              ? lerp(enterFrom, station.homeX + behind, easeOutCubic(t / 0.25))
+              : t < 0.8
+                ? station.homeX + behind
+                : lerp(station.homeX + behind, enterFrom, easeOutCubic((t - 0.8) / 0.2));
+          partner.holder.position.x = x;
+          partner.holder.alpha = t < 0.8 ? 1 : 1 - (t - 0.8) / 0.2;
+        },
+        () => {
+          partner.holder.visible = false;
+          partner.holder.position.set(station.homeX, station.homeY);
+        },
+      );
+      // One soft flash per Crossover (CLAUDE.md §5).
+      tweens.add(320, (t) => (flash.alpha = Math.sin(t * Math.PI) * 0.32));
+      ring(side, WORLD.nexus.dominant, 0.5, 2.2, 600);
+      lunge(side, 0.5);
+      projectile(side, TYPE_COLOR[leadType], 34, 420);
+      projectile(side, TYPE_COLOR[partnerType], 22, 520);
+    },
+
+    drain(side, amount) {
+      const from = chest(side);
+      const to = chest(side === 'player' ? 'enemy' : 'player');
+      for (let i = 0; i < Math.max(1, amount) * 2; i++) {
+        const mote = new Graphics().circle(0, 0, 7).fill({ color: WORLD.nexus.dominant });
+        mote.blendMode = 'add';
+        fxLayer.addChild(mote);
+        const delay = i * 0.08;
+        const arc = (i % 2 === 0 ? 1 : -1) * 40;
+        tweens.add(
+          560,
+          (t) => {
+            const k = easeOutCubic(Math.max(0, Math.min(1, (t - delay) / (1 - delay))));
+            mote.position.set(
+              lerp(from.x, to.x, k),
+              lerp(from.y, to.y, k) + Math.sin(k * Math.PI) * arc,
+            );
+            mote.alpha = t < delay ? 0 : 1 - k * 0.6;
+          },
+          () => {
+            mote.destroy();
+          },
+        );
+      }
+      floatText(side, `−${amount} ENERGY`, WORLD.nexus.dominant, 34, 110);
     },
 
     setGuardPose(side, guarding) {

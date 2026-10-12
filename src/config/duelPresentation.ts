@@ -5,7 +5,7 @@ export const ENEMY_HUD_HEIGHT = 150;
 /** Space reserved at the bottom for the player's panel (cards, energy, bench). */
 export const PLAYER_PANEL_HEIGHT = 520;
 /** The ground starts this far down the screen (fraction of total height). */
-export const FLOOR_TOP_FRACTION = 0.38;
+export const FLOOR_TOP_FRACTION = 0.3;
 
 export const STATIONS = {
   player: { x: 0.3, scale: 0.74 },
@@ -23,6 +23,9 @@ export const EVENT_DURATION_MS = {
   switch: 560,
   ko: 800,
   battleEnd: 300,
+  crossover: 1400,
+  drain: 650,
+  energy: 400,
 } as const;
 
 /** Pause before the enemy acts, so the player can read the board. */

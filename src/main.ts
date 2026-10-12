@@ -24,6 +24,7 @@ import { watchPlayability } from './ui/playability';
 interface DebugHook {
   readonly phase: () => DuelPhase;
   readonly turnSide: () => Side;
+  readonly turnNumber: () => number;
   readonly winner: () => Side | null;
   readonly activeIndex: (side: Side) => number;
   readonly hp: (side: Side) => number;
@@ -76,6 +77,7 @@ async function boot(): Promise<void> {
     onPlayCard: (index) => scene?.requestPlay(index),
     onSwitch: (index) => scene?.requestSwitch(index),
     onCharge: () => scene?.requestCharge(),
+    onCrossover: (partner) => scene?.requestCrossover(partner),
     onRestart: () => scene?.restart(),
   });
   const duel = createDuelScene({ view, hud, log, speed: flags.speed });
@@ -88,6 +90,9 @@ async function boot(): Promise<void> {
     log.info(`Backdrop painted in ${Math.round(performance.now() - started)} ms`);
   };
   paintBackdrop();
+  hud.onPanelResize((heightCss) => {
+    view.setBottomReserved(heightCss / metrics.cssPerUnit);
+  });
   log.info(
     `Renderer ${stage.app.renderer.name} @ ${stage.resolution}x, 720×${Math.round(metrics.logicalHeight)} logical`,
   );
@@ -120,6 +125,7 @@ async function boot(): Promise<void> {
     window.__sovereigns = {
       phase: () => duel.phase,
       turnSide: () => duel.state.turnSide,
+      turnNumber: () => duel.state.turnNumber,
       winner: () => duel.state.winner,
       activeIndex: (side) => duel.state.teams[side].activeIndex,
       hp: (side) => activeFighter(duel.state.teams[side]).hp,

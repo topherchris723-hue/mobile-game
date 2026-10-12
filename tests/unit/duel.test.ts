@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { BATTLE_RULES, TECHNIQUE_TUNING } from '../../src/config/battle';
+import {
+  BATTLE_RULES,
+  COMBO,
+  CROSSOVER,
+  CROSSOVER_PARTNER_EFFECT,
+  DRAIN,
+  TECHNIQUE_TUNING,
+} from '../../src/config/battle';
 import {
   ENEMY_TEAM,
   PLAYER_TEAM,
@@ -11,8 +18,13 @@ import { computeDamage, typeEffectiveness } from '../../src/game/duel/damage';
 import {
   activeFighter,
   applyAction,
+  cardContinuesCombo,
   createDuel,
+  crossoverBlockedReason,
+  crossoverPartners,
   playBlockedReason,
+  previewCrossover,
+  signatureThreat,
   switchBlockedReason,
 } from '../../src/game/duel/rules';
 import type { DuelState, Side } from '../../src/game/duel/types';
@@ -395,5 +407,236 @@ describe('enemy AI', () => {
     // Make every switch unattractive so the charge path is reached.
     state.teams.enemy.switchedThisTurn = true;
     expect(chooseAction(state, 'enemy')).toEqual({ kind: 'charge' });
+  });
+});
+
+describe('combos', () => {
+  const strike: CardSpec = { kind: 'strike', name: 'S', cost: 1, power: 1 };
+  const blast: CardSpec = { kind: 'blast', name: 'B', cost: 2, power: 2.2 };
+
+  /** Plays a forced card for the player, then lets the enemy charge, returning the play events. */
+  function playerPlays(state: DuelState, card: CardSpec) {
+    state.turnSide = 'player';
+    forceCard(state, 'player', card);
+    activeFighter(state.teams.enemy).hp = 99999;
+    const result = applyAction(state, 'player', { kind: 'play', handIndex: 0 });
+    if (!result.ok) throw new Error(result.reason);
+    // applyAction hands the turn to the enemy (TypeScript can't see that mutation).
+    if ((state.turnSide as Side) === 'enemy') passTurn(state, 'enemy');
+    return result.events;
+  }
+
+  it('gives a Blast after a Strike the combo bonus, and reports it', () => {
+    const { state } = duel();
+    playerPlays(state, strike);
+    const events = playerPlays(state, blast);
+    expect(events[0]).toMatchObject({ kind: 'cardPlayed', combo: true });
+  });
+
+  it('does not combo on the first attack or on a lower tier', () => {
+    const { state } = duel();
+    expect(playerPlays(state, blast)[0]).toMatchObject({ combo: false });
+    expect(playerPlays(state, strike)[0]).toMatchObject({ combo: false });
+  });
+
+  it('adds exactly the combo bonus to damage', () => {
+    const { state } = duel();
+    const attacker = activeFighter(state.teams.player);
+    const defender = activeFighter(state.teams.enemy);
+    const plain = computeDamage(attacker, defender, blast).amount;
+    const comboed = computeDamage(attacker, defender, blast, { combo: true }).amount;
+    expect(comboed).toBeCloseTo(plain * (1 + COMBO.bonus), -1);
+  });
+
+  it('keeps the chain through a switch, and Charge breaks it', () => {
+    const { state } = duel();
+    playerPlays(state, strike);
+    state.turnSide = 'player';
+    applyAction(state, 'player', { kind: 'switch', fighterIndex: 1 });
+    expect(cardContinuesComboFor(state, blast)).toBe(true);
+    passTurn(state, 'player');
+    passTurn(state, 'enemy');
+    expect(cardContinuesComboFor(state, blast)).toBe(false);
+  });
+
+  function cardContinuesComboFor(state: DuelState, card: CardSpec): boolean {
+    forceCard(state, 'player', card);
+    return cardContinuesCombo(state, 'player', 0);
+  }
+});
+
+describe('Drain', () => {
+  it('steals enemy energy (never below zero) and gives some back', () => {
+    const { state } = duel();
+    state.turnSide = 'player';
+    state.teams.enemy.energy = 1;
+    forceCard(
+      state,
+      'player',
+      { kind: 'technique', name: 'D', cost: 2, power: 0, effect: 'drain' },
+      5,
+    );
+    const result = applyAction(state, 'player', { kind: 'play', handIndex: 0 });
+    expect(result.ok && result.events.find((e) => e.kind === 'drain')).toMatchObject({
+      side: 'enemy',
+      amount: 1,
+      energy: 0,
+      gainerEnergy: 5 - 2 + DRAIN.gain,
+    });
+  });
+});
+
+describe('Crossover Burst', () => {
+  it('lists bench partners from other worlds who are still standing', () => {
+    const { state } = duel();
+    expect(crossoverPartners(state, 'player')).toEqual([1, 2]);
+    const torvan = state.teams.player.fighters[2];
+    if (!torvan) throw new Error('missing');
+    torvan.hp = 0;
+    expect(crossoverPartners(state, 'player')).toEqual([1]);
+  });
+
+  it('is impossible for a team from a single world (the Rift enemies)', () => {
+    const { state } = duel();
+    expect(crossoverPartners(state, 'enemy')).toEqual([]);
+  });
+
+  it('needs full Rift Energy and costs all of it', () => {
+    const { state } = duel();
+    state.turnSide = 'player';
+    state.teams.player.energy = CROSSOVER.cost - 1;
+    expect(crossoverBlockedReason(state, 'player', 1)).toBe(`Needs ${CROSSOVER.cost} Rift Energy`);
+    state.teams.player.energy = CROSSOVER.cost;
+    activeFighter(state.teams.enemy).hp = 99999;
+    const result = applyAction(state, 'player', { kind: 'crossover', partnerIndex: 1 });
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.events[0]).toMatchObject({
+      kind: 'crossover',
+      name: 'Sunbreak Riptide',
+      energy: 0,
+    });
+  });
+
+  it('deals exactly the previewed damage, combining both fighters', () => {
+    const { state } = duel();
+    state.turnSide = 'player';
+    state.teams.player.energy = CROSSOVER.cost;
+    const enemy = activeFighter(state.teams.enemy);
+    enemy.hp = 99999;
+    const preview = previewCrossover(state, 'player', 2);
+    const solo = computeDamage(activeFighter(state.teams.player), enemy, CROSSOVER).amount;
+    expect(preview).toBeGreaterThan(solo);
+    applyAction(state, 'player', { kind: 'crossover', partnerIndex: 2 });
+    expect(enemy.hp).toBe(99999 - preview);
+  });
+
+  it("applies the partner's type effect: Swift refunds energy, Guile saps", () => {
+    const swift = duel();
+    swift.state.turnSide = 'player';
+    swift.state.teams.player.energy = CROSSOVER.cost;
+    activeFighter(swift.state.teams.enemy).hp = 99999;
+    applyAction(swift.state, 'player', { kind: 'crossover', partnerIndex: 1 }); // Maris (Swift)
+    // Refund lands before the enemy turn starts; the enemy then acts, so check the event stream.
+    const guile = duel();
+    guile.state.turnSide = 'player';
+    guile.state.teams.player.energy = CROSSOVER.cost;
+    const target = activeFighter(guile.state.teams.enemy);
+    target.hp = 99999;
+    const result = applyAction(guile.state, 'player', { kind: 'crossover', partnerIndex: 2 }); // Torvan (Guile)
+    expect(result.ok && result.events.some((e) => e.kind === 'status' && e.status === 'sap')).toBe(
+      true,
+    );
+    expect(target.sapTurns).toBeGreaterThan(0);
+    expect(swift.state.teams.player.energy).toBe(CROSSOVER_PARTNER_EFFECT.swift.amount);
+  });
+
+  it('resets the combo chain', () => {
+    const { state } = duel();
+    state.turnSide = 'player';
+    state.teams.player.comboTier = 2;
+    state.teams.player.energy = CROSSOVER.cost;
+    activeFighter(state.teams.enemy).hp = 99999;
+    applyAction(state, 'player', { kind: 'crossover', partnerIndex: 1 });
+    expect(state.teams.player.comboTier).toBe(0);
+  });
+});
+
+describe('Signature telegraph', () => {
+  it('warns when the active fighter holds a Signature it can afford next turn', () => {
+    const { state } = duel();
+    const enemy = activeFighter(state.teams.enemy);
+    enemy.hand[0] = { uid: 777, spec: { kind: 'signature', name: 'Big', cost: 5, power: 6 } };
+    state.teams.enemy.energy = 5 - BATTLE_RULES.energyPerTurn - 1;
+    expect(signatureThreat(state, 'enemy')).toBeNull();
+    state.teams.enemy.energy = 5 - BATTLE_RULES.energyPerTurn;
+    const threat = signatureThreat(state, 'enemy');
+    expect(threat?.card.name).toBe('Big');
+    expect(threat?.damage).toBe(
+      computeDamage(enemy, activeFighter(state.teams.player), threat?.card ?? enemy.hand[0].spec)
+        .amount,
+    );
+  });
+
+  it('does not warn without a Signature in hand', () => {
+    const { state } = duel();
+    const enemy = activeFighter(state.teams.enemy);
+    enemy.hand = enemy.hand.filter((c) => c.spec.kind !== 'signature');
+    state.teams.enemy.energy = 10;
+    expect(signatureThreat(state, 'enemy')).toBeNull();
+  });
+});
+
+describe('AI profiles', () => {
+  it('a tactician drains a player who is about to afford big moves', () => {
+    const { state } = duel();
+    state.turnSide = 'enemy';
+    const enemyTeam = state.teams.enemy;
+    enemyTeam.activeIndex = 0; // Rift Stalker carries Phase Siphon (drain)
+    const me = activeFighter(enemyTeam);
+    me.hand = [
+      { uid: 1, spec: { kind: 'technique', name: 'Drain', cost: 2, power: 0, effect: 'drain' } },
+    ];
+    enemyTeam.energy = 2;
+    enemyTeam.switchedThisTurn = true;
+    state.teams.player.energy = 6;
+    expect(chooseAction(state, 'enemy')).toEqual({ kind: 'play', handIndex: 0 });
+  });
+
+  it('a tactician charges when that unlocks its Signature next turn', () => {
+    const { state } = duel();
+    state.turnSide = 'enemy';
+    const enemyTeam = state.teams.enemy;
+    enemyTeam.activeIndex = 1; // Rift Shade: tactician
+    enemyTeam.switchedThisTurn = true;
+    const me = activeFighter(enemyTeam);
+    me.hand = [
+      { uid: 1, spec: { kind: 'signature', name: 'Sig', cost: 5, power: 6 } },
+      { uid: 2, spec: { kind: 'strike', name: 'S', cost: 1, power: 1 } },
+    ];
+    enemyTeam.energy = 1;
+    activeFighter(state.teams.player).hp = 99999;
+    expect(chooseAction(state, 'enemy')).toEqual({ kind: 'charge' });
+  });
+
+  it('an aggressor never switches for type advantage', () => {
+    const { state } = duel();
+    state.turnSide = 'enemy';
+    state.teams.enemy.activeIndex = 2; // Rift Brute: aggressor
+    activeFighter(state.teams.player).hp = 99999;
+    for (let i = 0; i < 20; i++) {
+      expect(chooseAction(state, 'enemy').kind).not.toBe('switch');
+    }
+  });
+
+  it('uses a Crossover to finish when it can (mirror test with the player team)', () => {
+    const { state } = duel();
+    state.turnSide = 'player';
+    state.teams.player.energy = CROSSOVER.cost;
+    const me = activeFighter(state.teams.player);
+    me.hand = [
+      { uid: 1, spec: { kind: 'technique', name: 'F', cost: 2, power: 0, effect: 'focus' } },
+    ];
+    activeFighter(state.teams.enemy).hp = 300;
+    expect(chooseAction(state, 'player').kind).toBe('crossover');
   });
 });

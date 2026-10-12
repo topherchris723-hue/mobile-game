@@ -7,6 +7,7 @@ import {
   activeFighter,
   applyAction,
   createDuel,
+  crossoverBlockedReason,
   playBlockedReason,
   switchBlockedReason,
 } from '../game/duel/rules';
@@ -28,6 +29,7 @@ export interface DuelScene {
   requestPlay(handIndex: number): void;
   requestSwitch(fighterIndex: number): void;
   requestCharge(): void;
+  requestCrossover(partnerIndex: number): void;
   restart(): void;
   readonly state: DuelState;
   readonly phase: DuelPhase;
@@ -93,6 +95,22 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
         break;
       case 'ko':
         view.knockOut(event.side);
+        break;
+      case 'crossover': {
+        const team = state.teams[event.side];
+        const lead = team.fighters[event.fighterIndex];
+        const partner = team.fighters[event.partnerIndex];
+        if (lead && partner) {
+          view.crossover(event.side, event.partnerIndex, lead.spec.type, partner.spec.type);
+        }
+        hud.announce(event.name);
+        break;
+      }
+      case 'drain':
+        view.drain(event.side, event.amount);
+        break;
+      case 'energy':
+        view.charge(event.side);
         break;
       case 'battleEnd':
         log.info(`Duel over: ${event.winner} wins`);
@@ -174,6 +192,14 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
     requestCharge() {
       if (phase === 'playerInput') intent = { kind: 'charge' };
       else hud.toast('Wait for your turn');
+    },
+    requestCrossover(partnerIndex) {
+      const reason =
+        phase === 'playerInput'
+          ? crossoverBlockedReason(state, 'player', partnerIndex)
+          : 'Wait for your turn';
+      if (reason) hud.toast(reason);
+      else intent = { kind: 'crossover', partnerIndex };
     },
     restart() {
       seed++;

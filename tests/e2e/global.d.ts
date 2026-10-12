@@ -6,6 +6,7 @@ declare global {
     __sovereigns?: {
       readonly phase: () => 'animating' | 'playerInput' | 'enemyThinking' | 'ended';
       readonly turnSide: () => Side;
+      readonly turnNumber: () => number;
       readonly winner: () => Side | null;
       readonly activeIndex: (side: Side) => number;
       readonly hp: (side: Side) => number;

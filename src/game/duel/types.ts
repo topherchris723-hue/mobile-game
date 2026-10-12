@@ -32,6 +32,8 @@ export interface TeamState {
   activeIndex: number;
   energy: number;
   switchedThisTurn: boolean;
+  /** Tier of the team's last attack in the current combo chain (0 = no chain). */
+  comboTier: number;
 }
 
 export interface DuelState {
@@ -46,7 +48,8 @@ export interface DuelState {
 export type DuelAction =
   | { readonly kind: 'play'; readonly handIndex: number }
   | { readonly kind: 'switch'; readonly fighterIndex: number }
-  | { readonly kind: 'charge' };
+  | { readonly kind: 'charge' }
+  | { readonly kind: 'crossover'; readonly partnerIndex: number };
 
 /** Everything that happened, in order, for the presentation layer to play back. */
 export type DuelEvent =
@@ -71,7 +74,27 @@ export type DuelEvent =
       readonly fighterIndex: number;
       readonly card: CardSpec;
       readonly energy: number;
+      /** True when this attack continued a combo chain and got the combo bonus. */
+      readonly combo: boolean;
     }
+  | {
+      readonly kind: 'crossover';
+      readonly side: Side;
+      readonly fighterIndex: number;
+      readonly partnerIndex: number;
+      readonly name: string;
+      readonly energy: number;
+    }
+  | {
+      readonly kind: 'drain';
+      /** The side that lost energy. */
+      readonly side: Side;
+      readonly amount: number;
+      readonly energy: number;
+      /** The draining side's energy afterwards. */
+      readonly gainerEnergy: number;
+    }
+  | { readonly kind: 'energy'; readonly side: Side; readonly energy: number }
   | {
       readonly kind: 'damage';
       /** The side that took the damage. */

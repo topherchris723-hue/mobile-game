@@ -66,6 +66,7 @@ Every card shows its cost, its kind (icon **and** label), and the **expected dam
 - **Guard** — the next hit you take is halved.
 - **Heal** — restore 25% of max HP.
 - **Sap** — the enemy's active fighter loses 30% Defence for 2 turns.
+- **Drain** — the enemy team loses up to 2 Rift Energy and yours gains 1 (the counter to a telegraphed Signature).
 
 ### 4.4 Knockouts and auto-switch
 
@@ -88,8 +89,20 @@ Advantage ×1.5 damage; disadvantage ×0.75. Switching to a fighter with type ad
 ### 4.6 Rift mechanics (the multiverse twist)
 
 - **Tag Link:** switching between fighters **from different worlds** gives **+1 Rift Energy**. Teams that mix worlds switch more freely.
-- **Crossover Burst** _(M3)_: at 10 Rift Energy, if your active fighter and a living bench fighter come from different worlds, a 4th card appears — a combined ultimate whose effect depends on their type pair. Some named pairs have unique Crossovers to discover.
-- **Telegraph** _(M3)_: when the enemy can afford its Signature, a "Charging" marker warns you — switch to a tougher fighter, Guard, or knock it out first.
+- **Combo:** an attack of a **higher tier** than your team's previous attack gets **+25% damage** — Strike (1) → Blast (2) → Signature (3). The chain survives a switch (tag-team combos); Charging or a Crossover resets it; Techniques don't affect it. Cards show "+25% Combo" when they would continue the chain.
+- **Crossover Burst:** at **10 Rift Energy**, your active fighter and a living bench fighter **from a different world** launch a combined ultimate (spends all 10 energy, ends the turn). Damage uses **both fighters' ATK** (power ×3.6), and the **partner's type** adds a bonus:
+
+  | Partner type | Bonus                                |
+  | ------------ | ------------------------------------ |
+  | Fury         | +30% damage                          |
+  | Swift        | +3 Rift Energy afterwards            |
+  | Guile        | Enemy Defence −30% for 2 turns (Sap) |
+  | Radiant      | Heal the lead fighter 30% HP         |
+  | Void         | Enemy loses 3 Rift Energy            |
+
+  Named pairs have unique Crossover names (e.g. Kaien × Maris = **Sunbreak Riptide**). The Crossover bar is always visible while a partner exists, so players learn what they're saving for. **Rift enemies all come from a single world and can never Crossover** — it's the Sovereigns' edge.
+
+- **Signature telegraph:** when the enemy's active fighter holds its Signature and will be able to afford it at its next turn, the enemy panel warns "⚠ Next turn: <Signature> · <damage> to <your fighter>". Answers: Guard, switch to a sturdier fighter, knock it out first, or **Drain** its energy.
 
 ### 4.7 Damage
 
@@ -97,7 +110,17 @@ Advantage ×1.5 damage; disadvantage ×0.75. Switching to a fighter with type ad
 
 ### 4.8 Enemy behaviour
 
-The enemy follows exactly the same rules (energy, hand of 3, one free switch, auto-switch). Its priorities, in order: take a knockout if a card can; protect itself when low (Guard/Heal); switch to type advantage; play its Signature; otherwise play its strongest affordable attack; otherwise Charge. Harder enemies later get smarter priorities, not inflated stats.
+The enemy follows exactly the same rules (energy, hand of 3, one free switch, auto-switch). Its priorities, in order: take a knockout if any card or Crossover can; protect itself when low (Heal/Guard); switch to type advantage; Crossover if ready, else its Signature; Drain a player who is about to afford big moves; save up when that unlocks its Signature next turn; Focus/Sap with spare energy; otherwise its strongest affordable attack (combo bonus included); otherwise Charge.
+
+Each fighter has a **behaviour profile** that shapes those priorities:
+
+| Profile       | Protects when HP below | Switches for type advantage | Saves energy for its Signature |
+| ------------- | ---------------------- | --------------------------- | ------------------------------ |
+| **Balanced**  | 35%                    | Yes                         | No                             |
+| **Aggressor** | 15%                    | No — stays in and hits      | No                             |
+| **Tactician** | 45%                    | Yes                         | Yes                            |
+
+Harder enemies later get smarter priorities, not inflated stats.
 
 ### 4.9 Screen layout (portrait)
 

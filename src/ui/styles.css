@@ -407,8 +407,20 @@ button {
   right: calc(var(--safe-right) + var(--space-2));
   bottom: calc(var(--safe-bottom) + var(--space-2));
   display: grid;
-  gap: var(--space-2);
-  padding: var(--space-3);
+  gap: 6px;
+  padding: 10px var(--space-3);
+}
+
+.hp-text-inline {
+  margin-left: auto;
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.hp-bar.is-slim {
+  height: 10px;
+  margin-top: 0;
 }
 
 .hud-row {
@@ -569,8 +581,8 @@ button {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  min-height: 128px;
-  padding: var(--space-3) var(--space-2) var(--space-2);
+  min-height: 116px;
+  padding: 10px var(--space-2) var(--space-2);
   background: var(--cloud);
   color: var(--text-dark);
   text-align: left;
@@ -640,7 +652,7 @@ button {
 
 .card-name {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: 17px;
   line-height: 1.05;
   text-transform: uppercase;
 }
@@ -668,6 +680,11 @@ button {
   color: #b07a00;
 }
 
+.card-value em.is-combo {
+  color: #8a5a00;
+  font-weight: 700;
+}
+
 .card-value em.is-down {
   color: #4b5a80;
 }
@@ -683,7 +700,7 @@ button {
 .bench-button,
 .charge-button {
   display: grid;
-  min-height: 52px;
+  min-height: 48px;
   padding: var(--space-1) var(--space-2);
   background: rgb(254 243 223 / 0.1);
   color: var(--text-light);
@@ -797,6 +814,12 @@ button {
   color: #c9b8f5;
 }
 
+.turn-banner[data-side='crossover'] {
+  background: rgb(30 20 54 / 0.85);
+  color: var(--gold);
+  font-size: 30px;
+}
+
 .turn-banner.is-visible {
   opacity: 1;
   transform: scaleY(1);
@@ -853,4 +876,110 @@ button {
 
 .result p {
   margin: 0 0 var(--space-4);
+}
+
+/* Crossover bar */
+
+.crossover {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.crossover.is-empty {
+  visibility: hidden;
+}
+
+.crossover-label {
+  align-self: center;
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rift-violet);
+}
+
+.crossover-button {
+  display: grid;
+  min-width: 0;
+  min-height: 44px;
+  padding: var(--space-1) var(--space-2);
+  background: rgb(158 140 203 / 0.16);
+  color: var(--text-light);
+  text-align: left;
+  clip-path: var(--chamfer-shape);
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    background-color var(--duration-press) var(--ease-out);
+}
+
+.crossover-button span {
+  font-family: var(--font-display);
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.crossover-button small {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+
+.crossover-button[aria-disabled='true'] {
+  opacity: 0.45;
+}
+
+.crossover.is-ready .crossover-button[aria-disabled='false'] {
+  background: var(--rift-violet);
+  color: var(--ink);
+  animation: crossover-ready 1.6s var(--ease-out) infinite;
+}
+
+.crossover-button:active {
+  transform: scale(0.96);
+}
+
+@keyframes crossover-ready {
+  0%,
+  100% {
+    box-shadow: inset 0 0 0 0 rgb(254 243 223 / 0);
+  }
+  50% {
+    box-shadow: inset 0 0 0 3px rgb(254 243 223 / 0.8);
+  }
+}
+
+/* Combo */
+
+.card.is-combo {
+  box-shadow:
+    inset 0 6px 0 var(--card-kind-color, var(--rift-violet)),
+    inset 0 0 0 3px var(--gold);
+}
+
+/* Enemy Signature telegraph */
+
+.threat {
+  margin-top: var(--space-1);
+  padding: 2px var(--space-2);
+  background: rgb(243 79 88 / 0.2);
+  color: #ffd2d4;
+  font-size: 14px;
+}
+
+.threat b {
+  color: var(--error);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crossover.is-ready .crossover-button[aria-disabled='false'] {
+    animation: none;
+  }
 }

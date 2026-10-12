@@ -26,6 +26,18 @@ async function waitForPlayerTurn(page: Page): Promise<void> {
 
 const cards = (page: Page) => page.locator('.player-panel .card');
 
+const turnNumber = (page: Page) => page.evaluate(() => window.__sovereigns?.turnNumber() ?? 0);
+
+/**
+ * Taps something that ends the player's turn and waits until the turn has really moved on.
+ * Waiting on the turn counter (not on the phase) can't miss a fast enemy turn at high speed.
+ */
+async function endTurnWith(page: Page, tap: () => Promise<void>): Promise<void> {
+  const before = await turnNumber(page);
+  await tap();
+  await expect.poll(() => turnNumber(page), { timeout: 30_000 }).toBeGreaterThan(before);
+}
+
 test('boots into a duel with a full hand and no errors', async ({ page }, testInfo) => {
   const errors = watchErrors(page);
   // Sped up: this checks booting and the hand, not animation length (the enemy moves first, and
@@ -105,9 +117,10 @@ test('a full duel can be played to the end and restarted', async ({ page }, test
     await expect.poll(() => phase(page), { timeout: 30_000 }).toMatch(/^(playerInput|ended)$/);
     if ((await phase(page)) === 'ended') break;
     const affordable = page.locator('.player-panel .card[aria-disabled="false"]');
-    if ((await affordable.count()) > 0) await affordable.last().tap();
-    else await page.locator('.charge-button').tap();
-    await expect.poll(() => phase(page)).not.toBe('playerInput');
+    await endTurnWith(page, async () => {
+      if ((await affordable.count()) > 0) await affordable.last().tap();
+      else await page.locator('.charge-button').tap();
+    });
   }
   await expect(page.locator('.result')).toBeVisible();
   await expect(page.locator('.result h2')).toHaveText(/Victory|Defeat/);
@@ -130,4 +143,46 @@ test('landscape shows the rotate prompt and pauses the duel', async ({ page }) =
   expect(await page.evaluate(() => window.__sovereigns?.tick() ?? 0)).toBe(pausedTick);
   await page.setViewportSize({ width: 412, height: 839 });
   await expect(page.locator('body')).toHaveAttribute('data-paused', 'false');
+});
+
+test('saving to 10 Rift Energy unlocks a Crossover Burst with a partner', async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(180_000);
+  const errors = watchErrors(page);
+  await start(page, '?debug=1&speed=20');
+  const ready = page.locator('.crossover-button[aria-disabled="false"]');
+  for (let turn = 0; turn < 10 && (await ready.count()) === 0; turn++) {
+    await waitForPlayerTurn(page);
+    if ((await ready.count()) > 0) break;
+    await endTurnWith(page, () => page.locator('.charge-button').tap());
+  }
+  await waitForPlayerTurn(page);
+  await expect(ready.first()).toBeVisible();
+  await expect(page.locator('.crossover')).toHaveClass(/is-ready/);
+  await page.screenshot({ path: testInfo.outputPath('crossover-ready.png') });
+  // At 20× speed later banners replace the Crossover's name quickly, so record every banner shown.
+  await page.evaluate(() => {
+    const banner = document.querySelector('.turn-banner');
+    const seen: string[] = [];
+    (window as unknown as { __banners: string[] }).__banners = seen;
+    if (banner) {
+      // Read every inserted text node: several banners can change within one frame.
+      new MutationObserver((records) => {
+        for (const record of records) {
+          record.addedNodes.forEach((node) => seen.push(node.textContent ?? ''));
+        }
+      }).observe(banner, { childList: true });
+    }
+  });
+  await ready.first().tap();
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as unknown as { __banners: string[] }).__banners.join('|')),
+    )
+    .toMatch(/Sunbreak Riptide|Ember Thornstorm|Tidal Bloom/);
+  await expect
+    .poll(() => page.evaluate(() => window.__sovereigns?.energy('player') ?? -1))
+    .toBeLessThan(10);
+  expect(errors).toEqual([]);
 });

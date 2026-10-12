@@ -1,10 +1,11 @@
+import type { AiProfileId } from './battle';
 import type { FighterLook } from './placeholderFighters';
 import { ALLY_LOOKS, ENEMY_LOOKS } from './placeholderFighters';
 
 export type TypeId = 'fury' | 'swift' | 'guile' | 'radiant' | 'void';
 export type WorldId = 'energy' | 'ocean' | 'clans' | 'rift';
 export type CardKind = 'strike' | 'blast' | 'technique' | 'signature';
-export type TechniqueEffect = 'focus' | 'guard' | 'heal' | 'sap';
+export type TechniqueEffect = 'focus' | 'guard' | 'heal' | 'sap' | 'drain';
 
 export interface CardSpec {
   readonly kind: CardKind;
@@ -27,6 +28,8 @@ export interface FighterSpec {
   /** Exactly 6 cards: Strike ×2, Blast ×2, Technique, Signature (game-design.md §4.3). */
   readonly deck: readonly CardSpec[];
   readonly look: FighterLook;
+  /** How this fighter plays when the AI controls it. */
+  readonly ai: AiProfileId;
 }
 
 const strike = (name: string): CardSpec => ({ kind: 'strike', name, cost: 1, power: 1 });
@@ -69,6 +72,7 @@ export const PLAYER_TEAM: readonly FighterSpec[] = [
       signature('Sunbreak Fist'),
     ],
     look: look(ALLY_LOOKS, 0),
+    ai: 'balanced',
   },
   {
     id: 'maris',
@@ -88,6 +92,7 @@ export const PLAYER_TEAM: readonly FighterSpec[] = [
       signature('Riptide Spiral'),
     ],
     look: look(ALLY_LOOKS, 1),
+    ai: 'balanced',
   },
   {
     id: 'torvan',
@@ -107,6 +112,7 @@ export const PLAYER_TEAM: readonly FighterSpec[] = [
       signature('Thousand-Leaf Cut'),
     ],
     look: look(ALLY_LOOKS, 2),
+    ai: 'balanced',
   },
 ];
 
@@ -125,17 +131,18 @@ export const ENEMY_TEAM: readonly FighterSpec[] = [
       strike('Phase Claw'),
       blast('Shard Volley'),
       blast('Shard Volley'),
-      technique('Fade', 'guard', 2),
+      technique('Phase Siphon', 'drain', 2),
       signature('Phase Rend'),
     ],
     look: look(ENEMY_LOOKS, 0),
+    ai: 'balanced',
   },
   {
     id: 'rift-shade',
     name: 'Rift Shade',
     type: 'void',
     world: 'rift',
-    hp: 1050,
+    hp: 1080,
     atk: 208,
     def: 70,
     spd: 88,
@@ -148,6 +155,7 @@ export const ENEMY_TEAM: readonly FighterSpec[] = [
       signature('Umbral Collapse'),
     ],
     look: look(ENEMY_LOOKS, 1),
+    ai: 'tactician',
   },
   {
     id: 'rift-brute',
@@ -155,7 +163,7 @@ export const ENEMY_TEAM: readonly FighterSpec[] = [
     type: 'fury',
     world: 'rift',
     hp: 1300,
-    atk: 210,
+    atk: 214,
     def: 85,
     spd: 70,
     deck: [
@@ -167,5 +175,6 @@ export const ENEMY_TEAM: readonly FighterSpec[] = [
       signature('Rift Hammer'),
     ],
     look: look(ENEMY_LOOKS, 2),
+    ai: 'aggressor',
   },
 ];

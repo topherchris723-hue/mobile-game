@@ -1,7 +1,14 @@
-import { BATTLE_RULES, TECHNIQUE_TUNING } from '../../config/battle';
-import type { FighterSpec } from '../../config/fighters';
+import {
+  BATTLE_RULES,
+  CROSSOVER,
+  CROSSOVER_PARTNER_EFFECT,
+  DRAIN,
+  TECHNIQUE_TUNING,
+} from '../../config/battle';
+import { crossoverName } from '../../config/crossovers';
+import type { CardSpec, FighterSpec } from '../../config/fighters';
 import { createRng, type Rng } from '../../core/rng';
-import { computeDamage } from './damage';
+import { comboTierOf, computeDamage, continuesCombo } from './damage';
 import type {
   ActionResult,
   CardInstance,
@@ -113,6 +120,7 @@ export function createDuel(setup: DuelSetup): { state: DuelState; events: DuelEv
     activeIndex: 0,
     energy: BATTLE_RULES.startingEnergy,
     switchedThisTurn: false,
+    comboTier: 0,
   });
   const teams = { player: makeTeam('player', setup.player), enemy: makeTeam('enemy', setup.enemy) };
   const playerSpeed = activeFighter(teams.player).spec.spd;
@@ -163,6 +171,162 @@ export function playBlockedReason(state: DuelState, side: Side, handIndex: numbe
   return null;
 }
 
+/** Bench fighters who could join a Crossover: alive and from a different world (ignores energy). */
+export function crossoverPartners(state: DuelState, side: Side): number[] {
+  const team = state.teams[side];
+  const active = activeFighter(team);
+  return team.fighters
+    .map((fighter, index) => ({ fighter, index }))
+    .filter(
+      ({ fighter, index }) =>
+        index !== team.activeIndex && fighter.hp > 0 && fighter.spec.world !== active.spec.world,
+    )
+    .map(({ index }) => index);
+}
+
+/** Why the side can't launch a Crossover with this partner right now, or null if it can. */
+export function crossoverBlockedReason(
+  state: DuelState,
+  side: Side,
+  partnerIndex: number,
+): string | null {
+  const team = state.teams[side];
+  if (state.winner) return 'The battle is over';
+  if (state.turnSide !== side) return 'Not your turn';
+  if (!crossoverPartners(state, side).includes(partnerIndex)) {
+    return 'Needs a partner from another world';
+  }
+  if (team.energy < CROSSOVER.cost) return `Needs ${CROSSOVER.cost} Rift Energy`;
+  return null;
+}
+
+/** Exact Crossover damage against the enemy's active fighter, for the HUD preview. */
+export function previewCrossover(state: DuelState, side: Side, partnerIndex: number): number {
+  const team = state.teams[side];
+  const partner = team.fighters[partnerIndex];
+  if (!partner) return 0;
+  const effect = CROSSOVER_PARTNER_EFFECT[partner.spec.type];
+  return computeDamage(
+    activeFighter(team),
+    activeFighter(state.teams[otherSide(side)]),
+    CROSSOVER,
+    {
+      partnerAtk: partner.spec.atk,
+      bonus: effect.kind === 'damageBonus' ? effect.amount : 0,
+    },
+  ).amount;
+}
+
+function launchCrossover(
+  state: DuelState,
+  side: Side,
+  partnerIndex: number,
+  events: DuelEvent[],
+): void {
+  const team = state.teams[side];
+  const foeTeam = state.teams[otherSide(side)];
+  const attacker = activeFighter(team);
+  const partner = team.fighters[partnerIndex];
+  if (!partner) throw new Error(`No partner ${partnerIndex}`);
+  const effect = CROSSOVER_PARTNER_EFFECT[partner.spec.type];
+  team.energy -= CROSSOVER.cost;
+  team.comboTier = 0;
+  events.push({
+    kind: 'crossover',
+    side,
+    fighterIndex: team.activeIndex,
+    partnerIndex,
+    name: crossoverName(attacker.spec, partner.spec),
+    energy: team.energy,
+  });
+
+  const defender = activeFighter(foeTeam);
+  const { amount, effectiveness } = computeDamage(attacker, defender, CROSSOVER, {
+    partnerAtk: partner.spec.atk,
+    bonus: effect.kind === 'damageBonus' ? effect.amount : 0,
+  });
+  const guarded = defender.guard;
+  attacker.focus = false;
+  defender.guard = false;
+  defender.hp = Math.max(0, defender.hp - amount);
+  events.push({
+    kind: 'damage',
+    side: foeTeam.side,
+    fighterIndex: foeTeam.activeIndex,
+    amount,
+    hp: defender.hp,
+    effectiveness,
+    guarded,
+  });
+  const knockedOut = defender.hp === 0;
+
+  switch (effect.kind) {
+    case 'energyGain':
+      gainEnergy(team, effect.amount);
+      events.push({ kind: 'energy', side, energy: team.energy });
+      break;
+    case 'heal': {
+      const healed = Math.min(
+        attacker.spec.hp - attacker.hp,
+        Math.round(attacker.spec.hp * effect.amount),
+      );
+      attacker.hp += healed;
+      events.push({
+        kind: 'heal',
+        side,
+        fighterIndex: team.activeIndex,
+        amount: healed,
+        hp: attacker.hp,
+      });
+      break;
+    }
+    case 'energyDrain':
+      drainEnergy(team, foeTeam, effect.amount, 0, events);
+      break;
+    case 'sap':
+      if (!knockedOut) {
+        defender.sapTurns = TECHNIQUE_TUNING.sapTurns + 1;
+        events.push({
+          kind: 'status',
+          side: foeTeam.side,
+          fighterIndex: foeTeam.activeIndex,
+          status: 'sap',
+        });
+      }
+      break;
+    case 'damageBonus':
+      break;
+  }
+  if (knockedOut) handleKnockout(state, foeTeam.side, events);
+}
+
+/**
+ * The Signature the side's active fighter will be able to afford at its next turn, if it holds one
+ * (game-design.md §4.6 telegraph), with the damage it would deal to the opponent's active fighter.
+ */
+export function signatureThreat(
+  state: DuelState,
+  side: Side,
+): { readonly card: CardSpec; readonly damage: number } | null {
+  const team = state.teams[side];
+  const fighter = activeFighter(team);
+  const card = fighter.hand.find((c) => c.spec.kind === 'signature')?.spec;
+  if (!card) return null;
+  const energyNextTurn = Math.min(BATTLE_RULES.maxEnergy, team.energy + BATTLE_RULES.energyPerTurn);
+  if (energyNextTurn < card.cost) return null;
+  const target = activeFighter(state.teams[otherSide(side)]);
+  return { card, damage: computeDamage(fighter, target, card).amount };
+}
+
+/** Whether the hand card would continue the side's combo chain if played now. */
+export function cardContinuesCombo(state: DuelState, side: Side, handIndex: number): boolean {
+  const team = state.teams[side];
+  const card = activeFighter(team).hand[handIndex];
+  return (
+    card !== undefined && card.spec.power > 0 && continuesCombo(team.comboTier, card.spec.kind)
+  );
+}
+
 function bringIn(
   state: DuelState,
   team: TeamState,
@@ -205,6 +369,25 @@ function handleKnockout(state: DuelState, side: Side, events: DuelEvent[]): void
   bringIn(state, team, next, true, events);
 }
 
+function drainEnergy(
+  team: TeamState,
+  foeTeam: TeamState,
+  steal: number,
+  gain: number,
+  events: DuelEvent[],
+): void {
+  const amount = Math.min(steal, foeTeam.energy);
+  foeTeam.energy -= amount;
+  gainEnergy(team, gain);
+  events.push({
+    kind: 'drain',
+    side: foeTeam.side,
+    amount,
+    energy: foeTeam.energy,
+    gainerEnergy: team.energy,
+  });
+}
+
 function playCard(state: DuelState, side: Side, handIndex: number, events: DuelEvent[]): void {
   const team = state.teams[side];
   const foeTeam = state.teams[otherSide(side)];
@@ -213,18 +396,21 @@ function playCard(state: DuelState, side: Side, handIndex: number, events: DuelE
   if (!card) throw new Error('Card vanished from hand');
   team.energy -= card.spec.cost;
   attacker.discard.push(card);
+  const spec = card.spec;
+  const combo = spec.power > 0 && continuesCombo(team.comboTier, spec.kind);
   events.push({
     kind: 'cardPlayed',
     side,
     fighterIndex: team.activeIndex,
-    card: card.spec,
+    card: spec,
     energy: team.energy,
+    combo,
   });
 
-  const spec = card.spec;
   if (spec.power > 0) {
+    team.comboTier = comboTierOf(spec.kind);
     const defender = activeFighter(foeTeam);
-    const { amount, effectiveness } = computeDamage(attacker, defender, spec);
+    const { amount, effectiveness } = computeDamage(attacker, defender, spec, { combo });
     const guarded = defender.guard;
     attacker.focus = false;
     defender.guard = false;
@@ -272,6 +458,9 @@ function playCard(state: DuelState, side: Side, handIndex: number, events: DuelE
       });
       break;
     }
+    case 'drain':
+      drainEnergy(team, foeTeam, DRAIN.steal, DRAIN.gain, events);
+      break;
     case undefined:
       throw new Error(`Technique ${spec.name} has no effect`);
   }
@@ -299,8 +488,13 @@ export function applyAction(state: DuelState, side: Side, action: DuelAction): A
     const reason = playBlockedReason(state, side, action.handIndex);
     if (reason) return { ok: false, reason };
     playCard(state, side, action.handIndex, events);
+  } else if (action.kind === 'crossover') {
+    const reason = crossoverBlockedReason(state, side, action.partnerIndex);
+    if (reason) return { ok: false, reason };
+    launchCrossover(state, side, action.partnerIndex, events);
   } else {
     gainEnergy(team, BATTLE_RULES.chargeEnergy);
+    team.comboTier = 0;
     events.push({ kind: 'charge', side, energy: team.energy });
   }
 
