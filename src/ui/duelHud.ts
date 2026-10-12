@@ -1,0 +1,370 @@
+import type { CardKind, CardSpec, TypeId } from '../config/fighters';
+import { BATTLE_RULES, TECHNIQUE_TUNING } from '../config/battle';
+import { computeDamage } from '../game/duel/damage';
+import { activeFighter, playBlockedReason, switchBlockedReason } from '../game/duel/rules';
+import type { DuelEvent, DuelState, Side } from '../game/duel/types';
+
+/*
+ * HTML battle HUD (game-design.md §4.9). It shows a *displayed* copy of HP, energy, and the active
+ * fighter that advances as events are played back, so numbers change in sync with the animations
+ * rather than jumping ahead to the final state.
+ */
+
+export interface DuelHudCallbacks {
+  onPlayCard(handIndex: number): void;
+  onSwitch(fighterIndex: number): void;
+  onCharge(): void;
+  onRestart(): void;
+}
+
+export interface DuelHud {
+  /** Measured height of the player panel in CSS pixels (for laying out the battlefield). */
+  readonly panelHeight: number;
+  reset(state: DuelState): void;
+  applyEvent(event: DuelEvent): void;
+  /** Renders the player's options; `enabled` is false while animations or the enemy are running. */
+  showControls(state: DuelState, enabled: boolean): void;
+  toast(message: string): void;
+  showResult(winner: Side): void;
+  dispose(): void;
+}
+
+interface DisplayFighter {
+  readonly name: string;
+  readonly type: TypeId;
+  readonly maxHp: number;
+  hp: number;
+}
+
+interface DisplaySide {
+  fighters: DisplayFighter[];
+  active: number;
+  energy: number;
+}
+
+const TYPE_LABEL: Readonly<Record<TypeId, string>> = {
+  fury: 'Fury',
+  swift: 'Swift',
+  guile: 'Guile',
+  radiant: 'Radiant',
+  void: 'Void',
+};
+
+const KIND_LABEL: Readonly<Record<CardKind, string>> = {
+  strike: 'Strike',
+  blast: 'Blast',
+  technique: 'Technique',
+  signature: 'Signature',
+};
+
+/** Small, solid glyphs (style guide §9: one consistent icon set). */
+const KIND_ICON: Readonly<Record<CardKind, string>> = {
+  strike: 'M3 17 15 5l2 2L5 19zM9 19 19 9l2 2-8 8z',
+  blast: 'M12 5a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm0 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
+  technique: 'M12 2 21 12 12 22 3 12z',
+  signature: 'M12 1 15 9 23 12 15 15 12 23 9 15 1 12 9 9z',
+};
+
+function icon(path: string): string {
+  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg>`;
+}
+
+function techniqueText(card: CardSpec): string {
+  switch (card.effect) {
+    case 'focus':
+      return `Next attack ×${TECHNIQUE_TUNING.focusMultiplier}`;
+    case 'guard':
+      return 'Halve the next hit';
+    case 'heal':
+      return `Heal ${Math.round(TECHNIQUE_TUNING.healFraction * 100)}% HP`;
+    case 'sap':
+      return `Enemy DEF −${Math.round((1 - TECHNIQUE_TUNING.sapDefenceMultiplier) * 100)}%`;
+    default:
+      return '';
+  }
+}
+
+function element<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  className: string,
+  parent?: HTMLElement,
+): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tag);
+  node.className = className;
+  parent?.appendChild(node);
+  return node;
+}
+
+export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): DuelHud {
+  const root = element('div', 'duel-hud', host);
+
+  // Enemy panel.
+  const enemyPanel = element('section', 'enemy-hud panel-ink', root);
+  enemyPanel.setAttribute('aria-label', 'Enemy');
+  const enemyHead = element('div', 'hud-row', enemyPanel);
+  const enemyName = element('span', 'hud-name', enemyHead);
+  const enemyType = element('span', 'type-chip', enemyHead);
+  const enemyBench = element('span', 'bench-pips', enemyHead);
+  const enemyHpBar = element('div', 'hp-bar', enemyPanel);
+  const enemyHpFill = element('div', 'hp-fill', enemyHpBar);
+  const enemyHpText = element('span', 'hp-text', enemyHpBar);
+  const enemyEnergy = element('div', 'energy-mini', enemyPanel);
+
+  const banner = element('div', 'turn-banner', root);
+  const toastNode = element('div', 'toast', root);
+  toastNode.setAttribute('role', 'status');
+
+  // Player panel.
+  const panel = element('section', 'player-panel panel-ink', root);
+  panel.setAttribute('aria-label', 'Your team');
+  const head = element('div', 'hud-row', panel);
+  const name = element('span', 'hud-name', head);
+  const type = element('span', 'type-chip', head);
+  const hpBar = element('div', 'hp-bar', panel);
+  const hpFill = element('div', 'hp-fill', hpBar);
+  const hpText = element('span', 'hp-text', hpBar);
+  const energyRow = element('div', 'energy', panel);
+  element('span', 'energy-label', energyRow).textContent = 'Rift Energy';
+  const pips = element('div', 'pips', energyRow);
+  for (let i = 0; i < BATTLE_RULES.maxEnergy; i++) element('i', '', pips);
+  const energyCount = element('b', 'energy-count', energyRow);
+  const hand = element('div', 'hand', panel);
+  const cardButtons = Array.from({ length: BATTLE_RULES.handSize }, (_, index) => {
+    const button = element('button', 'card', hand);
+    button.type = 'button';
+    button.addEventListener('click', () => {
+      callbacks.onPlayCard(index);
+    });
+    return button;
+  });
+  const actions = element('div', 'actions', panel);
+  const benchButtons = [0, 1].map(() => {
+    const button = element('button', 'bench-button', actions);
+    button.type = 'button';
+    return button;
+  });
+  const chargeButton = element('button', 'charge-button', actions);
+  chargeButton.type = 'button';
+  chargeButton.innerHTML = `<span>Charge</span><small>+${BATTLE_RULES.chargeEnergy} energy</small>`;
+  chargeButton.addEventListener('click', () => {
+    callbacks.onCharge();
+  });
+
+  const result = element('section', 'result panel-light', root);
+  result.hidden = true;
+  const resultTitle = element('h2', '', result);
+  const resultText = element('p', '', result);
+  const restart = element('button', 'button-primary', result);
+  restart.type = 'button';
+  restart.textContent = 'Play again';
+  restart.addEventListener('click', () => {
+    callbacks.onRestart();
+  });
+
+  const display: Record<Side, DisplaySide> = {
+    player: { fighters: [], active: 0, energy: 0 },
+    enemy: { fighters: [], active: 0, energy: 0 },
+  };
+  let benchTargets: number[] = [];
+  let toastTimer = 0;
+  let bannerTimer = 0;
+
+  benchButtons.forEach((button, slot) => {
+    button.addEventListener('click', () => {
+      const target = benchTargets[slot];
+      if (target !== undefined) callbacks.onSwitch(target);
+    });
+  });
+
+  const activeOf = (side: Side): DisplayFighter => {
+    const fighter = display[side].fighters[display[side].active];
+    if (!fighter) throw new Error(`No displayed fighter for ${side}`);
+    return fighter;
+  };
+
+  const setHp = (fill: HTMLElement, text: HTMLElement, fighter: DisplayFighter): void => {
+    const fraction = fighter.hp / fighter.maxHp;
+    fill.style.transform = `scaleX(${fraction})`;
+    fill.classList.toggle('is-low', fraction < 0.3);
+    text.textContent = `${fighter.hp} / ${fighter.maxHp}`;
+  };
+
+  const setType = (chip: HTMLElement, typeId: TypeId): void => {
+    chip.dataset['type'] = typeId;
+    chip.textContent = TYPE_LABEL[typeId];
+  };
+
+  const renderSides = (): void => {
+    const enemy = activeOf('enemy');
+    enemyName.textContent = enemy.name;
+    setType(enemyType, enemy.type);
+    setHp(enemyHpFill, enemyHpText, enemy);
+    enemyEnergy.textContent = `Rift Energy ${display.enemy.energy}/${BATTLE_RULES.maxEnergy}`;
+    enemyBench.innerHTML = display.enemy.fighters
+      .map(
+        (f, i) =>
+          `<i class="${f.hp <= 0 ? 'is-ko' : i === display.enemy.active ? 'is-active' : ''}"></i>`,
+      )
+      .join('');
+    enemyBench.setAttribute(
+      'aria-label',
+      `${display.enemy.fighters.filter((f) => f.hp > 0).length} enemies left`,
+    );
+
+    const me = activeOf('player');
+    name.textContent = me.name;
+    setType(type, me.type);
+    setHp(hpFill, hpText, me);
+    energyCount.textContent = `${display.player.energy}/${BATTLE_RULES.maxEnergy}`;
+    Array.from(pips.children).forEach((pip, i) => {
+      pip.classList.toggle('is-full', i < display.player.energy);
+    });
+  };
+
+  const renderBench = (state: DuelState | null, enabled: boolean): void => {
+    benchTargets = display.player.fighters
+      .map((_, i) => i)
+      .filter((i) => i !== display.player.active);
+    benchButtons.forEach((button, slot) => {
+      const index = benchTargets[slot];
+      const fighter = index === undefined ? undefined : display.player.fighters[index];
+      if (index === undefined || !fighter) {
+        button.hidden = true;
+        return;
+      }
+      button.hidden = false;
+      const reason =
+        state && enabled ? switchBlockedReason(state, 'player', index) : 'Wait for your turn';
+      button.classList.toggle('is-blocked', reason !== null);
+      button.classList.toggle('is-ko', fighter.hp <= 0);
+      button.dataset['reason'] = reason ?? '';
+      button.setAttribute('aria-disabled', String(reason !== null));
+      const fraction = Math.max(0, fighter.hp / fighter.maxHp);
+      button.innerHTML = `<span class="bench-swap" aria-hidden="true">⇄</span><span class="bench-name">${fighter.name}</span><span class="type-chip" data-type="${fighter.type}">${TYPE_LABEL[fighter.type]}</span><span class="mini-hp"><i style="transform:scaleX(${fraction})"></i></span>`;
+    });
+  };
+
+  return {
+    get panelHeight() {
+      return panel.getBoundingClientRect().height;
+    },
+
+    reset(state) {
+      for (const side of ['player', 'enemy'] as const) {
+        const team = state.teams[side];
+        display[side] = {
+          fighters: team.fighters.map((f) => ({
+            name: f.spec.name,
+            type: f.spec.type,
+            maxHp: f.spec.hp,
+            hp: f.hp,
+          })),
+          active: team.activeIndex,
+          energy: team.energy,
+        };
+      }
+      result.hidden = true;
+      renderSides();
+      renderBench(null, false);
+    },
+
+    applyEvent(event) {
+      switch (event.kind) {
+        case 'turnStart':
+          display[event.side].energy = event.energy;
+          window.clearTimeout(bannerTimer);
+          banner.textContent = event.side === 'player' ? 'Your turn' : 'Enemy turn';
+          banner.dataset['side'] = event.side;
+          banner.classList.add('is-visible');
+          bannerTimer = window.setTimeout(() => {
+            banner.classList.remove('is-visible');
+          }, 800);
+          break;
+        case 'cardPlayed':
+        case 'charge':
+          display[event.side].energy = event.energy;
+          break;
+        case 'switch':
+          display[event.side].active = event.to;
+          display[event.side].energy = event.energy;
+          break;
+        case 'damage':
+        case 'heal': {
+          const fighter = display[event.side].fighters[event.fighterIndex];
+          if (fighter) fighter.hp = event.hp;
+          break;
+        }
+        case 'status':
+        case 'ko':
+        case 'battleEnd':
+          break;
+      }
+      renderSides();
+    },
+
+    showControls(state, enabled) {
+      panel.classList.toggle('is-waiting', !enabled);
+      const fighter = activeFighter(state.teams.player);
+      const foe = activeFighter(state.teams.enemy);
+      cardButtons.forEach((button, index) => {
+        const card = fighter.hand[index];
+        if (!card) {
+          button.hidden = true;
+          return;
+        }
+        button.hidden = false;
+        const spec = card.spec;
+        const reason = enabled ? playBlockedReason(state, 'player', index) : 'Wait for your turn';
+        button.dataset['kind'] = spec.kind;
+        button.dataset['reason'] = reason ?? '';
+        button.setAttribute('aria-disabled', String(reason !== null));
+        button.classList.toggle('is-unaffordable', spec.cost > state.teams.player.energy);
+        let value: string;
+        if (spec.power > 0) {
+          const preview = computeDamage(fighter, foe, spec);
+          const marker =
+            preview.effectiveness === 'advantage'
+              ? '<em class="is-up">▲ Strong</em>'
+              : preview.effectiveness === 'disadvantage'
+                ? '<em class="is-down">▼ Weak</em>'
+                : '';
+          value = `<strong>${preview.amount}</strong> dmg ${marker}`;
+        } else {
+          value = techniqueText(spec);
+        }
+        button.innerHTML = `
+          <span class="card-cost" aria-label="Cost ${spec.cost}">${spec.cost}</span>
+          <span class="card-kind">${icon(KIND_ICON[spec.kind])}${KIND_LABEL[spec.kind]}</span>
+          <span class="card-name">${spec.name}</span>
+          <span class="card-value">${value}</span>`;
+      });
+      chargeButton.dataset['reason'] = enabled ? '' : 'Wait for your turn';
+      chargeButton.setAttribute('aria-disabled', String(!enabled));
+      renderBench(state, enabled);
+    },
+
+    toast(message) {
+      window.clearTimeout(toastTimer);
+      toastNode.textContent = message;
+      toastNode.classList.add('is-visible');
+      toastTimer = window.setTimeout(() => {
+        toastNode.classList.remove('is-visible');
+      }, 1400);
+    },
+
+    showResult(winner) {
+      result.hidden = false;
+      result.dataset['winner'] = winner;
+      resultTitle.textContent = winner === 'player' ? 'Victory' : 'Defeat';
+      resultText.textContent =
+        winner === 'player' ? 'All three Rift enemies defeated.' : 'Your team was defeated.';
+      restart.focus();
+    },
+
+    dispose() {
+      window.clearTimeout(toastTimer);
+      window.clearTimeout(bannerTimer);
+      root.remove();
+    },
+  };
+}

@@ -1,0 +1,131 @@
+import { expect, test, type Page } from '@playwright/test';
+
+/** Collects console errors and uncaught exceptions so any of them fails the test. */
+function watchErrors(page: Page): string[] {
+  const errors: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  page.on('pageerror', (error) => errors.push(error.message));
+  return errors;
+}
+
+async function start(page: Page, query: string): Promise<void> {
+  await page.goto(`./${query}`);
+  const button = page.getByRole('button', { name: 'Tap to start' });
+  await expect(button).toBeEnabled({ timeout: 15_000 });
+  await button.tap();
+  await expect(page.locator('body')).toHaveAttribute('data-scene', 'duel');
+}
+
+const phase = (page: Page) => page.evaluate(() => window.__sovereigns?.phase() ?? null);
+
+async function waitForPlayerTurn(page: Page): Promise<void> {
+  await expect.poll(() => phase(page), { timeout: 20_000 }).toBe('playerInput');
+}
+
+const cards = (page: Page) => page.locator('.player-panel .card');
+
+test('boots into a duel with a full hand and no errors', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await start(page, '?debug=1');
+  await waitForPlayerTurn(page);
+  await expect(cards(page)).toHaveCount(3);
+  await expect(page.locator('.enemy-hud .hud-name')).not.toBeEmpty();
+  await expect(page.locator('.player-panel .hud-name')).toHaveText('Kaien');
+  await page.screenshot({ path: testInfo.outputPath('duel-debug.png') });
+  expect(errors).toEqual([]);
+});
+
+test('renders for players without debug UI', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await start(page, '');
+  await expect(page.locator('.debug-overlay')).toHaveCount(0);
+  expect(await page.evaluate(() => window.__sovereigns)).toBeUndefined();
+  await expect(cards(page).first()).toBeVisible();
+  await page.waitForTimeout(3500);
+  await page.screenshot({ path: testInfo.outputPath('duel.png') });
+  expect(errors).toEqual([]);
+});
+
+test('playing an affordable card hits the enemy and passes the turn', async ({ page }) => {
+  await start(page, '?debug=1&speed=4');
+  await waitForPlayerTurn(page);
+  const enemyHp = await page.evaluate(() => window.__sovereigns?.hp('enemy') ?? 0);
+  const affordable = page.locator('.player-panel .card[aria-disabled="false"]').first();
+  await expect(affordable).toBeVisible();
+  await affordable.tap();
+  await expect.poll(() => phase(page)).not.toBe('playerInput');
+  await expect.poll(() => page.evaluate(() => window.__sovereigns?.turnSide())).toBe('enemy');
+  // Either damage was dealt or a non-damaging Technique was used; energy was spent either way.
+  const after = await page.evaluate(() => window.__sovereigns?.hp('enemy') ?? 0);
+  expect(after).toBeLessThanOrEqual(enemyHp);
+  await waitForPlayerTurn(page);
+});
+
+test('switching is free: the new fighter comes in and you keep your turn', async ({ page }) => {
+  await start(page, '?debug=1&speed=4');
+  await waitForPlayerTurn(page);
+  await page.locator('.bench-button').first().tap();
+  await expect.poll(() => page.evaluate(() => window.__sovereigns?.activeIndex('player'))).toBe(1);
+  await waitForPlayerTurn(page);
+  await expect(page.locator('.player-panel .hud-name')).toHaveText('Maris');
+  await expect(page.locator('.toast')).toContainText('Tag Link');
+  // A second switch in the same turn is refused with a reason. Blocked buttons stay tappable on
+  // purpose (so they can explain themselves), hence force: Playwright won't tap aria-disabled.
+  await page.locator('.bench-button').nth(1).tap({ force: true });
+  await expect(page.locator('.toast')).toContainText('Already switched this turn');
+});
+
+test('tapping a card you cannot afford explains why', async ({ page }) => {
+  await start(page, '?debug=1&speed=4');
+  await waitForPlayerTurn(page);
+  // Charging until a Signature (cost 5) shows up would be slow; any card costing more than the
+  // current energy works, and Charge makes sure one exists by spending the turn first.
+  const expensive = page.locator('.player-panel .card.is-unaffordable').first();
+  for (let attempt = 0; attempt < 6 && (await expensive.count()) === 0; attempt++) {
+    const cheapest = page.locator('.player-panel .card[aria-disabled="false"]').last();
+    await cheapest.tap();
+    await expect.poll(() => phase(page)).not.toBe('playerInput');
+    await waitForPlayerTurn(page);
+  }
+  await expect(expensive).toBeVisible();
+  await expensive.tap({ force: true });
+  await expect(page.locator('.toast')).toHaveText('Not enough Rift Energy');
+  expect(await phase(page)).toBe('playerInput');
+});
+
+test('a full duel can be played to the end and restarted', async ({ page }, testInfo) => {
+  test.setTimeout(240_000);
+  const errors = watchErrors(page);
+  await start(page, '?debug=1&speed=20');
+  for (let turn = 0; turn < 80; turn++) {
+    await expect.poll(() => phase(page), { timeout: 30_000 }).toMatch(/^(playerInput|ended)$/);
+    if ((await phase(page)) === 'ended') break;
+    const affordable = page.locator('.player-panel .card[aria-disabled="false"]');
+    if ((await affordable.count()) > 0) await affordable.last().tap();
+    else await page.locator('.charge-button').tap();
+    await expect.poll(() => phase(page)).not.toBe('playerInput');
+  }
+  await expect(page.locator('.result')).toBeVisible();
+  await expect(page.locator('.result h2')).toHaveText(/Victory|Defeat/);
+  await page.screenshot({ path: testInfo.outputPath('result.png') });
+
+  await page.getByRole('button', { name: 'Play again' }).tap();
+  await expect(page.locator('.result')).toBeHidden();
+  await expect.poll(() => page.evaluate(() => window.__sovereigns?.winner())).toBeNull();
+  expect(errors).toEqual([]);
+});
+
+test('landscape shows the rotate prompt and pauses the duel', async ({ page }) => {
+  await start(page, '?debug=1');
+  await page.waitForFunction(() => (window.__sovereigns?.tick() ?? 0) > 30);
+  await page.setViewportSize({ width: 839, height: 412 });
+  await expect(page.locator('#rotate-prompt')).toBeVisible();
+  await expect(page.locator('body')).toHaveAttribute('data-paused', 'true');
+  const pausedTick = await page.evaluate(() => window.__sovereigns?.tick() ?? 0);
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => window.__sovereigns?.tick() ?? 0)).toBe(pausedTick);
+  await page.setViewportSize({ width: 412, height: 839 });
+  await expect(page.locator('body')).toHaveAttribute('data-paused', 'false');
+});

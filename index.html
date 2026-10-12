@@ -10,7 +10,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta
       name="description"
-      content="Shattered Sovereigns — turn-based Rift Timeline battles across shattered worlds."
+      content="Shattered Sovereigns — turn-based Rift Duels across shattered worlds."
     />
     <title>Shattered Sovereigns</title>
     <link rel="manifest" href="./manifest.webmanifest" />
@@ -18,19 +18,16 @@
   </head>
   <body data-scene="boot" data-paused="false">
     <div id="game-root" class="game-root"></div>
+    <div id="hud-root"></div>
 
     <section id="boot-screen" class="boot-screen">
       <div class="boot-title">
-        <p class="kicker">Rift Timeline · Battlefield test</p>
+        <p class="kicker">Rift Duel</p>
         <h1>Shattered Sovereigns</h1>
       </div>
       <button id="start-button" class="button-primary" type="button" disabled>Loading…</button>
       <p id="boot-build" class="build-tag"></p>
     </section>
-
-    <p id="arena-hint" class="panel-ink arena-hint" hidden>
-      Tap a Sovereign or an enemy to select it
-    </p>
 
     <section id="rotate-prompt" class="rotate-prompt" aria-live="polite">
       <div class="rotate-phone" aria-hidden="true"></div>

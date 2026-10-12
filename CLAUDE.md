@@ -60,6 +60,7 @@ src/
   main.ts          boot: create services, load assets, start first scene
   core/            loop, time, events, math, RNG, object pools
   game/            simulation: entities, systems, rules (no DOM)
+  scenes/          screen controllers that wire game rules, rendering, and UI together
   render/          drawing, cameras, particles, effects
   input/           touch/pointer handling, gestures, virtual controls
   ui/              menus, HUD, overlays
@@ -201,6 +202,6 @@ Emulated tests are not proof that it works on a real device. Report them as "pas
 - `main` → `https://topherchris723-hue.github.io/mobile-game/`
 - any other branch → `https://topherchris723-hue.github.io/mobile-game/preview/<branch>/`
 
-Append `?debug=1` for the debug overlay and `?debug=1&bench=1` for the stress benchmark. The run's summary page on GitHub shows the exact link. Pages must be served from the `gh-pages` branch (repository Settings → Pages → Source: _Deploy from a branch_ → `gh-pages` / root).
+Append `?debug=1` for the debug overlay, `?debug=1&bench=1` for the stress benchmark, and `?speed=N` (0.25–20) to speed up battle animations when testing. The run's summary page on GitHub shows the exact link. Pages must be served from the `gh-pages` branch (repository Settings → Pages → Source: _Deploy from a branch_ → `gh-pages` / root).
 
 Pin dependency versions exactly, and prefer releases at least two weeks old.

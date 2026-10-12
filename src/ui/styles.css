@@ -16,6 +16,21 @@
   --sky-high: #a5bce0;
   --golden-glow: #fcb68d;
   --error: #f34f58;
+  --hp: #5dbb46;
+  --hp-low: #f34f58;
+
+  /* Card kinds: identified by icon and label first, colour second (style guide §6.3). */
+  --card-strike: #e2603f;
+  --card-blast: #2888eb;
+  --card-technique: #5dbb46;
+  --card-signature: #9e8ccb;
+
+  /* Type colours (style guide §6.3). */
+  --type-fury: #f25c3b;
+  --type-swift: #1fb6e8;
+  --type-guile: #5dbb46;
+  --type-radiant: #f5c542;
+  --type-void: #8b5cf6;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -202,27 +217,6 @@ button {
   opacity: 0.7;
 }
 
-/* ---------- Arena hint ---------- */
-
-.arena-hint {
-  position: fixed;
-  bottom: calc(var(--safe-bottom) + var(--space-6));
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  z-index: 5;
-  margin: 0;
-  padding: var(--space-2) var(--space-4);
-  font-size: 14px;
-  line-height: 1.4;
-  pointer-events: none;
-  transition: opacity 400ms var(--ease-out);
-}
-
-.arena-hint.is-leaving {
-  opacity: 0;
-}
-
 /* ---------- Rotate prompt (portrait) ---------- */
 
 .rotate-prompt {
@@ -316,7 +310,8 @@ button {
 .debug-overlay {
   position: fixed;
   z-index: 25;
-  top: calc(var(--safe-top) + var(--space-2));
+  /* Below the enemy HUD so both stay readable. */
+  top: calc(var(--safe-top) + 104px);
   left: calc(var(--safe-left) + var(--space-2));
   width: 210px;
   padding: var(--space-1) var(--space-2);
@@ -383,4 +378,479 @@ button {
     animation: none;
     transform: rotate(0deg);
   }
+}
+
+/* ---------- Duel HUD ---------- */
+
+#hud-root {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.duel-hud > * {
+  pointer-events: auto;
+}
+
+.enemy-hud {
+  position: absolute;
+  top: calc(var(--safe-top) + var(--space-2));
+  left: calc(var(--safe-left) + var(--space-2));
+  right: calc(var(--safe-right) + var(--space-2));
+  padding: var(--space-2) var(--space-3);
+}
+
+.player-panel {
+  position: absolute;
+  left: calc(var(--safe-left) + var(--space-2));
+  right: calc(var(--safe-right) + var(--space-2));
+  bottom: calc(var(--safe-bottom) + var(--space-2));
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 24px;
+}
+
+.hud-name {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.type-chip::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  background: currentColor;
+}
+
+.type-chip[data-type='fury'] {
+  color: var(--type-fury);
+}
+.type-chip[data-type='swift'] {
+  color: var(--type-swift);
+}
+.type-chip[data-type='guile'] {
+  color: var(--type-guile);
+}
+.type-chip[data-type='radiant'] {
+  color: var(--type-radiant);
+}
+.type-chip[data-type='void'] {
+  color: #b39af9;
+}
+
+.bench-pips {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.bench-pips i {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--cloud);
+  transform: rotate(45deg);
+}
+
+.bench-pips i.is-active {
+  background: var(--cloud);
+}
+
+.bench-pips i.is-ko {
+  border-color: rgb(254 243 223 / 0.3);
+}
+
+.hp-bar {
+  position: relative;
+  height: 18px;
+  margin-top: var(--space-1);
+  background: rgb(254 243 223 / 0.14);
+  overflow: hidden;
+}
+
+.hp-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--hp);
+  transform-origin: left center;
+  transition:
+    transform 320ms var(--ease-out),
+    background-color 320ms var(--ease-out);
+}
+
+.hp-fill.is-low {
+  background: var(--hp-low);
+}
+
+.hp-text {
+  position: absolute;
+  right: var(--space-2);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1;
+  color: var(--ink);
+  text-shadow: 0 0 2px rgb(254 243 223 / 0.6);
+}
+
+.energy-mini {
+  margin-top: var(--space-1);
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.energy {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+}
+
+.energy-label {
+  white-space: nowrap;
+}
+
+.pips {
+  display: flex;
+  flex: 1;
+  gap: 3px;
+}
+
+.pips i {
+  flex: 1;
+  height: 12px;
+  background: rgb(158 140 203 / 0.22);
+  transform: skewX(-20deg);
+  transition: background-color var(--duration-press) var(--ease-out);
+}
+
+.pips i.is-full {
+  background: var(--rift-violet);
+}
+
+.energy-count {
+  min-width: 40px;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+
+/* Cards */
+
+.hand {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 128px;
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  background: var(--cloud);
+  color: var(--text-dark);
+  text-align: left;
+  clip-path: var(--chamfer-shape);
+  box-shadow: inset 0 6px 0 var(--card-kind-color, var(--rift-violet));
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    opacity var(--duration-press) var(--ease-out);
+}
+
+.card[data-kind='strike'] {
+  --card-kind-color: var(--card-strike);
+}
+.card[data-kind='blast'] {
+  --card-kind-color: var(--card-blast);
+}
+.card[data-kind='technique'] {
+  --card-kind-color: var(--card-technique);
+}
+.card[data-kind='signature'] {
+  --card-kind-color: var(--card-signature);
+  background: linear-gradient(180deg, #ece4fb 0%, var(--cloud) 55%);
+}
+
+.card:active {
+  transform: scale(0.95);
+}
+
+.card[aria-disabled='true'] {
+  opacity: 0.55;
+}
+
+.card-cost {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  background: var(--rift-violet);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 18px;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.card.is-unaffordable .card-cost {
+  background: var(--error);
+}
+
+.card-kind {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--card-kind-color);
+  filter: brightness(0.75);
+}
+
+.card-kind svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+}
+
+.card-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.card-value {
+  margin-top: auto;
+  padding-right: 30px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.card-value strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+
+.card-value em {
+  display: block;
+  white-space: nowrap;
+  font-style: normal;
+  font-size: 14px;
+}
+
+.card-value em.is-up {
+  color: #b07a00;
+}
+
+.card-value em.is-down {
+  color: #4b5a80;
+}
+
+/* Bench and Charge */
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: var(--space-2);
+}
+
+.bench-button,
+.charge-button {
+  display: grid;
+  min-height: 52px;
+  padding: var(--space-1) var(--space-2);
+  background: rgb(254 243 223 / 0.1);
+  color: var(--text-light);
+  text-align: left;
+  clip-path: var(--chamfer-shape);
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    opacity var(--duration-press) var(--ease-out);
+}
+
+.bench-button {
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: var(--space-2);
+  align-items: center;
+}
+
+.bench-button:active,
+.charge-button:active {
+  transform: scale(0.96);
+}
+
+.bench-button.is-blocked,
+.charge-button[aria-disabled='true'] {
+  opacity: 0.5;
+}
+
+.bench-button.is-ko {
+  opacity: 0.3;
+}
+
+.bench-swap {
+  grid-row: span 2;
+  font-size: 20px;
+  color: var(--rift-violet);
+}
+
+.bench-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.bench-button .type-chip {
+  display: none;
+}
+
+.mini-hp {
+  display: block;
+  height: 5px;
+  background: rgb(254 243 223 / 0.18);
+}
+
+.mini-hp i {
+  display: block;
+  height: 100%;
+  background: var(--hp);
+  transform-origin: left center;
+}
+
+.charge-button {
+  align-content: center;
+  padding: 0 var(--space-4);
+  background: var(--rift-violet);
+  color: var(--ink);
+  text-align: center;
+}
+
+.charge-button span {
+  font-family: var(--font-display);
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.charge-button small {
+  font-size: 14px;
+}
+
+.player-panel.is-waiting .hand {
+  opacity: 0.85;
+}
+
+/* Banners, toasts, result */
+
+.turn-banner {
+  position: absolute;
+  top: 34%;
+  left: 0;
+  right: 0;
+  padding: var(--space-2) 0;
+  background: rgb(8 9 15 / 0.72);
+  font-family: var(--font-display);
+  font-size: 34px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: scaleY(0.6);
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+  pointer-events: none;
+}
+
+.turn-banner[data-side='player'] {
+  color: var(--cloud);
+}
+
+.turn-banner[data-side='enemy'] {
+  color: #c9b8f5;
+}
+
+.turn-banner.is-visible {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.toast {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--safe-top) + 112px);
+  max-width: calc(100% - 32px);
+  padding: var(--space-2) var(--space-4);
+  background: var(--cloud);
+  color: var(--text-dark);
+  font-size: 15px;
+  clip-path: var(--chamfer-shape);
+  opacity: 0;
+  transform: translate(-50%, -6px);
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 160ms var(--ease-out);
+  pointer-events: none;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.result {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  width: min(320px, calc(100% - 32px));
+  padding: var(--space-5);
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.result h2 {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.result[data-winner='player'] h2 {
+  color: #b07a00;
+}
+
+.result[data-winner='enemy'] h2 {
+  color: #6a4fb3;
+}
+
+.result p {
+  margin: 0 0 var(--space-4);
 }

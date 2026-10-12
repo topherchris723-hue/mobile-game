@@ -65,15 +65,36 @@ export const ALLY_LOOKS: readonly FighterLook[] = [
   },
 ];
 
-/** Rift-corrupted enemy: deep violet, glowing Void eyes. */
-export const ENEMY_LOOK: FighterLook = {
-  id: 'placeholder-rift-shade', // The Rift · Void
+const RIFT_ENEMY_BASE = {
   outfit: 0x4a3566,
   legs: 0x241a33,
-  accent: TYPE_COLOR.void,
   hair: 0x16101f,
   skin: 0x8f7fa8,
   eye: TYPE_COLOR.void,
-  feature: 'cape',
-  hairStyle: 'spikes',
-};
+} as const;
+
+/** Rift-corrupted enemies: deep violet with glowing Void eyes; the accent shows each one's type. */
+export const ENEMY_LOOKS: readonly FighterLook[] = [
+  {
+    ...RIFT_ENEMY_BASE,
+    id: 'placeholder-rift-stalker', // Swift
+    accent: TYPE_COLOR.swift,
+    feature: 'coatTails',
+    hairStyle: 'ponytail',
+  },
+  {
+    ...RIFT_ENEMY_BASE,
+    id: 'placeholder-rift-shade', // Void
+    accent: TYPE_COLOR.void,
+    feature: 'cape',
+    hairStyle: 'spikes',
+  },
+  {
+    ...RIFT_ENEMY_BASE,
+    id: 'placeholder-rift-brute', // Fury
+    accent: TYPE_COLOR.fury,
+    outfit: 0x5a3050,
+    feature: 'cape',
+    hairStyle: 'spikes',
+  },
+];

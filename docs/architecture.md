@@ -4,51 +4,64 @@ Current map of the game's systems. Update this whenever a system is added, remov
 
 ## Status
 
-Milestone **M1 — Foundation + battlefield test**, converted to **portrait** for the turn-based Rift Timeline design (`decisions/0004-portrait-turn-based.md`). The test boots to the Nexus battlefield with 4 placeholder Sovereigns and 3 placeholder enemies; tapping a unit selects it. No battle rules yet (M2).
+Milestone **M2 — Rift Duel core** (`decisions/0005-turn-based-rift-duel.md`): a complete, playable 3 v 3 turn-based duel against the AI in portrait, with cards, energy, free switching, auto-switch on KO, types, Tag Link, victory/defeat, and replay. Fighters and backgrounds are still code-drawn placeholders.
 
 ## Runtime flow
 
 ```
 index.html ─► src/main.ts
   ├─ debug/log + debug/errorCapture      installed first, so even boot errors reach the screen
-  ├─ core/flags                           ?debug=1, ?bench=1
-  ├─ game/battlefield                     simulation state (pure TypeScript)
-  ├─ render/stage + render/battlefieldView PixiJS app and scene, built behind the boot screen
+  ├─ core/flags                           ?debug=1, ?bench=1, ?speed=N
+  ├─ render/stage + render/duelView       PixiJS app, backdrop, fighters, effects (built behind the boot screen)
   ├─ ui/bootScreen                        "Tap to start" → fullscreen + portrait lock (best effort)
-  ├─ input/tapInput                       taps → view.unitAt → buffered select commands
+  ├─ ui/duelHud                           HTML HUD: enemy panel, cards, energy, bench, Charge, result
+  ├─ scenes/duelScene                     owns the duel; plays events back; runs the enemy AI
+  │     game/duel/rules  applyAction()   pure rules → DuelEvent[]
+  │     game/duel/ai     chooseAction()  enemy decisions, same rules as the player
   ├─ core/loop                            rAF driver around a 60 Hz fixed-step clock
-  │    update()  → game/battlefield stepBattlefield(state, commands)
-  │    render(α) → battlefieldView.render → stage.render
+  │    update()  → duelScene.update (event playback timing, buffered player intents, AI turns)
+  │    render(α) → duelView.render → stage.render
   └─ ui/playability                       pauses in landscape or hidden tab; resumes without catch-up
 ```
 
+### How a turn flows
+
+1. The HUD reports a tap (card, bench, Charge). The scene checks it is legal; if not, the HUD shows the reason in a toast.
+2. A legal tap becomes a buffered intent, applied on the next tick via `applyAction`, which mutates the duel state and returns events.
+3. The scene plays events back one at a time (`EVENT_DURATION_MS`): the view animates, the HUD updates its _displayed_ HP/energy so numbers change in sync with hits.
+4. When the queue is empty: enemy turn → short think pause → `chooseAction` → back to step 3; player turn → controls enabled.
+
 ## Modules
 
-| Path                                           | Responsibility                                                                                                                                                              | Depends on                 |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| `src/config/*`                                 | All tuning and content data: palette (mirrors art-style.md), display (720-unit-wide portrait space), simulation rate, battlefield layout, tap thresholds, placeholder looks | —                          |
-| `src/core/fixedStep.ts`                        | Converts frame time into whole 60 Hz ticks + interpolation alpha; clamps stalls                                                                                             | config/sim                 |
-| `src/core/loop.ts`                             | requestAnimationFrame driver; start/stop for pausing                                                                                                                        | core/fixedStep             |
-| `src/core/rng.ts`                              | Seeded PRNG (mulberry32) for reproducible gameplay                                                                                                                          | —                          |
-| `src/core/flags.ts`, `buildInfo.ts`, `math.ts` | URL flags, build id/time (injected by Vite), small math helpers                                                                                                             | —                          |
-| `src/game/battlefield.ts`                      | Battlefield test state: units, slots, selection. **No DOM or rendering.** Replaced by the Rift Timeline simulation in M2.                                                   | config/battlefield         |
-| `src/input/tapInput.ts`                        | Pointer events → taps (pure `isTap` rule, multi-touch safe)                                                                                                                 | config/input               |
-| `src/render/stage.ts`                          | PixiJS application, resolution cap, logical 720-unit-wide world scaling                                                                                                     | config/display             |
-| `src/render/battlefieldView.ts`                | Composes backdrop layers, Rift effects, units (depth sort, selection ring), motes; hit-testing for taps                                                                     | render/*                   |
-| `src/render/backdrop.ts`                       | Canvas 2D painter for the placeholder sky and floor, repainted only on resize; clouds blurred once per layer                                                                | config/palette             |
-| `src/render/placeholderFighter.ts`             | Code-drawn placeholder Sovereign with cel shading and posable limbs                                                                                                         | config/placeholderFighters |
-| `src/render/riftEffects.ts`, `embers.ts`       | Animated citadel beams/halo; pooled rising motes (no per-frame allocation)                                                                                                  | config/palette             |
-| `src/render/color.ts`                          | Colour maths: cel-shadow rule, battle desaturation, CSS formatting                                                                                                          | config/palette             |
-| `src/ui/*`                                     | Boot screen, playability (pause) watcher, hint, `styles.css` design tokens                                                                                                  | —                          |
-| `src/debug/*`                                  | Logger (ring buffer), error capture panel, `?debug=1` overlay, copyable reports                                                                                             | core/buildInfo             |
+| Path                                                                                         | Responsibility                                                                                           | Depends on                             |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `src/config/battle.ts`                                                                       | Duel rules: team/hand size, energy, Tag Link, switch cooldown, type and technique multipliers            | —                                      |
+| `src/config/fighters.ts`                                                                     | Placeholder roster: 3 Sovereigns and 3 Rift enemies with stats and 6-card decks                          | config/placeholderFighters             |
+| `src/config/duelPresentation.ts`                                                             | Portrait layout, event timings, enemy think time, seed                                                   | —                                      |
+| `src/config/palette.ts`, `display.ts`, `sim.ts`, `placeholderFighters.ts`                    | Colours (mirrors art-style.md), 720-unit-wide space, tick rate, placeholder looks                        | —                                      |
+| `src/core/*`                                                                                 | Fixed-step clock and loop, seeded RNG, flags, build info, math                                           | config                                 |
+| `src/game/duel/types.ts`                                                                     | Duel state, actions, events                                                                              | —                                      |
+| `src/game/duel/rules.ts`                                                                     | Pure, deterministic rules: setup, turns, cards, switching, KO/auto-switch, win                           | config/battle                          |
+| `src/game/duel/damage.ts`                                                                    | Type wheel and the exact damage formula (also used for on-card previews)                                 | config/battle                          |
+| `src/game/duel/ai.ts`                                                                        | Enemy decision-making by priority (KO → protect → switch → Signature → Focus/Sap → best attack → Charge) | game/duel/rules                        |
+| `src/scenes/duelScene.ts`                                                                    | Runs a duel: event playback, AI turns, buffered player intents, restart                                  | game/duel, render/duelView, ui/duelHud |
+| `src/render/stage.ts`                                                                        | PixiJS application, resolution cap, logical scaling                                                      | config/display                         |
+| `src/render/duelView.ts`                                                                     | Backdrop layers, the two active fighters, lunge/projectile/hit/switch/KO animations, floating numbers    | render/*                               |
+| `src/render/tweens.ts`                                                                       | Small game-time tween runner                                                                             | core/math                              |
+| `src/render/backdrop.ts`, `placeholderFighter.ts`, `riftEffects.ts`, `embers.ts`, `color.ts` | Code-painted placeholder art and effects                                                                 | config/palette                         |
+| `src/ui/duelHud.ts`                                                                          | HTML battle HUD with displayed HP/energy, cards with exact damage previews, bench, toasts, result        | game/duel (read-only helpers)          |
+| `src/ui/bootScreen.ts`, `playability.ts`, `styles.css`                                       | Start screen, pause on rotation/hide, design tokens and HUD styles                                       | —                                      |
+| `src/debug/*`                                                                                | Logger, error capture, `?debug=1` overlay, copyable reports                                              | core/buildInfo                         |
 
 ## Key decisions
 
-- Platform: `decisions/0001-mobile-web-platform.md`. Rendering: `decisions/0003-2d-rendering-pixijs.md`. Portrait + turn-based: `decisions/0004-portrait-turn-based.md`.
+- Platform: `decisions/0001-mobile-web-platform.md`. Rendering: `decisions/0003-2d-rendering-pixijs.md`. Portrait + turn-based: `decisions/0004-portrait-turn-based.md`. Battle rules: `decisions/0005-turn-based-rift-duel.md`.
 - The simulation owns all game state; rendering only reads it. Input never mutates state directly — it queues commands that the next tick applies.
 - Animation is driven by simulation time, so pausing freezes everything consistently.
 - Pixi's own ticker is disabled; the game loop renders explicitly and stops completely when paused (battery).
-- Static scenery is painted once per screen size into textures; only units, beams, and motes animate.
+- Static scenery is painted once per screen size into textures; only fighters, effects, beams, and motes animate.
+- Text-heavy battle UI is HTML/CSS (crisp text, accessible buttons); the battlefield is PixiJS.
+- Rules never wait on animation: the state is final immediately; presentation catches up event by event.
 
 ## Deployment
 

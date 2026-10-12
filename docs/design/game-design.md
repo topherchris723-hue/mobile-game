@@ -1,22 +1,22 @@
 # Shattered Sovereigns — Game Design Document
 
 - **Title:** **Shattered Sovereigns** (chosen 2026-10-12). A web search found no game with this name; a formal trademark search (e.g. USPTO, EUIPO) and a Play Store search are required before public release.
-- **Genre:** Turn-based team battler with character collection (anime gacha RPG)
-- **Platform:** Mobile web / installable PWA, Android Chrome first, **portrait, one hand** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0003-2d-rendering-pixijs.md`, `../decisions/0004-portrait-turn-based.md`)
-- **Status:** Battle system revised to **Rift Timeline** (2026-10-12) — awaiting owner approval of §4. Everything else approved.
-- **Inspirations (feel only, no borrowed content):** Dokkan Battle, One Piece Treasure Cruise, Naruto Blazing, Dragon Ball Legends (team building, types, cinematic supers, collection). The battle system — **Rift Timeline** — is our own design. All characters, worlds, names, and art are original.
+- **Genre:** Turn-based 1v1 card battles with teams of 3 and character collection (anime gacha RPG)
+- **Platform:** Mobile web / installable PWA, Android Chrome first, **portrait, one hand** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0003-2d-rendering-pixijs.md`, `../decisions/0004-portrait-turn-based.md`, `../decisions/0005-turn-based-rift-duel.md`)
+- **Status:** Approved by owner (2026-10-12). Battle system: turn-based **Rift Duel** (§4), defined by the owner: teams of 3, 1v1 on the field, free switching, auto-switch on KO, a hand of 3 attack cards.
+- **Inspirations (feel only, no borrowed content):** Dokkan Battle, One Piece Treasure Cruise, Naruto Blazing, Dragon Ball Legends (team building, types, cinematic supers, collection). The battle rules — **Rift Duel** — are our own design. All characters, worlds, names, and art are original.
 
 ## 1. Pitch
 
 Three worlds — a realm of energy-wielding martial artists, an ocean of rival adventure crews, and a land of elemental warrior clans — have shattered. Through the **Rift** between them, each world's greatest champions — its **Sovereigns** — are pulled into a shared battleground, the **Nexus**. Sovereigns who were never meant to meet must team up.
 
-Players collect Sovereigns from all three worlds, form teams of four, and fight turn-based battles where **time itself is the battlefield**: every move changes who acts next, and the best players bend the turn order so their heroes chain together and the enemy's deadliest attacks never land.
+Players collect Sovereigns from all three worlds, form teams of three, and fight turn-based one-on-one duels: each turn you pick one of three attack cards, decide when to tag in a teammate, and manage a shared pool of Rift Energy to land devastating Signature moves.
 
 ## 2. Target players and sessions
 
 - Fans of anime gacha RPGs, ages 13+ (paid summons will require age-appropriate handling).
 - **Portrait, one thumb.** Playable on a bus with one hand; no reflexes required.
-- A battle stage takes **2–4 minutes** (2–3 waves, boss on the last). Safe to leave mid-battle: the game pauses and resumes exactly where it was. Daily session 5–15 minutes.
+- A battle takes **2–4 minutes** (3 v 3). Safe to leave mid-battle: the game pauses and resumes exactly where it was. Daily session 5–15 minutes.
 
 ## 3. Core loop
 
@@ -29,72 +29,51 @@ Battles (story, bosses, events) ──► earn Coins, training items, shards, so
 
 The battle must be fun on its own. Collection and progression make it meaningful, not the other way round.
 
-## 4. Battle system — Rift Timeline
+## 4. Battle system — Rift Duel (turn-based)
 
 ### 4.1 Setup
 
-- **Your team:** 4 Sovereigns. The first is the **Leader**, whose Leader Skill applies to the whole team.
-- **Enemies:** 1–3 per wave, 2–3 waves per stage. The last wave is usually a boss.
-- **Win** by defeating every wave. **Lose** when all four Sovereigns are knocked out.
+- **Teams of 3** on both sides. Each side has **one active fighter** on the field; the other two wait on the **bench**.
+- **Win** by knocking out all three enemy fighters. **Lose** if all three of yours are knocked out.
+- Turns **alternate**: you act, then the enemy acts. The side whose active fighter has the higher **Speed** goes first (ties go to the player).
 
-### 4.2 The Timeline
+### 4.2 Your turn
 
-Everyone — your Sovereigns and the enemies — sits on **one shared turn-order bar** at the top of the screen, showing the next 8 actions.
+1. **Start of turn:** your team gains **+2 Rift Energy** (one shared gauge per team, 0–10; both teams start with 1). Your active fighter's hand is refilled to **3 cards**.
+2. **Switch (optional, free, once per turn):** tag in a benched fighter. Their own hand of 3 replaces the current one, and you can still play a card this turn. The fighter you swapped out can't be tagged back in until after your next turn.
+3. **Then exactly one of:**
+   - **Play a card** you can afford (cost is paid from Rift Energy), or
+   - **Charge**: skip attacking and gain **+2 extra Rift Energy**.
 
-- The unit at the front of the bar acts. Afterwards it goes back into the line based on the **Weight** of what it did and its **Speed**: light moves come back around quickly, heavy moves take longer.
-- **Weight:** Strike 2 · Skill 3 · Super 4 (tunable).
-- **Speed** is a stat; faster units get more turns over a battle.
-- **Timeline preview:** while you pick a move, ghost markers show exactly where your Sovereign will land and how enemies will shift. Nothing about turn order is ever hidden or random.
+Playing a card or charging ends your turn.
 
-### 4.3 Your turn
+### 4.3 Cards
 
-When one of your Sovereigns reaches the front, you choose one action:
+Each fighter has their **own deck of 6 cards**; you always see 3 from whoever is on the field. Played cards go to a discard pile and are reshuffled into the deck when it runs out.
 
-| Action     | Weight | Effect                                                                              |
-| ---------- | ------ | ----------------------------------------------------------------------------------- |
-| **Strike** | 2      | Basic attack. +1 Rift Energy.                                                       |
-| **Skill**  | 3      | The Sovereign's signature technique; has a cooldown (in their own turns). See §4.4. |
-| **Super**  | 4      | Big attack with a short cut-in. Costs Rift Energy (4–6).                            |
+| Kind          | In each deck | Cost | Power | Notes                                                        |
+| ------------- | ------------ | ---- | ----- | ------------------------------------------------------------ |
+| **Strike**    | 2            | 1    | ×1.0  | Quick close-range hit.                                       |
+| **Blast**     | 2            | 2    | ×2.2  | Ranged energy attack.                                        |
+| **Technique** | 1            | 2–3  | —     | The fighter's signature utility: Focus, Guard, Heal, or Sap. |
+| **Signature** | 1            | 5    | ×6.0  | Ultimate move with a cut-in. Most damage per energy.         |
 
-Then tap an enemy to target it (the most urgent enemy is pre-selected, so a single tap on the action button is often enough).
+Every card shows its cost, its kind (icon **and** label), and the **expected damage** against the current enemy, including type advantage — no hidden maths.
 
-### 4.4 Bending time — Skills
+**Technique effects:**
 
-Skills are what make the Timeline a game. Each Sovereign has one, built from a small set of timeline effects:
+- **Focus** — your next attack deals ×1.5.
+- **Guard** — the next hit you take is halved.
+- **Heal** — restore 25% of max HP.
+- **Sap** — the enemy's active fighter loses 30% Defence for 2 turns.
 
-- **Shove** — push an enemy back N places (e.g. "Quake Fist: damage + shove 2").
-- **Rally** — pull an ally forward N places.
-- **Haste / Slow** — change a unit's Speed for a few turns.
-- **Guard** — the Sovereign's next hit taken is halved, and they counter.
-- Plus ordinary effects: damage, heal, defence break.
+### 4.4 Knockouts and auto-switch
 
-### 4.5 Poise and Break
+When a fighter's HP reaches 0 they are knocked out and **the next fighter on the bench switches in automatically** (in team order). Energy is kept. The new fighter's hand is filled immediately.
 
-- Every enemy has a **Poise** bar under its HP.
-- Hits drain Poise; **type-advantaged hits drain double**, and Skills drain extra.
-- At 0 Poise the enemy is **Broken**: it is shoved to the back of the Timeline, takes +50% damage until it acts again, and **any telegraphed attack it was preparing is cancelled**.
-- Poise refills after the enemy's next action.
+### 4.5 Types
 
-### 4.6 Telegraphs — the boss puzzle
-
-- Enemies' dangerous moves appear **on the Timeline in advance** as a marked slot ("METEOR — 3 turns").
-- You have until that slot comes up to stop it: **Break** the enemy, **Shove** it back to buy time, or **Guard** the target it will hit.
-- Bosses have phases (e.g. at 50% HP they telegraph twice as often). Every boss fight is a readable puzzle, not a stat check.
-
-### 4.7 Rift Links — the multiverse mechanic
-
-- When two of your Sovereigns **from different worlds** act **back-to-back** on the Timeline, the second one gets a **Rift Link**: +25% damage and +1 extra Rift Energy.
-- Same-world back-to-back actions give no link, so team building across worlds — and ordering turns with Rally/Shove — matters.
-
-### 4.8 Rift Energy and Crossover Burst
-
-- **Rift Energy** is one shared team gauge (0–10). Earned from Strikes, Rift Links, and Breaking enemies.
-- Supers cost 4–6 energy.
-- **Crossover Burst** (10 energy): when two Sovereigns from different worlds are **next to each other at the front of the Timeline**, they can act together in one combined ultimate with a cinematic cut-in. The effect depends on their **type pair** (e.g. Fury + Void = armour-breaking finisher, Swift + Radiant = team heal and haste). Some named pairs have **unique Crossovers** — discovering them is part of collecting.
-
-### 4.9 Types
-
-Five original types, colour **and** icon coded (never colour alone):
+Five original types, colour **and** label coded (never colour alone):
 
 | Type    | Strong vs | Weak vs |
 | ------- | --------- | ------- |
@@ -104,42 +83,48 @@ Five original types, colour **and** icon coded (never colour alone):
 | Radiant | Void      | Void    |
 | Void    | Radiant   | Radiant |
 
-Advantage ×1.5 damage and ×2 Poise damage; disadvantage ×0.75 damage.
+Advantage ×1.5 damage; disadvantage ×0.75. Switching to a fighter with type advantage is the main reason to switch.
 
-### 4.10 Enemy behaviour
+### 4.6 Rift mechanics (the multiverse twist)
 
-- Enemies follow the same Timeline, Weight, and Speed rules as the player — no hidden extra turns.
-- Behaviour profiles: _Brute_ (heavy telegraphs), _Skirmisher_ (fast, light hits), _Warden_ (guards allies, slows you), _Riftcaller_ (manipulates the Timeline itself).
-- Difficulty comes from smarter targeting and nastier telegraph patterns, not inflated stats.
+- **Tag Link:** switching between fighters **from different worlds** gives **+1 Rift Energy**. Teams that mix worlds switch more freely.
+- **Crossover Burst** _(M3)_: at 10 Rift Energy, if your active fighter and a living bench fighter come from different worlds, a 4th card appears — a combined ultimate whose effect depends on their type pair. Some named pairs have unique Crossovers to discover.
+- **Telegraph** _(M3)_: when the enemy can afford its Signature, a "Charging" marker warns you — switch to a tougher fighter, Guard, or knock it out first.
 
-### 4.11 Screen layout (portrait)
+### 4.7 Damage
+
+`damage = ATK × power × type × focus × guard × 100 / (100 + DEF × sap)`, rounded. No random variance: the expected damage on a card is exactly what it deals. Randomness comes only from deck shuffles (seeded, reproducible).
+
+### 4.8 Enemy behaviour
+
+The enemy follows exactly the same rules (energy, hand of 3, one free switch, auto-switch). Its priorities, in order: take a knockout if a card can; protect itself when low (Guard/Heal); switch to type advantage; play its Signature; otherwise play its strongest affordable attack; otherwise Charge. Harder enemies later get smarter priorities, not inflated stats.
+
+### 4.9 Screen layout (portrait)
 
 ```
 ┌──────────────────────────────┐
-│ ▶[Kai][Golem][Mira][☄][Sena] │  Timeline — next 8 actions
-│                              │
-│               (enemy) (boss) │  Enemies, upper right, facing left
-│          (enemy)             │
-│                              │
-│   (ally)  (ally)             │  Your four Sovereigns, lower left,
-│ (ally)  (ally)               │  facing right (side-view sprites)
-│                              │
+│ ENEMY  Rift Brute  FURY      │  Enemy HP, energy, bench (●●○)
+│ ▮▮▮▮▮▮▮▯▯ 840/1200           │
+│                  (enemy) ◄   │
+│                              │  1 v 1 on the field
+│    ► (you)                   │
 │ ┌──────────────────────────┐ │
-│ │ KAI  ▮▮▮▮▮▮▯ HP  ◆◆◆◇ RE │ │  Active Sovereign + Rift Energy
-│ │ [STRIKE] [SKILL] [SUPER] │ │  Action buttons in the thumb zone
+│ │ KAIEN · FURY  ▮▮▮▮▮▯ HP  │ │
+│ │ ◆◆◆◆◇◇◇◇◇◇ Rift Energy   │ │
+│ │ [card] [card] [card]     │ │  3 cards in the thumb zone
+│ │ [⇄ Maris] [⇄ Torvan] [Charge] │
 │ └──────────────────────────┘ │
 └──────────────────────────────┘
 ```
 
-### 4.12 Pace and convenience
+### 4.10 Pace
 
-- Every enemy action and animation is short (≤ 1.2 s), with a 2× speed toggle.
-- **Auto-battle** for cleared stages (later milestone) — never for first clears of bosses.
+Animations are short (≤ 1 s per action) and the enemy acts after a brief pause so every hit is readable. A battle against 3 enemies should take 2–4 minutes. A 2× speed toggle and auto-battle for cleared stages come later.
 
 ## 5. Fighters and collection
 
 - **Rarity:** 3★, 4★, 5★. Higher rarity = higher stat ceiling and stronger kit, never a different game.
-- **Each fighter has:** type, world, role (Striker / Breaker / Guardian / Support), stats (HP, ATK, DEF, SPD), a **Skill** (§4.4), a **Super**, a **Leader Skill** (applies when they lead the team), and a **Passive**.
+- **Each fighter has:** type, world, role (Striker / Breaker / Guardian / Support), stats (HP, ATK, DEF, SPD), a **deck of 6 cards** (§4.3) including a Technique and a Signature, a **Leader Skill** (applies when they lead the team), and a **Passive**.
 - **Progression per fighter:**
   - _Level_ — raised with Coins + training items.
   - _Limit Break_ — raises the level cap; uses **Shards**. Duplicate summons convert to shards, so duplicates are always useful.
@@ -177,7 +162,7 @@ Until then, all Gems are earned in-game and the economy runs locally; its rules 
 
 ## 7. Game modes (by phase)
 
-1. **Story** — chapters of 8–10 stages, with short dialogue scenes between Sovereigns from different worlds.
+1. **Story** — chapters of 8–10 duels, with short dialogue scenes between Sovereigns from different worlds.
 2. **Boss battles** — scripted, telegraph-heavy fights at the end of chapters.
 3. **Events** (later) — limited-time bosses with a rewards track.
 4. **PvP** (later) — _Rift Arena_: fight other players' teams controlled by the enemy AI. Turn-based play makes this possible without real-time servers.

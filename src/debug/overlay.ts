@@ -7,7 +7,6 @@ export interface DebugStats {
   readonly resolution: number;
   readonly logicalHeight: number;
   readonly displayObjects: number;
-  readonly units: number;
   readonly scene: string;
 }
 
@@ -104,7 +103,7 @@ export function createDebugOverlay(log: Logger): DebugOverlay {
       if (statsSource) {
         const s = statsSource();
         statsLabel.textContent = [
-          `${s.scene} · ${s.units} units · ${s.displayObjects} obj`,
+          `${s.scene} · ${s.displayObjects} obj`,
           `${s.renderer} ${s.resolution}x · ${window.innerWidth}×${window.innerHeight} · ${BUILD_ID}`,
         ].join('\n');
       }

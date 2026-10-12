@@ -2,7 +2,8 @@ import '@fontsource/saira-condensed/latin-700.css';
 import '@fontsource/noto-sans/latin-400.css';
 import './ui/styles.css';
 
-import { EMBER_COUNT } from './config/battlefield';
+import { EMBER_COUNT } from './config/duelPresentation';
+import { ENEMY_TEAM, PLAYER_TEAM } from './config/fighters';
 import { TICK_MS } from './config/sim';
 import { BUILD_ID } from './core/buildInfo';
 import { parseLaunchFlags } from './core/flags';
@@ -10,24 +11,23 @@ import { createGameLoop } from './core/loop';
 import { installErrorCapture } from './debug/errorCapture';
 import { createLogger } from './debug/log';
 import { createDebugOverlay, type DebugOverlay } from './debug/overlay';
-import {
-  createBattlefieldState,
-  stepBattlefield,
-  type BattlefieldCommand,
-} from './game/battlefield';
-import { createTapInput } from './input/tapInput';
-import { createBattlefieldView } from './render/battlefieldView';
+import { activeFighter } from './game/duel/rules';
+import type { Side } from './game/duel/types';
+import { createDuelView } from './render/duelView';
 import { countDisplayObjects, createStage, type StageMetrics } from './render/stage';
-import { showArenaHint } from './ui/arenaHint';
+import { createDuelScene, type DuelPhase } from './scenes/duelScene';
 import { runBootScreen } from './ui/bootScreen';
+import { createDuelHud } from './ui/duelHud';
 import { watchPlayability } from './ui/playability';
 
 /** Read-only hook for automated tests, only present with `?debug=1`. */
 interface DebugHook {
-  readonly selectedUnit: () => number | null;
-  /** Centre of a unit's body in CSS pixels, so tests can tap it. */
-  readonly unitScreenPoint: (unitId: number) => { x: number; y: number } | null;
-  readonly unitIds: () => readonly number[];
+  readonly phase: () => DuelPhase;
+  readonly turnSide: () => Side;
+  readonly winner: () => Side | null;
+  readonly activeIndex: (side: Side) => number;
+  readonly hp: (side: Side) => number;
+  readonly energy: (side: Side) => number;
   readonly tick: () => number;
 }
 declare global {
@@ -42,18 +42,20 @@ installErrorCapture(log);
 async function boot(): Promise<void> {
   const flags = parseLaunchFlags(location.search);
   log.info(
-    `Build ${BUILD_ID}${flags.debug ? ' · debug' : ''}${flags.benchmark ? ' · benchmark' : ''}`,
+    `Build ${BUILD_ID}${flags.debug ? ' · debug' : ''}${flags.benchmark ? ' · benchmark' : ''}${flags.speed !== 1 ? ` · speed ×${flags.speed}` : ''}`,
   );
   const overlay: DebugOverlay | null = flags.debug ? createDebugOverlay(log) : null;
 
   const host = document.getElementById('game-root');
-  if (!host) throw new Error('Missing #game-root');
+  const hudHost = document.getElementById('hud-root');
+  if (!host || !hudHost) throw new Error('Missing #game-root or #hud-root');
 
-  const battlefield = createBattlefieldState({ benchmark: flags.benchmark });
   const ready = (async () => {
+    // Pixi measures text with canvas fonts, so the display font must be loaded first.
+    await document.fonts.load('700 64px "Saira Condensed"');
     const stage = await createStage(host);
-    const view = createBattlefieldView(
-      battlefield,
+    const view = createDuelView(
+      { player: PLAYER_TEAM, enemy: ENEMY_TEAM },
       flags.benchmark ? EMBER_COUNT.benchmark : EMBER_COUNT.normal,
     );
     stage.world.addChild(view.root);
@@ -65,12 +67,23 @@ async function boot(): Promise<void> {
     ready.then(() => undefined),
   );
   const { stage, view } = await ready;
-  document.body.dataset['scene'] = 'battlefield';
+  document.body.dataset['scene'] = 'duel';
+
+  // The HUD calls into the scene, which is created right after; requests before then are ignored.
+  let scene: ReturnType<typeof createDuelScene> | null = null;
+  const hud = createDuelHud(hudHost, {
+    onPlayCard: (index) => scene?.requestPlay(index),
+    onSwitch: (index) => scene?.requestSwitch(index),
+    onCharge: () => scene?.requestCharge(),
+    onRestart: () => scene?.restart(),
+  });
+  const duel = createDuelScene({ view, hud, log, speed: flags.speed });
+  scene = duel;
 
   let metrics: StageMetrics = stage.fit();
   const paintBackdrop = (): void => {
     const started = performance.now();
-    view.resize(metrics.logicalHeight, metrics.pixelsPerUnit);
+    view.resize(metrics.logicalHeight, metrics.pixelsPerUnit, hud.panelHeight / metrics.cssPerUnit);
     log.info(`Backdrop painted in ${Math.round(performance.now() - started)} ms`);
   };
   paintBackdrop();
@@ -78,27 +91,15 @@ async function boot(): Promise<void> {
     `Renderer ${stage.app.renderer.name} @ ${stage.resolution}x, 720×${Math.round(metrics.logicalHeight)} logical`,
   );
 
-  // Taps become commands applied on the next simulation tick, never direct state changes.
-  let pending: BattlefieldCommand[] = [];
-  const noCommands: readonly BattlefieldCommand[] = [];
-  createTapInput(stage.app.canvas, (cssX, cssY) => {
-    const unitId = view.unitAt(cssX / metrics.cssPerUnit, cssY / metrics.cssPerUnit);
-    pending.push({ kind: 'select', unitId });
-  });
-
+  let tick = 0;
   const loop = createGameLoop({
     update() {
-      if (pending.length === 0) {
-        stepBattlefield(battlefield, noCommands);
-        return;
-      }
-      const commands = pending;
-      pending = [];
-      stepBattlefield(battlefield, commands);
+      tick++;
+      duel.update();
     },
     render(alpha, frameDeltaMs) {
-      const timeSec = ((battlefield.tick + alpha) * TICK_MS) / 1000;
-      view.render(timeSec, frameDeltaMs / 1000);
+      const timeSec = ((tick + alpha) * TICK_MS) / 1000;
+      view.render(timeSec, (frameDeltaMs / 1000) * flags.speed);
       stage.render();
     },
     frameMeasured(frameDeltaMs, workMs) {
@@ -107,20 +108,22 @@ async function boot(): Promise<void> {
   });
 
   overlay?.setStatsSource(() => ({
-    scene: 'battlefield-test',
+    scene: `duel · ${duel.phase}`,
     renderer: stage.app.renderer.name,
     resolution: stage.resolution,
     logicalHeight: metrics.logicalHeight,
     displayObjects: countDisplayObjects(stage.app.stage),
-    units: battlefield.units.length,
   }));
 
   if (flags.debug) {
     window.__sovereigns = {
-      selectedUnit: () => battlefield.selectedUnitId,
-      unitIds: () => battlefield.units.map((unit) => unit.id),
-      unitScreenPoint: (unitId) => view.unitScreenPoint(unitId, metrics.cssPerUnit),
-      tick: () => battlefield.tick,
+      phase: () => duel.phase,
+      turnSide: () => duel.state.turnSide,
+      winner: () => duel.state.winner,
+      activeIndex: (side) => duel.state.teams[side].activeIndex,
+      hp: (side) => activeFighter(duel.state.teams[side]).hp,
+      energy: (side) => duel.state.teams[side].energy,
+      tick: () => tick,
     };
   }
 
@@ -132,14 +135,11 @@ async function boot(): Promise<void> {
     requestAnimationFrame(() => {
       resizeQueued = false;
       const next = stage.fit();
-      if (
+      const unchanged =
         Math.abs(next.logicalHeight - metrics.logicalHeight) < 0.5 &&
-        Math.abs(next.pixelsPerUnit - metrics.pixelsPerUnit) < 0.01
-      ) {
-        metrics = next;
-        return;
-      }
+        Math.abs(next.pixelsPerUnit - metrics.pixelsPerUnit) < 0.01;
       metrics = next;
+      if (unchanged) return;
       paintBackdrop();
       if (!loop.running) stage.render();
     });
@@ -148,8 +148,6 @@ async function boot(): Promise<void> {
 
   watchPlayability((playable) => {
     if (playable) {
-      // Taps that arrived while paused are stale; never replay them.
-      pending = [];
       loop.start();
       log.debug('Resumed');
     } else {
@@ -157,7 +155,6 @@ async function boot(): Promise<void> {
       log.debug('Paused');
     }
   });
-  showArenaHint();
 }
 
 boot().catch((error: unknown) => {

@@ -2,8 +2,10 @@
 export interface LaunchFlags {
   /** `?debug=1` — FPS overlay, log panel, and a read-only state hook for automated tests. */
   readonly debug: boolean;
-  /** `?bench=1` — worst-case duel load (six fighters, dense effects) to measure performance. */
+  /** `?bench=1` — dense effects to measure rendering headroom. */
   readonly benchmark: boolean;
+  /** `?speed=N` — animation speed multiplier (0.25–20), for testing long battles quickly. */
+  readonly speed: number;
 }
 
 export function parseLaunchFlags(search: string): LaunchFlags {
@@ -12,5 +14,10 @@ export function parseLaunchFlags(search: string): LaunchFlags {
     const value = params.get(key);
     return value === '1' || value === 'true';
   };
-  return { debug: isOn('debug'), benchmark: isOn('bench') };
+  const speed = Number(params.get('speed') ?? '1');
+  return {
+    debug: isOn('debug'),
+    benchmark: isOn('bench'),
+    speed: Number.isFinite(speed) && speed > 0 ? Math.min(20, Math.max(0.25, speed)) : 1,
+  };
 }
