@@ -161,6 +161,10 @@ The whole game runs in landscape; holding the phone upright shows a "rotate your
   - Energy realm — warm golds and oranges, aura effects, angular shapes.
   - Ocean crews — teals and sandy tones, rope/wood/brass motifs, rounded shapes.
   - Warrior clans — deep greens and crimsons, ink-brush strokes, sharp diagonals.
+- **Two art tiers per Sovereign (decided 2026-10-12):**
+  - **Splash art** — one detailed illustration used for summons, cards, fighter detail, and Super/Crossover cut-ins. This is what sells the character.
+  - **Battle sprites** — animated sprites in the same style with less detail, so animation stays affordable.
+- **Rendering style and mood:** pending — the owner is providing reference images; the full style guide will live in `art-style.md`.
 - **Animation set per fighter (~15 clips, frame-by-frame):** idle, lane step, guard, guard-break, light hit, heavy hit, knockdown, get-up, 2–3 strikes, blast, signature, Crossover pose, KO, victory.
 - **Visual effects** (auras, blasts, hit sparks, Rift Step slow-mo, lane telegraphs) are built in code and can reach final quality even while characters are placeholders.
 - **Placeholder phase:** fighters drawn in code as clean layered silhouettes (head, torso, limbs) in their type and world colours, animated with code-driven poses. No external assets needed; each is logged as placeholder in `../assets.md`.
