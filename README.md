@@ -1,4 +1,4 @@
-# mobile-game
+# Shattered Sovereigns
 
 A mobile-first web game, developed and play-tested entirely from an Android phone.
 

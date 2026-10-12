@@ -1,16 +1,16 @@
-# Game Design Document
+# Shattered Sovereigns — Game Design Document
 
-- **Working title:** Project Nexus (placeholder — final name to be chosen and checked for trademark conflicts)
+- **Title:** **Shattered Sovereigns** (chosen 2026-10-12). A web search found no game with this name; a formal trademark search (e.g. USPTO, EUIPO) and a Play Store search are required before public release.
 - **Genre:** Real-time 2D card-action duels with character collection (anime gacha RPG)
 - **Platform:** Mobile web / installable PWA, Android Chrome first, **landscape** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0003-2d-rendering-pixijs.md`)
-- **Status:** Approved by owner (2026-10-12). Final name pending.
+- **Status:** Approved by owner (2026-10-12).
 - **Inspirations (feel only, no borrowed content):** Dragon Ball Legends (real-time card-driven duels, cinematic specials), One Piece Treasure Cruise / Dokkan Battle / Naruto Blazing (team building, types, collection). The battle system — **Rift Duel** — is our own design. All characters, worlds, names, and art are original.
 
 ## 1. Pitch
 
-Three worlds — a realm of energy-wielding martial artists, an ocean of rival adventure crews, and a land of elemental warrior clans — have been torn open by the **Rift** and pulled into a shared battleground, the **Nexus**. Fighters who were never meant to meet must team up.
+Three worlds — a realm of energy-wielding martial artists, an ocean of rival adventure crews, and a land of elemental warrior clans — have shattered. Through the **Rift** between them, each world's greatest champions — its **Sovereigns** — are pulled into a shared battleground, the **Nexus**. Sovereigns who were never meant to meet must team up.
 
-Players collect heroes from all three worlds, form teams of three, and fight fast real-time duels where **the whole team lives in your hand**: every card you play can pull a different fighter through the Rift to strike.
+Players collect Sovereigns from all three worlds, form teams of three, and fight fast real-time duels where **the whole team lives in your hand**: every card you play can pull a different fighter through the Rift to strike.
 
 ## 2. Target players and sessions
 

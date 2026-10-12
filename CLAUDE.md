@@ -185,4 +185,4 @@ Emulated tests are not proof that it works on a real device. Report them as "pas
 
 The toolchain is set up in the first implementation milestone, once the game concept is agreed. When it is, this section lists the exact commands for install, dev, typecheck, lint, test, e2e, and build, and the URL where each branch is deployed for phone testing.
 
-Current state: **no game code yet** — the repository contains standards and documentation only. Design: `docs/design/game-design.md`; plan: `docs/roadmap.md`.
+Current state: **no game code yet** — the repository contains standards and documentation only. Game: **Shattered Sovereigns**. Design: `docs/design/game-design.md`; plan: `docs/roadmap.md`.
