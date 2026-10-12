@@ -28,7 +28,9 @@ const cards = (page: Page) => page.locator('.player-panel .card');
 
 test('boots into a duel with a full hand and no errors', async ({ page }, testInfo) => {
   const errors = watchErrors(page);
-  await start(page, '?debug=1');
+  // Sped up: this checks booting and the hand, not animation length (the enemy moves first, and
+  // GPU-less CI runners render slowly enough that normal-speed playback can take 20 s+).
+  await start(page, '?debug=1&speed=4');
   await waitForPlayerTurn(page);
   await expect(cards(page)).toHaveCount(3);
   await expect(page.locator('.enemy-hud .hud-name')).not.toBeEmpty();

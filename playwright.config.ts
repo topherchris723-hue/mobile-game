@@ -6,6 +6,8 @@ export default defineConfig({
   testDir: 'tests/e2e',
   outputDir: 'test-results',
   fullyParallel: true,
+  // CI runners have no GPU: two software-rendered browsers at once starve each other.
+  ...(process.env['CI'] ? { workers: 1 } : {}),
   forbidOnly: Boolean(process.env['CI']),
   retries: 0,
   reporter: [['list']],
