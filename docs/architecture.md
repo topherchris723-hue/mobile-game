@@ -4,7 +4,7 @@ Current map of the game's systems. Update this whenever a system is added, remov
 
 ## Status
 
-Milestone **M3 — Duel depth** on top of the M2 Rift Duel core (`decisions/0005-turn-based-rift-duel.md`): a complete 3 v 3 turn-based duel against the AI in portrait, with cards, energy, free switching, auto-switch on KO, types, Tag Link, combos, Crossover Bursts, Signature telegraphs, Drain, AI behaviour profiles, victory/defeat, and replay. Fighters and backgrounds are still code-drawn placeholders.
+Milestone **M5 — Home menu, Sovereigns, and saving** (built ahead of M4 at the owner's request), on top of the complete M2–M3 Rift Duel. The game boots to a home menu (Story, Sovereigns, and locked Summon/Guilds tiles), has a 15-Sovereign roster with Leader Skills, a collection and team editor, a Prologue story battle, and a versioned save. Art is still code-drawn placeholders.
 
 ## Runtime flow
 
@@ -12,47 +12,59 @@ Milestone **M3 — Duel depth** on top of the M2 Rift Duel core (`decisions/0005
 index.html ─► src/main.ts
   ├─ debug/log + debug/errorCapture      installed first, so even boot errors reach the screen
   ├─ core/flags                           ?debug=1, ?bench=1, ?speed=N
-  ├─ render/stage + render/duelView       PixiJS app, backdrop, fighters, effects (built behind the boot screen)
+  ├─ save/saveStore                       load + validate + migrate the save (localStorage)
+  ├─ render/stage                         one PixiJS app for the whole session
   ├─ ui/bootScreen                        "Tap to start" → fullscreen + portrait lock (best effort)
-  ├─ ui/duelHud                           HTML HUD: enemy panel, cards, energy, bench, Charge, result
-  ├─ scenes/duelScene                     owns the duel; plays events back; runs the enemy AI
-  │     game/duel/rules  applyAction()   pure rules → DuelEvent[]
-  │     game/duel/ai     chooseAction()  enemy decisions, same rules as the player
-  ├─ core/loop                            rAF driver around a 60 Hz fixed-step clock
-  │    update()  → duelScene.update (event playback timing, buffered player intents, AI turns)
-  │    render(α) → duelView.render → stage.render
-  └─ ui/playability                       pauses in landscape or hidden tab; resumes without catch-up
+  └─ scenes/app                           screen router; exactly one screen alive at a time
+       ├─ ui/screens/homeScreen           Story · Sovereigns · Summon (locked) · Guilds (locked)
+       ├─ ui/screens/storyScreen          Prologue (+ locked Chapter 1)
+       ├─ ui/screens/sovereignsScreen     collection grid, detail sheet, team editor (saves)
+       └─ scenes/battleSession            one battle: duel view + HUD + duel scene + game loop
+            ├─ game/leader                applies slot 1's Leader Skill to the team
+            ├─ scenes/duelScene           owns the duel; plays events back; runs the enemy AI
+            │     game/duel/rules         pure rules → DuelEvent[]
+            │     game/duel/ai            enemy decisions by profile
+            ├─ render/duelView            Pixi battlefield and effects
+            └─ ui/duelHud                 HTML battle HUD
+  ui/playability → app.setPlayable         pauses the battle loop in landscape or a hidden tab
 ```
+
+Menus are HTML over a static painted backdrop (`ui/menuBackdrop`, no game loop). The Pixi canvas is hidden outside battles, and the game loop only exists inside a battle session.
 
 ### How a turn flows
 
-1. The HUD reports a tap (card, bench, Charge). The scene checks it is legal; if not, the HUD shows the reason in a toast.
+1. The HUD reports a tap (card, bench, Charge, Crossover). The scene checks it is legal; if not, the HUD shows the reason in a toast.
 2. A legal tap becomes a buffered intent, applied on the next tick via `applyAction`, which mutates the duel state and returns events.
 3. The scene plays events back one at a time (`EVENT_DURATION_MS`): the view animates, the HUD updates its _displayed_ HP/energy so numbers change in sync with hits.
 4. When the queue is empty: enemy turn → short think pause → `chooseAction` → back to step 3; player turn → controls enabled.
 
 ## Modules
 
-| Path                                                                                         | Responsibility                                                                                                                                                              | Depends on                             |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `src/config/battle.ts`                                                                       | Duel rules: team/hand size, energy, Tag Link, switch cooldown, type and technique multipliers, combo, Crossover and partner effects, Drain, AI profiles                     | —                                      |
-| `src/config/fighters.ts`                                                                     | Placeholder roster: 3 Sovereigns and 3 Rift enemies with stats and 6-card decks                                                                                             | config/placeholderFighters             |
-| `src/config/crossovers.ts`                                                                   | Named Crossover Bursts for specific pairs                                                                                                                                   | —                                      |
-| `src/config/duelPresentation.ts`                                                             | Portrait layout, event timings, enemy think time, seed                                                                                                                      | —                                      |
-| `src/config/palette.ts`, `display.ts`, `sim.ts`, `placeholderFighters.ts`                    | Colours (mirrors art-style.md), 720-unit-wide space, tick rate, placeholder looks                                                                                           | —                                      |
-| `src/core/*`                                                                                 | Fixed-step clock and loop, seeded RNG, flags, build info, math                                                                                                              | config                                 |
-| `src/game/duel/types.ts`                                                                     | Duel state, actions, events                                                                                                                                                 | —                                      |
-| `src/game/duel/rules.ts`                                                                     | Pure, deterministic rules: setup, turns, cards, combos, switching, Crossover, Drain, KO/auto-switch, win; HUD helpers (Crossover preview, Signature telegraph, combo check) | config/battle                          |
-| `src/game/duel/damage.ts`                                                                    | Type wheel and the exact damage formula (also used for on-card previews)                                                                                                    | config/battle                          |
-| `src/game/duel/ai.ts`                                                                        | Enemy decision-making by priority, shaped by each fighter's profile (KO → protect → switch → Crossover/Signature → Drain → save → Focus/Sap → best attack → Charge)         | game/duel/rules                        |
-| `src/scenes/duelScene.ts`                                                                    | Runs a duel: event playback, AI turns, buffered player intents, restart                                                                                                     | game/duel, render/duelView, ui/duelHud |
-| `src/render/stage.ts`                                                                        | PixiJS application, resolution cap, logical scaling                                                                                                                         | config/display                         |
-| `src/render/duelView.ts`                                                                     | Backdrop layers, the two active fighters (each one baked illustration animated in code: breathing, lunge, hit flash, guard ward, KO), projectiles, floating numbers         | render/*                               |
-| `src/render/tweens.ts`                                                                       | Small game-time tween runner                                                                                                                                                | core/math                              |
-| `src/render/backdrop.ts`, `placeholderFighter.ts`, `riftEffects.ts`, `embers.ts`, `color.ts` | Code-painted placeholder art and effects                                                                                                                                    | config/palette                         |
-| `src/ui/duelHud.ts`                                                                          | HTML battle HUD with displayed HP/energy, cards with exact damage previews, bench, toasts, result                                                                           | game/duel (read-only helpers)          |
-| `src/ui/bootScreen.ts`, `playability.ts`, `styles.css`                                       | Start screen, pause on rotation/hide, design tokens and HUD styles                                                                                                          | —                                      |
-| `src/debug/*`                                                                                | Logger, error capture, `?debug=1` overlay, copyable reports                                                                                                                 | core/buildInfo                         |
+| Path                                                                                                      | Responsibility                                                                                                                                  | Depends on                             |
+| --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `src/config/sovereigns.ts`                                                                                | The 15 launch Sovereigns: stats, decks, rarity, role, Leader Skills, placeholder looks; starters and default team                               | config/fighters, battle, palette       |
+| `src/config/story.ts`                                                                                     | Story stages (Prologue)                                                                                                                         | config/fighters                        |
+| `src/config/fighters.ts`                                                                                  | Fighter/card types, card helpers, the Rift enemy team                                                                                           | config/battle, placeholderFighters     |
+| `src/config/battle.ts`                                                                                    | Duel rules: energy, Tag Link, switch cooldown, type and technique multipliers, combo, Crossover and partner effects, Drain, AI profiles         | —                                      |
+| `src/config/crossovers.ts`                                                                                | Named Crossover Bursts for specific pairs                                                                                                       | —                                      |
+| `src/config/duelPresentation.ts`, `palette.ts`, `display.ts`, `sim.ts`, `placeholderFighters.ts`          | Battle layout and timings, colours (mirror art-style.md), logical space, tick rate, enemy looks                                                 | —                                      |
+| `src/core/*`                                                                                              | Fixed-step clock and loop, seeded RNG, flags, build info, math                                                                                  | config                                 |
+| `src/game/duel/*`                                                                                         | Pure, deterministic duel rules, damage, AI, types                                                                                               | config                                 |
+| `src/game/leader.ts`                                                                                      | Leader Skill application and descriptions                                                                                                       | config/sovereigns                      |
+| `src/game/team.ts`                                                                                        | Team editing rule (always three different Sovereigns; placing an existing member swaps)                                                         | —                                      |
+| `src/save/saveData.ts`                                                                                    | Save schema v1, defaults, parse/migrate/validate/repair (pure)                                                                                  | config/sovereigns                      |
+| `src/save/saveStore.ts`                                                                                   | localStorage I/O: immediate writes, never overwrites a newer-version save, works in memory if storage is blocked                                | save/saveData                          |
+| `src/scenes/app.ts`                                                                                       | Screen router; records story clears; owns the menu toast and backdrop                                                                           | ui/screens, scenes/battleSession       |
+| `src/scenes/battleSession.ts`                                                                             | One battle's lifecycle: view, HUD, scene, loop; disposes everything on exit                                                                     | render, ui, game                       |
+| `src/scenes/duelScene.ts`                                                                                 | Event playback, AI turns, buffered player intents, replay                                                                                       | game/duel, render/duelView, ui/duelHud |
+| `src/render/stage.ts`                                                                                     | PixiJS application, resolution cap, logical scaling                                                                                             | config/display                         |
+| `src/render/duelView.ts`                                                                                  | Backdrop layers, the two active fighters (each one baked illustration animated in code), projectiles, Crossover/Drain effects, floating numbers | render/*                               |
+| `src/render/portraits.ts`                                                                                 | Renders each Sovereign's battle art once into an image for the menus                                                                            | render/placeholderFighter              |
+| `src/render/backdrop.ts`, `placeholderFighter.ts`, `riftEffects.ts`, `embers.ts`, `tweens.ts`, `color.ts` | Code-painted placeholder art, effects, tweening, colour rules                                                                                   | config/palette                         |
+| `src/ui/screens/*`                                                                                        | Home, Story, and Sovereigns screens (HTML)                                                                                                      | save, config, game/leader, game/team   |
+| `src/ui/duelHud.ts`, `cardText.ts`, `dom.ts`, `menuBackdrop.ts`                                           | Battle HUD; shared card text/icons and DOM helpers; static menu backdrop                                                                        | game/duel (read-only helpers)          |
+| `src/ui/bootScreen.ts`, `playability.ts`, `styles.css`                                                    | Start screen, pause on rotation/hide, design tokens and all styles                                                                              | —                                      |
+| `src/debug/*`                                                                                             | Logger, error capture, `?debug=1` overlay, copyable reports                                                                                     | core/buildInfo                         |
 
 ## Key decisions
 
@@ -63,6 +75,7 @@ index.html ─► src/main.ts
 - Static scenery is painted once per screen size into textures; only fighters, effects, beams, and motes animate.
 - Text-heavy battle UI is HTML/CSS (crisp text, accessible buttons); the battlefield is PixiJS.
 - Rules never wait on animation: the state is final immediately; presentation catches up event by event.
+- The save is written immediately on every change (mobile browsers can kill a tab without warning); its rules are pure and unit-tested.
 
 ## Deployment
 

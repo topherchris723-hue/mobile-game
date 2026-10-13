@@ -152,7 +152,9 @@ Animations are short (≤ 1 s per action) and the enemy acts after a brief pause
   - _Level_ — raised with Coins + training items.
   - _Limit Break_ — raises the level cap; uses **Shards**. Duplicate summons convert to shards, so duplicates are always useful.
   - _Awaken_ (later) — 4★ → 5★ path for favourite characters.
-- **Launch roster target:** 15 fighters (5 per world, all five types represented), expandable through data files only.
+- **Launch roster (built):** 15 Sovereigns in `src/config/sovereigns.ts` — 5 per world, all five types, rarities 3★–5★, each with a 6-card deck and a Leader Skill. Expandable through data files only.
+- **Starters:** new players own Kaien, Maris, Torvan (the default team), Brakka, Corrin, and Goro. The other nine are recruited through Summons (M6).
+- **Leader Skills** apply from team slot 1 to the whole battle: a stat boost for all allies or for allies of one world or type (e.g. "Energy realm allies +15% ATK"), or extra starting Rift Energy.
 
 ## 6. Economy
 

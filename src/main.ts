@@ -2,28 +2,25 @@ import '@fontsource/saira-condensed/latin-700.css';
 import '@fontsource/noto-sans/latin-400.css';
 import './ui/styles.css';
 
-import { EMBER_COUNT } from './config/duelPresentation';
-import { ENEMY_TEAM, PLAYER_TEAM } from './config/fighters';
-import { TICK_MS } from './config/sim';
 import { BUILD_ID } from './core/buildInfo';
 import { parseLaunchFlags } from './core/flags';
-import { createGameLoop } from './core/loop';
 import { installErrorCapture } from './debug/errorCapture';
 import { createLogger } from './debug/log';
 import { createDebugOverlay, type DebugOverlay } from './debug/overlay';
 import { activeFighter } from './game/duel/rules';
 import type { Side } from './game/duel/types';
-import { createDuelView } from './render/duelView';
-import { countDisplayObjects, createStage, type StageMetrics } from './render/stage';
-import { createDuelScene, type DuelPhase } from './scenes/duelScene';
+import { createStage } from './render/stage';
+import { browserStorage, createSaveStore } from './save/saveStore';
+import { createApp, type ScreenId } from './scenes/app';
+import type { DuelPhase } from './scenes/duelScene';
 import { runBootScreen } from './ui/bootScreen';
-import { createDuelHud } from './ui/duelHud';
 import { watchPlayability } from './ui/playability';
 
 /** Read-only hook for automated tests, only present with `?debug=1`. */
 interface DebugHook {
-  readonly phase: () => DuelPhase;
-  readonly turnSide: () => Side;
+  readonly screen: () => ScreenId;
+  readonly phase: () => DuelPhase | null;
+  readonly turnSide: () => Side | null;
   readonly turnNumber: () => number;
   readonly winner: () => Side | null;
   readonly activeIndex: (side: Side) => number;
@@ -47,120 +44,66 @@ async function boot(): Promise<void> {
   );
   const overlay: DebugOverlay | null = flags.debug ? createDebugOverlay(log) : null;
 
-  const host = document.getElementById('game-root');
+  const gameHost = document.getElementById('game-root');
   const hudHost = document.getElementById('hud-root');
-  if (!host || !hudHost) throw new Error('Missing #game-root or #hud-root');
+  const screenHost = document.getElementById('screen-root');
+  if (!gameHost || !hudHost || !screenHost) throw new Error('Missing a root element');
 
+  const save = createSaveStore(browserStorage(), log);
   const ready = (async () => {
     // Pixi measures text with canvas fonts, so the display font must be loaded first.
     await document.fonts.load('700 64px "Saira Condensed"');
-    const stage = await createStage(host);
-    const view = createDuelView(
-      stage.app.renderer,
-      { player: PLAYER_TEAM, enemy: ENEMY_TEAM },
-      flags.benchmark ? EMBER_COUNT.benchmark : EMBER_COUNT.normal,
-    );
-    stage.world.addChild(view.root);
-    return { stage, view };
+    return createStage(gameHost);
   })();
 
   await runBootScreen(
     log,
     ready.then(() => undefined),
   );
-  const { stage, view } = await ready;
-  document.body.dataset['scene'] = 'duel';
+  const stage = await ready;
+  log.info(`Renderer ${stage.app.renderer.name} @ ${stage.resolution}x`);
 
-  // The HUD calls into the scene, which is created right after; requests before then are ignored.
-  let scene: ReturnType<typeof createDuelScene> | null = null;
-  const hud = createDuelHud(hudHost, {
-    onPlayCard: (index) => scene?.requestPlay(index),
-    onSwitch: (index) => scene?.requestSwitch(index),
-    onCharge: () => scene?.requestCharge(),
-    onCrossover: (partner) => scene?.requestCrossover(partner),
-    onRestart: () => scene?.restart(),
-  });
-  const duel = createDuelScene({ view, hud, log, speed: flags.speed });
-  scene = duel;
-
-  let metrics: StageMetrics = stage.fit();
-  const paintBackdrop = (): void => {
-    const started = performance.now();
-    view.resize(metrics.logicalHeight, metrics.pixelsPerUnit, hud.panelHeight / metrics.cssPerUnit);
-    log.info(`Backdrop painted in ${Math.round(performance.now() - started)} ms`);
-  };
-  paintBackdrop();
-  hud.onPanelResize((heightCss) => {
-    view.setBottomReserved(heightCss / metrics.cssPerUnit);
-  });
-  log.info(
-    `Renderer ${stage.app.renderer.name} @ ${stage.resolution}x, 720×${Math.round(metrics.logicalHeight)} logical`,
-  );
-
-  let tick = 0;
-  const loop = createGameLoop({
-    update() {
-      tick++;
-      duel.update();
-    },
-    render(alpha, frameDeltaMs) {
-      const timeSec = ((tick + alpha) * TICK_MS) / 1000;
-      view.render(timeSec, (frameDeltaMs / 1000) * flags.speed);
-      stage.render();
-    },
-    frameMeasured(frameDeltaMs, workMs) {
-      overlay?.recordFrame(frameDeltaMs, workMs);
-    },
-  });
-
-  overlay?.setStatsSource(() => ({
-    scene: `duel · ${duel.phase}`,
-    renderer: stage.app.renderer.name,
-    resolution: stage.resolution,
-    logicalHeight: metrics.logicalHeight,
-    displayObjects: countDisplayObjects(stage.app.stage),
-  }));
+  const app = createApp({ stage, screenHost, hudHost, save, flags, log, overlay });
+  app.showHome();
 
   if (flags.debug) {
+    let tick = 0;
+    const countTicks = (): void => {
+      if (app.battle?.loop.running) tick++;
+      requestAnimationFrame(countTicks);
+    };
+    requestAnimationFrame(countTicks);
+    const duel = () => app.battle?.scene ?? null;
     window.__sovereigns = {
-      phase: () => duel.phase,
-      turnSide: () => duel.state.turnSide,
-      turnNumber: () => duel.state.turnNumber,
-      winner: () => duel.state.winner,
-      activeIndex: (side) => duel.state.teams[side].activeIndex,
-      hp: (side) => activeFighter(duel.state.teams[side]).hp,
-      energy: (side) => duel.state.teams[side].energy,
+      screen: () => app.screen,
+      phase: () => duel()?.phase ?? null,
+      turnSide: () => duel()?.state.turnSide ?? null,
+      turnNumber: () => duel()?.state.turnNumber ?? 0,
+      winner: () => duel()?.state.winner ?? null,
+      activeIndex: (side) => duel()?.state.teams[side].activeIndex ?? -1,
+      hp: (side) => {
+        const scene = duel();
+        return scene ? activeFighter(scene.state.teams[side]).hp : -1;
+      },
+      energy: (side) => duel()?.state.teams[side].energy ?? -1,
       tick: () => tick,
     };
   }
 
-  // Resize at most once per frame, and only when the size really changed.
+  // Resize at most once per frame.
   let resizeQueued = false;
-  const onResize = (): void => {
+  window.addEventListener('resize', () => {
     if (resizeQueued) return;
     resizeQueued = true;
     requestAnimationFrame(() => {
       resizeQueued = false;
-      const next = stage.fit();
-      const unchanged =
-        Math.abs(next.logicalHeight - metrics.logicalHeight) < 0.5 &&
-        Math.abs(next.pixelsPerUnit - metrics.pixelsPerUnit) < 0.01;
-      metrics = next;
-      if (unchanged) return;
-      paintBackdrop();
-      if (!loop.running) stage.render();
+      app.resize();
     });
-  };
-  window.addEventListener('resize', onResize);
+  });
 
   watchPlayability((playable) => {
-    if (playable) {
-      loop.start();
-      log.debug('Resumed');
-    } else {
-      loop.stop();
-      log.debug('Paused');
-    }
+    app.setPlayable(playable);
+    log.debug(playable ? 'Resumed' : 'Paused');
   });
 }
 

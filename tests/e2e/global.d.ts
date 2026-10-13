@@ -4,8 +4,9 @@ type Side = 'player' | 'enemy';
 declare global {
   interface Window {
     __sovereigns?: {
-      readonly phase: () => 'animating' | 'playerInput' | 'enemyThinking' | 'ended';
-      readonly turnSide: () => Side;
+      readonly screen: () => 'home' | 'story' | 'sovereigns' | 'battle';
+      readonly phase: () => 'animating' | 'playerInput' | 'enemyThinking' | 'ended' | null;
+      readonly turnSide: () => Side | null;
       readonly turnNumber: () => number;
       readonly winner: () => Side | null;
       readonly activeIndex: (side: Side) => number;

@@ -983,3 +983,659 @@ button {
     animation: none;
   }
 }
+
+/* ---------- Screens and menus ---------- */
+
+/* Only the active layer is visible: menus (HTML) or the battle (Pixi + HUD). */
+body:not([data-scene='battle']) #game-root,
+body:not([data-scene='battle']) #hud-root {
+  visibility: hidden;
+}
+
+body[data-scene='battle'] #screen-root {
+  display: none;
+}
+
+#screen-root {
+  position: fixed;
+  inset: 0;
+  z-index: 6;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+body[data-scene='boot'] #screen-root {
+  display: none;
+}
+
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 100%;
+  padding: calc(var(--safe-top) + var(--space-4)) calc(var(--safe-right) + var(--space-4))
+    calc(var(--safe-bottom) + var(--space-5)) calc(var(--safe-left) + var(--space-4));
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.back-button {
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  background: var(--ink-panel);
+  color: var(--text-light);
+  font-family: var(--font-display);
+  font-size: 18px;
+  text-transform: uppercase;
+  clip-path: var(--chamfer-shape);
+}
+
+.back-button:active {
+  transform: scale(0.96);
+}
+
+.screen-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--cloud);
+  text-shadow: 0 2px 0 rgb(30 20 36 / 0.6);
+}
+
+.lock {
+  display: inline-block;
+  width: 12px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 1px;
+  background: currentColor;
+  position: relative;
+  top: -2px;
+}
+
+.lock::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: -7px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
+  box-sizing: border-box;
+}
+
+.stars {
+  color: #c8900a;
+  font-size: 14px;
+  letter-spacing: 1px;
+}
+
+.stars[data-rarity='5'] {
+  color: #b07a00;
+  text-shadow: 0 0 1px #f5c542;
+}
+
+.menu-toast {
+  position: fixed;
+  z-index: 40;
+  top: auto;
+  bottom: calc(var(--safe-bottom) + var(--space-6));
+  width: max-content;
+  max-width: calc(100% - 32px);
+  text-align: center;
+}
+
+/* Home */
+
+.home-header {
+  margin-top: var(--space-3);
+  text-align: center;
+}
+
+.home-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 11vw, 56px);
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--cloud);
+  text-shadow: 0 2px 0 rgb(30 20 36 / 0.6);
+}
+
+.team-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  text-align: left;
+  transition: transform var(--duration-press) var(--ease-out);
+}
+
+.team-card:active {
+  transform: scale(0.98);
+}
+
+.team-card-portraits {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.team-portrait {
+  position: relative;
+  margin: 0;
+  text-align: center;
+}
+
+.team-portrait img {
+  display: block;
+  width: 100%;
+  height: 120px;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+.team-portrait figcaption {
+  font-family: var(--font-display);
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.team-portrait.is-leader::before {
+  content: '★ Leader';
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1px 6px;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 14px;
+}
+
+.team-card-text {
+  display: grid;
+  gap: 2px;
+}
+
+.team-card-label {
+  font-family: var(--font-display);
+  font-size: 18px;
+  text-transform: uppercase;
+  color: var(--rift-violet-pressed);
+}
+
+.team-card-skill {
+  font-size: 14px;
+}
+
+.home-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.home-tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  min-height: 112px;
+  padding: var(--space-3);
+  background: var(--cloud);
+  color: var(--text-dark);
+  text-align: left;
+  clip-path: var(--chamfer-shape);
+  box-shadow: inset 6px 0 0 var(--tile-accent, var(--rift-violet));
+  transition: transform var(--duration-press) var(--ease-out);
+}
+
+.home-tile[data-tile='story'] {
+  --tile-accent: var(--rift-violet);
+}
+.home-tile[data-tile='sovereigns'] {
+  --tile-accent: var(--gold);
+}
+
+.home-tile:active {
+  transform: scale(0.96);
+}
+
+.home-tile.is-locked {
+  background: var(--ink-panel);
+  color: rgb(254 243 223 / 0.75);
+  box-shadow: inset 6px 0 0 rgb(254 243 223 / 0.2);
+}
+
+.home-tile-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.home-tile-detail {
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.home-screen .build-tag {
+  position: static;
+  margin-top: auto;
+  text-align: center;
+  color: var(--cloud);
+}
+
+/* Story */
+
+.stage-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.stage-card {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.stage-card h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.stage-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.stage-kicker {
+  font-family: var(--font-display);
+  font-size: 16px !important;
+  text-transform: uppercase;
+  color: var(--rift-violet-pressed);
+}
+
+.stage-card.is-locked .stage-kicker {
+  color: rgb(254 243 223 / 0.75);
+}
+
+.cleared {
+  color: #3f8a2e;
+}
+
+.stage-enemies .type-chip {
+  margin-left: 2px;
+}
+
+.stage-card .button-primary {
+  justify-self: start;
+}
+
+/* Sovereigns */
+
+.team-editor {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.team-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.team-slot {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: var(--space-1);
+  background: rgb(254 243 223 / 0.08);
+  color: var(--text-light);
+  clip-path: var(--chamfer-shape);
+  transition:
+    transform var(--duration-press) var(--ease-out),
+    background-color var(--duration-press) var(--ease-out);
+}
+
+.team-slot:active {
+  transform: scale(0.96);
+}
+
+.team-slot.is-selected {
+  background: rgb(245 197 66 / 0.25);
+  box-shadow: inset 0 0 0 3px var(--gold);
+}
+
+.team-slot-portrait {
+  width: 100%;
+  height: 84px;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+.team-slot-label {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.team-slot-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  text-transform: uppercase;
+}
+
+.team-hint {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.team-hint.is-choosing {
+  color: var(--gold);
+}
+
+.sovereign-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.sovereign-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 48px;
+  padding: var(--space-1) var(--space-1) var(--space-2);
+  background: var(--cloud);
+  color: var(--text-dark);
+  text-align: left;
+  clip-path: var(--chamfer-shape);
+  box-shadow: inset 0 -5px 0 var(--world-color, var(--rift-violet));
+  transition: transform var(--duration-press) var(--ease-out);
+}
+
+.sovereign-card[data-world='energy'] {
+  --world-color: #f87844;
+}
+.sovereign-card[data-world='ocean'] {
+  --world-color: #0da0f2;
+}
+.sovereign-card[data-world='clans'] {
+  --world-color: #3e7a2e;
+}
+
+.sovereign-card:active {
+  transform: scale(0.95);
+}
+
+.sovereign-card-portrait {
+  width: 100%;
+  height: 104px;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+.sovereign-card.is-locked {
+  background: rgb(254 243 223 / 0.55);
+}
+
+.sovereign-card.is-locked .sovereign-card-portrait {
+  filter: brightness(0);
+  opacity: 0.45;
+}
+
+.sovereign-card.in-team::after {
+  content: 'In team';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  padding: 0 5px;
+  background: var(--gold);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 14px;
+}
+
+.sovereign-card {
+  position: relative;
+}
+
+.sovereign-card-info {
+  display: grid;
+  gap: 1px;
+  padding: 0 var(--space-1);
+}
+
+.sovereign-card-name {
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.sovereign-card-locked {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* Detail sheet */
+
+.detail-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-end;
+  background: rgb(8 9 15 / 0.6);
+}
+
+.detail-sheet[hidden] {
+  display: none;
+}
+
+.detail-panel {
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-4) calc(var(--safe-bottom) + var(--space-4));
+}
+
+.detail-top {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: var(--space-3);
+}
+
+.detail-portrait {
+  width: 112px;
+  height: 200px;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+.detail-heading h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 32px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.detail-heading p {
+  margin: 2px 0;
+  font-size: 14px;
+}
+
+.detail-title {
+  font-family: var(--font-display);
+  font-size: 16px !important;
+  text-transform: uppercase;
+  color: var(--rift-violet-pressed);
+}
+
+.detail-meta {
+  opacity: 0.8;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 44px;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+}
+
+.stat-row b {
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.stat-bar {
+  height: 8px;
+  background: rgb(30 36 64 / 0.12);
+}
+
+.stat-bar i {
+  display: block;
+  height: 100%;
+  background: var(--rift-violet-pressed);
+  transform-origin: left center;
+}
+
+.detail-leader {
+  margin: var(--space-3) 0 var(--space-2);
+  font-size: 15px;
+}
+
+.detail-leader b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 16px;
+  text-transform: uppercase;
+  color: #8a5a00;
+}
+
+.detail-deck {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.detail-deck li {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  background: rgb(30 36 64 / 0.06);
+  box-shadow: inset 4px 0 0 var(--card-kind-color);
+}
+
+.detail-deck li[data-kind='strike'] {
+  --card-kind-color: var(--card-strike);
+}
+.detail-deck li[data-kind='blast'] {
+  --card-kind-color: var(--card-blast);
+}
+.detail-deck li[data-kind='technique'] {
+  --card-kind-color: var(--card-technique);
+}
+.detail-deck li[data-kind='signature'] {
+  --card-kind-color: var(--card-signature);
+}
+
+.detail-card-kind {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  grid-row: span 2;
+  font-size: 14px;
+}
+
+.detail-card-kind svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--card-kind-color);
+}
+
+.detail-card-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.detail-card-effect {
+  grid-column: 2;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.detail-card-cost {
+  grid-row: 1 / span 2;
+  grid-column: 3;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  background: var(--rift-violet);
+  font-family: var(--font-display);
+  font-size: 16px;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.detail-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.detail-actions .button-primary,
+.detail-actions .button-quiet {
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 var(--space-2);
+  font-size: 16px;
+}
+
+.detail-actions .is-current {
+  background: rgb(30 36 64 / 0.08);
+}
+
+.detail-close {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+/* Battle result: Home under Play again */
+
+.result-home {
+  display: block;
+  margin: var(--space-2) auto 0;
+}

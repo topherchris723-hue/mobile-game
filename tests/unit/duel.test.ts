@@ -7,12 +7,8 @@ import {
   DRAIN,
   TECHNIQUE_TUNING,
 } from '../../src/config/battle';
-import {
-  ENEMY_TEAM,
-  PLAYER_TEAM,
-  type CardSpec,
-  type FighterSpec,
-} from '../../src/config/fighters';
+import { ENEMY_TEAM, type CardSpec, type FighterSpec } from '../../src/config/fighters';
+import { DEFAULT_TEAM, getSovereign } from '../../src/config/sovereigns';
 import { chooseAction } from '../../src/game/duel/ai';
 import { computeDamage, typeEffectiveness } from '../../src/game/duel/damage';
 import {
@@ -28,6 +24,9 @@ import {
   switchBlockedReason,
 } from '../../src/game/duel/rules';
 import type { DuelState, Side } from '../../src/game/duel/types';
+
+/** The default starting team (Kaien, Maris, Torvan), without Leader Skills, for rule tests. */
+const PLAYER_TEAM: readonly FighterSpec[] = DEFAULT_TEAM.map(getSovereign);
 
 const duel = (seed = 1) => createDuel({ player: PLAYER_TEAM, enemy: ENEMY_TEAM, seed });
 

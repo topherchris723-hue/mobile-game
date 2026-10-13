@@ -103,6 +103,8 @@ export interface DuelSetup {
   readonly player: readonly FighterSpec[];
   readonly enemy: readonly FighterSpec[];
   readonly seed: number;
+  /** Extra starting Rift Energy, e.g. from a Leader Skill. */
+  readonly bonusEnergy?: Partial<Record<Side, number>>;
 }
 
 /** Creates a duel and starts the first turn. The faster active fighter goes first; ties go to the player. */
@@ -118,7 +120,10 @@ export function createDuel(setup: DuelSetup): { state: DuelState; events: DuelEv
     side,
     fighters: specs.map((spec) => createFighter(spec, seedState)),
     activeIndex: 0,
-    energy: BATTLE_RULES.startingEnergy,
+    energy: Math.min(
+      BATTLE_RULES.maxEnergy,
+      BATTLE_RULES.startingEnergy + (setup.bonusEnergy?.[side] ?? 0),
+    ),
     switchedThisTurn: false,
     comboTier: 0,
   });

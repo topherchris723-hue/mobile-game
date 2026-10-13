@@ -1,13 +1,8 @@
-import type { CardKind, CardSpec, TypeId } from '../config/fighters';
-import {
-  BATTLE_RULES,
-  COMBO,
-  CROSSOVER,
-  CROSSOVER_PARTNER_EFFECT,
-  DRAIN,
-  TECHNIQUE_TUNING,
-} from '../config/battle';
+import type { TypeId } from '../config/fighters';
+import { BATTLE_RULES, COMBO, CROSSOVER, CROSSOVER_PARTNER_EFFECT } from '../config/battle';
 import { computeDamage } from '../game/duel/damage';
+import { KIND_LABEL, kindIcon, techniqueText } from './cardText';
+import { element, TYPE_LABEL } from './dom';
 import {
   activeFighter,
   cardContinuesCombo,
@@ -32,6 +27,7 @@ export interface DuelHudCallbacks {
   onCharge(): void;
   onCrossover(partnerIndex: number): void;
   onRestart(): void;
+  onExit(): void;
 }
 
 export interface DuelHud {
@@ -61,61 +57,6 @@ interface DisplaySide {
   fighters: DisplayFighter[];
   active: number;
   energy: number;
-}
-
-const TYPE_LABEL: Readonly<Record<TypeId, string>> = {
-  fury: 'Fury',
-  swift: 'Swift',
-  guile: 'Guile',
-  radiant: 'Radiant',
-  void: 'Void',
-};
-
-const KIND_LABEL: Readonly<Record<CardKind, string>> = {
-  strike: 'Strike',
-  blast: 'Blast',
-  technique: 'Technique',
-  signature: 'Signature',
-};
-
-/** Small, solid glyphs (style guide §9: one consistent icon set). */
-const KIND_ICON: Readonly<Record<CardKind, string>> = {
-  strike: 'M3 17 15 5l2 2L5 19zM9 19 19 9l2 2-8 8z',
-  blast: 'M12 5a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm0 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6z',
-  technique: 'M12 2 21 12 12 22 3 12z',
-  signature: 'M12 1 15 9 23 12 15 15 12 23 9 15 1 12 9 9z',
-};
-
-function icon(path: string): string {
-  return `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${path}"/></svg>`;
-}
-
-function techniqueText(card: CardSpec): string {
-  switch (card.effect) {
-    case 'focus':
-      return `Next attack ×${TECHNIQUE_TUNING.focusMultiplier}`;
-    case 'guard':
-      return 'Halve the next hit';
-    case 'heal':
-      return `Heal ${Math.round(TECHNIQUE_TUNING.healFraction * 100)}% HP`;
-    case 'sap':
-      return `Enemy DEF −${Math.round((1 - TECHNIQUE_TUNING.sapDefenceMultiplier) * 100)}%`;
-    case 'drain':
-      return `Steal ${DRAIN.steal} enemy energy`;
-    default:
-      return '';
-  }
-}
-
-function element<K extends keyof HTMLElementTagNameMap>(
-  tag: K,
-  className: string,
-  parent?: HTMLElement,
-): HTMLElementTagNameMap[K] {
-  const node = document.createElement(tag);
-  node.className = className;
-  parent?.appendChild(node);
-  return node;
 }
 
 export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): DuelHud {
@@ -199,6 +140,12 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
   restart.textContent = 'Play again';
   restart.addEventListener('click', () => {
     callbacks.onRestart();
+  });
+  const exit = element('button', 'button-quiet result-home', result);
+  exit.type = 'button';
+  exit.textContent = 'Home';
+  exit.addEventListener('click', () => {
+    callbacks.onExit();
   });
 
   const display: Record<Side, DisplaySide> = {
@@ -400,7 +347,7 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
         }
         button.innerHTML = `
           <span class="card-cost" aria-label="Cost ${spec.cost}">${spec.cost}</span>
-          <span class="card-kind">${icon(KIND_ICON[spec.kind])}${KIND_LABEL[spec.kind]}</span>
+          <span class="card-kind">${kindIcon(spec.kind)}${KIND_LABEL[spec.kind]}</span>
           <span class="card-name">${spec.name}</span>
           <span class="card-value">${value}</span>`;
       });

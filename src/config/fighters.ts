@@ -1,6 +1,6 @@
 import type { AiProfileId } from './battle';
 import type { FighterLook } from './placeholderFighters';
-import { ALLY_LOOKS, ENEMY_LOOKS } from './placeholderFighters';
+import { ENEMY_LOOKS } from './placeholderFighters';
 
 export type TypeId = 'fury' | 'swift' | 'guile' | 'radiant' | 'void';
 export type WorldId = 'energy' | 'ocean' | 'clans' | 'rift';
@@ -32,10 +32,15 @@ export interface FighterSpec {
   readonly ai: AiProfileId;
 }
 
-const strike = (name: string): CardSpec => ({ kind: 'strike', name, cost: 1, power: 1 });
-const blast = (name: string): CardSpec => ({ kind: 'blast', name, cost: 2, power: 2.2 });
-const signature = (name: string): CardSpec => ({ kind: 'signature', name, cost: 5, power: 6 });
-const technique = (name: string, effect: TechniqueEffect, cost: number): CardSpec => ({
+export const strike = (name: string): CardSpec => ({ kind: 'strike', name, cost: 1, power: 1 });
+export const blast = (name: string): CardSpec => ({ kind: 'blast', name, cost: 2, power: 2.2 });
+export const signature = (name: string): CardSpec => ({
+  kind: 'signature',
+  name,
+  cost: 5,
+  power: 6,
+});
+export const technique = (name: string, effect: TechniqueEffect, cost: number): CardSpec => ({
   kind: 'technique',
   name,
   cost,
@@ -50,72 +55,8 @@ function look(list: readonly FighterLook[], index: number): FighterLook {
 }
 
 /**
- * PLACEHOLDER roster for M2: names, stats, and decks are first-pass tuning, to be replaced by the
- * real 15-Sovereign data set in M5.
+ * The Rift enemies for the Prologue. Player-side Sovereigns live in config/sovereigns.ts.
  */
-export const PLAYER_TEAM: readonly FighterSpec[] = [
-  {
-    id: 'kaien',
-    name: 'Kaien',
-    type: 'fury',
-    world: 'energy',
-    hp: 1100,
-    atk: 215,
-    def: 70,
-    spd: 92,
-    deck: [
-      strike('Ember Jab'),
-      strike('Ember Jab'),
-      blast('Flare Shot'),
-      blast('Flare Shot'),
-      technique('Ember Focus', 'focus', 2),
-      signature('Sunbreak Fist'),
-    ],
-    look: look(ALLY_LOOKS, 0),
-    ai: 'balanced',
-  },
-  {
-    id: 'maris',
-    name: 'Maris',
-    type: 'swift',
-    world: 'ocean',
-    hp: 980,
-    atk: 200,
-    def: 65,
-    spd: 110,
-    deck: [
-      strike('Undertow Kick'),
-      strike('Undertow Kick'),
-      blast('Spray Lance'),
-      blast('Spray Lance'),
-      technique('Tidal Mend', 'heal', 3),
-      signature('Riptide Spiral'),
-    ],
-    look: look(ALLY_LOOKS, 1),
-    ai: 'balanced',
-  },
-  {
-    id: 'torvan',
-    name: 'Torvan',
-    type: 'guile',
-    world: 'clans',
-    hp: 1250,
-    atk: 185,
-    def: 90,
-    spd: 78,
-    deck: [
-      strike('Thorn Palm'),
-      strike('Thorn Palm'),
-      blast('Leafstorm'),
-      blast('Leafstorm'),
-      technique('Root Guard', 'guard', 2),
-      signature('Thousand-Leaf Cut'),
-    ],
-    look: look(ALLY_LOOKS, 2),
-    ai: 'balanced',
-  },
-];
-
 export const ENEMY_TEAM: readonly FighterSpec[] = [
   {
     id: 'rift-stalker',

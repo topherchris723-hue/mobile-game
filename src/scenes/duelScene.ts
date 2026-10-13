@@ -1,5 +1,5 @@
-import { ENEMY_TEAM, PLAYER_TEAM } from '../config/fighters';
-import { BATTLE_SEED, ENEMY_THINK_MS, EVENT_DURATION_MS } from '../config/duelPresentation';
+import { ENEMY_THINK_MS, EVENT_DURATION_MS } from '../config/duelPresentation';
+import type { FighterSpec } from '../config/fighters';
 import { TICK_MS } from '../config/sim';
 import type { Logger } from '../debug/log';
 import { chooseAction } from '../game/duel/ai';
@@ -41,11 +41,19 @@ export interface DuelSceneOptions {
   readonly log: Logger;
   /** Animation speed multiplier (1 = normal). */
   readonly speed: number;
+  /** Battle-ready teams (Leader Skill already applied to the player's). */
+  readonly player: readonly FighterSpec[];
+  readonly enemy: readonly FighterSpec[];
+  readonly seed: number;
+  /** Extra starting Rift Energy for the player, e.g. from a Leader Skill. */
+  readonly playerBonusEnergy: number;
+  /** Called once when a duel ends (again after each replay). */
+  readonly onFinished: (winner: Side) => void;
 }
 
 export function createDuelScene(options: DuelSceneOptions): DuelScene {
   const { view, hud, log, speed } = options;
-  let seed = BATTLE_SEED;
+  let seed = options.seed;
   let state: DuelState;
   let queue: DuelEvent[] = [];
   let waitMs = 0;
@@ -53,7 +61,12 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
   let intent: DuelAction | null = null;
 
   const begin = (): void => {
-    const created = createDuel({ player: PLAYER_TEAM, enemy: ENEMY_TEAM, seed });
+    const created = createDuel({
+      player: options.player,
+      enemy: options.enemy,
+      seed,
+      bonusEnergy: { player: options.playerBonusEnergy },
+    });
     state = created.state;
     queue = [...created.events];
     waitMs = 0;
@@ -149,6 +162,7 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
         if (phase !== 'ended') {
           phase = 'ended';
           hud.showResult(state.winner);
+          options.onFinished(state.winner);
         }
         return;
       }

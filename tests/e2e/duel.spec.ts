@@ -10,12 +10,16 @@ function watchErrors(page: Page): string[] {
   return errors;
 }
 
+/** Boots and walks the real menu path into the Prologue battle: Home → Story → Battle. */
 async function start(page: Page, query: string): Promise<void> {
   await page.goto(`./${query}`);
   const button = page.getByRole('button', { name: 'Tap to start' });
   await expect(button).toBeEnabled({ timeout: 15_000 });
   await button.tap();
-  await expect(page.locator('body')).toHaveAttribute('data-scene', 'duel');
+  await expect(page.locator('body')).toHaveAttribute('data-scene', 'home');
+  await page.locator('.home-tile[data-tile="story"]').tap();
+  await page.locator('[data-stage="prologue"]').tap();
+  await expect(page.locator('body')).toHaveAttribute('data-scene', 'battle');
 }
 
 const phase = (page: Page) => page.evaluate(() => window.__sovereigns?.phase() ?? null);
@@ -84,11 +88,11 @@ test('switching is free: the new fighter comes in and you keep your turn', async
   await expect.poll(() => page.evaluate(() => window.__sovereigns?.activeIndex('player'))).toBe(1);
   await waitForPlayerTurn(page);
   await expect(page.locator('.player-panel .hud-name')).toHaveText('Maris');
-  await expect(page.locator('.toast')).toContainText('Tag Link');
+  await expect(page.locator('.duel-hud .toast')).toContainText('Tag Link');
   // A second switch in the same turn is refused with a reason. Blocked buttons stay tappable on
   // purpose (so they can explain themselves), hence force: Playwright won't tap aria-disabled.
   await page.locator('.bench-button').nth(1).tap({ force: true });
-  await expect(page.locator('.toast')).toContainText('Already switched this turn');
+  await expect(page.locator('.duel-hud .toast')).toContainText('Already switched this turn');
 });
 
 test('tapping a card you cannot afford explains why', async ({ page }) => {
@@ -105,7 +109,7 @@ test('tapping a card you cannot afford explains why', async ({ page }) => {
   }
   await expect(expensive).toBeVisible();
   await expensive.tap({ force: true });
-  await expect(page.locator('.toast')).toHaveText('Not enough Rift Energy');
+  await expect(page.locator('.duel-hud .toast')).toHaveText('Not enough Rift Energy');
   expect(await phase(page)).toBe('playerInput');
 });
 
