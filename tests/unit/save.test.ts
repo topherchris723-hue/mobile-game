@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_TEAM, STARTER_IDS } from '../../src/config/sovereigns';
 import { STARTING_GEMS } from '../../src/config/summons';
+import { STARTING_COINS } from '../../src/config/progression';
+import { levelCap } from '../../src/game/progression';
 import { createLogger } from '../../src/debug/log';
 import {
   createDefaultSave,
@@ -91,6 +93,50 @@ describe('parseSave', () => {
     expect(result.data.settings).toEqual(DEFAULT_SETTINGS);
     // v2 → v3: welcome gift + the Prologue first-clear reward earned before rewards existed.
     expect(result.data.gems).toBe(STARTING_GEMS + 100);
+    // v3 → v4: welcome Coins, everyone at level 1.
+    expect(result.data.coins).toBe(STARTING_COINS);
+    expect(result.data.progress).toEqual({});
+  });
+
+  it('upgrades a v3 save to v4 keeping Gems, summons, and shards', () => {
+    const v3 = JSON.stringify({
+      schemaVersion: 3,
+      ownedSovereigns: [...STARTER_IDS, 'akari'],
+      team: ['akari', 'kaien', 'maris'],
+      story: { clearedStages: ['prologue'] },
+      settings: DEFAULT_SETTINGS,
+      gems: 120,
+      summons: { seed: 9, pulls: 22, pity: { standard: 4 } },
+      shards: { goro: 10 },
+    });
+    const result = parseSave(v3);
+    expect(result.status).toBe('loaded');
+    expect(result.data.gems).toBe(120);
+    expect(result.data.summons).toEqual({ seed: 9, pulls: 22, pity: { standard: 4 } });
+    expect(result.data.shards).toEqual({ goro: 10 });
+    expect(result.data.coins).toBe(STARTING_COINS);
+    expect(result.data.team[0]).toBe('akari');
+  });
+
+  it('repairs level progress: clamps to the cap, drops unowned and invalid entries', () => {
+    const save = createDefaultSave(3);
+    const raw = JSON.parse(serializeSave(save)) as Record<string, unknown>;
+    raw['progress'] = {
+      kaien: { level: 999, limitBreaks: 0 },
+      maris: { level: 12, limitBreaks: 9 },
+      akari: { level: 5, limitBreaks: 0 },
+      torvan: 'high',
+      goro: { level: 20, limitBreaks: 1 },
+    };
+    raw['coins'] = 'lots';
+    const result = parseSave(JSON.stringify(raw));
+    expect(result.status).toBe('repaired');
+    expect(result.data.progress).toEqual({
+      kaien: { level: levelCap(4, 0), limitBreaks: 0 },
+      maris: { level: 12, limitBreaks: 0 },
+      goro: { level: 20, limitBreaks: 1 },
+    });
+    expect(result.data.coins).toBe(0);
   });
 
   it('upgrades a v2 save that has not cleared the Prologue to the welcome gift only', () => {

@@ -35,7 +35,8 @@ export interface DuelHudCallbacks {
 
 /** What a battle paid out, shown on the result panel. */
 export interface BattleReward {
-  readonly gems: number;
+  readonly currency: 'gems' | 'coins';
+  readonly amount: number;
   readonly reason: string;
 }
 
@@ -63,7 +64,7 @@ export interface DuelHud {
   cutIn(info: CutInInfo): void;
   endCutIn(): void;
   setSpeed(speed: BattleSpeed): void;
-  showResult(winner: Side, reward: BattleReward | null): void;
+  showResult(winner: Side, rewards: readonly BattleReward[]): void;
   dispose(): void;
 }
 
@@ -181,8 +182,7 @@ export function createDuelHud(
   result.hidden = true;
   const resultTitle = element('h2', '', result);
   const resultText = element('p', '', result);
-  const resultReward = element('p', 'result-reward', result);
-  resultReward.hidden = true;
+  const resultRewards = element('div', 'result-rewards', result);
   const restart = element('button', 'button-primary', result);
   restart.type = 'button';
   restart.textContent = 'Play again';
@@ -479,16 +479,19 @@ export function createDuelHud(
       }, 1400);
     },
 
-    showResult(winner, reward) {
+    showResult(winner, rewards) {
       result.hidden = false;
       result.dataset['winner'] = winner;
       resultTitle.textContent = winner === 'player' ? 'Victory' : 'Defeat';
       resultText.textContent =
         winner === 'player' ? 'All three Rift enemies defeated.' : 'Your team was defeated.';
-      resultReward.hidden = reward === null;
-      resultReward.innerHTML = reward
-        ? `<i class="gem-icon" aria-hidden="true"></i><b>+${reward.gems}</b> Gems · ${reward.reason}`
-        : '';
+      resultRewards.replaceChildren();
+      for (const reward of rewards) {
+        const line = element('p', 'result-reward', resultRewards);
+        line.dataset['currency'] = reward.currency;
+        const label = reward.currency === 'gems' ? 'Gems' : 'Coins';
+        line.innerHTML = `<i class="${reward.currency === 'gems' ? 'gem-icon' : 'coin-icon'}" aria-hidden="true"></i><b>+${reward.amount.toLocaleString('en-US')}</b> ${label} · ${reward.reason}`;
+      }
       restart.focus();
     },
 

@@ -42,7 +42,7 @@ export interface BattleSessionOptions {
   readonly save: SaveStore;
   readonly portraits: PortraitCache;
   readonly feedback: Feedback;
-  readonly onFinished: (winner: Side) => BattleReward | null;
+  readonly onFinished: (winner: Side) => readonly BattleReward[];
   readonly onExit: () => void;
 }
 

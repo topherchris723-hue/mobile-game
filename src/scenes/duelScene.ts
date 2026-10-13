@@ -51,7 +51,7 @@ export interface DuelSceneOptions {
   /** Extra starting Rift Energy for the player, e.g. from a Leader Skill. */
   readonly playerBonusEnergy: number;
   /** Called once when a duel ends (again after each replay); returns what it paid out. */
-  readonly onFinished: (winner: Side) => BattleReward | null;
+  readonly onFinished: (winner: Side) => readonly BattleReward[];
 }
 
 export function createDuelScene(options: DuelSceneOptions): DuelScene {

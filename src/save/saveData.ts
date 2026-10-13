@@ -1,12 +1,14 @@
+import { LIMIT_BREAK, MAX_COINS, STARTING_COINS } from '../config/progression';
 import { DEFAULT_TEAM, findSovereign, STARTER_IDS } from '../config/sovereigns';
 import { BANNERS, MAX_GEMS, PITY_LIMIT, STARTING_GEMS } from '../config/summons';
+import { levelCap, type SovereignProgress } from '../game/progression';
 
 /*
  * Save format (CLAUDE.md §10). Pure functions only: parsing, migrating, validating, and repairing
  * are unit-tested without touching browser storage.
  */
 
-export const SAVE_SCHEMA_VERSION = 3;
+export const SAVE_SCHEMA_VERSION = 4;
 
 export type BattleSpeed = 1 | 2;
 
@@ -46,8 +48,11 @@ export interface SaveData {
   settings: Settings;
   gems: number;
   summons: SummonProgress;
-  /** Per Sovereign id: shards from duplicates (spent on Limit Breaks in M7). */
+  /** Per Sovereign id: shards from duplicates (spent on Limit Breaks). */
   shards: Record<string, number>;
+  coins: number;
+  /** Per owned Sovereign id; a missing entry means level 1 with no Limit Breaks. */
+  progress: Record<string, SovereignProgress>;
 }
 
 export type LoadStatus =
@@ -88,6 +93,8 @@ export const MIGRATIONS: Readonly<Record<number, Migration>> = {
       shards: {},
     };
   },
+  /** v3 → v4 (levelling): Coins (welcome amount, frozen here) and per-Sovereign progress. */
+  3: (data) => ({ ...data, coins: 2000, progress: {} }),
 };
 
 /** A random 32-bit seed (not gameplay-critical randomness, so the platform source is fine). */
@@ -108,6 +115,8 @@ export function createDefaultSave(seed: number = randomSeed()): SaveData {
     gems: STARTING_GEMS,
     summons: { seed, pulls: 0, pity: {} },
     shards: {},
+    coins: STARTING_COINS,
+    progress: {},
   };
 }
 
@@ -210,6 +219,34 @@ function repair(raw: Record<string, unknown>, issues: string[]): SaveData {
     }
   }
 
+  const rawCoins = raw['coins'];
+  let coins = 0;
+  if (typeof rawCoins === 'number' && Number.isFinite(rawCoins) && rawCoins >= 0) {
+    coins = Math.min(MAX_COINS, Math.floor(rawCoins));
+    if (coins !== rawCoins) issues.push('Coin balance was not a whole number in range');
+  } else {
+    issues.push('Coin balance was invalid; set to 0');
+  }
+
+  const rawProgress = isRecord(raw['progress']) ? raw['progress'] : {};
+  const progress: Record<string, SovereignProgress> = {};
+  for (const [id, value] of Object.entries(rawProgress)) {
+    const spec = findSovereign(id);
+    if (!spec || !owned.includes(id) || !isRecord(value)) {
+      issues.push(`Dropped progress for "${id}"`);
+      continue;
+    }
+    const rawBreaks = value['limitBreaks'];
+    const limitBreaks = wholeNumber(rawBreaks) && rawBreaks <= LIMIT_BREAK.max ? rawBreaks : 0;
+    const cap = levelCap(spec.rarity, limitBreaks);
+    const rawLevel = value['level'];
+    const level = wholeNumber(rawLevel) && rawLevel >= 1 ? Math.min(rawLevel, cap) : 1;
+    if (limitBreaks !== rawBreaks || level !== rawLevel) {
+      issues.push(`Progress for "${id}" was out of range; corrected`);
+    }
+    if (level > 1 || limitBreaks > 0) progress[id] = { level, limitBreaks };
+  }
+
   const [a, b, c] = team;
   if (a === undefined || b === undefined || c === undefined) {
     throw new Error('Repair produced an incomplete team');
@@ -223,6 +260,8 @@ function repair(raw: Record<string, unknown>, issues: string[]): SaveData {
     gems,
     summons: { seed, pulls, pity },
     shards,
+    coins,
+    progress,
   };
 }
 

@@ -6,7 +6,7 @@ import type { PortraitCache } from '../../render/portraits';
 import { pullsUntilPity } from '../../game/economy/summon';
 import { STANDARD_BANNER } from '../../config/summons';
 import type { SaveStore } from '../../save/saveStore';
-import { element, gemsLabel } from '../dom';
+import { coinsLabel, element, gemsLabel } from '../dom';
 
 /*
  * Home menu (game-design.md §8, owner request): the hub after boot and after every battle.
@@ -47,9 +47,13 @@ export function createHomeScreen(host: HTMLElement, deps: HomeScreenDeps): Scree
   settings.innerHTML = `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><g fill="currentColor"><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(0 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(45 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(90 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(135 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(180 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(225 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(270 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(315 12 12)"/></g><circle cx="12" cy="12" r="5.6" fill="none" stroke="currentColor" stroke-width="3.6"/></svg>`;
   settings.addEventListener('click', deps.onSettings);
 
-  const balance = element('span', 'gem-balance home-gems', root);
-  balance.setAttribute('aria-label', `${deps.save.data.gems} Gems`);
-  balance.innerHTML = gemsLabel(deps.save.data.gems);
+  const wallet = element('div', 'home-wallet', root);
+  const gems = element('span', 'gem-balance home-gems', wallet);
+  gems.setAttribute('aria-label', `${deps.save.data.gems} Gems`);
+  gems.innerHTML = gemsLabel(deps.save.data.gems);
+  const coins = element('span', 'gem-balance home-coins', wallet);
+  coins.setAttribute('aria-label', `${deps.save.data.coins} Coins`);
+  coins.innerHTML = coinsLabel(deps.save.data.coins);
 
   const header = element('header', 'home-header', root);
   element('p', 'kicker', header).textContent = 'Rift Duel';

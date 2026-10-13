@@ -1,6 +1,8 @@
 import { createSfx } from '../audio/sfx';
 import { getSovereign } from '../config/sovereigns';
 import { getStage } from '../config/story';
+import { levelledSovereign, NEW_PROGRESS } from '../game/progression';
+import { COINS_PER_WIN, MAX_COINS } from '../config/progression';
 import { MAX_GEMS } from '../config/summons';
 import type { LaunchFlags } from '../core/flags';
 import type { Logger } from '../debug/log';
@@ -9,6 +11,7 @@ import { createPortraitCache } from '../render/portraits';
 import type { Stage } from '../render/stage';
 import type { Settings } from '../save/saveData';
 import type { SaveStore } from '../save/saveStore';
+import type { BattleReward } from '../ui/duelHud';
 import { element } from '../ui/dom';
 import { createFeedback } from '../ui/feedback';
 import { createMenuBackdrop } from '../ui/menuBackdrop';
@@ -142,7 +145,14 @@ export function createApp(deps: AppDeps): App {
   function showSovereigns(): void {
     leaveCurrent();
     enter('sovereigns');
-    menu = createSovereignsScreen(deps.screenHost, { save, portraits, toast, onBack: showHome });
+    menu = createSovereignsScreen(deps.screenHost, {
+      save,
+      portraits,
+      feedback,
+      debug: deps.flags.debug,
+      toast,
+      onBack: showHome,
+    });
   }
 
   function startBattle(stageId: string): void {
@@ -153,7 +163,10 @@ export function createApp(deps: AppDeps): App {
       stage: deps.stage,
       hudHost: deps.hudHost,
       stageSpec,
-      team: save.data.team.map(getSovereign),
+      // Battle stats come from each Sovereign's current level.
+      team: save.data.team.map((id) =>
+        levelledSovereign(getSovereign(id), save.data.progress[id] ?? NEW_PROGRESS),
+      ),
       flags: deps.flags,
       log,
       overlay: deps.overlay,
@@ -161,14 +174,30 @@ export function createApp(deps: AppDeps): App {
       portraits,
       feedback,
       onFinished: (winner) => {
-        if (winner !== 'player' || save.data.story.clearedStages.includes(stageId)) return null;
-        // Clear and reward in one write, so the reward can't be lost or granted twice.
+        if (winner !== 'player') return [];
+        const firstClear = !save.data.story.clearedStages.includes(stageId);
+        const rewards: BattleReward[] = [
+          { currency: 'coins', amount: COINS_PER_WIN, reason: 'Victory' },
+        ];
+        if (firstClear) {
+          rewards.push({
+            currency: 'gems',
+            amount: stageSpec.firstClearGems,
+            reason: 'First clear',
+          });
+        }
+        // Clear and rewards in one write, so nothing can be lost or granted twice.
         save.update((data) => {
-          data.story.clearedStages.push(stageId);
-          data.gems = Math.min(MAX_GEMS, data.gems + stageSpec.firstClearGems);
+          data.coins = Math.min(MAX_COINS, data.coins + COINS_PER_WIN);
+          if (firstClear) {
+            data.story.clearedStages.push(stageId);
+            data.gems = Math.min(MAX_GEMS, data.gems + stageSpec.firstClearGems);
+          }
         });
-        log.info(`Stage "${stageId}" cleared: +${stageSpec.firstClearGems} Gems`);
-        return { gems: stageSpec.firstClearGems, reason: 'First clear' };
+        log.info(
+          `Stage "${stageId}" won: ${rewards.map((r) => `+${r.amount} ${r.currency}`).join(', ')}`,
+        );
+        return rewards;
       },
       onExit: showHome,
     });

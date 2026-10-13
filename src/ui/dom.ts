@@ -55,3 +55,8 @@ export function stars(rarity: Rarity): string {
 export function gemsLabel(gems: number): string {
   return `<i class="gem-icon" aria-hidden="true"></i><span>${gems.toLocaleString('en-US')}</span>`;
 }
+
+/** Coin amount with the coin icon (decorative; the number carries the meaning). */
+export function coinsLabel(coins: number): string {
+  return `<i class="coin-icon" aria-hidden="true"></i><span>${coins.toLocaleString('en-US')}</span>`;
+}

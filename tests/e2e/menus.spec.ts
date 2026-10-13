@@ -115,13 +115,21 @@ test('story leads into a battle, and the result screen returns home', async ({ p
   }
   await expect(page.locator('.result')).toBeVisible();
   const won = (await page.locator('.result h2').textContent()) === 'Victory';
-  if (won) await expect(page.locator('.result-reward')).toContainText('+100 Gems · First clear');
+  if (won) {
+    await expect(page.locator('.result-reward[data-currency="coins"]')).toContainText(
+      '+500 Coins · Victory',
+    );
+    await expect(page.locator('.result-reward[data-currency="gems"]')).toContainText(
+      '+100 Gems · First clear',
+    );
+  }
   await page.getByRole('button', { name: 'Home' }).tap();
   await expect(page.locator('body')).toHaveAttribute('data-scene', 'home');
   if (won) {
     await expect(tile(page, 'story')).toContainText('Prologue cleared');
-    // First-clear reward: 500 welcome Gems + 100.
+    // First-clear reward: 500 welcome Gems + 100; Coins: 2,000 welcome + 500 per win.
     await expect(page.locator('.home-gems')).toHaveText('600');
+    await expect(page.locator('.home-coins')).toHaveText('2,500');
   }
   expect(errors).toEqual([]);
 });
@@ -147,4 +155,49 @@ test('settings open from Home, apply, and are remembered', async ({ page }, test
   await page.getByRole('button', { name: 'Settings' }).tap();
   await expect(page.locator('[data-setting="sound"]')).toHaveAttribute('aria-checked', 'false');
   expect(errors).toEqual([]);
+});
+
+test('levelling spends Coins, raises stats, and is saved', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootToHome(page);
+  await expect(page.locator('.home-coins')).toHaveText('2,000');
+  await tile(page, 'sovereigns').tap();
+  await page.locator('.sovereign-card[data-sovereign="kaien"]').tap();
+  const sheet = page.locator('.detail-panel');
+  await expect(sheet.locator('.level-value')).toHaveText('Lv 1');
+  const hpBefore = Number(await sheet.locator('.stat-row b').first().textContent());
+  await sheet.locator('.level-button').first().tap();
+  await expect(sheet.locator('.level-value')).toHaveText('Lv 2');
+  await expect(page.locator('.menu-toast')).toContainText('Kaien reached Lv 2');
+  await sheet.locator('.level-button').nth(1).tap();
+  await expect(sheet.locator('.level-value')).toHaveText('Lv 12');
+  expect(Number(await sheet.locator('.stat-row b').first().textContent())).toBeGreaterThan(
+    hpBefore,
+  );
+  await page.screenshot({ path: testInfo.outputPath('levelled.png') });
+  // Lv 1→2 costs 20; Lv 2→12 costs 30 + 40 + … + 120 = 750; 2,000 − 770 = 1,230.
+  await expect(sheet.locator('.level-wallet')).toContainText('1,230');
+
+  await page.reload();
+  await bootToHome(page);
+  await expect(page.locator('.home-coins')).toHaveText('1,230');
+  await tile(page, 'sovereigns').tap();
+  await expect(page.locator('.team-slot[data-slot="0"] .level-tag')).toHaveText('Lv 12');
+  expect(errors).toEqual([]);
+});
+
+test('at the level cap, Limit Break asks for shards', async ({ page }) => {
+  await bootToHome(page, '?debug=1');
+  await tile(page, 'sovereigns').tap();
+  await page.locator('.debug-gems').tap();
+  await page.locator('.sovereign-card[data-sovereign="goro"]').tap();
+  const sheet = page.locator('.detail-panel');
+  // Goro is 3★: cap 30, reached with three +10 purchases (1 → 11 → 21 → 30).
+  for (let i = 0; i < 3; i++) await sheet.locator('.level-button').nth(1).tap();
+  await expect(sheet.locator('.level-value')).toHaveText('Lv 30');
+  const limitBreak = sheet.locator('.level-button');
+  await expect(limitBreak).toHaveCount(1);
+  await expect(limitBreak).toContainText('Limit Break');
+  await limitBreak.tap({ force: true });
+  await expect(page.locator('.menu-toast')).toContainText('Not enough shards');
 });

@@ -19,7 +19,7 @@ export const PITY_LIMIT = 80;
 /** Every multi summon contains at least one Sovereign of this rarity or higher. */
 export const MULTI_GUARANTEE_RARITY: Rarity = 4;
 
-/** Shards granted for a duplicate, by rarity; spent on Limit Breaks (M7). */
+/** Shards granted for a duplicate, by rarity; spent on Limit Breaks. */
 export const DUPLICATE_SHARDS: Readonly<Record<Rarity, number>> = { 3: 5, 4: 10, 5: 20 };
 
 export interface BannerSpec {

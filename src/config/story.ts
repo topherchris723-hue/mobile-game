@@ -1,6 +1,6 @@
 import { ENEMY_TEAM, type FighterSpec } from './fighters';
 
-/** A story battle (game-design.md §7). Chapter 1 and its map arrive in M7. */
+/** A story battle (game-design.md §7). Chapter 1 and its map arrive in M8, after the characters are designed. */
 export interface StageSpec {
   readonly id: string;
   readonly title: string;

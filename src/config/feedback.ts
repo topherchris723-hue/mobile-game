@@ -120,6 +120,15 @@ export const SOUNDS = {
     tone('triangle', G5, G5, 600, 0.09, 120),
     tone('sine', C6, C6, 800, 0.08, 180),
   ],
+  /** A Sovereign gains levels. */
+  levelUp: [tone('triangle', E5, E5, 90, 0.1), tone('triangle', C6, C6, 180, 0.1, 70)],
+  /** A Limit Break raises the cap. */
+  limitBreak: [
+    tone('sawtooth', 220, 880, 420, 0.06),
+    tone('triangle', G5, G5, 300, 0.1, 200),
+    tone('triangle', C6, C6, 420, 0.1, 300),
+    noise('highpass', 2000, 6000, 300, 0.12, 1, 180),
+  ],
   defeat: [
     tone('triangle', G5 / 2, G5 / 2, 260, 0.12),
     tone('triangle', E5 / 2, E5 / 2, 260, 0.12, 240),
@@ -145,6 +154,7 @@ export const HAPTICS = {
   defeat: [120],
   summonOpen: [20],
   summonRare: [30, 60, 30, 60, 60],
+  limitBreak: [20, 50, 40],
 } as const satisfies Record<string, readonly number[]>;
 
 export type HapticId = keyof typeof HAPTICS;
@@ -175,6 +185,8 @@ export const CUES = {
   summonCharge: { sound: 'summonCharge', haptic: null },
   summonOpen: { sound: 'summonOpen', haptic: 'summonOpen' },
   summonRare: { sound: 'summonRare', haptic: 'summonRare' },
+  levelUp: { sound: 'levelUp', haptic: 'tap' },
+  limitBreak: { sound: 'limitBreak', haptic: 'limitBreak' },
 } as const satisfies Record<string, { sound: SoundId | null; haptic: HapticId | null }>;
 
 export type CueId = keyof typeof CUES;

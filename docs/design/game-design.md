@@ -148,9 +148,10 @@ Animations are short (≤ 1 s per action) and the enemy acts after a brief pause
 
 - **Rarity:** 3★, 4★, 5★. Higher rarity = higher stat ceiling and stronger kit, never a different game.
 - **Each fighter has:** type, world, role (Striker / Breaker / Guardian / Support), stats (HP, ATK, DEF, SPD), a **deck of 6 cards** (§4.3) including a Technique and a Signature, a **Leader Skill** (applies when they lead the team), and a **Passive**.
-- **Progression per fighter:**
-  - _Level_ — raised with Coins + training items.
-  - _Limit Break_ — raises the level cap; uses **Shards**. Duplicate summons convert to shards, so duplicates are always useful.
+- **Progression per fighter** (levels and Limit Breaks built in M7; numbers in `src/config/progression.ts`):
+  - _Level_ — raised with Coins (training items deferred). Caps 30 / 40 / 50 for 3★ / 4★ / 5★. Each level adds 1% of the level-1 HP/ATK/DEF; SPD never grows (it decides turn order).
+  - _Limit Break_ — up to 4, each +10 to the cap, costing 10 / 20 / 40 shards (about two duplicates). A fully broken 3★ reaches Lv 70, a 5★ Lv 90.
+  - Duplicate summons convert to **Shards**, so duplicates are always useful.
   - _Awaken_ (later) — 4★ → 5★ path for favourite characters.
 - **Launch roster (built):** 15 Sovereigns in `src/config/sovereigns.ts` — 5 per world, all five types, rarities 3★–5★, each with a 6-card deck and a Leader Skill. Expandable through data files only.
 - **Starters:** new players own Kaien, Maris, Torvan (the default team), Brakka, Corrin, and Goro. The other nine are recruited through Summons (M6).
@@ -170,7 +171,7 @@ Animations are short (≤ 1 s per action) and the enemy acts after a brief pause
 - **Pity:** a visible counter guarantees a 5★ within 80 summons on a banner.
 - Banner types: Standard (always available) and Featured (rate-up for specific fighters, limited time).
 - Free-player pace target: roughly one multi-summon per week of regular play (tuned with data later).
-- **Built in M6:** new players start with **500 Gems** (one multi); each story stage pays Gems on its **first clear only** (Prologue: 100). Duplicates give shards by rarity: 5 / 10 / 20 (3★ / 4★ / 5★), spent on Limit Breaks in M7. Rolls are seeded per save and saved before the reveal. Every summon asks for confirmation. Coins are deferred to M7, when levelling gives them a use (no currency is shown before it can be spent).
+- **Built in M6:** new players start with **500 Gems** (one multi); each story stage pays Gems on its **first clear only** (Prologue: 100). Duplicates give shards by rarity: 5 / 10 / 20 (3★ / 4★ / 5★), spent on Limit Breaks in M7. Rolls are seeded per save and saved before the reveal. Every summon asks for confirmation. Coins (M7): 2,000 to start, +500 for every victory (replays included); spent on levels.
 
 ### Real-money purchases (later phase — not in the first playable build)
 

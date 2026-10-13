@@ -1904,42 +1904,50 @@ body[data-reduce-motion='true'] .cut-in[data-side='enemy'] .cut-in-band {
   margin-left: auto;
 }
 
-.home-gems {
+.home-wallet {
   position: absolute;
   top: calc(var(--safe-top) + var(--space-3));
   left: calc(var(--safe-left) + var(--space-3));
   z-index: 1;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.home-wallet .gem-balance {
   min-height: 48px;
 }
 
-.result-reward {
+/* Coins: gold for rewards (style guide §8), a plain disc with a darker rim. */
+.coin-icon {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  margin-right: 0.3em;
+  vertical-align: -0.1em;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.12em #b07a00;
+}
+
+.result-rewards {
+  display: grid;
+  gap: var(--space-1);
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+}
+
+/* Beats `.result p` margins. */
+.result .result-reward {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  margin-top: calc(-1 * var(--space-2));
+  margin: 0;
   font-size: 16px;
-}
-
-.result-reward[hidden] {
-  display: none;
 }
 
 .result-reward b {
   font-family: var(--font-display);
   font-size: 22px;
-}
-
-.detail-shards {
-  margin: var(--space-3) 0 0;
-  font-size: 14px;
-}
-
-.detail-shards b {
-  margin-right: var(--space-2);
-  font-family: var(--font-display);
-  font-size: 16px;
-  text-transform: uppercase;
 }
 
 /* ---------- Summon screen ---------- */
@@ -2366,4 +2374,125 @@ body[data-reduce-motion='true'] .summon-spotlight,
 body[data-reduce-motion='true'] .summon-card {
   animation: none;
   transition: none;
+}
+
+/* ---------- Levels and Limit Breaks ---------- */
+
+.level-tag {
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  opacity: 0.85;
+}
+
+.level-panel {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: rgb(30 36 64 / 0.08);
+}
+
+.level-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+}
+
+.level-value {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.level-cap {
+  font-size: 20px;
+  opacity: 0.7;
+}
+
+.lb-pips {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+  align-self: center;
+}
+
+.lb-pips i {
+  width: 12px;
+  height: 16px;
+  background: rgb(30 36 64 / 0.18);
+  clip-path: polygon(50% 0, 100% 35%, 50% 100%, 0 35%);
+}
+
+.lb-pips i.is-on {
+  background: var(--rift-violet);
+}
+
+.level-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.level-button {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: var(--space-1) var(--space-2);
+  background: var(--rift-violet);
+  color: var(--ink);
+  clip-path: var(--chamfer-shape);
+  transition: transform var(--duration-press) var(--ease-out);
+}
+
+.level-button:only-child {
+  grid-column: 1 / -1;
+}
+
+.level-button:active {
+  transform: scale(0.96);
+}
+
+.level-button[aria-disabled='true'] {
+  opacity: 0.5;
+}
+
+.level-button span {
+  font-family: var(--font-display);
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.level-button small {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.level-max {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.level-wallet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  font-size: 14px;
+}
+
+.level-coins {
+  display: inline-flex;
+  align-items: center;
+}
+
+.level-shards b {
+  font-family: var(--font-display);
+  font-size: 16px;
 }

@@ -9,7 +9,7 @@ export interface StoryScreenDeps {
   readonly onBack: () => void;
 }
 
-/** Story stage list. The Prologue is playable now; Chapter 1 and its map arrive in M7. */
+/** Story stage list. The Prologue is playable now; Chapter 1 and its map arrive in M8, after the characters are designed. */
 export function createStoryScreen(host: HTMLElement, deps: StoryScreenDeps): Screen {
   const root = element('section', 'screen story-screen', host);
   root.setAttribute('aria-label', 'Story');
@@ -36,7 +36,7 @@ export function createStoryScreen(host: HTMLElement, deps: StoryScreenDeps): Scr
   locked.innerHTML = `
     <p class="stage-kicker"><i class="lock" aria-hidden="true"></i>Chapter 1</p>
     <h2>The Three Shores</h2>
-    <p>A full chapter with a story map, dialogue, and a boss arrives with step 7.</p>`;
+    <p>A full chapter with a story map, dialogue, and a boss arrives once the characters are designed. Replay the Prologue for Coins meanwhile.</p>`;
 
   return {
     dispose() {

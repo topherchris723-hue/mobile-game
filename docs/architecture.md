@@ -4,7 +4,7 @@ Current map of the game's systems. Update this whenever a system is added, remov
 
 ## Status
 
-Milestones **M4 — Battle feel**, **M5 — Home menu, Sovereigns, and saving**, and **M6 — Summons** are built on top of the complete M2–M3 Rift Duel. The game boots to a home menu (Story, Sovereigns, locked Summon/Guilds tiles, and a Settings sheet), has a 15-Sovereign roster with Leader Skills, a collection and team editor, a Prologue story battle, a versioned save (schema v3: settings, Gems, summon progress, shards), and a Standard summon banner with published rates, pity, and a reveal sequence. Battles have Signature/Crossover cut-ins, hit-stop, spark bursts, screen shake, synthesized sound effects, vibration, and a remembered 1×/2× speed toggle. Art and audio are still code-made placeholders; the visual GUI pass is scheduled after the gameplay milestones (owner's call).
+Milestones **M4 — Battle feel**, **M5 — Home menu, Sovereigns, and saving**, and **M6 — Summons**, and **M7 — Levelling and Limit Break** are built on top of the complete M2–M3 Rift Duel. The game boots to a home menu (Story, Sovereigns, locked Summon/Guilds tiles, and a Settings sheet), has a 15-Sovereign roster with Leader Skills, a collection and team editor, a Prologue story battle, a versioned save (schema v4: settings, Gems, Coins, summon progress, shards, per-Sovereign level/Limit Break), and a Standard summon banner with published rates, pity, and a reveal sequence. Battles have Signature/Crossover cut-ins, hit-stop, spark bursts, screen shake, synthesized sound effects, vibration, and a remembered 1×/2× speed toggle. Art and audio are still code-made placeholders; the visual GUI pass is scheduled after the gameplay milestones (owner's call).
 
 ## Runtime flow
 
@@ -23,6 +23,7 @@ index.html ─► src/main.ts
        ├─ ui/screens/storyScreen          Prologue (+ locked Chapter 1)
        ├─ ui/screens/sovereignsScreen     collection grid, detail sheet, team editor (saves)
        └─ scenes/battleSession            one battle: duel view + HUD + duel scene + game loop
+            ├─ game/progression           levels each member's HP/ATK/DEF (app, before the session starts)
             ├─ game/leader                applies slot 1's Leader Skill to the team
             ├─ scenes/duelScene           owns the duel; plays events back; runs the enemy AI
             │     game/duel/rules         pure rules → DuelEvent[]
@@ -55,6 +56,8 @@ Menus are HTML over a static painted backdrop (`ui/menuBackdrop`, no game loop).
 | `src/game/duel/*`                                                                                         | Pure, deterministic duel rules, damage, AI, types                                                                                               | config                                 |
 | `src/game/leader.ts`                                                                                      | Leader Skill application and descriptions                                                                                                       | config/sovereigns                      |
 | `src/game/economy/summon.ts`                                                                              | Pure, seeded summon rolls: rates, pity, multi guarantee, duplicates → shards; returns the next state (server-ready)                             | config/summons, config/sovereigns      |
+| `src/game/progression.ts`                                                                                 | Pure levelling rules: level caps, Coin costs, Limit Break checks, level-scaled battle stats                                                     | config/progression                     |
+| `src/config/progression.ts`                                                                               | Level caps, Limit Break steps and shard costs, stat growth, Coin costs and rewards                                                              | —                                      |
 | `src/config/summons.ts`                                                                                   | Costs, rates, pity limit, multi guarantee, shard values, banners, starting/debug Gems, reveal timing                                            | config/sovereigns                      |
 | `src/ui/summonReveal.ts`                                                                                  | Crystal → 5★ spotlights → results grid, presenting an already-saved summon                                                                      | ui/feedback, render/portraits          |
 | `src/game/team.ts`                                                                                        | Team editing rule (always three different Sovereigns; placing an existing member swaps)                                                         | —                                      |
