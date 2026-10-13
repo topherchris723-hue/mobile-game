@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_TEAM, STARTER_IDS } from '../../src/config/sovereigns';
+import { STARTING_GEMS } from '../../src/config/summons';
 import { createLogger } from '../../src/debug/log';
 import {
   createDefaultSave,
@@ -46,7 +47,8 @@ describe('parseSave', () => {
     for (const raw of ['{not json', '[]', '"text"', '{}', '{"schemaVersion":"1"}']) {
       const result = parseSave(raw);
       expect(result.status).toBe('reset');
-      expect(result.data).toEqual(createDefaultSave());
+      // Defaults, apart from the freshly generated summon seed.
+      expect(result.data).toEqual(createDefaultSave(result.data.summons.seed));
     }
   });
 
@@ -74,7 +76,7 @@ describe('parseSave', () => {
     expect(new Set(result.data.team).size).toBe(3);
   });
 
-  it('upgrades a real v1 save to v2, keeping the team and progress, adding default settings', () => {
+  it('upgrades a real v1 save to the current version, keeping the team and progress', () => {
     const v1 = JSON.stringify({
       schemaVersion: 1,
       ownedSovereigns: ['kaien', 'maris', 'torvan', 'goro'],
@@ -83,10 +85,54 @@ describe('parseSave', () => {
     });
     const result = parseSave(v1);
     expect(result.status).toBe('loaded');
-    expect(result.data.schemaVersion).toBe(2);
+    expect(result.data.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(result.data.team).toEqual(['goro', 'kaien', 'maris']);
     expect(result.data.story.clearedStages).toEqual(['prologue']);
     expect(result.data.settings).toEqual(DEFAULT_SETTINGS);
+    // v2 → v3: welcome gift + the Prologue first-clear reward earned before rewards existed.
+    expect(result.data.gems).toBe(STARTING_GEMS + 100);
+  });
+
+  it('upgrades a v2 save that has not cleared the Prologue to the welcome gift only', () => {
+    const v2 = JSON.stringify({
+      schemaVersion: 2,
+      ownedSovereigns: [...STARTER_IDS],
+      team: [...DEFAULT_TEAM],
+      story: { clearedStages: [] },
+      settings: { ...DEFAULT_SETTINGS, battleSpeed: 2 },
+    });
+    const result = parseSave(v2);
+    expect(result.status).toBe('loaded');
+    expect(result.data.gems).toBe(STARTING_GEMS);
+    expect(result.data.settings.battleSpeed).toBe(2);
+    expect(result.data.summons.pulls).toBe(0);
+    expect(result.data.summons.pity).toEqual({});
+    expect(result.data.shards).toEqual({});
+    expect(Number.isInteger(result.data.summons.seed)).toBe(true);
+  });
+
+  it('repairs invalid economy fields without granting anything', () => {
+    const raw = JSON.parse(serializeSave(createDefaultSave(5))) as Record<string, unknown>;
+    raw['gems'] = -40;
+    raw['summons'] = { seed: 'x', pulls: 3.5, pity: { standard: 999, unknownBanner: 2 } };
+    raw['shards'] = { kaien: 10, ghost: 5, maris: -1 };
+    const result = parseSave(JSON.stringify(raw));
+    expect(result.status).toBe('repaired');
+    expect(result.data.gems).toBe(0);
+    expect(result.data.summons.pulls).toBe(0);
+    expect(result.data.summons.pity).toEqual({});
+    expect(result.data.shards).toEqual({ kaien: 10 });
+  });
+
+  it('keeps a valid economy state exactly', () => {
+    const save = createDefaultSave(42);
+    save.gems = 1234;
+    save.summons = { seed: 42, pulls: 33, pity: { standard: 12 } };
+    save.shards = { goro: 15 };
+    save.ownedSovereigns.push('akari');
+    const result = parseSave(serializeSave(save));
+    expect(result.status).toBe('loaded');
+    expect(result.data).toEqual(save);
   });
 
   it('repairs invalid settings to defaults', () => {
@@ -115,6 +161,7 @@ describe('parseSave', () => {
         return { ...data, team: ['maris', 'kaien', 'torvan'] };
       },
     };
+    // A synthetic chain (1 → 2 → 3) independent of the real schema version.
     const v1 = JSON.stringify({ ...createDefaultSave(), schemaVersion: 1 });
     const result = parseSave(v1, migrations, 3);
     expect(calls).toEqual([1, 2]);
@@ -122,7 +169,7 @@ describe('parseSave', () => {
   });
 
   it('resets if a migration step is missing', () => {
-    const result = parseSave(serializeSave(createDefaultSave()), {}, 3);
+    const result = parseSave(serializeSave(createDefaultSave()), {}, SAVE_SCHEMA_VERSION + 1);
     expect(result.status).toBe('reset');
   });
 

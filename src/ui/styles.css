@@ -19,6 +19,11 @@
   --hp: #5dbb46;
   --hp-low: #f34f58;
 
+  /* Rarity frames (style guide §6.4). */
+  --rarity-3: #b07a4a;
+  --rarity-4: #a5bce0;
+  --rarity-5: #f5c542;
+
   /* Card kinds: identified by icon and label first, colour second (style guide §6.3). */
   --card-strike: #e2603f;
   --card-blast: #2888eb;
@@ -1868,4 +1873,497 @@ body[data-reduce-motion='true'] .cut-in[data-side='enemy'] .cut-in-band {
 .duel-hud .toast {
   max-width: calc(100% - 144px);
   text-align: center;
+}
+
+/* ---------- Gems, rewards ---------- */
+
+/* Gems are Rift crystals: a violet shard with a light facet (no new accent colour). */
+.gem-icon {
+  display: inline-block;
+  width: 0.8em;
+  height: 1em;
+  margin-right: 0.3em;
+  vertical-align: -0.12em;
+  background: linear-gradient(90deg, #c9b8f5 0 50%, var(--rift-violet) 50% 100%);
+  clip-path: polygon(50% 0, 100% 35%, 50% 100%, 0 35%);
+}
+
+.gem-balance {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  background: var(--ink-panel);
+  color: var(--text-light);
+  font-family: var(--font-display);
+  font-size: 20px;
+  clip-path: var(--chamfer-shape);
+}
+
+.screen-header .gem-balance {
+  margin-left: auto;
+}
+
+.home-gems {
+  position: absolute;
+  top: calc(var(--safe-top) + var(--space-3));
+  left: calc(var(--safe-left) + var(--space-3));
+  z-index: 1;
+  min-height: 48px;
+}
+
+.result-reward {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: calc(-1 * var(--space-2));
+  font-size: 16px;
+}
+
+.result-reward[hidden] {
+  display: none;
+}
+
+.result-reward b {
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+
+.detail-shards {
+  margin: var(--space-3) 0 0;
+  font-size: 14px;
+}
+
+.detail-shards b {
+  margin-right: var(--space-2);
+  font-family: var(--font-display);
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+/* ---------- Summon screen ---------- */
+
+.summon-banner {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.summon-hero {
+  display: flex;
+  justify-content: center;
+  height: 190px;
+  overflow: hidden;
+  border-bottom: 2px solid var(--rarity-5);
+}
+
+.summon-hero-figure {
+  width: 33%;
+  height: 230px;
+  object-fit: contain;
+  object-position: 50% 0;
+}
+
+.summon-hero-figure:nth-child(2) {
+  margin-top: -10px;
+}
+
+.summon-banner-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.summon-banner-desc {
+  margin: var(--space-1) 0 0;
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.pity-text {
+  margin: 0 0 var(--space-2);
+  font-size: 15px;
+}
+
+.pity-text b {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--gold);
+}
+
+.pity-bar {
+  height: 6px;
+  background: rgb(254 243 223 / 0.18);
+}
+
+.pity-bar i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transform-origin: left;
+}
+
+.rates-button {
+  justify-self: start;
+  min-height: 48px;
+  padding: 0;
+  color: var(--cloud);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.summon-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+  margin-top: auto;
+}
+
+.summon-button {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 96px;
+  padding: var(--space-2);
+  background: var(--cloud);
+  color: var(--text-dark);
+  clip-path: var(--chamfer-shape);
+  transition: transform var(--duration-press) var(--ease-out);
+}
+
+.summon-button.is-multi {
+  background: var(--rift-violet);
+  color: var(--ink);
+}
+
+.summon-button:active {
+  transform: scale(0.96);
+}
+
+.summon-button[aria-disabled='true'] {
+  opacity: 0.55;
+}
+
+.summon-button-label {
+  font-family: var(--font-display);
+  font-size: 24px;
+  text-transform: uppercase;
+}
+
+.summon-button.is-multi .gem-icon {
+  /* On the violet button the crystal is drawn in ink so it stays visible. */
+  background: linear-gradient(90deg, #3a2f5c 0 50%, var(--ink) 50% 100%);
+}
+
+.summon-button-cost {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+
+.summon-button small {
+  font-size: 14px;
+}
+
+.debug-gems {
+  justify-self: center;
+  color: var(--cloud);
+  font-size: 16px;
+}
+
+.summon-confirm-text {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-1);
+  margin: 0 0 var(--space-4);
+  font-size: 16px;
+}
+
+.summon-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--space-2);
+}
+
+.summon-confirm-actions .button-primary {
+  min-width: 0;
+}
+
+.rates-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.rates-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+
+.rates-head .stars {
+  font-size: 18px;
+}
+
+.rates-names {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.rates-names li {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  border-bottom: 1px solid rgb(30 36 64 / 0.1);
+}
+
+.rates-rules {
+  margin: var(--space-4) 0;
+  padding-left: var(--space-4);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ---------- Summon reveal ---------- */
+
+.summon-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--safe-top) + var(--space-4)) calc(var(--safe-right) + var(--space-4))
+    calc(var(--safe-bottom) + var(--space-4)) calc(var(--safe-left) + var(--space-4));
+  background: var(--ink);
+  color: var(--text-light);
+  --tier: var(--rarity-3);
+}
+
+.summon-reveal[data-best='4'] {
+  --tier: var(--rarity-4);
+}
+
+.summon-reveal[data-best='5'] {
+  --tier: var(--rarity-5);
+}
+
+.summon-reveal .stars {
+  color: var(--gold);
+}
+
+.summon-skip {
+  position: absolute;
+  top: calc(var(--safe-top) + var(--space-3));
+  right: calc(var(--safe-right) + var(--space-3));
+  min-width: 72px;
+  min-height: 48px;
+  background: transparent;
+  color: var(--cloud);
+  font-family: var(--font-display);
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.summon-stage {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  min-height: 0;
+}
+
+.summon-hint {
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.summon-crystal {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  background: transparent;
+  color: var(--cloud);
+}
+
+.summon-crystal-shape {
+  width: 150px;
+  height: 230px;
+  background: linear-gradient(
+    90deg,
+    var(--tier) 0 50%,
+    color-mix(in srgb, var(--tier) 70%, #08090f) 50% 100%
+  );
+  clip-path: polygon(50% 0, 100% 30%, 82% 100%, 18% 100%, 0 30%);
+  animation: crystal-idle 1.6s var(--ease-out) infinite alternate;
+  transition:
+    transform 320ms var(--ease-out),
+    opacity 320ms var(--ease-out);
+}
+
+.summon-reveal[data-phase='opening'] .summon-crystal-shape {
+  animation: none;
+  transform: scale(1.35);
+  opacity: 0;
+}
+
+.summon-reveal[data-phase='opening'] .summon-hint {
+  opacity: 0;
+}
+
+@keyframes crystal-idle {
+  from {
+    transform: translateY(0) scale(1);
+  }
+  to {
+    transform: translateY(-8px) scale(1.03);
+  }
+}
+
+.summon-spotlight {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  background: transparent;
+  color: var(--text-light);
+  animation: summon-in 280ms var(--ease-out) both;
+}
+
+.summon-spotlight-portrait {
+  height: min(52vh, 420px);
+  object-fit: contain;
+  border-bottom: 3px solid var(--rarity-5);
+}
+
+.summon-spotlight-info {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.summon-spotlight-info .stars {
+  font-size: 24px;
+}
+
+.summon-spotlight-title {
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.summon-spotlight-name {
+  font-family: var(--font-display);
+  font-size: 44px;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.summon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+  width: 100%;
+  overflow-y: auto;
+}
+
+.summon-grid.is-single {
+  grid-template-columns: minmax(0, 220px);
+  justify-content: center;
+}
+
+.summon-card {
+  display: grid;
+  background: #16171f;
+  border-top: 4px solid var(--rarity-3);
+  animation: summon-in 260ms var(--ease-out) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.summon-card[data-rarity='4'] {
+  border-top-color: var(--rarity-4);
+}
+
+.summon-card[data-rarity='5'] {
+  border-top-color: var(--rarity-5);
+  background: #2a2618;
+}
+
+.summon-card-portrait {
+  width: 100%;
+  height: 92px;
+  object-fit: cover;
+  object-position: 50% 10%;
+}
+
+.summon-grid.is-single .summon-card-portrait {
+  height: 260px;
+  object-fit: contain;
+}
+
+.summon-card-info {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-1) var(--space-2) var(--space-2);
+}
+
+.summon-card-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.summon-new,
+.summon-shards {
+  font-size: 14px;
+}
+
+.summon-new {
+  color: var(--gold);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+.summon-shards {
+  opacity: 0.8;
+}
+
+.summon-summary {
+  margin: 0;
+  font-size: 15px;
+  text-align: center;
+}
+
+.summon-done {
+  width: 100%;
+}
+
+@keyframes summon-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+}
+
+body[data-reduce-motion='true'] .summon-crystal-shape,
+body[data-reduce-motion='true'] .summon-spotlight,
+body[data-reduce-motion='true'] .summon-card {
+  animation: none;
+  transition: none;
 }

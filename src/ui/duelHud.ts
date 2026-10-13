@@ -33,6 +33,12 @@ export interface DuelHudCallbacks {
   onToggleSpeed(): void;
 }
 
+/** What a battle paid out, shown on the result panel. */
+export interface BattleReward {
+  readonly gems: number;
+  readonly reason: string;
+}
+
 /** A Signature or Crossover title card shown before the attack lands. */
 export interface CutInInfo {
   readonly side: Side;
@@ -57,7 +63,7 @@ export interface DuelHud {
   cutIn(info: CutInInfo): void;
   endCutIn(): void;
   setSpeed(speed: BattleSpeed): void;
-  showResult(winner: Side): void;
+  showResult(winner: Side, reward: BattleReward | null): void;
   dispose(): void;
 }
 
@@ -175,6 +181,8 @@ export function createDuelHud(
   result.hidden = true;
   const resultTitle = element('h2', '', result);
   const resultText = element('p', '', result);
+  const resultReward = element('p', 'result-reward', result);
+  resultReward.hidden = true;
   const restart = element('button', 'button-primary', result);
   restart.type = 'button';
   restart.textContent = 'Play again';
@@ -471,12 +479,16 @@ export function createDuelHud(
       }, 1400);
     },
 
-    showResult(winner) {
+    showResult(winner, reward) {
       result.hidden = false;
       result.dataset['winner'] = winner;
       resultTitle.textContent = winner === 'player' ? 'Victory' : 'Defeat';
       resultText.textContent =
         winner === 'player' ? 'All three Rift enemies defeated.' : 'Your team was defeated.';
+      resultReward.hidden = reward === null;
+      resultReward.innerHTML = reward
+        ? `<i class="gem-icon" aria-hidden="true"></i><b>+${reward.gems}</b> Gems · ${reward.reason}`
+        : '';
       restart.focus();
     },
 

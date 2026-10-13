@@ -3,8 +3,10 @@ import { STAGES } from '../../config/story';
 import { BUILD_ID } from '../../core/buildInfo';
 import { describeLeaderSkill } from '../../game/leader';
 import type { PortraitCache } from '../../render/portraits';
+import { pullsUntilPity } from '../../game/economy/summon';
+import { STANDARD_BANNER } from '../../config/summons';
 import type { SaveStore } from '../../save/saveStore';
-import { element } from '../dom';
+import { element, gemsLabel } from '../dom';
 
 /*
  * Home menu (game-design.md §8, owner request): the hub after boot and after every battle.
@@ -17,6 +19,7 @@ export interface HomeScreenDeps {
   readonly portraits: PortraitCache;
   readonly onStory: () => void;
   readonly onSovereigns: () => void;
+  readonly onSummon: () => void;
   readonly onSettings: () => void;
   readonly toast: (message: string) => void;
 }
@@ -43,6 +46,10 @@ export function createHomeScreen(host: HTMLElement, deps: HomeScreenDeps): Scree
   // Gear icon (inline SVG: UI icons may be SVG, CLAUDE.md §4).
   settings.innerHTML = `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><g fill="currentColor"><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(0 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(45 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(90 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(135 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(180 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(225 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(270 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(315 12 12)"/></g><circle cx="12" cy="12" r="5.6" fill="none" stroke="currentColor" stroke-width="3.6"/></svg>`;
   settings.addEventListener('click', deps.onSettings);
+
+  const balance = element('span', 'gem-balance home-gems', root);
+  balance.setAttribute('aria-label', `${deps.save.data.gems} Gems`);
+  balance.innerHTML = gemsLabel(deps.save.data.gems);
 
   const header = element('header', 'home-header', root);
   element('p', 'kicker', header).textContent = 'Rift Duel';
@@ -92,9 +99,9 @@ export function createHomeScreen(host: HTMLElement, deps: HomeScreenDeps): Scree
     {
       id: 'summon',
       title: 'Summon',
-      detail: 'Arrives with step 6',
-      locked: 'Summons arrive with step 6: earn Gems and recruit new Sovereigns.',
-      onOpen: () => undefined,
+      detail: `Standard · 5★ within ${pullsUntilPity(deps.save.data.summons.pity[STANDARD_BANNER.id] ?? 0)}`,
+      locked: null,
+      onOpen: deps.onSummon,
     },
     {
       id: 'guilds',

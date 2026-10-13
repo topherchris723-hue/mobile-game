@@ -14,7 +14,7 @@ import {
 } from '../game/duel/rules';
 import type { DuelAction, DuelEvent, DuelState, Side } from '../game/duel/types';
 import type { DuelView, HitImpact } from '../render/duelView';
-import type { DuelHud } from '../ui/duelHud';
+import type { BattleReward, DuelHud } from '../ui/duelHud';
 import type { Feedback } from '../ui/feedback';
 
 /*
@@ -50,8 +50,8 @@ export interface DuelSceneOptions {
   readonly seed: number;
   /** Extra starting Rift Energy for the player, e.g. from a Leader Skill. */
   readonly playerBonusEnergy: number;
-  /** Called once when a duel ends (again after each replay). */
-  readonly onFinished: (winner: Side) => void;
+  /** Called once when a duel ends (again after each replay); returns what it paid out. */
+  readonly onFinished: (winner: Side) => BattleReward | null;
 }
 
 export function createDuelScene(options: DuelSceneOptions): DuelScene {
@@ -254,8 +254,7 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
       if (state.winner) {
         if (phase !== 'ended') {
           phase = 'ended';
-          hud.showResult(state.winner);
-          options.onFinished(state.winner);
+          hud.showResult(state.winner, options.onFinished(state.winner));
         }
         return;
       }

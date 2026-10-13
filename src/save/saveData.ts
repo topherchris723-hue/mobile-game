@@ -1,11 +1,12 @@
 import { DEFAULT_TEAM, findSovereign, STARTER_IDS } from '../config/sovereigns';
+import { BANNERS, MAX_GEMS, PITY_LIMIT, STARTING_GEMS } from '../config/summons';
 
 /*
  * Save format (CLAUDE.md §10). Pure functions only: parsing, migrating, validating, and repairing
  * are unit-tested without touching browser storage.
  */
 
-export const SAVE_SCHEMA_VERSION = 2;
+export const SAVE_SCHEMA_VERSION = 3;
 
 export type BattleSpeed = 1 | 2;
 
@@ -25,6 +26,16 @@ export const DEFAULT_SETTINGS: Readonly<Settings> = {
   battleSpeed: 1,
 };
 
+/** Summon progress (game-design.md §6). */
+export interface SummonProgress {
+  /** Random per save; with `pulls` it fixes every roll, so summons can't be rerolled by reloading. */
+  seed: number;
+  /** Total Sovereigns ever summoned. */
+  pulls: number;
+  /** Per banner id: summons since the last 5★. */
+  pity: Record<string, number>;
+}
+
 export interface SaveData {
   readonly schemaVersion: typeof SAVE_SCHEMA_VERSION;
   /** Recruited Sovereign ids. */
@@ -33,6 +44,10 @@ export interface SaveData {
   team: [string, string, string];
   story: { clearedStages: string[] };
   settings: Settings;
+  gems: number;
+  summons: SummonProgress;
+  /** Per Sovereign id: shards from duplicates (spent on Limit Breaks in M7). */
+  shards: Record<string, number>;
 }
 
 export type LoadStatus =
@@ -58,15 +73,41 @@ export type Migration = (data: Record<string, unknown>) => Record<string, unknow
 export const MIGRATIONS: Readonly<Record<number, Migration>> = {
   /** v1 → v2 (M4): settings added, with defaults. */
   1: (data) => ({ ...data, settings: { ...DEFAULT_SETTINGS } }),
+  /**
+   * v2 → v3 (M6): Gems, summons, shards. Existing players get the welcome gift plus the Prologue
+   * first-clear reward they earned before rewards existed. Values are frozen here on purpose:
+   * later tuning must not change what this migration granted.
+   */
+  2: (data) => {
+    const story = isRecord(data['story']) ? data['story'] : {};
+    const clearedPrologue = stringArray(story['clearedStages']).includes('prologue');
+    return {
+      ...data,
+      gems: 500 + (clearedPrologue ? 100 : 0),
+      summons: { seed: randomSeed(), pulls: 0, pity: {} },
+      shards: {},
+    };
+  },
 };
 
-export function createDefaultSave(): SaveData {
+/** A random 32-bit seed (not gameplay-critical randomness, so the platform source is fine). */
+export function randomSeed(): number {
+  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
+    return crypto.getRandomValues(new Uint32Array(1))[0] ?? 1;
+  }
+  return Math.floor(Math.random() * 0x1_0000_0000) >>> 0;
+}
+
+export function createDefaultSave(seed: number = randomSeed()): SaveData {
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
     ownedSovereigns: [...STARTER_IDS],
     team: [...DEFAULT_TEAM],
     story: { clearedStages: [] },
     settings: { ...DEFAULT_SETTINGS },
+    gems: STARTING_GEMS,
+    summons: { seed, pulls: 0, pity: {} },
+    shards: {},
   };
 }
 
@@ -127,6 +168,48 @@ function repair(raw: Record<string, unknown>, issues: string[]): SaveData {
   };
   if (speed !== settings.battleSpeed) issues.push('Battle speed reset to default');
 
+  const rawGems = raw['gems'];
+  let gems = 0;
+  if (typeof rawGems === 'number' && Number.isFinite(rawGems) && rawGems >= 0) {
+    gems = Math.min(MAX_GEMS, Math.floor(rawGems));
+    if (gems !== rawGems) issues.push('Gem balance was not a whole number in range');
+  } else {
+    issues.push('Gem balance was invalid; set to 0');
+  }
+
+  const rawSummons = isRecord(raw['summons']) ? raw['summons'] : {};
+  const wholeNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isInteger(value) && value >= 0;
+  const rawSeed = rawSummons['seed'];
+  let seed: number;
+  if (wholeNumber(rawSeed) && rawSeed <= 0xffff_ffff) {
+    seed = rawSeed;
+  } else {
+    seed = randomSeed();
+    issues.push('Summon seed was invalid; made a new one');
+  }
+  const rawPulls = rawSummons['pulls'];
+  const pulls = wholeNumber(rawPulls) ? rawPulls : 0;
+  if (pulls !== rawPulls) issues.push('Summon count was invalid; reset');
+  const rawPity = isRecord(rawSummons['pity']) ? rawSummons['pity'] : {};
+  const pity: Record<string, number> = {};
+  for (const banner of BANNERS) {
+    const value = rawPity[banner.id];
+    if (value === undefined) continue;
+    if (wholeNumber(value) && value < PITY_LIMIT) pity[banner.id] = value;
+    else issues.push(`Pity for "${banner.id}" was invalid; reset`);
+  }
+
+  const rawShards = isRecord(raw['shards']) ? raw['shards'] : {};
+  const shards: Record<string, number> = {};
+  for (const [id, value] of Object.entries(rawShards)) {
+    if (findSovereign(id) && wholeNumber(value)) {
+      if (value > 0) shards[id] = value;
+    } else {
+      issues.push(`Dropped invalid shards for "${id}"`);
+    }
+  }
+
   const [a, b, c] = team;
   if (a === undefined || b === undefined || c === undefined) {
     throw new Error('Repair produced an incomplete team');
@@ -137,6 +220,9 @@ function repair(raw: Record<string, unknown>, issues: string[]): SaveData {
     team: [a, b, c],
     story: { clearedStages },
     settings,
+    gems,
+    summons: { seed, pulls, pity },
+    shards,
   };
 }
 

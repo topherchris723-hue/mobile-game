@@ -12,7 +12,7 @@ import { createDuelView } from '../render/duelView';
 import type { PortraitCache } from '../render/portraits';
 import { countDisplayObjects, type Stage, type StageMetrics } from '../render/stage';
 import type { SaveStore } from '../save/saveStore';
-import { createDuelHud } from '../ui/duelHud';
+import { createDuelHud, type BattleReward } from '../ui/duelHud';
 import type { Feedback } from '../ui/feedback';
 import { createDuelScene, type DuelScene } from './duelScene';
 
@@ -42,7 +42,7 @@ export interface BattleSessionOptions {
   readonly save: SaveStore;
   readonly portraits: PortraitCache;
   readonly feedback: Feedback;
-  readonly onFinished: (winner: Side) => void;
+  readonly onFinished: (winner: Side) => BattleReward | null;
   readonly onExit: () => void;
 }
 

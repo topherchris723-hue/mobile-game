@@ -223,10 +223,25 @@ test('a Signature plays a cut-in with its name', async ({ page }) => {
   }
   await waitForPlayerTurn(page);
   const name = (await signature.first().locator('.card-name').textContent()) ?? '';
+  // At 4× the cut-in lasts ~0.25 s, shorter than a poll can reliably catch, so record it the
+  // moment it becomes visible.
+  await page.evaluate(() => {
+    const node = document.querySelector('.cut-in');
+    const seen: string[] = [];
+    (window as unknown as { __cutIns: string[] }).__cutIns = seen;
+    if (!node) return;
+    new MutationObserver(() => {
+      if (node.classList.contains('is-visible')) {
+        const kicker = node.querySelector('.cut-in-kicker')?.textContent ?? '';
+        const title = node.querySelector('.cut-in-title')?.textContent ?? '';
+        seen.push(`${kicker}: ${title}`);
+      }
+    }).observe(node, { attributes: true, attributeFilter: ['class'] });
+  });
   await signature.first().tap();
-  await expect(page.locator('.cut-in')).toHaveClass(/is-visible/);
-  await expect(page.locator('.cut-in-title')).toHaveText(name);
-  await expect(page.locator('.cut-in-kicker')).toHaveText('Signature');
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __cutIns: string[] }).__cutIns))
+    .toContain(`Signature: ${name}`);
   await expect(page.locator('.cut-in')).not.toHaveClass(/is-visible/, { timeout: 10_000 });
   expect(errors).toEqual([]);
 });

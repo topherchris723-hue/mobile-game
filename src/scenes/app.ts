@@ -1,6 +1,7 @@
 import { createSfx } from '../audio/sfx';
 import { getSovereign } from '../config/sovereigns';
 import { getStage } from '../config/story';
+import { MAX_GEMS } from '../config/summons';
 import type { LaunchFlags } from '../core/flags';
 import type { Logger } from '../debug/log';
 import type { DebugOverlay } from '../debug/overlay';
@@ -15,6 +16,7 @@ import { createHomeScreen, type Screen } from '../ui/screens/homeScreen';
 import { createSettingsSheet } from '../ui/screens/settingsSheet';
 import { createSovereignsScreen } from '../ui/screens/sovereignsScreen';
 import { createStoryScreen } from '../ui/screens/storyScreen';
+import { createSummonScreen } from '../ui/screens/summonScreen';
 import { createBattleSession, type BattleSession } from './battleSession';
 
 /*
@@ -23,7 +25,7 @@ import { createBattleSession, type BattleSession } from './battleSession';
  * whichever was showing is disposed before the next starts.
  */
 
-export type ScreenId = 'home' | 'story' | 'sovereigns' | 'battle';
+export type ScreenId = 'home' | 'story' | 'sovereigns' | 'summon' | 'battle';
 
 export interface App {
   readonly screen: ScreenId;
@@ -100,6 +102,7 @@ export function createApp(deps: AppDeps): App {
       toast,
       onStory: showStory,
       onSovereigns: showSovereigns,
+      onSummon: showSummon,
       onSettings: showSettings,
     });
   };
@@ -113,6 +116,20 @@ export function createApp(deps: AppDeps): App {
         feedback.cue('tap');
       },
       onClose: closeSheet,
+    });
+  }
+
+  function showSummon(): void {
+    leaveCurrent();
+    enter('summon');
+    menu = createSummonScreen(deps.screenHost, {
+      save,
+      portraits,
+      feedback,
+      log,
+      debug: deps.flags.debug,
+      onBack: showHome,
+      toast,
     });
   }
 
@@ -144,12 +161,14 @@ export function createApp(deps: AppDeps): App {
       portraits,
       feedback,
       onFinished: (winner) => {
-        if (winner === 'player' && !save.data.story.clearedStages.includes(stageId)) {
-          save.update((data) => {
-            data.story.clearedStages.push(stageId);
-          });
-          log.info(`Stage "${stageId}" cleared`);
-        }
+        if (winner !== 'player' || save.data.story.clearedStages.includes(stageId)) return null;
+        // Clear and reward in one write, so the reward can't be lost or granted twice.
+        save.update((data) => {
+          data.story.clearedStages.push(stageId);
+          data.gems = Math.min(MAX_GEMS, data.gems + stageSpec.firstClearGems);
+        });
+        log.info(`Stage "${stageId}" cleared: +${stageSpec.firstClearGems} Gems`);
+        return { gems: stageSpec.firstClearGems, reason: 'First clear' };
       },
       onExit: showHome,
     });

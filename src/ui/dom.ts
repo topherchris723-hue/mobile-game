@@ -50,3 +50,8 @@ export function typeChip(type: TypeId): string {
 export function stars(rarity: Rarity): string {
   return `<span class="stars" aria-label="${rarity} stars" data-rarity="${rarity}">${'★'.repeat(rarity)}</span>`;
 }
+
+/** Gem amount with the Rift-crystal icon (the icon is decorative; the number carries the meaning). */
+export function gemsLabel(gems: number): string {
+  return `<i class="gem-icon" aria-hidden="true"></i><span>${gems.toLocaleString('en-US')}</span>`;
+}

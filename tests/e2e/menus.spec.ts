@@ -37,12 +37,11 @@ test('boots to the home menu with the team and four tiles', async ({ page }, tes
   expect(errors).toEqual([]);
 });
 
-test('locked tiles explain why and do not navigate', async ({ page }) => {
+test('the locked Guilds tile explains why and does not navigate', async ({ page }) => {
   await bootToHome(page);
   // Locked tiles are aria-disabled but stay tappable so they can explain themselves; Playwright
   // won't tap aria-disabled elements without force.
-  await tile(page, 'summon').tap({ force: true });
-  await expect(page.locator('.menu-toast')).toContainText('Summons arrive with step 6');
+  await expect(tile(page, 'summon')).toHaveAttribute('aria-disabled', 'false');
   await tile(page, 'guilds').tap({ force: true });
   await expect(page.locator('.menu-toast')).toContainText('online');
   await expect(page.locator('body')).toHaveAttribute('data-scene', 'home');
@@ -56,7 +55,7 @@ test('the collection shows all 15 Sovereigns, 6 recruited', async ({ page }, tes
   await expect(page.locator('.sovereign-card:not(.is-locked)')).toHaveCount(6);
   await expect(page.locator('.screen-title')).toHaveText('Sovereigns · 6/15');
   await page.locator('.sovereign-card.is-locked').first().tap();
-  await expect(page.locator('.menu-toast')).toContainText('Summons');
+  await expect(page.locator('.menu-toast')).toContainText('Summon menu');
   await page.waitForTimeout(400);
   await page.screenshot({ path: testInfo.outputPath('sovereigns.png'), fullPage: true });
 });
@@ -116,9 +115,14 @@ test('story leads into a battle, and the result screen returns home', async ({ p
   }
   await expect(page.locator('.result')).toBeVisible();
   const won = (await page.locator('.result h2').textContent()) === 'Victory';
+  if (won) await expect(page.locator('.result-reward')).toContainText('+100 Gems · First clear');
   await page.getByRole('button', { name: 'Home' }).tap();
   await expect(page.locator('body')).toHaveAttribute('data-scene', 'home');
-  if (won) await expect(tile(page, 'story')).toContainText('Prologue cleared');
+  if (won) {
+    await expect(tile(page, 'story')).toContainText('Prologue cleared');
+    // First-clear reward: 500 welcome Gems + 100.
+    await expect(page.locator('.home-gems')).toHaveText('600');
+  }
   expect(errors).toEqual([]);
 });
 

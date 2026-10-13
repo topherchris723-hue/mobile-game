@@ -4,7 +4,7 @@ Current map of the game's systems. Update this whenever a system is added, remov
 
 ## Status
 
-Milestones **M4 — Battle feel** and **M5 — Home menu, Sovereigns, and saving** are built on top of the complete M2–M3 Rift Duel. The game boots to a home menu (Story, Sovereigns, locked Summon/Guilds tiles, and a Settings sheet), has a 15-Sovereign roster with Leader Skills, a collection and team editor, a Prologue story battle, and a versioned save (schema v2, with settings). Battles have Signature/Crossover cut-ins, hit-stop, spark bursts, screen shake, synthesized sound effects, vibration, and a remembered 1×/2× speed toggle. Art and audio are still code-made placeholders; the visual GUI pass is scheduled after the gameplay milestones (owner's call).
+Milestones **M4 — Battle feel**, **M5 — Home menu, Sovereigns, and saving**, and **M6 — Summons** are built on top of the complete M2–M3 Rift Duel. The game boots to a home menu (Story, Sovereigns, locked Summon/Guilds tiles, and a Settings sheet), has a 15-Sovereign roster with Leader Skills, a collection and team editor, a Prologue story battle, a versioned save (schema v3: settings, Gems, summon progress, shards), and a Standard summon banner with published rates, pity, and a reveal sequence. Battles have Signature/Crossover cut-ins, hit-stop, spark bursts, screen shake, synthesized sound effects, vibration, and a remembered 1×/2× speed toggle. Art and audio are still code-made placeholders; the visual GUI pass is scheduled after the gameplay milestones (owner's call).
 
 ## Runtime flow
 
@@ -17,7 +17,8 @@ index.html ─► src/main.ts
   ├─ audio/sfx + ui/feedback (in app)      synthesized SFX and vibration, gated by Settings
   ├─ ui/bootScreen                        "Tap to start" → fullscreen + portrait lock (best effort)
   └─ scenes/app                           screen router; exactly one screen alive at a time
-       ├─ ui/screens/homeScreen           Story · Sovereigns · Summon (locked) · Guilds (locked)
+       ├─ ui/screens/homeScreen           Gem balance · Story · Sovereigns · Summon · Guilds (locked)
+       ├─ ui/screens/summonScreen         banner, pity, rates sheet, confirm → game/economy/summon → save → ui/summonReveal
        ├─ ui/screens/settingsSheet        sound, vibration, reduce motion, battle speed, build id
        ├─ ui/screens/storyScreen          Prologue (+ locked Chapter 1)
        ├─ ui/screens/sovereignsScreen     collection grid, detail sheet, team editor (saves)
@@ -53,6 +54,9 @@ Menus are HTML over a static painted backdrop (`ui/menuBackdrop`, no game loop).
 | `src/core/*`                                                                                              | Fixed-step clock and loop, seeded RNG, flags, build info, math                                                                                  | config                                 |
 | `src/game/duel/*`                                                                                         | Pure, deterministic duel rules, damage, AI, types                                                                                               | config                                 |
 | `src/game/leader.ts`                                                                                      | Leader Skill application and descriptions                                                                                                       | config/sovereigns                      |
+| `src/game/economy/summon.ts`                                                                              | Pure, seeded summon rolls: rates, pity, multi guarantee, duplicates → shards; returns the next state (server-ready)                             | config/summons, config/sovereigns      |
+| `src/config/summons.ts`                                                                                   | Costs, rates, pity limit, multi guarantee, shard values, banners, starting/debug Gems, reveal timing                                            | config/sovereigns                      |
+| `src/ui/summonReveal.ts`                                                                                  | Crystal → 5★ spotlights → results grid, presenting an already-saved summon                                                                      | ui/feedback, render/portraits          |
 | `src/game/team.ts`                                                                                        | Team editing rule (always three different Sovereigns; placing an existing member swaps)                                                         | —                                      |
 | `src/save/saveData.ts`                                                                                    | Save schema v2 (v1 + settings), defaults, parse/migrate/validate/repair (pure)                                                                  | config/sovereigns                      |
 | `src/config/feedback.ts`                                                                                  | Sound recipes, vibration patterns, cue table, impact tuning (hit-stop, shake, sparks), cut-in length                                            | —                                      |
@@ -66,7 +70,7 @@ Menus are HTML over a static painted backdrop (`ui/menuBackdrop`, no game loop).
 | `src/render/duelView.ts`                                                                                  | Backdrop layers, the two active fighters (each one baked illustration animated in code), projectiles, Crossover/Drain effects, floating numbers | render/*                               |
 | `src/render/portraits.ts`                                                                                 | Renders each Sovereign's battle art once into an image for the menus                                                                            | render/placeholderFighter              |
 | `src/render/backdrop.ts`, `placeholderFighter.ts`, `riftEffects.ts`, `embers.ts`, `tweens.ts`, `color.ts` | Code-painted placeholder art, effects, tweening, colour rules                                                                                   | config/palette                         |
-| `src/ui/screens/*`                                                                                        | Home, Story, and Sovereigns screens (HTML)                                                                                                      | save, config, game/leader, game/team   |
+| `src/ui/screens/*`                                                                                        | Home, Story, Sovereigns, Summon screens and the Settings sheet (HTML)                                                                           | save, config, game/leader, game/team   |
 | `src/ui/duelHud.ts`, `cardText.ts`, `dom.ts`, `menuBackdrop.ts`                                           | Battle HUD; shared card text/icons and DOM helpers; static menu backdrop                                                                        | game/duel (read-only helpers)          |
 | `src/ui/bootScreen.ts`, `playability.ts`, `styles.css`                                                    | Start screen, pause on rotation/hide, design tokens and all styles                                                                              | —                                      |
 | `src/debug/*`                                                                                             | Logger, error capture, `?debug=1` overlay, copyable reports                                                                                     | core/buildInfo                         |
@@ -80,6 +84,7 @@ Menus are HTML over a static painted backdrop (`ui/menuBackdrop`, no game loop).
 - Static scenery is painted once per screen size into textures; only fighters, effects, beams, and motes animate.
 - Text-heavy battle UI is HTML/CSS (crisp text, accessible buttons); the battlefield is PixiJS.
 - Rules never wait on animation: the state is final immediately; presentation catches up event by event.
+- A summon is rolled from the save's seed and pull count and written in one save update **before** the reveal plays, so closing the app mid-animation neither loses nor rerolls it.
 - The save is written immediately on every change (mobile browsers can kill a tab without warning); its rules are pure and unit-tested.
 
 ## Deployment

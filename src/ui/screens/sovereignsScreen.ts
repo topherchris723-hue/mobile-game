@@ -118,7 +118,7 @@ export function createSovereignsScreen(host: HTMLElement, deps: SovereignsScreen
         : `<span class="sovereign-card-name">???</span><span class="sovereign-card-locked">Recruit with Summons</span>`;
       card.addEventListener('click', () => {
         if (!isOwned) {
-          deps.toast(`${spec.name} can be recruited once Summons arrive (step 6).`);
+          deps.toast(`Recruit ${spec.name} from the Summon menu.`);
           return;
         }
         if (selectedSlot !== null) place(selectedSlot, spec);
@@ -148,6 +148,9 @@ export function createSovereignsScreen(host: HTMLElement, deps: SovereignsScreen
       ${statRow('ATK', spec.atk, STAT_MAX.atk)}
       ${statRow('DEF', spec.def, STAT_MAX.def)}
       ${statRow('SPD', spec.spd, STAT_MAX.spd)}`;
+    const shardCount = deps.save.data.shards[spec.id] ?? 0;
+    const shardLine = element('p', 'detail-shards', panel);
+    shardLine.innerHTML = `<b>Shards ${shardCount}</b> From duplicate summons; used for Limit Breaks (step 7).`;
     const leader = element('p', 'detail-leader', panel);
     leader.innerHTML = `<b>Leader Skill</b> ${describeLeaderSkill(spec.leaderSkill)}`;
     const deck = element('ul', 'detail-deck', panel);

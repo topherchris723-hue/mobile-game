@@ -66,7 +66,7 @@ function setup(): { scene: DuelScene; calls: Call[] } {
     enemy: ENEMY_TEAM,
     seed: 7,
     playerBonusEnergy: 0,
-    onFinished: noop,
+    onFinished: () => null,
   });
   return { scene, calls };
 }

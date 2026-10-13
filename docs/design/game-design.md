@@ -170,6 +170,7 @@ Animations are short (≤ 1 s per action) and the enemy acts after a brief pause
 - **Pity:** a visible counter guarantees a 5★ within 80 summons on a banner.
 - Banner types: Standard (always available) and Featured (rate-up for specific fighters, limited time).
 - Free-player pace target: roughly one multi-summon per week of regular play (tuned with data later).
+- **Built in M6:** new players start with **500 Gems** (one multi); each story stage pays Gems on its **first clear only** (Prologue: 100). Duplicates give shards by rarity: 5 / 10 / 20 (3★ / 4★ / 5★), spent on Limit Breaks in M7. Rolls are seeded per save and saved before the reveal. Every summon asks for confirmation. Coins are deferred to M7, when levelling gives them a use (no currency is shown before it can be spent).
 
 ### Real-money purchases (later phase — not in the first playable build)
 

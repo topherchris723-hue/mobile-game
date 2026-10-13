@@ -8,6 +8,8 @@ export interface StageSpec {
   readonly description: string;
   readonly enemies: readonly FighterSpec[];
   readonly seed: number;
+  /** Gems for the first victory only (game-design.md §6: Gems are scarce). */
+  readonly firstClearGems: number;
 }
 
 export const STAGES: readonly StageSpec[] = [
@@ -18,6 +20,9 @@ export const STAGES: readonly StageSpec[] = [
     description: 'Three Rift-corrupted fighters block the path to the Nexus. Break through.',
     enemies: ENEMY_TEAM,
     seed: 0x5eed_2026,
+    // Save migration v2→v3 granted this retroactively as a frozen 100; keep them in sync only
+    // for new players (changing it later never changes what old saves received).
+    firstClearGems: 100,
   },
 ];
 

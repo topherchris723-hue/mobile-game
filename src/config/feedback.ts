@@ -1,5 +1,5 @@
 /*
- * Battle feel tuning (CLAUDE.md §5): synthesized sound recipes, vibration patterns, and impact
+ * Feedback tuning for battles and summons (CLAUDE.md §5): synthesized sound recipes, vibration patterns, and impact
  * effects. Every number that shapes how a hit feels lives here, so feel passes are data edits.
  *
  * All sounds are PLACEHOLDERS synthesized at runtime with Web Audio (no audio files; see
@@ -105,6 +105,21 @@ export const SOUNDS = {
     tone('triangle', G5, G5, 150, 0.12, 260),
     tone('triangle', C6, C6, 420, 0.13, 390),
   ],
+  /** Summon crystal appears and hums. */
+  summonCharge: [tone('sine', 110, 220, 700, 0.12), tone('triangle', 330, 660, 700, 0.05)],
+  /** Crystal shatters. */
+  summonOpen: [
+    noise('highpass', 2500, 7000, 260, 0.3),
+    tone('triangle', 1400, 2400, 160, 0.06),
+    tone('sine', 180, 60, 300, 0.3),
+  ],
+  /** A 5★ is revealed. */
+  summonRare: [
+    tone('triangle', C5, C5, 600, 0.1),
+    tone('triangle', E5, E5, 600, 0.09, 60),
+    tone('triangle', G5, G5, 600, 0.09, 120),
+    tone('sine', C6, C6, 800, 0.08, 180),
+  ],
   defeat: [
     tone('triangle', G5 / 2, G5 / 2, 260, 0.12),
     tone('triangle', E5 / 2, E5 / 2, 260, 0.12, 240),
@@ -128,6 +143,8 @@ export const HAPTICS = {
   ko: [60],
   victory: [30, 70, 30, 70, 90],
   defeat: [120],
+  summonOpen: [20],
+  summonRare: [30, 60, 30, 60, 60],
 } as const satisfies Record<string, readonly number[]>;
 
 export type HapticId = keyof typeof HAPTICS;
@@ -155,6 +172,9 @@ export const CUES = {
   ko: { sound: 'ko', haptic: 'ko' },
   victory: { sound: 'victory', haptic: 'victory' },
   defeat: { sound: 'defeat', haptic: 'defeat' },
+  summonCharge: { sound: 'summonCharge', haptic: null },
+  summonOpen: { sound: 'summonOpen', haptic: 'summonOpen' },
+  summonRare: { sound: 'summonRare', haptic: 'summonRare' },
 } as const satisfies Record<string, { sound: SoundId | null; haptic: HapticId | null }>;
 
 export type CueId = keyof typeof CUES;

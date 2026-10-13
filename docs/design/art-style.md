@@ -96,6 +96,8 @@ Type is always shown by **colour and icon**, never colour alone.
 | 4★     | Sky silver `#A5BCE0`                              |
 | 5★     | Gold `#F5C542` with a Rift-violet `#9E8CCB` glint |
 
+**Gems** are Rift crystals: a two-facet shard in Rift violet `#9E8CCB` with a light facet `#C9B8F5` (drawn in ink on violet buttons). The summon crystal uses the same shard silhouette, tinted by the best rarity inside.
+
 ## 7. Environments
 
 - **Painterly anime backgrounds** in the reference's finish: soft gradient skies, sculpted clouds with warm tops and violet undersides, and texture suggested by brushwork rather than drawn in detail.
