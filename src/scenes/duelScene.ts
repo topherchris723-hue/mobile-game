@@ -1,5 +1,6 @@
 import { ENEMY_THINK_MS, EVENT_DURATION_MS } from '../config/duelPresentation';
 import { CUT_IN_MS, type CueId } from '../config/feedback';
+import { PASSIVES } from '../config/passives';
 import type { CardKind, FighterSpec } from '../config/fighters';
 import { TICK_MS } from '../config/sim';
 import type { Logger } from '../debug/log';
@@ -166,6 +167,10 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
       case 'energy':
         view.charge(event.side);
         feedback.cue('charge');
+        break;
+      case 'passive':
+        view.passive(event.side, PASSIVES[event.passive].name);
+        feedback.cue('status');
         break;
       case 'battleEnd':
         log.info(`Duel over: ${event.winner} wins`);

@@ -1,13 +1,14 @@
 import { AI_PROFILES, BATTLE_RULES } from '../../config/battle';
 
 const SIGNATURE_RANGE = 5;
-import { computeDamage, continuesCombo, typeEffectiveness } from './damage';
+import { typeEffectiveness } from './damage';
 import {
   activeFighter,
   crossoverBlockedReason,
   crossoverPartners,
   otherSide,
   playBlockedReason,
+  previewCardDamage,
   previewCrossover,
   switchBlockedReason,
 } from './rules';
@@ -33,9 +34,7 @@ export function chooseAction(state: DuelState, side: Side): DuelAction {
     .filter(({ card }) => card.spec.power > 0)
     .map((entry) => ({
       ...entry,
-      damage: computeDamage(me, foe, entry.card.spec, {
-        combo: continuesCombo(team.comboTier, entry.card.spec.kind),
-      }).amount,
+      damage: previewCardDamage(state, side, entry.handIndex).amount,
     }))
     .sort((a, b) => b.damage - a.damage);
   const technique = (effect: string) => playable.find(({ card }) => card.spec.effect === effect);

@@ -2496,3 +2496,8 @@ body[data-reduce-motion='true'] .summon-card {
   font-family: var(--font-display);
   font-size: 16px;
 }
+
+/* The Passive sits right under the Leader Skill, without a second top gap. */
+.detail-passive {
+  margin-top: 0;
+}

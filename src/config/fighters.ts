@@ -1,3 +1,4 @@
+import type { PassiveId } from './passives';
 import type { AiProfileId } from './battle';
 import type { FighterLook } from './placeholderFighters';
 import { ENEMY_LOOKS } from './placeholderFighters';
@@ -30,6 +31,8 @@ export interface FighterSpec {
   readonly look: FighterLook;
   /** How this fighter plays when the AI controls it. */
   readonly ai: AiProfileId;
+  /** Always-on trait (Sovereigns only; Rift enemies have none). */
+  readonly passive?: PassiveId;
 }
 
 export const strike = (name: string): CardSpec => ({ kind: 'strike', name, cost: 1, power: 1 });
@@ -56,6 +59,8 @@ function look(list: readonly FighterLook[], index: number): FighterLook {
 
 /**
  * The Rift enemies for the Prologue. Player-side Sovereigns live in config/sovereigns.ts.
+ * Riftborn echo the powers of fighters the Rift swallowed, so each carries a Sovereign's Passive
+ * (docs/design/characters.md, "The Rift and the Nexus").
  */
 export const ENEMY_TEAM: readonly FighterSpec[] = [
   {
@@ -76,6 +81,7 @@ export const ENEMY_TEAM: readonly FighterSpec[] = [
       signature('Phase Rend'),
     ],
     look: look(ENEMY_LOOKS, 0),
+    passive: 'sirensHold',
     ai: 'balanced',
   },
   {
@@ -96,6 +102,7 @@ export const ENEMY_TEAM: readonly FighterSpec[] = [
       signature('Umbral Collapse'),
     ],
     look: look(ENEMY_LOOKS, 1),
+    passive: 'ashenPride',
     ai: 'tactician',
   },
   {
@@ -116,6 +123,7 @@ export const ENEMY_TEAM: readonly FighterSpec[] = [
       signature('Rift Hammer'),
     ],
     look: look(ENEMY_LOOKS, 2),
+    passive: 'risingEmber',
     ai: 'aggressor',
   },
 ];

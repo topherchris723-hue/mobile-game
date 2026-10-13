@@ -85,7 +85,10 @@ test('the detail sheet shows stats, leader skill, and the full deck', async ({
   await expect(sheet.locator('h2')).toHaveText('Torvan');
   await expect(sheet.locator('.stat-row')).toHaveCount(4);
   await expect(sheet.locator('.detail-deck li')).toHaveCount(6);
-  await expect(sheet.locator('.detail-leader')).toContainText('Warrior clan allies +20% DEF');
+  await expect(sheet.locator('.detail-leader').first()).toContainText(
+    'Warrior clan allies +20% DEF',
+  );
+  await expect(sheet.locator('.detail-passive')).toContainText('Deep Roots');
   await page.screenshot({ path: testInfo.outputPath('detail.png') });
   await sheet.getByRole('button', { name: 'Make Leader' }).tap();
   await expect(sheet).toBeHidden();

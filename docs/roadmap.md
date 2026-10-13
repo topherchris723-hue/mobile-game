@@ -2,7 +2,7 @@
 
 Each milestone is playable from a URL on the phone and leaves `main` in a working state. Order may change only with a written reason.
 
-**Characters (owner, after M7):** the 15 Sovereigns are designed in `design/characters.md`. Next gameplay step on approval: implement their Passives; then Story chapter 1 (M8) can be written around them.
+**Characters (owner, after M7):** the 15 Sovereigns are designed in `design/characters.md` and approved; their **Passives are in battles** (balance-checked with `npm run balance`). Story chapter 1 (M8) can now be written around them.
 
 **Order note (owner, M6):** Story waits until the real characters exist; levelling and Limit Break came first.
 

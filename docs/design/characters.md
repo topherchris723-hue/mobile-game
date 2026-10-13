@@ -1,6 +1,6 @@
 # Characters — the Sovereign bible
 
-**Status:** designed 2026-10-13 for the 15 launch Sovereigns. Names, worlds, types, rarities, roles, stats, decks, and Leader Skills are **in the game** (`src/config/sovereigns.ts`). **Passives are designed here but not yet in battles**; they are the next gameplay step once the owner approves them.
+**Status:** designed 2026-10-13 for the 15 launch Sovereigns. Approved by the owner (open to later changes). Everything here is **in the game**: roster data in `src/config/sovereigns.ts`, Passives in `src/config/passives.ts` (numbers below are the tuned values; the config is the source of truth). Passive balance is checked with `npm run balance`.
 
 ## Originality rules
 
@@ -48,11 +48,11 @@ Ancient storm, river, and mountain spirits were once bound into people called **
 
 ### The Rift and the Nexus
 
-When the three worlds cracked (**the Shattering**), a crystal citadel, the **Nexus**, rose where they touch. Each world's strongest champions felt a shard of it lodge in their chest and became **Sovereigns**, pulled across the Rift to fight side by side. The **Riftborn** (the current Stalker, Shade, and Brute enemies) are what the Rift makes of people it swallows: echoes of fighters from a single world, which is why they can never Crossover.
+When the three worlds cracked (**the Shattering**), a crystal citadel, the **Nexus**, rose where they touch. Each world's strongest champions felt a shard of it lodge in their chest and became **Sovereigns**, pulled across the Rift to fight side by side. The **Riftborn** (the current Stalker, Shade, and Brute enemies) are what the Rift makes of people it swallows: echoes of fighters from a single world, which is why they can never Crossover. Because they echo the fighters the Rift swallowed, each Riftborn carries a Sovereign's Passive (Stalker: Siren's Hold, Shade: Ashen Pride, Brute: Rising Ember).
 
 ## Roster
 
-Format: rarity · type · role. "Leader" is the in-game Leader Skill. "Passive" is designed, not yet in battles.
+Format: rarity · type · role. "Leader" is the in-game Leader Skill; "Passive" is always on in battle.
 
 ### Emberreach
 
@@ -64,7 +64,7 @@ Format: rarity · type · role. "Leader" is the in-game Leader Skill. "Passive" 
 - **Fighting style:** compact jabs that build into a single overwhelming strike. **Sunbreak Fist** is one punch that releases all his stored Ember as a sunrise-coloured shockwave.
 - **Kit:** Ember Jab · Flare Shot · Ember Focus (Focus) · Sunbreak Fist.
 - **Leader:** Energy realm allies +15% ATK.
-- **Passive — Rising Ember:** +5% ATK for each consecutive turn he stays on the field (max +20%). The bonus resets when he leaves.
+- **Passive — Rising Ember:** +6% ATK at the start of each of his turns on the field (max +24%). The bonus resets when he leaves.
 - **Bonds:** rival _Vey_; sparring partner _Brakka_; friends _Maris_ and _Dravo_.
 - **Distance:** shares the cheerful, battle-hungry hero trope. His own: courier backstory, cape and satchel, red-and-indigo palette, single-punch finisher (no two-hand beam), no tail, no gi.
 
@@ -162,7 +162,7 @@ Format: rarity · type · role. "Leader" is the in-game Leader Skill. "Passive" 
 - **Fighting style:** shields first. **Lighthouse Beam** turns the lantern into a column of light.
 - **Kit:** Anchor Bash · Lantern Flare · Hull Brace (Guard) · Lighthouse Beam.
 - **Leader:** all allies +12% DEF.
-- **Passive — Beacon:** while he's on the bench, the active ally takes 5% less damage.
+- **Passive — Beacon:** while he's on the bench, the active ally takes 8% less damage.
 - **Bonds:** old enemy of _Dravo_ (they fought for ten years and now share a table); kindred spirit _Torvan_.
 - **Distance:** shares the principled-navy-defector trope. His own: lighthouse keeper, anchor-lantern shield, a protector who never captains a ship.
 
@@ -188,7 +188,7 @@ Format: rarity · type · role. "Leader" is the in-game Leader Skill. "Passive" 
 - **Fighting style:** walls and slow pressure. **Thousand-Leaf Cut** turns a canopy of leaves to blades.
 - **Kit:** Thorn Palm · Leafstorm · Root Guard (Guard) · Thousand-Leaf Cut.
 - **Leader:** Warrior clan allies +20% DEF.
-- **Passive — Deep Roots:** recovers 4% HP at the start of each of his turns.
+- **Passive — Deep Roots:** recovers 3% HP at the start of each of his turns on the field.
 - **Bonds:** squadmates _Mei_ and _Shiro_ (mentor: _Goro_); map pen pal _Maris_; kindred spirit _Corrin_.
 - **Distance:** shares the wood-bloodline and gentle-protector tropes. His own: a gardener heir, bark armour, a defender role.
 
@@ -200,7 +200,7 @@ Format: rarity · type · role. "Leader" is the in-game Leader Skill. "Passive" 
 - **Fighting style:** a single decisive cut. **Hundred Petal Storm** releases the spirit for one heartbeat, a hundred cuts in a gust of petals.
 - **Kit:** Wind Step · Gale Shuriken · Still Mind (Focus) · Hundred Petal Storm.
 - **Leader:** Swift allies +25% ATK.
-- **Passive — Gale Step:** her first attack after entering ignores Guard.
+- **Passive — Gale Step:** her first attack after entering deals +20% damage and pierces Guard.
 - **Bonds:** two exiles with _Vey_; protective of _Shiro_; once studied under _Goro_.
 - **Distance:** shares the last-of-her-clan and sealed-spirit tropes. Hers: a female swordswoman, a spirit sealed in her blade (not her body), no eye techniques, no lightning.
 

@@ -1,3 +1,4 @@
+import type { PassiveId } from './passives';
 import type { AiProfileId } from './battle';
 import {
   blast,
@@ -37,6 +38,7 @@ export type LeaderSkill =
   | { readonly kind: 'startingEnergy'; readonly amount: number };
 
 export interface SovereignSpec extends FighterSpec {
+  readonly passive: PassiveId;
   readonly title: string;
   readonly rarity: Rarity;
   readonly role: Role;
@@ -83,6 +85,7 @@ interface SovereignInput {
   };
   readonly cards: readonly [strike: string, blast: string, technique: CardSpec, signature: string];
   readonly leaderSkill: LeaderSkill;
+  readonly passive: PassiveId;
   readonly look: LookParts;
   readonly ai?: AiProfileId;
 }
@@ -107,6 +110,7 @@ function sovereign(input: SovereignInput): SovereignSpec {
       signature(signatureName),
     ],
     leaderSkill: input.leaderSkill,
+    passive: input.passive,
     look: look(input.id, input.type, input.look),
     ai: input.ai ?? 'balanced',
   };
@@ -148,6 +152,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1100, atk: 215, def: 70, spd: 92 },
     cards: ['Ember Jab', 'Flare Shot', technique('Ember Focus', 'focus', 2), 'Sunbreak Fist'],
     leaderSkill: worldBoost('atk', 0.15, 'energy'),
+    passive: 'risingEmber',
     // Lava-red tunic, not orange: keeps him clear of a famous hero's look (characters.md).
     look: {
       outfit: E.accent,
@@ -168,6 +173,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1180, atk: 212, def: 78, spd: 104 },
     cards: ['Dawn Palm', 'Halo Burst', technique('Sunlit Grace', 'heal', 3), 'Zenith Nova'],
     leaderSkill: allBoost('hp', 0.15),
+    passive: 'firstLight',
     look: {
       outfit: 0xf1e6d2,
       legs: E.dominant,
@@ -187,6 +193,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1170, atk: 172, def: 82, spd: 74 },
     cards: ['Magma Knuckle', 'Cinder Spray', technique('Basalt Wall', 'guard', 2), 'Caldera Crash'],
     leaderSkill: typeBoost('def', 0.2, 'fury'),
+    passive: 'basaltSkin',
     // Ember-orange vest, basalt-grey Hearthborn skin.
     look: {
       outfit: E.dominant,
@@ -208,6 +215,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1040, atk: 218, def: 64, spd: 96 },
     cards: ['Ash Talon', 'Ember Hex', technique('Smolder Curse', 'sap', 2), 'Black Sun'],
     leaderSkill: typeBoost('atk', 0.2, 'void'),
+    passive: 'ashenPride',
     look: {
       outfit: E.secondary,
       legs: E.shadow,
@@ -227,6 +235,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 920, atk: 190, def: 58, spd: 112 },
     cards: ['Spark Kick', 'Arc Bolt', technique('Overcharge', 'focus', 2), 'Thunderline'],
     leaderSkill: { kind: 'startingEnergy', amount: 1 },
+    passive: 'arcCore',
     look: {
       outfit: 0xf0a040,
       legs: E.secondary,
@@ -248,6 +257,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 980, atk: 200, def: 65, spd: 110 },
     cards: ['Undertow Kick', 'Spray Lance', technique('Tidal Mend', 'heal', 3), 'Riptide Spiral'],
     leaderSkill: worldBoost('hp', 0.2, 'ocean'),
+    passive: 'readTheCurrent',
     look: {
       outfit: O.dominant,
       legs: O.secondary,
@@ -273,6 +283,7 @@ export const ROSTER: readonly SovereignSpec[] = [
       'Broadside Tempest',
     ],
     leaderSkill: allBoost('atk', 0.12),
+    passive: 'captainsWill',
     look: {
       outfit: O.shadow,
       legs: 0x3a2a24,
@@ -293,6 +304,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 950, atk: 186, def: 62, spd: 100 },
     cards: ['Hook Feint', 'Net Cast', technique('Riptide Snare', 'sap', 2), 'Maelstrom Trap'],
     leaderSkill: typeBoost('atk', 0.15, 'guile'),
+    passive: 'stickyFingers',
     look: {
       outfit: O.accent,
       legs: O.shadow,
@@ -312,6 +324,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1190, atk: 170, def: 84, spd: 76 },
     cards: ['Anchor Bash', 'Lantern Flare', technique('Hull Brace', 'guard', 2), 'Lighthouse Beam'],
     leaderSkill: allBoost('def', 0.12),
+    passive: 'beacon',
     look: {
       outfit: O.secondary,
       legs: O.shadow,
@@ -332,6 +345,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1020, atk: 204, def: 68, spd: 106 },
     cards: ['Undertow Grasp', 'Abyss Shot', technique('Deep Siphon', 'drain', 2), 'Leviathan Call'],
     leaderSkill: { kind: 'startingEnergy', amount: 2 },
+    passive: 'sirensHold',
     look: {
       outfit: 0x15406e,
       legs: O.secondary,
@@ -353,6 +367,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1250, atk: 185, def: 90, spd: 78 },
     cards: ['Thorn Palm', 'Leafstorm', technique('Root Guard', 'guard', 2), 'Thousand-Leaf Cut'],
     leaderSkill: worldBoost('def', 0.2, 'clans'),
+    passive: 'deepRoots',
     look: {
       outfit: C.dominant,
       legs: C.secondary,
@@ -378,6 +393,7 @@ export const ROSTER: readonly SovereignSpec[] = [
       'Hundred Petal Storm',
     ],
     leaderSkill: typeBoost('atk', 0.25, 'swift'),
+    passive: 'galeStep',
     look: {
       outfit: C.secondary,
       legs: 0x2a1d2e,
@@ -402,6 +418,7 @@ export const ROSTER: readonly SovereignSpec[] = [
       'Earthsplitter',
     ],
     leaderSkill: worldBoost('hp', 0.15, 'clans'),
+    passive: 'unbrokenBody',
     look: {
       outfit: 0x5a6b3a,
       legs: C.shadow,
@@ -427,6 +444,7 @@ export const ROSTER: readonly SovereignSpec[] = [
       'Thousand Cranes',
     ],
     leaderSkill: typeBoost('hp', 0.25, 'radiant'),
+    passive: 'fieldMedic',
     look: {
       outfit: 0xf2c4c8,
       legs: C.dominant,
@@ -446,6 +464,7 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 940, atk: 192, def: 60, spd: 104 },
     cards: ['Shadow Cut', 'Ink Kunai', technique('Ink Seal', 'sap', 2), 'Moonless Night'],
     leaderSkill: worldBoost('atk', 0.1, 'clans'),
+    passive: 'inkVeil',
     look: {
       outfit: 0x2a2a38,
       legs: C.shadow,

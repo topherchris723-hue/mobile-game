@@ -1,6 +1,5 @@
 import type { FighterSpec, TypeId } from '../config/fighters';
 import { BATTLE_RULES, COMBO, CROSSOVER, CROSSOVER_PARTNER_EFFECT } from '../config/battle';
-import { computeDamage } from '../game/duel/damage';
 import { KIND_LABEL, kindIcon, techniqueText } from './cardText';
 import { element, TYPE_LABEL } from './dom';
 import {
@@ -9,6 +8,7 @@ import {
   crossoverBlockedReason,
   crossoverPartners,
   playBlockedReason,
+  previewCardDamage,
   previewCrossover,
   signatureThreat,
   switchBlockedReason,
@@ -353,6 +353,7 @@ export function createDuelHud(
         }
         case 'status':
         case 'ko':
+        case 'passive':
         case 'battleEnd':
           break;
       }
@@ -362,7 +363,6 @@ export function createDuelHud(
     showControls(state, enabled) {
       panel.classList.toggle('is-waiting', !enabled);
       const fighter = activeFighter(state.teams.player);
-      const foe = activeFighter(state.teams.enemy);
       cardButtons.forEach((button, index) => {
         const card = fighter.hand[index];
         if (!card) {
@@ -380,7 +380,7 @@ export function createDuelHud(
         button.classList.toggle('is-combo', combo);
         let value: string;
         if (spec.power > 0) {
-          const preview = computeDamage(fighter, foe, spec, { combo });
+          const preview = previewCardDamage(state, 'player', index);
           const marker =
             preview.effectiveness === 'advantage'
               ? '<em class="is-up">▲ Strong</em>'

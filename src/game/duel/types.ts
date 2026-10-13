@@ -1,4 +1,5 @@
 import type { CardSpec, FighterSpec } from '../../config/fighters';
+import type { PassiveId } from '../../config/passives';
 import type { Rng } from '../../core/rng';
 
 export type Side = 'player' | 'enemy';
@@ -24,6 +25,19 @@ export interface FighterState {
   sapTurns: number;
   /** Own-team turn starts before this fighter may be tagged back in. */
   switchCooldown: number;
+  // Passive bookkeeping (config/passives.ts).
+  /** Own-team turn starts since this fighter last entered the field (Rising Ember). */
+  fieldTurns: number;
+  /** Next attack pierces Guard (Gale Step); set on entering. */
+  galeReady: boolean;
+  /** Next hit taken is reduced (Ink Veil); set on entering. */
+  veilReady: boolean;
+  /** Arc Core already gave its energy this battle. */
+  arcUsed: boolean;
+  /** Captain's Will already saved this fighter this battle. */
+  endureUsed: boolean;
+  /** Strikes landed this battle (Sticky Fingers). */
+  strikesLanded: number;
 }
 
 export interface TeamState {
@@ -120,6 +134,13 @@ export type DuelEvent =
     }
   | { readonly kind: 'charge'; readonly side: Side; readonly energy: number }
   | { readonly kind: 'ko'; readonly side: Side; readonly fighterIndex: number }
+  | {
+      /** A Passive visibly triggered (its own effect, if any, is a separate event). */
+      readonly kind: 'passive';
+      readonly side: Side;
+      readonly fighterIndex: number;
+      readonly passive: PassiveId;
+    }
   | { readonly kind: 'battleEnd'; readonly winner: Side };
 
 export type ActionResult =

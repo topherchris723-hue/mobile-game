@@ -26,6 +26,7 @@ export const EVENT_DURATION_MS = {
   crossover: 1400,
   drain: 650,
   energy: 400,
+  passive: 420,
 } as const;
 
 /** Pause before the enemy acts, so the player can read the board. */

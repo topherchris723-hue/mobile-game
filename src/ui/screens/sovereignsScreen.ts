@@ -1,3 +1,4 @@
+import { PASSIVES } from '../../config/passives';
 import { DEBUG_COIN_GRANT, LIMIT_BREAK, MAX_COINS } from '../../config/progression';
 import { ROSTER, getSovereign, type SovereignSpec } from '../../config/sovereigns';
 import { describeLeaderSkill } from '../../game/leader';
@@ -259,6 +260,8 @@ export function createSovereignsScreen(host: HTMLElement, deps: SovereignsScreen
     renderLevelPanel(spec, panel);
     const leader = element('p', 'detail-leader', panel);
     leader.innerHTML = `<b>Leader Skill</b> ${describeLeaderSkill(spec.leaderSkill)}`;
+    const passive = element('p', 'detail-leader detail-passive', panel);
+    passive.innerHTML = `<b>Passive · ${PASSIVES[spec.passive].name}</b> ${PASSIVES[spec.passive].text}`;
     const deck = element('ul', 'detail-deck', panel);
     for (const card of spec.deck) {
       const item = element('li', '', deck);

@@ -41,6 +41,7 @@ function setup(): { scene: DuelScene; calls: Call[] } {
     crossover: () => calls.push({ kind: 'crossover' }),
     drain: noop,
     setGuardPose: noop,
+    passive: noop,
     dispose: noop,
   };
   const hud: DuelHud = {

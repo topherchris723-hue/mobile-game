@@ -58,6 +58,8 @@ export interface DuelView {
   /** Energy motes fly from the drained side to the other. */
   drain(side: Side, amount: number): void;
   setGuardPose(side: Side, guarding: boolean): void;
+  /** Names a Passive as it triggers, above the fighter. */
+  passive(side: Side, name: string): void;
   dispose(): void;
 }
 
@@ -673,6 +675,10 @@ export function createDuelView(
         );
       }
       floatText(side, `−${amount} ENERGY`, WORLD.nexus.dominant, 34, 110);
+    },
+
+    passive(side, name) {
+      floatText(side, name.toUpperCase(), WORLD.nexus.dominant, 30, 130);
     },
 
     setGuardPose(side, guarding) {

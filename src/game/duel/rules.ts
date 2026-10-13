@@ -7,8 +7,17 @@ import {
 } from '../../config/battle';
 import { crossoverName } from '../../config/crossovers';
 import type { CardSpec, FighterSpec } from '../../config/fighters';
+import { PASSIVE_TUNING, type PassiveId } from '../../config/passives';
 import { createRng, type Rng } from '../../core/rng';
-import { comboTierOf, computeDamage, continuesCombo } from './damage';
+import {
+  comboTierOf,
+  computeDamage,
+  continuesCombo,
+  hitPassives,
+  type DamageModifiers,
+  type DamagePreview,
+  type DamageSource,
+} from './damage';
 import type {
   ActionResult,
   CardInstance,
@@ -66,7 +75,135 @@ function createFighter(
     guard: false,
     sapTurns: 0,
     switchCooldown: 0,
+    fieldTurns: 0,
+    galeReady: true,
+    veilReady: true,
+    arcUsed: false,
+    endureUsed: false,
+    strikesLanded: 0,
   };
+}
+
+function passiveEvent(team: TeamState, fighterIndex: number, passive: PassiveId): DuelEvent {
+  return { kind: 'passive', side: team.side, fighterIndex, passive };
+}
+
+/** Restores a fraction of max HP (Field Medic boosts the healer's own heals). */
+function heal(
+  team: TeamState,
+  fighterIndex: number,
+  fraction: number,
+  events: DuelEvent[],
+  healer?: FighterState,
+): void {
+  const fighter = team.fighters[fighterIndex];
+  if (!fighter || fighter.hp <= 0) return;
+  const boost = healer?.spec.passive === 'fieldMedic' ? 1 + PASSIVE_TUNING.fieldMedic.healBonus : 1;
+  const amount = Math.min(
+    fighter.spec.hp - fighter.hp,
+    Math.round(fighter.spec.hp * fraction * boost),
+  );
+  fighter.hp += amount;
+  events.push({ kind: 'heal', side: team.side, fighterIndex, amount, hp: fighter.hp });
+}
+
+/** Lowers the active fighter's Defence, unless Unbroken Body prevents it. */
+function applySap(team: TeamState, events: DuelEvent[]): void {
+  const target = activeFighter(team);
+  if (target.spec.passive === 'unbrokenBody') {
+    events.push(passiveEvent(team, team.activeIndex, 'unbrokenBody'));
+    return;
+  }
+  // +1 because the sapped team's next turn start ticks it down immediately.
+  target.sapTurns = TECHNIQUE_TUNING.sapTurns + 1;
+  events.push({ kind: 'status', side: team.side, fighterIndex: team.activeIndex, status: 'sap' });
+}
+
+/** Beacon: a living benched fighter shields whoever is on the field. */
+function benchReduction(team: TeamState): number {
+  return team.fighters.some(
+    (fighter, index) =>
+      index !== team.activeIndex && fighter.hp > 0 && fighter.spec.passive === 'beacon',
+  )
+    ? PASSIVE_TUNING.beacon.reduction
+    : 0;
+}
+
+/** Damage `side`'s active fighter would deal to the opponent's right now, all Passives included. */
+export function damageAgainst(
+  state: DuelState,
+  side: Side,
+  source: DamageSource,
+  modifiers: DamageModifiers = {},
+  attacker: FighterState = activeFighter(state.teams[side]),
+): DamagePreview {
+  const foeTeam = state.teams[otherSide(side)];
+  return computeDamage(attacker, activeFighter(foeTeam), source, {
+    ...modifiers,
+    benchReduction: benchReduction(foeTeam),
+  });
+}
+
+/** Exact damage of a hand card for the HUD and AI (combo and Passives included). */
+export function previewCardDamage(state: DuelState, side: Side, handIndex: number): DamagePreview {
+  const card = activeFighter(state.teams[side]).hand[handIndex];
+  if (!card) throw new Error(`No card at ${handIndex}`);
+  return damageAgainst(state, side, card.spec, {
+    combo: card.spec.power > 0 && continuesCombo(state.teams[side].comboTier, card.spec.kind),
+  });
+}
+
+/**
+ * Applies one hit from `side`'s active fighter to the opponent's: damage, Guard and Focus use,
+ * and every Passive that changes a hit. Returns whether the defender was knocked out.
+ */
+function dealDamage(
+  state: DuelState,
+  side: Side,
+  source: DamageSource,
+  modifiers: DamageModifiers,
+  events: DuelEvent[],
+): boolean {
+  const team = state.teams[side];
+  const foeTeam = state.teams[otherSide(side)];
+  const attacker = activeFighter(team);
+  const defender = activeFighter(foeTeam);
+  const triggered = hitPassives(attacker, defender, source);
+  const { amount, effectiveness } = damageAgainst(state, side, source, modifiers);
+  const guarded = defender.guard && !triggered.pierce;
+  attacker.focus = false;
+  attacker.galeReady = false;
+  defender.guard = false;
+  defender.veilReady = false;
+  let hp = Math.max(0, defender.hp - amount);
+  const endure = hp === 0 && defender.spec.passive === 'captainsWill' && !defender.endureUsed;
+  if (endure) {
+    hp = 1;
+    defender.endureUsed = true;
+  }
+  const dealt = defender.hp - hp;
+  defender.hp = hp;
+  events.push({
+    kind: 'damage',
+    side: foeTeam.side,
+    fighterIndex: foeTeam.activeIndex,
+    amount: dealt,
+    hp,
+    effectiveness,
+    guarded,
+  });
+  if (triggered.gale) events.push(passiveEvent(team, team.activeIndex, 'galeStep'));
+  if (triggered.pride) events.push(passiveEvent(team, team.activeIndex, 'ashenPride'));
+  const defenderPassives: readonly [boolean, PassiveId][] = [
+    [triggered.veil, 'inkVeil'],
+    [triggered.basalt, 'basaltSkin'],
+    [triggered.current, 'readTheCurrent'],
+    [endure, 'captainsWill'],
+  ];
+  for (const [on, passive] of defenderPassives) {
+    if (on) events.push(passiveEvent(foeTeam, foeTeam.activeIndex, passive));
+  }
+  return hp === 0;
 }
 
 function fillHand(fighter: FighterState, rng: Rng): void {
@@ -95,8 +232,14 @@ function startTurn(state: DuelState, side: Side, events: DuelEvent[]): void {
     if (fighter.sapTurns > 0) fighter.sapTurns--;
   }
   gainEnergy(team, BATTLE_RULES.energyPerTurn);
-  fillHand(activeFighter(team), state.rng);
+  const active = activeFighter(team);
+  active.fieldTurns++;
+  fillHand(active, state.rng);
   events.push({ kind: 'turnStart', side, turnNumber: state.turnNumber, energy: team.energy });
+  if (active.spec.passive === 'deepRoots' && active.hp < active.spec.hp) {
+    events.push(passiveEvent(team, team.activeIndex, 'deepRoots'));
+    heal(team, team.activeIndex, PASSIVE_TUNING.deepRoots.heal, events);
+  }
 }
 
 export interface DuelSetup {
@@ -211,15 +354,10 @@ export function previewCrossover(state: DuelState, side: Side, partnerIndex: num
   const partner = team.fighters[partnerIndex];
   if (!partner) return 0;
   const effect = CROSSOVER_PARTNER_EFFECT[partner.spec.type];
-  return computeDamage(
-    activeFighter(team),
-    activeFighter(state.teams[otherSide(side)]),
-    CROSSOVER,
-    {
-      partnerAtk: partner.spec.atk,
-      bonus: effect.kind === 'damageBonus' ? effect.amount : 0,
-    },
-  ).amount;
+  return damageAgainst(state, side, CROSSOVER, {
+    partnerAtk: partner.spec.atk,
+    bonus: effect.kind === 'damageBonus' ? effect.amount : 0,
+  }).amount;
 }
 
 function launchCrossover(
@@ -245,59 +383,30 @@ function launchCrossover(
     energy: team.energy,
   });
 
-  const defender = activeFighter(foeTeam);
-  const { amount, effectiveness } = computeDamage(attacker, defender, CROSSOVER, {
-    partnerAtk: partner.spec.atk,
-    bonus: effect.kind === 'damageBonus' ? effect.amount : 0,
-  });
-  const guarded = defender.guard;
-  attacker.focus = false;
-  defender.guard = false;
-  defender.hp = Math.max(0, defender.hp - amount);
-  events.push({
-    kind: 'damage',
-    side: foeTeam.side,
-    fighterIndex: foeTeam.activeIndex,
-    amount,
-    hp: defender.hp,
-    effectiveness,
-    guarded,
-  });
-  const knockedOut = defender.hp === 0;
+  const knockedOut = dealDamage(
+    state,
+    side,
+    CROSSOVER,
+    {
+      partnerAtk: partner.spec.atk,
+      bonus: effect.kind === 'damageBonus' ? effect.amount : 0,
+    },
+    events,
+  );
 
   switch (effect.kind) {
     case 'energyGain':
       gainEnergy(team, effect.amount);
       events.push({ kind: 'energy', side, energy: team.energy });
       break;
-    case 'heal': {
-      const healed = Math.min(
-        attacker.spec.hp - attacker.hp,
-        Math.round(attacker.spec.hp * effect.amount),
-      );
-      attacker.hp += healed;
-      events.push({
-        kind: 'heal',
-        side,
-        fighterIndex: team.activeIndex,
-        amount: healed,
-        hp: attacker.hp,
-      });
+    case 'heal':
+      heal(team, team.activeIndex, effect.amount, events, attacker);
       break;
-    }
     case 'energyDrain':
       drainEnergy(team, foeTeam, effect.amount, 0, events);
       break;
     case 'sap':
-      if (!knockedOut) {
-        defender.sapTurns = TECHNIQUE_TUNING.sapTurns + 1;
-        events.push({
-          kind: 'status',
-          side: foeTeam.side,
-          fighterIndex: foeTeam.activeIndex,
-          status: 'sap',
-        });
-      }
+      if (!knockedOut) applySap(foeTeam, events);
       break;
     case 'damageBonus':
       break;
@@ -319,8 +428,7 @@ export function signatureThreat(
   if (!card) return null;
   const energyNextTurn = Math.min(BATTLE_RULES.maxEnergy, team.energy + BATTLE_RULES.energyPerTurn);
   if (energyNextTurn < card.cost) return null;
-  const target = activeFighter(state.teams[otherSide(side)]);
-  return { card, damage: computeDamage(fighter, target, card).amount };
+  return { card, damage: damageAgainst(state, side, card).amount };
 }
 
 /** Whether the hand card would continue the side's combo chain if played now. */
@@ -350,6 +458,9 @@ function bringIn(
     if (tagLink) gainEnergy(team, BATTLE_RULES.tagLinkEnergy);
   }
   team.activeIndex = toIndex;
+  incoming.fieldTurns = 0;
+  incoming.galeReady = true;
+  incoming.veilReady = true;
   fillHand(incoming, state.rng);
   events.push({
     kind: 'switch',
@@ -360,6 +471,22 @@ function bringIn(
     tagLink,
     energy: team.energy,
   });
+
+  // Entry Passives.
+  const lightIndex = team.fighters.findIndex(
+    (fighter, index) =>
+      index !== toIndex && fighter.hp > 0 && fighter.spec.passive === 'firstLight',
+  );
+  if (lightIndex !== -1 && incoming.hp < incoming.spec.hp) {
+    events.push(passiveEvent(team, lightIndex, 'firstLight'));
+    heal(team, toIndex, PASSIVE_TUNING.firstLight.heal, events);
+  }
+  if (incoming.spec.passive === 'arcCore' && !incoming.arcUsed) {
+    incoming.arcUsed = true;
+    gainEnergy(team, PASSIVE_TUNING.arcCore.energy);
+    events.push(passiveEvent(team, toIndex, 'arcCore'));
+    events.push({ kind: 'energy', side: team.side, energy: team.energy });
+  }
 }
 
 function handleKnockout(state: DuelState, side: Side, events: DuelEvent[]): void {
@@ -414,22 +541,17 @@ function playCard(state: DuelState, side: Side, handIndex: number, events: DuelE
 
   if (spec.power > 0) {
     team.comboTier = comboTierOf(spec.kind);
-    const defender = activeFighter(foeTeam);
-    const { amount, effectiveness } = computeDamage(attacker, defender, spec, { combo });
-    const guarded = defender.guard;
-    attacker.focus = false;
-    defender.guard = false;
-    defender.hp = Math.max(0, defender.hp - amount);
-    events.push({
-      kind: 'damage',
-      side: foeTeam.side,
-      fighterIndex: foeTeam.activeIndex,
-      amount,
-      hp: defender.hp,
-      effectiveness,
-      guarded,
-    });
-    if (defender.hp === 0) handleKnockout(state, foeTeam.side, events);
+    const knockedOut = dealDamage(state, side, spec, { combo }, events);
+    if (spec.kind === 'strike' && attacker.spec.passive === 'stickyFingers') {
+      attacker.strikesLanded++;
+      const { every, steal } = PASSIVE_TUNING.stickyFingers;
+      const stolen = Math.min(steal, foeTeam.energy);
+      if (attacker.strikesLanded % every === 0 && stolen > 0) {
+        events.push(passiveEvent(team, team.activeIndex, 'stickyFingers'));
+        drainEnergy(team, foeTeam, stolen, stolen, events);
+      }
+    }
+    if (knockedOut) handleKnockout(state, foeTeam.side, events);
     return;
   }
 
@@ -442,29 +564,18 @@ function playCard(state: DuelState, side: Side, handIndex: number, events: DuelE
       attacker.guard = true;
       events.push({ kind: 'status', side, fighterIndex: team.activeIndex, status: 'guard' });
       break;
-    case 'heal': {
-      const amount = Math.min(
-        attacker.spec.hp - attacker.hp,
-        Math.round(attacker.spec.hp * TECHNIQUE_TUNING.healFraction),
-      );
-      attacker.hp += amount;
-      events.push({ kind: 'heal', side, fighterIndex: team.activeIndex, amount, hp: attacker.hp });
+    case 'heal':
+      heal(team, team.activeIndex, TECHNIQUE_TUNING.healFraction, events, attacker);
       break;
-    }
-    case 'sap': {
-      const target = activeFighter(foeTeam);
-      // +1 because the sapped team's next turn start ticks it down immediately.
-      target.sapTurns = TECHNIQUE_TUNING.sapTurns + 1;
-      events.push({
-        kind: 'status',
-        side: foeTeam.side,
-        fighterIndex: foeTeam.activeIndex,
-        status: 'sap',
-      });
+    case 'sap':
+      applySap(foeTeam, events);
       break;
-    }
     case 'drain':
       drainEnergy(team, foeTeam, DRAIN.steal, DRAIN.gain, events);
+      if (attacker.spec.passive === 'sirensHold' && attacker.hp < attacker.spec.hp) {
+        events.push(passiveEvent(team, team.activeIndex, 'sirensHold'));
+        heal(team, team.activeIndex, PASSIVE_TUNING.sirensHold.heal, events);
+      }
       break;
     case undefined:
       throw new Error(`Technique ${spec.name} has no effect`);
