@@ -1,0 +1,85 @@
+name: CI
+
+# Every push is verified; green pushes are deployed so the build can be played from the phone:
+#   main            → https://<owner>.github.io/<repo>/
+#   any other branch → https://<owner>.github.io/<repo>/preview/<branch>/
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - run: npm run check:size
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - run: npm run e2e
+
+      - name: Upload screenshots and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist/
+          retention-days: 3
+
+  deploy:
+    needs: verify
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: gh-pages-deploy
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+
+      - name: Publish to gh-pages
+        run: bash scripts/deploy-pages.sh site "${GITHUB_REF_NAME}" "${GITHUB_SHA}"
+
+      - name: Show phone test URL
+        run: |
+          slug=$(bash scripts/deploy-pages.sh --slug "${GITHUB_REF_NAME}")
+          base="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}"
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then url="$base/"; else url="$base/preview/$slug/"; fi
+          echo "### Play this build on your phone" >> "$GITHUB_STEP_SUMMARY"
+          echo "$url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Debug overlay: ${url}?debug=1 · Benchmark: ${url}?debug=1&bench=1" >> "$GITHUB_STEP_SUMMARY"

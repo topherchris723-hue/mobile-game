@@ -1,0 +1,227 @@
+# Shattered Sovereigns — Game Design Document
+
+- **Title:** **Shattered Sovereigns** (chosen 2026-10-12). A web search found no game with this name; a formal trademark search (e.g. USPTO, EUIPO) and a Play Store search are required before public release.
+- **Genre:** Turn-based 1v1 card battles with teams of 3 and character collection (anime gacha RPG)
+- **Platform:** Mobile web / installable PWA, Android Chrome first, **portrait, one hand** (see `../decisions/0001-mobile-web-platform.md`, `../decisions/0003-2d-rendering-pixijs.md`, `../decisions/0004-portrait-turn-based.md`, `../decisions/0005-turn-based-rift-duel.md`)
+- **Status:** Approved by owner (2026-10-12). Battle system: turn-based **Rift Duel** (§4), defined by the owner: teams of 3, 1v1 on the field, free switching, auto-switch on KO, a hand of 3 attack cards.
+- **Inspirations (feel only, no borrowed content):** Dokkan Battle, One Piece Treasure Cruise, Naruto Blazing, Dragon Ball Legends (team building, types, cinematic supers, collection). The battle rules — **Rift Duel** — are our own design. All characters, worlds, names, and art are original.
+
+## 1. Pitch
+
+Three worlds — a realm of energy-wielding martial artists, an ocean of rival adventure crews, and a land of elemental warrior clans — have shattered. Through the **Rift** between them, each world's greatest champions — its **Sovereigns** — are pulled into a shared battleground, the **Nexus**. Sovereigns who were never meant to meet must team up.
+
+Players collect Sovereigns from all three worlds, form teams of three, and fight turn-based one-on-one duels: each turn you pick one of three attack cards, decide when to tag in a teammate, and manage a shared pool of Rift Energy to land devastating Signature moves.
+
+## 2. Target players and sessions
+
+- Fans of anime gacha RPGs, ages 13+ (paid summons will require age-appropriate handling).
+- **Portrait, one thumb.** Playable on a bus with one hand; no reflexes required.
+- A battle takes **2–4 minutes** (3 v 3). Safe to leave mid-battle: the game pauses and resumes exactly where it was. Daily session 5–15 minutes.
+
+## 3. Core loop
+
+```
+Battles (story, bosses, events) ──► earn Coins, training items, shards, some Gems
+      ▲                                            │
+      │                                            ▼
+ Stronger team ◄──── level up / limit break / summon new Sovereigns
+```
+
+The battle must be fun on its own. Collection and progression make it meaningful, not the other way round.
+
+## 4. Battle system — Rift Duel (turn-based)
+
+### 4.1 Setup
+
+- **Teams of 3** on both sides. Each side has **one active fighter** on the field; the other two wait on the **bench**.
+- **Win** by knocking out all three enemy fighters. **Lose** if all three of yours are knocked out.
+- Turns **alternate**: you act, then the enemy acts. The side whose active fighter has the higher **Speed** goes first (ties go to the player).
+
+### 4.2 Your turn
+
+1. **Start of turn:** your team gains **+2 Rift Energy** (one shared gauge per team, 0–10; both teams start with 1). Your active fighter's hand is refilled to **3 cards**.
+2. **Switch (optional, free, once per turn):** tag in a benched fighter. Their own hand of 3 replaces the current one, and you can still play a card this turn. The fighter you swapped out can't be tagged back in until after your next turn.
+3. **Then exactly one of:**
+   - **Play a card** you can afford (cost is paid from Rift Energy), or
+   - **Charge**: skip attacking and gain **+2 extra Rift Energy**.
+
+Playing a card or charging ends your turn.
+
+### 4.3 Cards
+
+Each fighter has their **own deck of 6 cards**; you always see 3 from whoever is on the field. Played cards go to a discard pile and are reshuffled into the deck when it runs out.
+
+| Kind          | In each deck | Cost | Power | Notes                                                        |
+| ------------- | ------------ | ---- | ----- | ------------------------------------------------------------ |
+| **Strike**    | 2            | 1    | ×1.0  | Quick close-range hit.                                       |
+| **Blast**     | 2            | 2    | ×2.2  | Ranged energy attack.                                        |
+| **Technique** | 1            | 2–3  | —     | The fighter's signature utility: Focus, Guard, Heal, or Sap. |
+| **Signature** | 1            | 5    | ×6.0  | Ultimate move with a cut-in. Most damage per energy.         |
+
+Every card shows its cost, its kind (icon **and** label), and the **expected damage** against the current enemy, including type advantage — no hidden maths.
+
+**Technique effects:**
+
+- **Focus** — your next attack deals ×1.5.
+- **Guard** — the next hit you take is halved.
+- **Heal** — restore 25% of max HP.
+- **Sap** — the enemy's active fighter loses 30% Defence for 2 turns.
+- **Drain** — the enemy team loses up to 2 Rift Energy and yours gains 1 (the counter to a telegraphed Signature).
+
+### 4.4 Knockouts and auto-switch
+
+When a fighter's HP reaches 0 they are knocked out and **the next fighter on the bench switches in automatically** (in team order). Energy is kept. The new fighter's hand is filled immediately.
+
+### 4.5 Types
+
+Five original types, colour **and** label coded (never colour alone):
+
+| Type    | Strong vs | Weak vs |
+| ------- | --------- | ------- |
+| Fury    | Swift     | Guile   |
+| Swift   | Guile     | Fury    |
+| Guile   | Fury      | Swift   |
+| Radiant | Void      | Void    |
+| Void    | Radiant   | Radiant |
+
+Advantage ×1.5 damage; disadvantage ×0.75. Switching to a fighter with type advantage is the main reason to switch.
+
+### 4.6 Rift mechanics (the multiverse twist)
+
+- **Tag Link:** switching between fighters **from different worlds** gives **+1 Rift Energy**. Teams that mix worlds switch more freely.
+- **Combo:** an attack of a **higher tier** than your team's previous attack gets **+25% damage** — Strike (1) → Blast (2) → Signature (3). The chain survives a switch (tag-team combos); Charging or a Crossover resets it; Techniques don't affect it. Cards show "+25% Combo" when they would continue the chain.
+- **Crossover Burst:** at **10 Rift Energy**, your active fighter and a living bench fighter **from a different world** launch a combined ultimate (spends all 10 energy, ends the turn). Damage uses **both fighters' ATK** (power ×3.6), and the **partner's type** adds a bonus:
+
+  | Partner type | Bonus                                |
+  | ------------ | ------------------------------------ |
+  | Fury         | +30% damage                          |
+  | Swift        | +3 Rift Energy afterwards            |
+  | Guile        | Enemy Defence −30% for 2 turns (Sap) |
+  | Radiant      | Heal the lead fighter 30% HP         |
+  | Void         | Enemy loses 3 Rift Energy            |
+
+  Named pairs have unique Crossover names (e.g. Kaien × Maris = **Sunbreak Riptide**). The Crossover bar is always visible while a partner exists, so players learn what they're saving for. **Rift enemies all come from a single world and can never Crossover** — it's the Sovereigns' edge.
+
+- **Signature telegraph:** when the enemy's active fighter holds its Signature and will be able to afford it at its next turn, the enemy panel warns "⚠ Next turn: <Signature> · <damage> to <your fighter>". Answers: Guard, switch to a sturdier fighter, knock it out first, or **Drain** its energy.
+
+### 4.7 Damage
+
+`damage = ATK × power × type × focus × guard × 100 / (100 + DEF × sap)`, rounded. No random variance: the expected damage on a card is exactly what it deals. Randomness comes only from deck shuffles (seeded, reproducible).
+
+### 4.8 Enemy behaviour
+
+The enemy follows exactly the same rules (energy, hand of 3, one free switch, auto-switch). Its priorities, in order: take a knockout if any card or Crossover can; protect itself when low (Heal/Guard); switch to type advantage; Crossover if ready, else its Signature; Drain a player who is about to afford big moves; save up when that unlocks its Signature next turn; Focus/Sap with spare energy; otherwise its strongest affordable attack (combo bonus included); otherwise Charge.
+
+Each fighter has a **behaviour profile** that shapes those priorities:
+
+| Profile       | Protects when HP below | Switches for type advantage | Saves energy for its Signature |
+| ------------- | ---------------------- | --------------------------- | ------------------------------ |
+| **Balanced**  | 35%                    | Yes                         | No                             |
+| **Aggressor** | 15%                    | No — stays in and hits      | No                             |
+| **Tactician** | 45%                    | Yes                         | Yes                            |
+
+Harder enemies later get smarter priorities, not inflated stats.
+
+### 4.9 Screen layout (portrait)
+
+```
+┌──────────────────────────────┐
+│ ENEMY  Rift Brute  FURY      │  Enemy HP, energy, bench (●●○)
+│ ▮▮▮▮▮▮▮▯▯ 840/1200           │
+│                  (enemy) ◄   │
+│                              │  1 v 1 on the field
+│    ► (you)                   │
+│ ┌──────────────────────────┐ │
+│ │ KAIEN · FURY  ▮▮▮▮▮▯ HP  │ │
+│ │ ◆◆◆◆◇◇◇◇◇◇ Rift Energy   │ │
+│ │ [card] [card] [card]     │ │  3 cards in the thumb zone
+│ │ [⇄ Maris] [⇄ Torvan] [Charge] │
+│ └──────────────────────────┘ │
+└──────────────────────────────┘
+```
+
+### 4.10 Pace
+
+Animations are short (≤ 1 s per action) and the enemy acts after a brief pause so every hit is readable. A battle against 3 enemies should take 2–4 minutes. A 2× speed toggle and auto-battle for cleared stages come later.
+
+## 5. Fighters and collection
+
+- **Rarity:** 3★, 4★, 5★. Higher rarity = higher stat ceiling and stronger kit, never a different game.
+- **Each fighter has:** type, world, role (Striker / Breaker / Guardian / Support), stats (HP, ATK, DEF, SPD), a **deck of 6 cards** (§4.3) including a Technique and a Signature, a **Leader Skill** (applies when they lead the team), and a **Passive**.
+- **Progression per fighter** (levels and Limit Breaks built in M7; numbers in `src/config/progression.ts`):
+  - _Level_ — raised with Coins (training items deferred). Caps 30 / 40 / 50 for 3★ / 4★ / 5★. Each level adds 1% of the level-1 HP/ATK/DEF; SPD never grows (it decides turn order).
+  - _Limit Break_ — up to 4, each +10 to the cap, costing 10 / 20 / 40 shards (about two duplicates). A fully broken 3★ reaches Lv 70, a 5★ Lv 90.
+  - Duplicate summons convert to **Shards**, so duplicates are always useful.
+  - _Awaken_ (later) — 4★ → 5★ path for favourite characters.
+- **Character bible:** `characters.md` — the three worlds (the Emberreach, the Thousand Tides, the Five Provinces), every Sovereign's concept, look, kit, bonds, Passive (in battles since the Passives step), and the originality rules (genre tropes yes, specific characters never).
+- **Launch roster (built):** 15 Sovereigns in `src/config/sovereigns.ts` — 5 per world, all five types, rarities 3★–5★, each with a 6-card deck and a Leader Skill. Expandable through data files only.
+- **Starters:** new players own Kaien, Maris, Torvan (the default team), Brakka, Corrin, and Goro. The other nine are recruited through Summons (M6).
+- **Leader Skills** apply from team slot 1 to the whole battle: a stat boost for all allies or for allies of one world or type (e.g. "Energy realm allies +15% ATK"), or extra starting Rift Energy.
+
+## 6. Economy
+
+| Currency  | How it's earned                                                                                         | What it's for                     | Feel                |
+| --------- | ------------------------------------------------------------------------------------------------------- | --------------------------------- | ------------------- |
+| **Coins** | Every stage, plentifully                                                                                | Levelling, limit breaks, upgrades | Common              |
+| **Gems**  | First clears, chapter rewards, achievements, daily login; **purchasable with real money (later phase)** | Summons, continues                | Scarce and exciting |
+
+### Summons
+
+- Single summon: 50 Gems. Multi (10 + 1 bonus): 500 Gems, guarantees at least one 4★.
+- Base rates (tunable): 5★ 4% · 4★ 21% · 3★ 75%. **Rates shown in-game on every banner.**
+- **Pity:** a visible counter guarantees a 5★ within 80 summons on a banner.
+- Banner types: Standard (always available) and Featured (rate-up for specific fighters, limited time).
+- Free-player pace target: roughly one multi-summon per week of regular play (tuned with data later).
+- **Built in M6:** new players start with **500 Gems** (one multi); each story stage pays Gems on its **first clear only** (Prologue: 100). Duplicates give shards by rarity: 5 / 10 / 20 (3★ / 4★ / 5★), spent on Limit Breaks in M7. Rolls are seeded per save and saved before the reveal. Every summon asks for confirmation. Coins (M7): 2,000 to start, +500 for every victory (replays included); spent on levels.
+
+### Real-money purchases (later phase — not in the first playable build)
+
+Requirements before any money is involved:
+
+1. **Server-authoritative economy:** accounts, server-held gem balances, and server-side summon rolls. The client only displays results.
+2. **Payment channel:** Google Play Billing if shipped through the Play Store; a web payment provider otherwise. Receipts validated on the server.
+3. **Compliance:** published drop rates, regional loot-box rules (e.g. Belgium bans paid loot boxes), privacy policy, refund handling, spending safeguards for minors.
+
+Until then, all Gems are earned in-game and the economy runs locally; its rules live in a pure module (`src/game/economy/`) so they can move to the server unchanged.
+
+### Stamina
+
+**Decision: no stamina system in early versions.** It limits play without making it more fun. Revisit only if events need pacing.
+
+## 7. Game modes (by phase)
+
+1. **Story** — chapters of 8–10 duels, with short dialogue scenes between Sovereigns from different worlds.
+2. **Boss battles** — scripted, telegraph-heavy fights at the end of chapters.
+3. **Events** (later) — limited-time bosses with a rewards track.
+4. **PvP** (later) — _Rift Arena_: fight other players' teams controlled by the enemy AI. Turn-based play makes this possible without real-time servers.
+
+## 8. Screens
+
+**Home menu** (the hub players return to after every battle), with large one-thumb tiles:
+
+- **Story** — chapter map and stages.
+- **Summon** — banners, rates, pity counter.
+- **Sovereigns** — collection, detail screens, team editor.
+- **Guilds** — join a guild with other players: shared chat, a weekly guild boss fought together, and guild rewards. Requires the online phase (accounts and a server), so until then the tile is shown **locked** with "Online — coming later"; nothing on it pretends to work.
+- Settings, and later Shop, Events, and Rift Arena.
+
+Other screens: Story map · Team select · Battle · Results · Sovereign detail (with animated preview) · Summon · Settings.
+
+The whole game runs in **portrait**; turning the phone sideways shows a "turn your phone upright" screen.
+
+## 9. Art and audio direction
+
+**The full, locked art direction is in [`art-style.md`](art-style.md)** (lighting, palettes with hex values, character rules, environments, effects, UI, artist specs). Summary:
+
+- **Look:** HD cel-shaded anime characters over painterly golden-hour backgrounds: huge sunlit clouds, saturated skies, warm light with violet shadows, floating islands, and the Nexus crystal citadel always on the horizon.
+- **Mood:** bright heroic adventure; the Rift brings deep violet drama for bosses, Crossovers, and story climaxes.
+- **Worlds** are told apart by palette and motifs: Energy realm (ember orange, lava red, basalt indigo), Ocean crews (sea blue, sandstone, terracotta), Warrior clans (canopy green, pagoda crimson).
+- **Two art tiers per Sovereign:** a detailed **splash art** illustration (summons, cards, cut-ins) plus one full-body **battle illustration** animated in code.
+- **Visual effects** (auras, blasts, hit sparks, Break shatter, Timeline telegraphs, Rift Links) are built in code and can reach final quality while characters are still placeholders.
+- **Placeholders** are code-drawn figures that already follow the style guide, so the game looks coherent from day one. Real art replaces them by dropping in files that follow the artist specs — any artist, or the owner using a phone drawing app, can produce them.
+- **UI:** light cloud-white menu panels and dark ink battle HUD, crisp chamfered panels, Saira Condensed + Noto Sans.
+- **Audio:** punchy layered hit sounds, a distinct "time-slip" sound when the Timeline is bent, Crossover stingers, one battle theme per world. Separate music/SFX/haptics toggles.
+
+## 10. Out of scope for the first playable build
+
+Real-money purchases, accounts and servers, PvP of any kind, events, guilds and chat (all need the online phase, M9+), voice acting.
