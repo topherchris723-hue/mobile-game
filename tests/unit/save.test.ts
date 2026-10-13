@@ -3,6 +3,7 @@ import { DEFAULT_TEAM, STARTER_IDS } from '../../src/config/sovereigns';
 import { createLogger } from '../../src/debug/log';
 import {
   createDefaultSave,
+  DEFAULT_SETTINGS,
   parseSave,
   SAVE_SCHEMA_VERSION,
   serializeSave,
@@ -73,6 +74,35 @@ describe('parseSave', () => {
     expect(new Set(result.data.team).size).toBe(3);
   });
 
+  it('upgrades a real v1 save to v2, keeping the team and progress, adding default settings', () => {
+    const v1 = JSON.stringify({
+      schemaVersion: 1,
+      ownedSovereigns: ['kaien', 'maris', 'torvan', 'goro'],
+      team: ['goro', 'kaien', 'maris'],
+      story: { clearedStages: ['prologue'] },
+    });
+    const result = parseSave(v1);
+    expect(result.status).toBe('loaded');
+    expect(result.data.schemaVersion).toBe(2);
+    expect(result.data.team).toEqual(['goro', 'kaien', 'maris']);
+    expect(result.data.story.clearedStages).toEqual(['prologue']);
+    expect(result.data.settings).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it('repairs invalid settings to defaults', () => {
+    const save = createDefaultSave();
+    const raw = JSON.parse(serializeSave(save)) as Record<string, unknown>;
+    raw['settings'] = { sound: 'yes', haptics: false, reduceMotion: true, battleSpeed: 7 };
+    const result = parseSave(JSON.stringify(raw));
+    expect(result.status).toBe('repaired');
+    expect(result.data.settings).toEqual({
+      sound: DEFAULT_SETTINGS.sound,
+      haptics: false,
+      reduceMotion: true,
+      battleSpeed: DEFAULT_SETTINGS.battleSpeed,
+    });
+  });
+
   it('runs migrations in order from older versions', () => {
     const calls: number[] = [];
     const migrations: Record<number, Migration> = {
@@ -85,14 +115,14 @@ describe('parseSave', () => {
         return { ...data, team: ['maris', 'kaien', 'torvan'] };
       },
     };
-    const v1 = serializeSave(createDefaultSave());
+    const v1 = JSON.stringify({ ...createDefaultSave(), schemaVersion: 1 });
     const result = parseSave(v1, migrations, 3);
     expect(calls).toEqual([1, 2]);
     expect(result.data.team).toEqual(['maris', 'kaien', 'torvan']);
   });
 
   it('resets if a migration step is missing', () => {
-    const result = parseSave(serializeSave(createDefaultSave()), {}, 2);
+    const result = parseSave(serializeSave(createDefaultSave()), {}, 3);
     expect(result.status).toBe('reset');
   });
 

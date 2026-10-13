@@ -814,12 +814,6 @@ button {
   color: #c9b8f5;
 }
 
-.turn-banner[data-side='crossover'] {
-  background: rgb(30 20 54 / 0.85);
-  color: var(--gold);
-  font-size: 30px;
-}
-
 .turn-banner.is-visible {
   opacity: 1;
   transform: scaleY(1);
@@ -1638,4 +1632,240 @@ body[data-scene='boot'] #screen-root {
 .result-home {
   display: block;
   margin: var(--space-2) auto 0;
+}
+
+/* ---------- Battle feel (M4): speed toggle, cut-ins ---------- */
+
+.speed-button {
+  position: absolute;
+  top: calc(var(--safe-top) + 112px);
+  right: calc(var(--safe-right) + var(--space-2));
+  min-width: 52px;
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  background: var(--ink-panel);
+  color: var(--text-light);
+  font-family: var(--font-display);
+  font-size: 22px;
+  clip-path: var(--chamfer-shape);
+  transition: transform var(--duration-press) var(--ease-out);
+}
+
+.speed-button[aria-pressed='true'] {
+  color: var(--gold);
+}
+
+.speed-button:active {
+  transform: scale(0.94);
+}
+
+/* Cut-in: a slanted band across the upper battlefield, portrait on the attacker's side. */
+.cut-in {
+  position: absolute;
+  top: 22%;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms var(--ease-out);
+}
+
+.cut-in.is-visible {
+  opacity: 1;
+}
+
+.cut-in-band {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 132px;
+  padding: 0 var(--space-4);
+  background: rgb(8 9 15 / 0.88);
+  border-top: 3px solid var(--rift-violet);
+  border-bottom: 3px solid var(--rift-violet);
+  transform: translateX(-100%) skewY(-4deg);
+  transition: transform 220ms var(--ease-out);
+}
+
+.cut-in.is-visible .cut-in-band {
+  transform: translateX(0) skewY(-4deg);
+}
+
+.cut-in[data-side='enemy'] .cut-in-band {
+  flex-direction: row-reverse;
+  text-align: right;
+  border-color: var(--type-void);
+  transform: translateX(100%) skewY(4deg);
+}
+
+.cut-in[data-side='enemy'].is-visible .cut-in-band {
+  transform: translateX(0) skewY(4deg);
+}
+
+.cut-in-figures {
+  display: flex;
+  align-self: stretch;
+  overflow: hidden;
+}
+
+.cut-in-figure {
+  width: 96px;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 12%;
+}
+
+.cut-in[data-count='2'] .cut-in-figure + .cut-in-figure {
+  margin-left: -28px;
+}
+
+.cut-in[data-side='enemy'] .cut-in-figure {
+  transform: scaleX(-1);
+}
+
+.cut-in-text {
+  display: grid;
+  min-width: 0;
+}
+
+.cut-in-kicker {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rift-violet);
+}
+
+.cut-in[data-side='enemy'] .cut-in-kicker {
+  color: #c9b8f5;
+}
+
+.cut-in-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-style: italic;
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: var(--gold);
+  overflow-wrap: anywhere;
+}
+
+.cut-in-names {
+  font-size: 14px;
+  color: var(--cloud);
+  opacity: 0.85;
+}
+
+/* Reduce motion (Settings): the cut-in appears in place instead of sliding. */
+body[data-reduce-motion='true'] .cut-in-band,
+body[data-reduce-motion='true'] .cut-in[data-side='enemy'] .cut-in-band {
+  transition: none;
+}
+
+body[data-reduce-motion='true'] .cut-in .cut-in-band {
+  transform: skewY(-4deg);
+}
+
+body[data-reduce-motion='true'] .cut-in[data-side='enemy'] .cut-in-band {
+  transform: skewY(4deg);
+}
+
+/* ---------- Settings ---------- */
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  background: var(--ink-panel);
+  color: var(--text-light);
+  clip-path: var(--chamfer-shape);
+  transition: transform var(--duration-press) var(--ease-out);
+}
+
+.icon-button:active {
+  transform: scale(0.94);
+}
+
+.settings-button {
+  position: absolute;
+  top: calc(var(--safe-top) + var(--space-3));
+  right: calc(var(--safe-right) + var(--space-3));
+  z-index: 1;
+}
+
+.settings-title {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: 30px;
+  text-transform: uppercase;
+}
+
+.settings-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: var(--space-2) var(--space-3);
+  background: rgb(30 36 64 / 0.08);
+  color: var(--text-dark);
+  text-align: left;
+}
+
+.settings-row:active {
+  background: rgb(30 36 64 / 0.16);
+}
+
+.settings-text {
+  display: grid;
+  flex: 1;
+}
+
+.settings-label {
+  font-family: var(--font-display);
+  font-size: 20px;
+  text-transform: uppercase;
+}
+
+.settings-detail {
+  font-size: 14px;
+  opacity: 0.75;
+}
+
+.settings-state {
+  min-width: 52px;
+  padding: var(--space-1) var(--space-2);
+  background: var(--text-dark);
+  color: var(--cloud);
+  font-family: var(--font-display);
+  font-size: 18px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.settings-row[aria-checked='false'] .settings-state {
+  background: transparent;
+  color: var(--text-dark);
+  box-shadow: inset 0 0 0 2px var(--text-dark);
+}
+
+.settings-build {
+  margin: var(--space-4) 0 var(--space-3);
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.settings-close {
+  width: 100%;
+}
+
+/* Battle toasts stay clear of the speed toggle on the right (and stay centred). */
+.duel-hud .toast {
+  max-width: calc(100% - 144px);
+  text-align: center;
 }

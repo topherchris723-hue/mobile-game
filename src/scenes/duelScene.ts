@@ -1,5 +1,6 @@
 import { ENEMY_THINK_MS, EVENT_DURATION_MS } from '../config/duelPresentation';
-import type { FighterSpec } from '../config/fighters';
+import { CUT_IN_MS, type CueId } from '../config/feedback';
+import type { CardKind, FighterSpec } from '../config/fighters';
 import { TICK_MS } from '../config/sim';
 import type { Logger } from '../debug/log';
 import { chooseAction } from '../game/duel/ai';
@@ -12,8 +13,9 @@ import {
   switchBlockedReason,
 } from '../game/duel/rules';
 import type { DuelAction, DuelEvent, DuelState, Side } from '../game/duel/types';
-import type { DuelView } from '../render/duelView';
+import type { DuelView, HitImpact } from '../render/duelView';
 import type { DuelHud } from '../ui/duelHud';
+import type { Feedback } from '../ui/feedback';
 
 /*
  * Runs one duel: owns the rules state, plays its events back through the view and HUD one at a
@@ -39,8 +41,9 @@ export interface DuelSceneOptions {
   readonly view: DuelView;
   readonly hud: DuelHud;
   readonly log: Logger;
-  /** Animation speed multiplier (1 = normal). */
-  readonly speed: number;
+  readonly feedback: Feedback;
+  /** Current animation speed multiplier (1 = normal); read live so the 2× toggle applies at once. */
+  readonly speed: () => number;
   /** Battle-ready teams (Leader Skill already applied to the player's). */
   readonly player: readonly FighterSpec[];
   readonly enemy: readonly FighterSpec[];
@@ -52,13 +55,24 @@ export interface DuelSceneOptions {
 }
 
 export function createDuelScene(options: DuelSceneOptions): DuelScene {
-  const { view, hud, log, speed } = options;
+  const { view, hud, log, feedback, speed } = options;
   let seed = options.seed;
   let state: DuelState;
   let queue: DuelEvent[] = [];
   let waitMs = 0;
   let phase: DuelPhase = 'animating';
   let intent: DuelAction | null = null;
+  /** The attack whose hits are playing, so damage knows how hard it lands. */
+  let lastAttack: HitImpact | null = null;
+  /** The event a cut-in is currently being shown for. */
+  let cutInFor: DuelEvent | null = null;
+
+  const ATTACK_CUE: Record<CardKind, CueId> = {
+    strike: 'strike',
+    blast: 'blast',
+    technique: 'technique',
+    signature: 'signature',
+  };
 
   const begin = (): void => {
     const created = createDuel({
@@ -72,6 +86,8 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
     waitMs = 0;
     phase = 'animating';
     intent = null;
+    lastAttack = null;
+    cutInFor = null;
     view.reset(state.teams.player.activeIndex, state.teams.enemy.activeIndex);
     hud.reset(state);
     hud.showControls(state, false);
@@ -83,31 +99,54 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
     hud.applyEvent(event);
     switch (event.kind) {
       case 'turnStart':
+        lastAttack = null;
+        if (event.side === 'player') feedback.cue('turn');
         break;
       case 'cardPlayed': {
         const fighter = state.teams[event.side].fighters[event.fighterIndex];
-        if (fighter) view.attack(event.side, event.card.kind, fighter.spec.type);
+        if (fighter) {
+          view.attack(event.side, event.card.kind, fighter.spec.type);
+          lastAttack = { heavy: event.card.kind === 'signature', type: fighter.spec.type };
+        }
+        feedback.cue(ATTACK_CUE[event.card.kind]);
         break;
       }
-      case 'damage':
-        view.hit(event.side, event.amount, event.effectiveness, event.guarded);
+      case 'damage': {
+        const attacker = activeFighter(state.teams[event.side === 'player' ? 'enemy' : 'player']);
+        const impact = lastAttack ?? { heavy: false, type: attacker.spec.type };
+        view.hit(event.side, event.amount, event.effectiveness, event.guarded, impact);
+        feedback.cue(
+          event.guarded
+            ? 'guard'
+            : impact.heavy
+              ? 'hitHeavy'
+              : event.side === 'player'
+                ? 'hitTaken'
+                : 'hitDealt',
+        );
         break;
+      }
       case 'heal':
         view.heal(event.side, event.amount);
+        feedback.cue('heal');
         break;
       case 'status':
         view.status(event.side, event.status);
+        feedback.cue('status');
         break;
       case 'charge':
         view.charge(event.side);
+        feedback.cue('charge');
         break;
       case 'switch':
         view.switchIn(event.side, event.from, event.to);
+        feedback.cue('switch');
         if (event.tagLink)
           hud.toast(event.side === 'player' ? 'Tag Link! +1 Rift Energy' : 'Enemy Tag Link');
         break;
       case 'ko':
         view.knockOut(event.side);
+        feedback.cue('ko');
         break;
       case 'crossover': {
         const team = state.teams[event.side];
@@ -115,21 +154,54 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
         const partner = team.fighters[event.partnerIndex];
         if (lead && partner) {
           view.crossover(event.side, event.partnerIndex, lead.spec.type, partner.spec.type);
+          lastAttack = { heavy: true, type: lead.spec.type };
         }
-        hud.announce(event.name);
+        feedback.cue('crossover');
         break;
       }
       case 'drain':
         view.drain(event.side, event.amount);
+        feedback.cue('drain');
         break;
       case 'energy':
         view.charge(event.side);
+        feedback.cue('charge');
         break;
       case 'battleEnd':
         log.info(`Duel over: ${event.winner} wins`);
+        feedback.cue(event.winner === 'player' ? 'victory' : 'defeat');
         break;
     }
-    return EVENT_DURATION_MS[event.kind] / speed;
+    return EVENT_DURATION_MS[event.kind] / speed();
+  };
+
+  /** Signatures and Crossovers get a title card before they land (game-design.md §4.10). */
+  const showCutIn = (event: DuelEvent): boolean => {
+    if (event.kind === 'cardPlayed' && event.card.kind === 'signature') {
+      const fighter = state.teams[event.side].fighters[event.fighterIndex];
+      if (!fighter) return false;
+      hud.cutIn({
+        side: event.side,
+        kicker: 'Signature',
+        title: event.card.name,
+        fighters: [fighter.spec],
+      });
+    } else if (event.kind === 'crossover') {
+      const team = state.teams[event.side];
+      const lead = team.fighters[event.fighterIndex];
+      const partner = team.fighters[event.partnerIndex];
+      if (!lead || !partner) return false;
+      hud.cutIn({
+        side: event.side,
+        kicker: 'Crossover Burst',
+        title: event.name,
+        fighters: [lead.spec, partner.spec],
+      });
+    } else {
+      return false;
+    }
+    feedback.cue('cutIn');
+    return true;
   };
 
   const perform = (side: Side, action: DuelAction): boolean => {
@@ -145,6 +217,17 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
     return true;
   };
 
+  /** Buffers an accepted intent, or explains a refusal; both answer the tap at once (§5). */
+  const request = (reason: string | null, action: DuelAction): void => {
+    if (reason) {
+      hud.toast(reason);
+      feedback.cue('deny');
+    } else {
+      intent = action;
+      feedback.cue('tap');
+    }
+  };
+
   begin();
 
   return {
@@ -153,8 +236,18 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
         waitMs -= TICK_MS;
         return;
       }
-      const next = queue.shift();
+      const next = queue[0];
       if (next) {
+        if (cutInFor !== next && showCutIn(next)) {
+          cutInFor = next;
+          waitMs = CUT_IN_MS / speed();
+          return;
+        }
+        if (cutInFor) {
+          hud.endCutIn();
+          cutInFor = null;
+        }
+        queue.shift();
         waitMs = present(next);
         return;
       }
@@ -169,7 +262,7 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
       if (state.turnSide === 'enemy') {
         if (phase !== 'enemyThinking') {
           phase = 'enemyThinking';
-          waitMs = ENEMY_THINK_MS / speed;
+          waitMs = ENEMY_THINK_MS / speed();
           return;
         }
         if (!perform('enemy', chooseAction(state, 'enemy'))) perform('enemy', { kind: 'charge' });
@@ -188,32 +281,31 @@ export function createDuelScene(options: DuelSceneOptions): DuelScene {
     },
 
     requestPlay(handIndex) {
-      const reason =
+      request(
         phase === 'playerInput'
           ? playBlockedReason(state, 'player', handIndex)
-          : 'Wait for your turn';
-      if (reason) hud.toast(reason);
-      else intent = { kind: 'play', handIndex };
+          : 'Wait for your turn',
+        { kind: 'play', handIndex },
+      );
     },
     requestSwitch(fighterIndex) {
-      const reason =
+      request(
         phase === 'playerInput'
           ? switchBlockedReason(state, 'player', fighterIndex)
-          : 'Wait for your turn';
-      if (reason) hud.toast(reason);
-      else intent = { kind: 'switch', fighterIndex };
+          : 'Wait for your turn',
+        { kind: 'switch', fighterIndex },
+      );
     },
     requestCharge() {
-      if (phase === 'playerInput') intent = { kind: 'charge' };
-      else hud.toast('Wait for your turn');
+      request(phase === 'playerInput' ? null : 'Wait for your turn', { kind: 'charge' });
     },
     requestCrossover(partnerIndex) {
-      const reason =
+      request(
         phase === 'playerInput'
           ? crossoverBlockedReason(state, 'player', partnerIndex)
-          : 'Wait for your turn';
-      if (reason) hud.toast(reason);
-      else intent = { kind: 'crossover', partnerIndex };
+          : 'Wait for your turn',
+        { kind: 'crossover', partnerIndex },
+      );
     },
     restart() {
       seed++;

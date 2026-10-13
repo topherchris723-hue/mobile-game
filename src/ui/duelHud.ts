@@ -1,4 +1,4 @@
-import type { TypeId } from '../config/fighters';
+import type { FighterSpec, TypeId } from '../config/fighters';
 import { BATTLE_RULES, COMBO, CROSSOVER, CROSSOVER_PARTNER_EFFECT } from '../config/battle';
 import { computeDamage } from '../game/duel/damage';
 import { KIND_LABEL, kindIcon, techniqueText } from './cardText';
@@ -14,6 +14,8 @@ import {
   switchBlockedReason,
 } from '../game/duel/rules';
 import type { DuelEvent, DuelState, Side } from '../game/duel/types';
+import type { PortraitCache } from '../render/portraits';
+import type { BattleSpeed } from '../save/saveData';
 
 /*
  * HTML battle HUD (game-design.md §4.9). It shows a *displayed* copy of HP, energy, and the active
@@ -28,6 +30,17 @@ export interface DuelHudCallbacks {
   onCrossover(partnerIndex: number): void;
   onRestart(): void;
   onExit(): void;
+  onToggleSpeed(): void;
+}
+
+/** A Signature or Crossover title card shown before the attack lands. */
+export interface CutInInfo {
+  readonly side: Side;
+  /** "Signature" or "Crossover Burst". */
+  readonly kicker: string;
+  readonly title: string;
+  /** The fighters performing it (one, or lead + partner). */
+  readonly fighters: readonly FighterSpec[];
 }
 
 export interface DuelHud {
@@ -40,8 +53,10 @@ export interface DuelHud {
   /** Renders the player's options; `enabled` is false while animations or the enemy are running. */
   showControls(state: DuelState, enabled: boolean): void;
   toast(message: string): void;
-  /** Big centred title, e.g. a Crossover Burst's name. */
-  announce(title: string): void;
+  /** Shows a cut-in; it stays until endCutIn(), so its length follows game time. */
+  cutIn(info: CutInInfo): void;
+  endCutIn(): void;
+  setSpeed(speed: BattleSpeed): void;
   showResult(winner: Side): void;
   dispose(): void;
 }
@@ -59,7 +74,11 @@ interface DisplaySide {
   energy: number;
 }
 
-export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): DuelHud {
+export function createDuelHud(
+  host: HTMLElement,
+  callbacks: DuelHudCallbacks,
+  portraits: PortraitCache,
+): DuelHud {
   const root = element('div', 'duel-hud', host);
 
   // Enemy panel.
@@ -76,7 +95,28 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
   const enemyThreat = element('div', 'threat', enemyPanel);
   enemyThreat.hidden = true;
 
+  const speedButton = element('button', 'speed-button', root);
+  speedButton.type = 'button';
+  speedButton.addEventListener('click', () => {
+    callbacks.onToggleSpeed();
+  });
+
   const banner = element('div', 'turn-banner', root);
+
+  const cutInNode = element('div', 'cut-in', root);
+  cutInNode.setAttribute('aria-live', 'polite');
+  const cutInBand = element('div', 'cut-in-band', cutInNode);
+  const cutInFigures = element('div', 'cut-in-figures', cutInBand);
+  const cutInImages = [0, 1].map(() => {
+    const img = element('img', 'cut-in-figure', cutInFigures);
+    img.alt = '';
+    return img;
+  });
+  const cutInText = element('div', 'cut-in-text', cutInBand);
+  const cutInKicker = element('span', 'cut-in-kicker', cutInText);
+  const cutInTitle = element('span', 'cut-in-title', cutInText);
+  const cutInNames = element('span', 'cut-in-names', cutInText);
+  let cutInToken = 0;
   const toastNode = element('div', 'toast', root);
   toastNode.setAttribute('role', 'status');
 
@@ -266,6 +306,7 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
         };
       }
       result.hidden = true;
+      cutInNode.classList.remove('is-visible');
       renderSides();
       renderBench(null, false);
     },
@@ -389,14 +430,36 @@ export function createDuelHud(host: HTMLElement, callbacks: DuelHudCallbacks): D
       renderBench(state, enabled);
     },
 
-    announce(title) {
+    cutIn(info) {
+      const token = ++cutInToken;
       window.clearTimeout(bannerTimer);
-      banner.textContent = title;
-      banner.dataset['side'] = 'crossover';
-      banner.classList.add('is-visible');
-      bannerTimer = window.setTimeout(() => {
-        banner.classList.remove('is-visible');
-      }, 1300);
+      banner.classList.remove('is-visible');
+      cutInNode.dataset['side'] = info.side;
+      cutInNode.dataset['count'] = String(info.fighters.length);
+      cutInKicker.textContent = info.kicker;
+      cutInTitle.textContent = info.title;
+      cutInNames.textContent = info.fighters.map((f) => f.name).join(' × ');
+      cutInImages.forEach((img, index) => {
+        const fighter = info.fighters[index];
+        img.hidden = !fighter;
+        img.removeAttribute('src');
+        if (!fighter) return;
+        // Portraits are prefetched when the battle starts, so this normally resolves at once.
+        void portraits.get(fighter).then((url) => {
+          if (token === cutInToken) img.src = url;
+        });
+      });
+      cutInNode.classList.add('is-visible');
+    },
+
+    endCutIn() {
+      cutInNode.classList.remove('is-visible');
+    },
+
+    setSpeed(speed) {
+      speedButton.textContent = `${speed}×`;
+      speedButton.setAttribute('aria-pressed', String(speed === 2));
+      speedButton.setAttribute('aria-label', `Battle speed ${speed}×, tap to change`);
     },
 
     toast(message) {

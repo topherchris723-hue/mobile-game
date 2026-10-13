@@ -1,3 +1,4 @@
+import { createSfx } from '../audio/sfx';
 import { getSovereign } from '../config/sovereigns';
 import { getStage } from '../config/story';
 import type { LaunchFlags } from '../core/flags';
@@ -5,10 +6,13 @@ import type { Logger } from '../debug/log';
 import type { DebugOverlay } from '../debug/overlay';
 import { createPortraitCache } from '../render/portraits';
 import type { Stage } from '../render/stage';
+import type { Settings } from '../save/saveData';
 import type { SaveStore } from '../save/saveStore';
 import { element } from '../ui/dom';
+import { createFeedback } from '../ui/feedback';
 import { createMenuBackdrop } from '../ui/menuBackdrop';
 import { createHomeScreen, type Screen } from '../ui/screens/homeScreen';
+import { createSettingsSheet } from '../ui/screens/settingsSheet';
 import { createSovereignsScreen } from '../ui/screens/sovereignsScreen';
 import { createStoryScreen } from '../ui/screens/storyScreen';
 import { createBattleSession, type BattleSession } from './battleSession';
@@ -42,6 +46,13 @@ export interface AppDeps {
 export function createApp(deps: AppDeps): App {
   const { save, log } = deps;
   const portraits = createPortraitCache(deps.stage.app.renderer);
+  const sfx = createSfx(log);
+  const feedback = createFeedback(sfx, () => save.data.settings);
+  const applySettings = (settings: Readonly<Settings>): void => {
+    // CSS reads this to drop decorative motion (cut-in slide, etc.).
+    document.body.dataset['reduceMotion'] = String(settings.reduceMotion);
+  };
+  applySettings(save.data.settings);
   const backdrop = createMenuBackdrop(deps.screenHost);
   const toastNode = element('div', 'toast menu-toast', deps.screenHost);
   toastNode.setAttribute('role', 'status');
@@ -57,10 +68,17 @@ export function createApp(deps: AppDeps): App {
 
   let screen: ScreenId = 'home';
   let menu: Screen | null = null;
+  let sheet: Screen | null = null;
   let battle: BattleSession | null = null;
   let playable = true;
 
+  const closeSheet = (): void => {
+    sheet?.dispose();
+    sheet = null;
+  };
+
   const leaveCurrent = (): void => {
+    closeSheet();
     menu?.dispose();
     menu = null;
     battle?.dispose();
@@ -82,8 +100,21 @@ export function createApp(deps: AppDeps): App {
       toast,
       onStory: showStory,
       onSovereigns: showSovereigns,
+      onSettings: showSettings,
     });
   };
+
+  function showSettings(): void {
+    closeSheet();
+    sheet = createSettingsSheet(deps.screenHost, {
+      save,
+      onChange: (settings) => {
+        applySettings(settings);
+        feedback.cue('tap');
+      },
+      onClose: closeSheet,
+    });
+  }
 
   function showStory(): void {
     leaveCurrent();
@@ -109,6 +140,9 @@ export function createApp(deps: AppDeps): App {
       flags: deps.flags,
       log,
       overlay: deps.overlay,
+      save,
+      portraits,
+      feedback,
       onFinished: (winner) => {
         if (winner === 'player' && !save.data.story.clearedStages.includes(stageId)) {
           save.update((data) => {
@@ -133,6 +167,7 @@ export function createApp(deps: AppDeps): App {
     setPlayable(next) {
       playable = next;
       battle?.setPlayable(next);
+      sfx.setSuspended(!next);
     },
     resize() {
       if (battle) battle.resize();

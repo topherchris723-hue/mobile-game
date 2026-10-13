@@ -9,8 +9,11 @@ import type { DebugOverlay } from '../debug/overlay';
 import type { Side } from '../game/duel/types';
 import { applyLeaderSkill } from '../game/leader';
 import { createDuelView } from '../render/duelView';
+import type { PortraitCache } from '../render/portraits';
 import { countDisplayObjects, type Stage, type StageMetrics } from '../render/stage';
+import type { SaveStore } from '../save/saveStore';
 import { createDuelHud } from '../ui/duelHud';
+import type { Feedback } from '../ui/feedback';
 import { createDuelScene, type DuelScene } from './duelScene';
 
 /*
@@ -36,36 +39,59 @@ export interface BattleSessionOptions {
   readonly flags: LaunchFlags;
   readonly log: Logger;
   readonly overlay: DebugOverlay | null;
+  readonly save: SaveStore;
+  readonly portraits: PortraitCache;
+  readonly feedback: Feedback;
   readonly onFinished: (winner: Side) => void;
   readonly onExit: () => void;
 }
 
 export function createBattleSession(options: BattleSessionOptions): BattleSession {
-  const { stage, flags, log, overlay } = options;
+  const { stage, flags, log, overlay, save } = options;
   const led = applyLeaderSkill(options.team);
   const view = createDuelView(
     stage.app.renderer,
     { player: led.fighters, enemy: options.stageSpec.enemies },
     flags.benchmark ? EMBER_COUNT.benchmark : EMBER_COUNT.normal,
+    () => save.data.settings.reduceMotion,
   );
+  // Cut-ins show portraits; render them now so the first Signature doesn't wait on them.
+  for (const fighter of [...led.fighters, ...options.stageSpec.enemies]) {
+    void options.portraits.get(fighter);
+  }
+  /** The player's 1×/2× choice, on top of the `?speed=` test flag. */
+  const speed = (): number => flags.speed * save.data.settings.battleSpeed;
   stage.world.addChild(view.root);
 
   let scene: DuelScene | null = null;
-  const hud = createDuelHud(options.hudHost, {
-    onPlayCard: (index) => scene?.requestPlay(index),
-    onSwitch: (index) => scene?.requestSwitch(index),
-    onCharge: () => scene?.requestCharge(),
-    onCrossover: (partner) => scene?.requestCrossover(partner),
-    onRestart: () => scene?.restart(),
-    onExit: () => {
-      options.onExit();
+  const hud = createDuelHud(
+    options.hudHost,
+    {
+      onPlayCard: (index) => scene?.requestPlay(index),
+      onSwitch: (index) => scene?.requestSwitch(index),
+      onCharge: () => scene?.requestCharge(),
+      onCrossover: (partner) => scene?.requestCrossover(partner),
+      onRestart: () => scene?.restart(),
+      onExit: () => {
+        options.onExit();
+      },
+      onToggleSpeed: () => {
+        save.update((data) => {
+          data.settings.battleSpeed = data.settings.battleSpeed === 1 ? 2 : 1;
+        });
+        hud.setSpeed(save.data.settings.battleSpeed);
+        options.feedback.cue('tap');
+      },
     },
-  });
+    options.portraits,
+  );
+  hud.setSpeed(save.data.settings.battleSpeed);
   const duel = createDuelScene({
     view,
     hud,
     log,
-    speed: flags.speed,
+    feedback: options.feedback,
+    speed,
     player: led.fighters,
     enemy: options.stageSpec.enemies,
     seed: options.stageSpec.seed,
@@ -93,7 +119,7 @@ export function createBattleSession(options: BattleSessionOptions): BattleSessio
     },
     render(alpha, frameDeltaMs) {
       const timeSec = ((tick + alpha) * TICK_MS) / 1000;
-      view.render(timeSec, (frameDeltaMs / 1000) * flags.speed);
+      view.render(timeSec, (frameDeltaMs / 1000) * speed());
       stage.render();
     },
     frameMeasured(frameDeltaMs, workMs) {

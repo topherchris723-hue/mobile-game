@@ -17,6 +17,7 @@ export interface HomeScreenDeps {
   readonly portraits: PortraitCache;
   readonly onStory: () => void;
   readonly onSovereigns: () => void;
+  readonly onSettings: () => void;
   readonly toast: (message: string) => void;
 }
 
@@ -35,6 +36,13 @@ interface TileSpec {
 export function createHomeScreen(host: HTMLElement, deps: HomeScreenDeps): Screen {
   const root = element('section', 'screen home-screen', host);
   root.setAttribute('aria-label', 'Home');
+
+  const settings = element('button', 'icon-button settings-button', root);
+  settings.type = 'button';
+  settings.setAttribute('aria-label', 'Settings');
+  // Gear icon (inline SVG: UI icons may be SVG, CLAUDE.md §4).
+  settings.innerHTML = `<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><g fill="currentColor"><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(0 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(45 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(90 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(135 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(180 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(225 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(270 12 12)"/><rect x="10.4" y="1.6" width="3.2" height="5" rx="0.6" transform="rotate(315 12 12)"/></g><circle cx="12" cy="12" r="5.6" fill="none" stroke="currentColor" stroke-width="3.6"/></svg>`;
+  settings.addEventListener('click', deps.onSettings);
 
   const header = element('header', 'home-header', root);
   element('p', 'kicker', header).textContent = 'Rift Duel';

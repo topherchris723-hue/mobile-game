@@ -6,6 +6,7 @@ import {
   PLAYER_PANEL_HEIGHT,
   STATIONS,
 } from '../config/duelPresentation';
+import { IMPACT } from '../config/feedback';
 import type { CardKind, FighterSpec, TypeId } from '../config/fighters';
 import { CHARACTER, SKY, TYPE_COLOR, WORLD } from '../config/palette';
 import { easeOutCubic, lerp } from '../core/math';
@@ -22,6 +23,14 @@ import { createTweenRunner } from './tweens';
  * game rules; the duel scene calls these methods as it plays back DuelEvents.
  */
 
+/** How hard a hit lands, chosen by the scene from the attack that caused it. */
+export interface HitImpact {
+  /** Signatures and Crossovers: longer hit-stop, bigger burst, screen shake. */
+  readonly heavy: boolean;
+  /** The attacker's type, which colours the spark burst. */
+  readonly type: TypeId;
+}
+
 export interface DuelView {
   readonly root: Container;
   /** `bottomReserved` = height of the player panel in logical units. */
@@ -32,7 +41,13 @@ export interface DuelView {
   reset(activePlayer: number, activeEnemy: number): void;
   render(timeSec: number, dtSec: number): void;
   attack(side: Side, kind: CardKind, type: TypeId): void;
-  hit(side: Side, amount: number, effectiveness: Effectiveness, guarded: boolean): void;
+  hit(
+    side: Side,
+    amount: number,
+    effectiveness: Effectiveness,
+    guarded: boolean,
+    impact: HitImpact,
+  ): void;
   heal(side: Side, amount: number): void;
   status(side: Side, status: 'focus' | 'guard' | 'sap'): void;
   charge(side: Side): void;
@@ -72,6 +87,8 @@ const BODY_HEIGHT = 390;
 /** Placeholder illustrations are baked at this resolution for crisp edges on 2× screens. */
 const BAKE_RESOLUTION = 2;
 const HIT_TINT = 0xff9a9a;
+/** Logical units per spark streak; tinted per hit. */
+const SPARK_LENGTH = 22;
 const STATUS_COLOR = {
   focus: TYPE_COLOR.radiant,
   guard: TYPE_COLOR.swift,
@@ -113,10 +130,19 @@ function bakeIllustration(renderer: Renderer, spec: FighterSpec): Sprite {
   return sprite;
 }
 
+interface Spark {
+  readonly shape: Graphics;
+  vx: number;
+  vy: number;
+  ageMs: number;
+}
+
 export function createDuelView(
   renderer: Renderer,
   teams: Record<Side, readonly FighterSpec[]>,
   emberCount: number,
+  /** Read on every effect so the Settings toggle applies mid-battle (CLAUDE.md §5). */
+  reduceMotion: () => boolean,
 ): DuelView {
   const root = new Container();
   const skyHolder = new Container();
@@ -127,8 +153,31 @@ export function createDuelView(
   const embers = createEmbers(emberCount, createRng(BATTLE_SEED ^ 0xe3be));
   const flash = new Graphics();
   flash.alpha = 0;
-  root.addChild(skyHolder, rift.root, groundHolder, fighterLayer, embers.root, fxLayer, flash);
+  // Shake moves only the action (fighters and effects), so the painted backdrop never shows an edge.
+  const actionLayer = new Container();
+  actionLayer.addChild(fighterLayer, fxLayer);
+  root.addChild(skyHolder, rift.root, groundHolder, actionLayer, embers.root, flash);
   const tweens = createTweenRunner();
+  let hitStopMs = 0;
+  let shakeMs = 0;
+  let shakeDurationMs = 1;
+  let shakeAmplitude = 0;
+  let shakeClock = 0;
+
+  // Spark pool: created once, recycled every hit (CLAUDE.md §7: no allocation per effect).
+  const sparkLayer = new Container();
+  fxLayer.addChild(sparkLayer);
+  const sparks: Spark[] = Array.from({ length: IMPACT.sparks.poolSize }, () => {
+    const shape = new Graphics()
+      .rect(-SPARK_LENGTH / 2, -2.5, SPARK_LENGTH, 5)
+      .fill({ color: 0xffffff });
+    shape.blendMode = 'add';
+    shape.visible = false;
+    sparkLayer.addChild(shape);
+    return { shape, vx: 0, vy: 0, ageMs: IMPACT.sparks.lifeMs };
+  });
+  let nextSpark = 0;
+  const sparkRng = createRng(BATTLE_SEED ^ 0x5a4c);
   let logicalHeight = 1;
   let panelHeight = PLAYER_PANEL_HEIGHT;
 
@@ -293,6 +342,58 @@ export function createDuelView(
     });
   };
 
+  const burst = (side: Side, color: number, count: number): void => {
+    const at = chest(side);
+    // Sparks fly away from the attacker.
+    const away = side === 'enemy' ? 1 : -1;
+    for (let i = 0; i < count; i++) {
+      const spark = sparks[nextSpark];
+      nextSpark = (nextSpark + 1) % sparks.length;
+      if (!spark) continue;
+      const angle = sparkRng.range(-1.1, 1.1) + (away > 0 ? 0 : Math.PI);
+      const speed = IMPACT.sparks.speed * sparkRng.range(0.45, 1);
+      spark.vx = Math.cos(angle) * speed;
+      spark.vy = Math.sin(angle) * speed - 120;
+      spark.ageMs = 0;
+      spark.shape.visible = true;
+      spark.shape.tint = i % 3 === 0 ? SKY.cloudLight : color;
+      spark.shape.position.set(at.x + sparkRng.range(-18, 18), at.y + sparkRng.range(-30, 30));
+      spark.shape.rotation = angle;
+      spark.shape.alpha = 1;
+    }
+  };
+
+  const updateSparks = (dtMs: number): void => {
+    const dt = dtMs / 1000;
+    const damping = Math.exp(-IMPACT.sparks.drag * dt);
+    for (const spark of sparks) {
+      if (!spark.shape.visible) continue;
+      spark.ageMs += dtMs;
+      if (spark.ageMs >= IMPACT.sparks.lifeMs) {
+        spark.shape.visible = false;
+        continue;
+      }
+      spark.vx *= damping;
+      spark.vy = spark.vy * damping + 900 * dt;
+      spark.shape.position.x += spark.vx * dt;
+      spark.shape.position.y += spark.vy * dt;
+      const life = spark.ageMs / IMPACT.sparks.lifeMs;
+      spark.shape.alpha = 1 - life;
+      spark.shape.scale.set(1 - life * 0.6, 1);
+    }
+  };
+
+  const impactPause = (ms: number): void => {
+    hitStopMs = Math.max(hitStopMs, ms);
+  };
+
+  const shake = (amplitude: number, durationMs: number): void => {
+    if (reduceMotion()) return;
+    shakeAmplitude = Math.max(shakeMs > 0 ? shakeAmplitude : 0, amplitude);
+    shakeDurationMs = durationMs;
+    shakeMs = durationMs;
+  };
+
   return {
     root,
 
@@ -340,10 +441,34 @@ export function createDuelView(
         placeHome(station);
       }
       flash.alpha = 0;
+      hitStopMs = 0;
+      shakeMs = 0;
+      actionLayer.position.set(0, 0);
+      for (const spark of sparks) spark.shape.visible = false;
     },
 
     render(timeSec, dtSec) {
-      tweens.update(dtSec * 1000);
+      let dtMs = dtSec * 1000;
+      // Hit-stop: battle animation holds for a beat on contact; ambient motion keeps going.
+      if (hitStopMs > 0) {
+        const held = Math.min(hitStopMs, dtMs);
+        hitStopMs -= held;
+        dtMs -= held;
+      }
+      tweens.update(dtMs);
+      updateSparks(dtMs);
+      if (shakeMs > 0) {
+        shakeMs = Math.max(0, shakeMs - dtSec * 1000);
+        shakeClock += dtSec;
+        const falloff = shakeMs / shakeDurationMs;
+        const amount = shakeAmplitude * falloff * falloff;
+        actionLayer.position.set(
+          Math.sin(shakeClock * 83) * amount,
+          Math.cos(shakeClock * 67) * amount * 0.6,
+        );
+      } else if (actionLayer.position.x !== 0 || actionLayer.position.y !== 0) {
+        actionLayer.position.set(0, 0);
+      }
       rift.update(timeSec);
       embers.update(dtSec, timeSec);
       const blendStep = Math.min(1, dtSec * 14);
@@ -375,7 +500,7 @@ export function createDuelView(
         projectile(side, color, 16, 300);
       } else if (kind === 'signature') {
         // One soft flash per Signature: well under the 3-per-second limit (CLAUDE.md §5).
-        tweens.add(260, (t) => (flash.alpha = Math.sin(t * Math.PI) * 0.28));
+        if (!reduceMotion()) tweens.add(260, (t) => (flash.alpha = Math.sin(t * Math.PI) * 0.28));
         ring(side, WORLD.nexus.dominant, 0.6, 1.8, 420);
         lunge(side, 0.6);
         projectile(side, color, 26, 320);
@@ -384,16 +509,29 @@ export function createDuelView(
       }
     },
 
-    hit(side, amount, effectiveness, guarded) {
+    hit(side, amount, effectiveness, guarded, impact) {
       const slot = activeSlot(side);
       const station = stations[side];
-      const push = side === 'player' ? -22 : 22;
-      tweens.add(300, (t) => {
+      const push = (side === 'player' ? -22 : 22) * (impact.heavy ? 1.6 : 1);
+      // The tint is set before the hit-stop, so the frozen frame shows the impact.
+      slot.sprite.tint = HIT_TINT;
+      tweens.add(impact.heavy ? 380 : 300, (t) => {
         const k = Math.sin(t * Math.PI);
         slot.holder.position.x = station.homeX + push * k;
-        // Two quick hit flashes over 300 ms.
-        slot.sprite.tint = t < 0.8 && Math.floor(t * 8) % 2 === 0 ? HIT_TINT : 0xffffff;
+        // One tint pulse per hit (CLAUDE.md §5 caps flashing at 3 per second).
+        slot.sprite.tint = t < 0.35 ? HIT_TINT : 0xffffff;
       });
+      if (guarded) {
+        burst(side, TYPE_COLOR.swift, IMPACT.sparks.normal);
+      } else {
+        burst(
+          side,
+          TYPE_COLOR[impact.type],
+          impact.heavy ? IMPACT.sparks.heavy : IMPACT.sparks.normal,
+        );
+      }
+      impactPause(impact.heavy ? IMPACT.hitStopMs.heavy : IMPACT.hitStopMs.normal);
+      if (impact.heavy) shake(IMPACT.shake.heavy.amplitude, IMPACT.shake.heavy.durationMs);
       const color =
         effectiveness === 'advantage'
           ? TYPE_COLOR.radiant
@@ -470,6 +608,8 @@ export function createDuelView(
         slot.holder.alpha = 1 - t;
       });
       floatText(side, 'K.O.', SKY.cloudLight, 70, 60);
+      impactPause(IMPACT.hitStopMs.ko);
+      shake(IMPACT.shake.ko.amplitude, IMPACT.shake.ko.durationMs);
     },
 
     crossover(side, partnerIndex, leadType, partnerType) {
@@ -501,7 +641,7 @@ export function createDuelView(
         },
       );
       // One soft flash per Crossover (CLAUDE.md §5).
-      tweens.add(320, (t) => (flash.alpha = Math.sin(t * Math.PI) * 0.32));
+      if (!reduceMotion()) tweens.add(320, (t) => (flash.alpha = Math.sin(t * Math.PI) * 0.32));
       ring(side, WORLD.nexus.dominant, 0.5, 2.2, 600);
       lunge(side, 0.5);
       projectile(side, TYPE_COLOR[leadType], 34, 420);

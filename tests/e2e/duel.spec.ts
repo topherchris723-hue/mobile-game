@@ -165,18 +165,18 @@ test('saving to 10 Rift Energy unlocks a Crossover Burst with a partner', async 
   await expect(ready.first()).toBeVisible();
   await expect(page.locator('.crossover')).toHaveClass(/is-ready/);
   await page.screenshot({ path: testInfo.outputPath('crossover-ready.png') });
-  // At 20× speed later banners replace the Crossover's name quickly, so record every banner shown.
+  // At 20× speed the cut-in is brief, so record every title it shows.
   await page.evaluate(() => {
-    const banner = document.querySelector('.turn-banner');
+    const title = document.querySelector('.cut-in-title');
     const seen: string[] = [];
     (window as unknown as { __banners: string[] }).__banners = seen;
-    if (banner) {
-      // Read every inserted text node: several banners can change within one frame.
+    if (title) {
+      // Read every inserted text node: the title can change within one frame.
       new MutationObserver((records) => {
         for (const record of records) {
           record.addedNodes.forEach((node) => seen.push(node.textContent ?? ''));
         }
-      }).observe(banner, { childList: true });
+      }).observe(title, { childList: true });
     }
   });
   await ready.first().tap();
@@ -188,5 +188,45 @@ test('saving to 10 Rift Energy unlocks a Crossover Burst with a partner', async 
   await expect
     .poll(() => page.evaluate(() => window.__sovereigns?.energy('player') ?? -1))
     .toBeLessThan(10);
+  expect(errors).toEqual([]);
+});
+
+test('the speed toggle switches to 2× and is remembered', async ({ page }) => {
+  await start(page, '?debug=1&speed=4');
+  const toggle = page.locator('.speed-button');
+  await expect(toggle).toHaveText('1×');
+  await toggle.tap();
+  await expect(toggle).toHaveText('2×');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await page.reload();
+  await start(page, '?debug=1&speed=4');
+  await expect(page.locator('.speed-button')).toHaveText('2×');
+});
+
+test('a Signature plays a cut-in with its name', async ({ page }) => {
+  test.setTimeout(180_000);
+  const errors = watchErrors(page);
+  await start(page, '?debug=1&speed=4');
+  const signature = page.locator(
+    '.player-panel .card[data-kind="signature"][aria-disabled="false"]',
+  );
+  // Charge until a Signature is both in hand and affordable.
+  for (let turn = 0; turn < 20 && (await signature.count()) === 0; turn++) {
+    await waitForPlayerTurn(page);
+    if ((await signature.count()) > 0) break;
+    const cheapest = page.locator('.player-panel .card[aria-disabled="false"]');
+    await endTurnWith(page, async () => {
+      // Spend cheap cards on early turns so the hand cycles, then save energy.
+      if (turn % 3 === 0 && (await cheapest.count()) > 0) await cheapest.last().tap();
+      else await page.locator('.charge-button').tap();
+    });
+  }
+  await waitForPlayerTurn(page);
+  const name = (await signature.first().locator('.card-name').textContent()) ?? '';
+  await signature.first().tap();
+  await expect(page.locator('.cut-in')).toHaveClass(/is-visible/);
+  await expect(page.locator('.cut-in-title')).toHaveText(name);
+  await expect(page.locator('.cut-in-kicker')).toHaveText('Signature');
+  await expect(page.locator('.cut-in')).not.toHaveClass(/is-visible/, { timeout: 10_000 });
   expect(errors).toEqual([]);
 });

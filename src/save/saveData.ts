@@ -5,7 +5,25 @@ import { DEFAULT_TEAM, findSovereign, STARTER_IDS } from '../config/sovereigns';
  * are unit-tested without touching browser storage.
  */
 
-export const SAVE_SCHEMA_VERSION = 1;
+export const SAVE_SCHEMA_VERSION = 2;
+
+export type BattleSpeed = 1 | 2;
+
+/** Player preferences (CLAUDE.md §11 accessibility). */
+export interface Settings {
+  sound: boolean;
+  haptics: boolean;
+  /** Disables screen shake and flashes (CLAUDE.md §5). */
+  reduceMotion: boolean;
+  battleSpeed: BattleSpeed;
+}
+
+export const DEFAULT_SETTINGS: Readonly<Settings> = {
+  sound: true,
+  haptics: true,
+  reduceMotion: false,
+  battleSpeed: 1,
+};
 
 export interface SaveData {
   readonly schemaVersion: typeof SAVE_SCHEMA_VERSION;
@@ -14,6 +32,7 @@ export interface SaveData {
   /** Battle team; slot 1 leads. Always three different owned Sovereigns. */
   team: [string, string, string];
   story: { clearedStages: string[] };
+  settings: Settings;
 }
 
 export type LoadStatus =
@@ -36,7 +55,10 @@ export interface LoadResult {
 
 /** Upgrades a save from version N to N+1. Add one entry per schema change; never edit old ones. */
 export type Migration = (data: Record<string, unknown>) => Record<string, unknown>;
-export const MIGRATIONS: Readonly<Record<number, Migration>> = {};
+export const MIGRATIONS: Readonly<Record<number, Migration>> = {
+  /** v1 → v2 (M4): settings added, with defaults. */
+  1: (data) => ({ ...data, settings: { ...DEFAULT_SETTINGS } }),
+};
 
 export function createDefaultSave(): SaveData {
   return {
@@ -44,6 +66,7 @@ export function createDefaultSave(): SaveData {
     ownedSovereigns: [...STARTER_IDS],
     team: [...DEFAULT_TEAM],
     story: { clearedStages: [] },
+    settings: { ...DEFAULT_SETTINGS },
   };
 }
 
@@ -88,6 +111,22 @@ function repair(raw: Record<string, unknown>, issues: string[]): SaveData {
   const story = isRecord(raw['story']) ? raw['story'] : {};
   const clearedStages = [...new Set(stringArray(story['clearedStages']))];
 
+  const rawSettings = isRecord(raw['settings']) ? raw['settings'] : {};
+  const flag = (key: 'sound' | 'haptics' | 'reduceMotion'): boolean => {
+    const value = rawSettings[key];
+    if (typeof value === 'boolean') return value;
+    issues.push(`Setting "${key}" reset to default`);
+    return DEFAULT_SETTINGS[key];
+  };
+  const speed = rawSettings['battleSpeed'];
+  const settings: Settings = {
+    sound: flag('sound'),
+    haptics: flag('haptics'),
+    reduceMotion: flag('reduceMotion'),
+    battleSpeed: speed === 1 || speed === 2 ? speed : DEFAULT_SETTINGS.battleSpeed,
+  };
+  if (speed !== settings.battleSpeed) issues.push('Battle speed reset to default');
+
   const [a, b, c] = team;
   if (a === undefined || b === undefined || c === undefined) {
     throw new Error('Repair produced an incomplete team');
@@ -97,6 +136,7 @@ function repair(raw: Record<string, unknown>, issues: string[]): SaveData {
     ownedSovereigns: owned,
     team: [a, b, c],
     story: { clearedStages },
+    settings,
   };
 }
 

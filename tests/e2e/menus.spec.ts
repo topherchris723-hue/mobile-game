@@ -121,3 +121,26 @@ test('story leads into a battle, and the result screen returns home', async ({ p
   if (won) await expect(tile(page, 'story')).toContainText('Prologue cleared');
   expect(errors).toEqual([]);
 });
+
+test('settings open from Home, apply, and are remembered', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootToHome(page, '');
+  await page.getByRole('button', { name: 'Settings' }).tap();
+  const motion = page.locator('[data-setting="reduceMotion"]');
+  await expect(motion).toHaveAttribute('aria-checked', 'false');
+  await motion.tap();
+  await expect(motion).toHaveAttribute('aria-checked', 'true');
+  await expect(page.locator('body')).toHaveAttribute('data-reduce-motion', 'true');
+  await page.locator('[data-setting="sound"]').tap();
+  await expect(page.locator('[data-setting="sound"]')).toHaveAttribute('aria-checked', 'false');
+  await expect(page.locator('.settings-build')).toContainText('Build');
+  await page.screenshot({ path: testInfo.outputPath('settings.png') });
+  await page.getByRole('button', { name: 'Done' }).tap();
+  await expect(page.locator('.settings-sheet')).toHaveCount(0);
+
+  await bootToHome(page, '');
+  await expect(page.locator('body')).toHaveAttribute('data-reduce-motion', 'true');
+  await page.getByRole('button', { name: 'Settings' }).tap();
+  await expect(page.locator('[data-setting="sound"]')).toHaveAttribute('aria-checked', 'false');
+  expect(errors).toEqual([]);
+});
