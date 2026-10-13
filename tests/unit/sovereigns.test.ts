@@ -4,6 +4,7 @@ import { createDuel } from '../../src/game/duel/rules';
 import { ENEMY_TEAM } from '../../src/config/fighters';
 import { BATTLE_RULES } from '../../src/config/battle';
 import { applyLeaderSkill, describeLeaderSkill } from '../../src/game/leader';
+import { NAMED_CROSSOVERS } from '../../src/config/crossovers';
 
 describe('roster', () => {
   it('has 15 Sovereigns, 5 per world, every type represented, unique ids', () => {
@@ -84,5 +85,23 @@ describe('leader skills', () => {
     expect(describeLeaderSkill(getSovereign('rhen').leaderSkill)).toBe(
       'Start each battle with +1 Rift Energy',
     );
+  });
+});
+
+describe('named Crossovers', () => {
+  it('only name real cross-world pairs, keyed in alphabetical order', () => {
+    for (const [key, name] of Object.entries(NAMED_CROSSOVERS)) {
+      const ids = key.split('+');
+      expect(ids, key).toHaveLength(2);
+      expect([...ids].sort(), key).toEqual(ids);
+      const [a, b] = ids.map((id) => getSovereign(id));
+      expect(a?.world, key).not.toBe(b?.world);
+      expect(name.length, key).toBeGreaterThan(0);
+    }
+  });
+
+  it('gives every name to exactly one pair', () => {
+    const names = Object.values(NAMED_CROSSOVERS);
+    expect(new Set(names).size).toBe(names.length);
   });
 });

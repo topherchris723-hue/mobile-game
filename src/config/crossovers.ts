@@ -7,6 +7,14 @@ export const NAMED_CROSSOVERS: Readonly<Record<string, string>> = {
   'kaien+maris': 'Sunbreak Riptide',
   'kaien+torvan': 'Ember Thornstorm',
   'maris+torvan': 'Tidal Bloom',
+  // Bonds from docs/design/characters.md.
+  'dravo+kaien': 'Stormfire Broadside',
+  'brakka+goro': 'Mountain Breaker',
+  'akari+vey': 'Black Gale',
+  'mei+solenne': 'Lotus Dawn',
+  'corrin+torvan': 'Lantern Grove',
+  'isla+shiro': 'Moonless Tide',
+  'nerys+rhen': 'Livewire Snare',
 };
 
 export function crossoverName(

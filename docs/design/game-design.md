@@ -153,6 +153,7 @@ Animations are short (≤ 1 s per action) and the enemy acts after a brief pause
   - _Limit Break_ — up to 4, each +10 to the cap, costing 10 / 20 / 40 shards (about two duplicates). A fully broken 3★ reaches Lv 70, a 5★ Lv 90.
   - Duplicate summons convert to **Shards**, so duplicates are always useful.
   - _Awaken_ (later) — 4★ → 5★ path for favourite characters.
+- **Character bible:** `characters.md` — the three worlds (the Emberreach, the Thousand Tides, the Five Provinces), every Sovereign's concept, look, kit, bonds, designed Passive, and the originality rules (genre tropes yes, specific characters never).
 - **Launch roster (built):** 15 Sovereigns in `src/config/sovereigns.ts` — 5 per world, all five types, rarities 3★–5★, each with a 6-card deck and a Leader Skill. Expandable through data files only.
 - **Starters:** new players own Kaien, Maris, Torvan (the default team), Brakka, Corrin, and Goro. The other nine are recruited through Summons (M6).
 - **Leader Skills** apply from team slot 1 to the whole battle: a stat boost for all allies or for allies of one world or type (e.g. "Energy realm allies +15% ATK"), or extra starting Rift Energy.

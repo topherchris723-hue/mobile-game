@@ -148,8 +148,9 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1100, atk: 215, def: 70, spd: 92 },
     cards: ['Ember Jab', 'Flare Shot', technique('Ember Focus', 'focus', 2), 'Sunbreak Fist'],
     leaderSkill: worldBoost('atk', 0.15, 'energy'),
+    // Lava-red tunic, not orange: keeps him clear of a famous hero's look (characters.md).
     look: {
-      outfit: E.dominant,
+      outfit: E.accent,
       legs: E.secondary,
       hair: 0x2a1d2e,
       hairStyle: 'spikes',
@@ -186,13 +187,14 @@ export const ROSTER: readonly SovereignSpec[] = [
     stats: { hp: 1170, atk: 172, def: 82, spd: 74 },
     cards: ['Magma Knuckle', 'Cinder Spray', technique('Basalt Wall', 'guard', 2), 'Caldera Crash'],
     leaderSkill: typeBoost('def', 0.2, 'fury'),
+    // Ember-orange vest, basalt-grey Hearthborn skin.
     look: {
-      outfit: E.accent,
+      outfit: E.dominant,
       legs: E.shadow,
-      hair: 0x4a2a20,
+      hair: 0x8a3b22,
       hairStyle: 'spikes',
       feature: 'coatTails',
-      skin: 0xd99a76,
+      skin: 0x9a8f96,
     },
   }),
   sovereign({

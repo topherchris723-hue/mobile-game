@@ -2,6 +2,8 @@
 
 Each milestone is playable from a URL on the phone and leaves `main` in a working state. Order may change only with a written reason.
 
+**Characters (owner, after M7):** the 15 Sovereigns are designed in `design/characters.md`. Next gameplay step on approval: implement their Passives; then Story chapter 1 (M8) can be written around them.
+
 **Order note (owner, M6):** Story waits until the real characters exist; levelling and Limit Break came first.
 
 **Order note (owner, M4):** finish everything gameplay-wise first, then do the GUI. Until then, new UI is kept functional and consistent with the existing tokens, and the full visual GUI pass (menus, HUD, iconography, motion polish) happens after the gameplay milestones, as part of the Onboarding and polish milestone.
