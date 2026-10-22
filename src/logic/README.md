@@ -120,6 +120,24 @@ Fighter = { slot, characterId, enemyId, name, aura, boss, hp, maxHp, atk, def, s
 tutorial flag), `writeSave(storage, save, nowMs)`. `storage` is `window.localStorage` in the browser.
 `validate` is an Ajv validator compiled from `data/schemas/save.schema.json`.
 
+`loadSave` returns `{ save, damaged, backupKey, repaired, warnings }`. When `characters` is passed it
+repairs the team **before** schema validation (GDD §13, BUG-2-04/05), so `save.team` is always 3 known,
+playable, owned fighters of distinct families:
+- team ids that are unknown in the data, not playable, not in the roster, repeated, or past slot 3 are dropped;
+- empty slots are refilled from `economy.starting.team`, then from the roster in order;
+- the roster is never changed (unknown roster entries stay, so a later data fix restores them);
+- the repaired save is written back; `repaired: true` and `warnings` = `[{ code, characterId }]`
+  (`team_unknown_id`, `team_not_playable`, `team_unowned`, `team_duplicate`, `team_extra`, `team_refilled`).
+  The UI may show a notice; it is not the "damaged" notice.
+- Two **different** owned fighters of one family, or a team that cannot reach 3, is still treated as damaged
+  (backup + fresh save).
+
+`repairTeam(save, charactersById, economy)` → `{ team, warnings, ok }` is the same check without side effects.
+
+`isStageUnlocked(save, stageId, stagesById)` → bool (GDD §9.1): a stage with no `unlock_requires` is always
+unlocked; any other unlocks when that stage's record has `cleared: true`. `stagesById` is `content.stages`
+from `createContent`. Unknown stage id → `false`.
+
 ## Headless runs
 
 `npm run sim -- --stage stage_003 --seed 1 --count 100 --player-tier fighter [--json]` runs AI vs AI with no renderer.

@@ -51,7 +51,7 @@ export function migrateSave(save) {
 export function checkTeamFamilies(save, characters) {
   const seen = [];
   for (const id of save.team) {
-    const ch = characters[id];
+    const ch = lookup(characters, id);
     if (!ch) continue; // unknown ids are ignored, not deleted (GDD §13)
     if (seen.indexOf(ch.family) >= 0) return false;
     seen.push(ch.family);
@@ -59,11 +59,94 @@ export function checkTeamFamilies(save, characters) {
   return true;
 }
 
+/** Own-property lookup in an id map (so ids like "constructor" never hit Object.prototype). */
+function lookup(map, id) {
+  if (!map || typeof id !== 'string') return undefined;
+  return Object.prototype.hasOwnProperty.call(map, id) ? map[id] : undefined;
+}
+
+/**
+ * Repair the team so it can always be fielded (GDD §13 team rule: 3 ids, distinct families, all owned;
+ * "IDs in the save that no longer exist in the data are ignored on load").
+ * Pure: does not change `save`. Returns { team, warnings, ok }.
+ *  - Keeps team members in their slot order if they exist in `characters`, are playable, are owned (in
+ *    the roster) and are not a repeat of an earlier slot. Anything else is dropped with a warning.
+ *  - Two different kept fighters of the same family is NOT repaired: ok = false (treated as damaged,
+ *    same as before this repair existed).
+ *  - Refills empty slots from economy.starting.team, then from the roster in roster order, using only
+ *    owned, playable, known fighters of a family not yet in the team.
+ *  - ok = false if 3 fighters cannot be found (the caller treats the save as damaged).
+ * Roster entries are never touched, so a later data fix restores an unknown fighter to the roster.
+ * Warning = { code, characterId }; codes: team_not_array, team_unknown_id, team_not_playable,
+ * team_unowned, team_duplicate, team_extra, team_refilled.
+ */
+export function repairTeam(save, characters, economy) {
+  const warnings = [];
+  const owned = {};
+  if (Array.isArray(save.roster)) {
+    for (const r of save.roster) {
+      if (r && typeof r.character_id === 'string') owned[r.character_id] = true;
+    }
+  }
+  const team = [];
+  const families = [];
+  if (!Array.isArray(save.team)) {
+    warnings.push({ code: 'team_not_array', characterId: null });
+    return { team: team, warnings: warnings, ok: false };
+  }
+  for (const id of save.team) {
+    const ch = lookup(characters, id);
+    if (!ch) {
+      warnings.push({ code: 'team_unknown_id', characterId: id });
+      continue;
+    }
+    if (ch.playable === false) {
+      warnings.push({ code: 'team_not_playable', characterId: id });
+      continue;
+    }
+    if (!lookup(owned, id)) {
+      warnings.push({ code: 'team_unowned', characterId: id });
+      continue;
+    }
+    if (team.indexOf(id) >= 0) {
+      warnings.push({ code: 'team_duplicate', characterId: id });
+      continue;
+    }
+    if (team.length >= 3) {
+      warnings.push({ code: 'team_extra', characterId: id }); // schema allows exactly 3 slots
+      continue;
+    }
+    if (families.indexOf(ch.family) >= 0) return { team: team, warnings: warnings, ok: false };
+    team.push(id);
+    families.push(ch.family);
+  }
+  const candidates = [];
+  const starters = economy && economy.starting && Array.isArray(economy.starting.team) ? economy.starting.team : [];
+  for (const id of starters) candidates.push(id);
+  if (Array.isArray(save.roster)) {
+    for (const r of save.roster) if (r && typeof r.character_id === 'string') candidates.push(r.character_id);
+  }
+  for (const id of candidates) {
+    if (team.length >= 3) break;
+    const ch = lookup(characters, id);
+    if (!ch || ch.playable === false || !lookup(owned, id)) continue;
+    if (team.indexOf(id) >= 0 || families.indexOf(ch.family) >= 0) continue;
+    team.push(id);
+    families.push(ch.family);
+    warnings.push({ code: 'team_refilled', characterId: id });
+  }
+  return { team: team, warnings: warnings, ok: team.length === 3 };
+}
+
 /**
  * Load the save from storage ({ getItem, setItem }). GDD §13 / AC-13.2:
  * missing → fresh; unparsable, schema-invalid or unknown version → backup raw text to
  * `game_save_corrupt_<unix_ms>`, start fresh and report `damaged: true` so Home can show the notice.
+ * If `characters` is given, the team is repaired first (see repairTeam): unknown, unowned or duplicate
+ * team ids are dropped and the team is refilled; the repaired save is written back and returned with
+ * `repaired: true` and the `warnings` list. A team that cannot be repaired counts as damaged.
  * opts = { validate(save) → bool, economy, characters?, nowMs }
+ * Returns { save, damaged, backupKey, repaired, warnings }.
  */
 export function loadSave(storage, opts) {
   const nowIso = new Date(opts.nowMs).toISOString();
@@ -71,7 +154,7 @@ export function loadSave(storage, opts) {
   if (raw === null || raw === undefined) {
     const fresh = createFreshSave(opts.economy, nowIso);
     storage.setItem(SAVE_KEY, JSON.stringify(fresh));
-    return { save: fresh, damaged: false, backupKey: null };
+    return { save: fresh, damaged: false, backupKey: null, repaired: false, warnings: [] };
   }
   let parsed = null;
   try {
@@ -80,6 +163,18 @@ export function loadSave(storage, opts) {
     parsed = null;
   }
   let save = parsed ? migrateSave(parsed) : null;
+  let warnings = [];
+  let repaired = false;
+  if (save && opts.characters && typeof save === 'object' && !Array.isArray(save)) {
+    const fix = repairTeam(save, opts.characters, opts.economy);
+    if (!fix.ok) {
+      save = null;
+    } else if (fix.warnings.length > 0) {
+      save.team = fix.team;
+      warnings = fix.warnings;
+      repaired = true;
+    }
+  }
   if (save && !opts.validate(save)) save = null;
   if (save && opts.characters && !checkTeamFamilies(save, opts.characters)) save = null;
   if (!save) {
@@ -87,9 +182,23 @@ export function loadSave(storage, opts) {
     storage.setItem(backupKey, raw);
     const fresh = createFreshSave(opts.economy, nowIso);
     storage.setItem(SAVE_KEY, JSON.stringify(fresh));
-    return { save: fresh, damaged: true, backupKey: backupKey };
+    return { save: fresh, damaged: true, backupKey: backupKey, repaired: false, warnings: [] };
   }
-  return { save: save, damaged: false, backupKey: null };
+  if (repaired) storage.setItem(SAVE_KEY, JSON.stringify(save));
+  return { save: save, damaged: false, backupKey: null, repaired: repaired, warnings: warnings };
+}
+
+/**
+ * GDD §9.1: is the stage unlocked for this save? Stage 1 (no `unlock_requires`) is always unlocked;
+ * any other stage unlocks when its `unlock_requires` stage is cleared. `data` = map stageId → stage
+ * (createContent(...).stages). Unknown stage id → false.
+ */
+export function isStageUnlocked(save, stageId, data) {
+  const stage = lookup(data, stageId);
+  if (!stage) return false;
+  if (!stage.unlock_requires) return true;
+  const rec = lookup(save.stages, stage.unlock_requires);
+  return !!(rec && rec.cleared === true);
 }
 
 /** Write the save (sets updated_at). */
