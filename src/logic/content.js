@@ -14,7 +14,8 @@ function byId(list) {
 
 /**
  * Build the content index from a data bundle:
- * { battle, characters, cards, enemies, stages, economy? } — the parsed data/*.json objects.
+ * { battle, characters, cards, enemies, stages, economy?, banners? } — the parsed data/*.json objects.
+ * `banners` (data/banners.json) is needed only for the summon logic (src/logic/summon.js).
  */
 export function createContent(bundle) {
   return {
@@ -24,6 +25,7 @@ export function createContent(bundle) {
     enemies: byId(bundle.enemies ? bundle.enemies.enemies : []),
     stages: byId(bundle.stages ? bundle.stages.stages : []),
     economy: bundle.economy || null,
+    banners: byId(bundle.banners ? bundle.banners.banners : []),
   };
 }
 

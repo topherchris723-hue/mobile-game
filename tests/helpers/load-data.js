@@ -39,5 +39,6 @@ export function loadBundle() {
     cards: d['cards.json'],
     enemies: d['enemies.json'],
     stages: d['stages.json'],
+    banners: d['banners.json'],
   };
 }

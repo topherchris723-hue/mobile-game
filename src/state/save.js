@@ -139,10 +139,84 @@ export function repairTeam(save, characters, economy) {
 }
 
 /**
+ * Every warning code loadSave can return (team repair, then summon repair). Re-exported from src/logic.
+ */
+export const SAVE_REPAIR_WARNING_CODES = [
+  'team_not_array', 'team_unknown_id', 'team_not_playable', 'team_unowned', 'team_duplicate', 'team_extra', 'team_refilled',
+  'summon_reset', 'summon_pity_reset', 'summon_pity_entry_dropped', 'summon_first_multi_reset',
+  'summon_first_multi_entry_dropped', 'summon_total_pulls_reset', 'summon_extra_field',
+];
+
+const PITY_GROUP_PATTERN = /^[a-z][a-z0-9_]*$/; // save.schema.json summon.pity propertyNames
+const BANNER_KEY_PATTERN = /^banner_[a-z0-9_]+$/; // save.schema.json summon.first_multi_done propertyNames
+const SUMMON_FIELDS = ['pity', 'first_multi_done', 'total_pulls'];
+
+/** A plain JSON object (not null, not an array). */
+function isPlainObject(v) {
+  return v !== null && typeof v === 'object' && !Array.isArray(v);
+}
+
+/** Non-negative whole number. */
+function isCount(v) {
+  return typeof v === 'number' && Math.floor(v) === v && v >= 0;
+}
+
+/**
+ * Repair the `summon` section (GDD §13, save.schema.json `summon`; hard rule L-gp-001) so a damaged or old
+ * section never resets the whole save. Pure: does not change `save`. Returns { summon, warnings }.
+ * Warning = { code, characterId: null, key }:
+ *  - summon_reset (key 'summon'): missing or not an object → { pity: {}, first_multi_done: {}, total_pulls: 0 }
+ *  - summon_extra_field (key = field): a field the schema does not allow is dropped
+ *  - summon_pity_reset (key 'pity'): pity missing / not an object → {}
+ *  - summon_pity_entry_dropped (key = group): bad group name or counter not a whole number ≥ 0 → dropped (= 0)
+ *  - summon_first_multi_reset (key 'first_multi_done'): missing / not an object → {}
+ *  - summon_first_multi_entry_dropped (key = banner): bad banner key or value not boolean → dropped (= not done)
+ *  - summon_total_pulls_reset (key 'total_pulls'): not a whole number ≥ 0 → 0
+ * Well-formed entries for unknown groups/banners are kept (GDD §13: ignored, not deleted). A counter above
+ * the banner's hard_pity is not changed here; the summon logic treats it as "pity reached".
+ */
+export function repairSummon(save) {
+  const warnings = [];
+  const warn = (code, key) => warnings.push({ code: code, characterId: null, key: key });
+  const src = save ? save.summon : undefined;
+  if (!isPlainObject(src)) {
+    warn('summon_reset', 'summon');
+    return { summon: { pity: {}, first_multi_done: {}, total_pulls: 0 }, warnings: warnings };
+  }
+  for (const k of Object.keys(src)) if (SUMMON_FIELDS.indexOf(k) < 0) warn('summon_extra_field', k);
+  const pity = {};
+  if (!isPlainObject(src.pity)) {
+    warn('summon_pity_reset', 'pity');
+  } else {
+    for (const k of Object.keys(src.pity)) {
+      const v = src.pity[k];
+      if (PITY_GROUP_PATTERN.test(k) && isCount(v)) pity[k] = v;
+      else warn('summon_pity_entry_dropped', k);
+    }
+  }
+  const done = {};
+  if (!isPlainObject(src.first_multi_done)) {
+    warn('summon_first_multi_reset', 'first_multi_done');
+  } else {
+    for (const k of Object.keys(src.first_multi_done)) {
+      const v = src.first_multi_done[k];
+      if (BANNER_KEY_PATTERN.test(k) && typeof v === 'boolean') done[k] = v;
+      else warn('summon_first_multi_entry_dropped', k);
+    }
+  }
+  let total = src.total_pulls;
+  if (!isCount(total)) {
+    warn('summon_total_pulls_reset', 'total_pulls');
+    total = 0;
+  }
+  return { summon: { pity: pity, first_multi_done: done, total_pulls: total }, warnings: warnings };
+}
+
+/**
  * Load the save from storage ({ getItem, setItem }). GDD §13 / AC-13.2:
  * missing → fresh; unparsable, schema-invalid or unknown version → backup raw text to
  * `game_save_corrupt_<unix_ms>`, start fresh and report `damaged: true` so Home can show the notice.
- * If `characters` is given, the team is repaired first (see repairTeam): unknown, unowned or duplicate
+ * The `summon` section is always repaired (see repairSummon). If `characters` is given, the team is repaired first (see repairTeam): unknown, unowned or duplicate
  * team ids are dropped and the team is refilled; the repaired save is written back and returned with
  * `repaired: true` and the `warnings` list. A team that cannot be repaired counts as damaged.
  * opts = { validate(save) → bool, economy, characters?, nowMs }
@@ -165,13 +239,21 @@ export function loadSave(storage, opts) {
   let save = parsed ? migrateSave(parsed) : null;
   let warnings = [];
   let repaired = false;
-  if (save && opts.characters && typeof save === 'object' && !Array.isArray(save)) {
+  if (save && opts.characters && isPlainObject(save)) {
     const fix = repairTeam(save, opts.characters, opts.economy);
     if (!fix.ok) {
       save = null;
     } else if (fix.warnings.length > 0) {
       save.team = fix.team;
       warnings = fix.warnings;
+      repaired = true;
+    }
+  }
+  if (save && isPlainObject(save)) {
+    const sfix = repairSummon(save);
+    if (sfix.warnings.length > 0) {
+      save.summon = sfix.summon;
+      warnings = warnings.concat(sfix.warnings);
       repaired = true;
     }
   }
