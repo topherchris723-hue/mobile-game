@@ -588,6 +588,14 @@ export class BattleScene extends BaseScene {
       }
     }
     if (this.tutLayer && this.tutLayer.visible && this.tutRect) out.push(this.tutRect);
+    for (const c of [this.introC, this.introFading]) {
+      if (!c || !c.list) continue;
+      for (const o of c.list) {
+        if (o.type !== 'Text') continue;
+        const b = o.getBounds();
+        out.push({ x: b.x, y: b.y, w: b.width, h: b.height });
+      }
+    }
     return out;
   }
 
@@ -769,7 +777,16 @@ export class BattleScene extends BaseScene {
     if (!this.introC) return;
     const c = this.introC;
     this.introC = null;
-    this.tweens.add({ targets: c, alpha: 0, duration: 200, onComplete: () => c.destroy() });
+    this.introFading = c; // still on screen for 200 ms: floating texts keep clear of it
+    this.tweens.add({
+      targets: c,
+      alpha: 0,
+      duration: 200,
+      onComplete: () => {
+        if (this.introFading === c) this.introFading = null;
+        c.destroy();
+      },
+    });
   }
 
   showCinematic(kind, e, st) {
