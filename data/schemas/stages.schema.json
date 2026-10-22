@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/stages.schema.json",
+  "title": "Stages (data/stages.json)",
+  "description": "Story chapters and stages. GDD §9.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "chapters", "stages"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "chapters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "order"],
+        "properties": {
+          "id": { "$ref": "#/$defs/chapterId" },
+          "name": { "type": "string", "minLength": 1, "maxLength": 32 },
+          "order": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/stage" }
+    }
+  },
+  "$defs": {
+    "chapterId": { "type": "string", "pattern": "^chapter_[0-9]{2}$" },
+    "stageId": { "type": "string", "pattern": "^stage_[0-9]{3}$" },
+    "sceneId": { "type": "string", "pattern": "^scene_[a-z0-9_]+$" },
+    "assetKey": { "type": "string", "pattern": "^(por|spr|bg|bgm|sfx|vfx|ico|art)_[a-z0-9_]+$" },
+    "reward": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "currency_id", "amount"],
+          "properties": {
+            "type": { "const": "currency" },
+            "currency_id": { "type": "string", "pattern": "^cur_[a-z0-9_]+$" },
+            "amount": { "type": "integer", "minimum": 1, "maximum": 100000 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "character_id"],
+          "properties": {
+            "type": { "const": "character" },
+            "character_id": { "type": "string", "pattern": "^char_[a-z][a-z0-9]*_[0-9]{3}$" }
+          }
+        }
+      ]
+    },
+    "mission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "text", "reward"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^mission_[0-9]{3}_[a-z]$" },
+        "type": {
+          "enum": ["win", "no_ko", "time_under_s", "use_tri_burst", "use_ignition", "perfect_slips_at_least", "max_chain_at_least"]
+        },
+        "value": { "type": "integer", "minimum": 1, "maximum": 300 },
+        "text": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "reward": { "$ref": "#/$defs/reward" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "enum": ["time_under_s", "perfect_slips_at_least", "max_chain_at_least"] } } },
+          "then": { "required": ["value"] }
+        }
+      ]
+    },
+    "tutorialStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trigger", "text", "required_action"],
+      "properties": {
+        "trigger": {
+          "enum": ["battle_start", "enemy_windup", "card_playable", "vigor_full", "chain_possible", "tag_ready", "ignition_ready", "burst_ready"]
+        },
+        "text": { "type": "string", "minLength": 1, "maxLength": 90 },
+        "required_action": {
+          "enum": ["play_card", "slip", "dash_forward", "dash_back", "tag", "ignite", "tri_burst", "none"]
+        }
+      }
+    },
+    "stage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "chapter_id", "order", "name", "description", "enemy_team", "timer_s",
+        "recommended_power", "unlock_requires", "background", "bgm", "story", "rewards", "missions"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/stageId" },
+        "chapter_id": { "$ref": "#/$defs/chapterId" },
+        "order": { "type": "integer", "minimum": 1 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "description": { "type": "string", "maxLength": 120 },
+        "enemy_team": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": { "type": "string", "pattern": "^enemy_[a-z0-9]+(_[a-z0-9]+)*_[0-9]{3}$" }
+        },
+        "timer_s": { "type": "integer", "minimum": 60, "maximum": 300 },
+        "recommended_power": { "type": "integer", "minimum": 0 },
+        "unlock_requires": { "oneOf": [{ "$ref": "#/$defs/stageId" }, { "type": "null" }] },
+        "background": { "$ref": "#/$defs/assetKey" },
+        "bgm": { "$ref": "#/$defs/assetKey" },
+        "story": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pre", "post"],
+          "properties": {
+            "pre": { "oneOf": [{ "$ref": "#/$defs/sceneId" }, { "type": "null" }] },
+            "post": { "oneOf": [{ "$ref": "#/$defs/sceneId" }, { "type": "null" }] }
+          }
+        },
+        "rewards": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["first_clear", "repeat_clear"],
+          "properties": {
+            "first_clear": { "type": "array", "items": { "$ref": "#/$defs/reward" } },
+            "repeat_clear": { "type": "array", "items": { "$ref": "#/$defs/reward" } }
+          }
+        },
+        "missions": { "type": "array", "maxItems": 3, "items": { "$ref": "#/$defs/mission" } },
+        "tutorial_steps": { "type": "array", "maxItems": 12, "items": { "$ref": "#/$defs/tutorialStep" } }
+      }
+    }
+  }
+}

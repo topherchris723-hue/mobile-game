@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/save.schema.json",
+  "title": "Player save (local storage key 'game_save')",
+  "description": "Runtime progression data, not shipped content. GDD §13.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "created_at", "updated_at", "currencies", "roster", "team", "stages", "summon", "settings", "tutorial"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "currencies": {
+      "type": "object",
+      "propertyNames": { "pattern": "^cur_[a-z0-9_]+$" },
+      "additionalProperties": { "type": "integer", "minimum": 0 }
+    },
+    "roster": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["character_id", "resonance", "obtained_at"],
+        "properties": {
+          "character_id": { "$ref": "#/$defs/charId" },
+          "resonance": { "type": "integer", "minimum": 0, "maximum": 10 },
+          "obtained_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "team": {
+      "description": "3 owned fighters of distinct families (checked in code).",
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/charId" }
+    },
+    "stages": {
+      "type": "object",
+      "propertyNames": { "pattern": "^stage_[0-9]{3}$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cleared", "clears", "best_time_s", "missions_completed"],
+        "properties": {
+          "cleared": { "type": "boolean" },
+          "clears": { "type": "integer", "minimum": 0 },
+          "best_time_s": { "oneOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+          "missions_completed": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^mission_[0-9]{3}_[a-z]$" }
+          }
+        }
+      }
+    },
+    "summon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pity", "first_multi_done", "total_pulls"],
+      "properties": {
+        "pity": {
+          "description": "pity group -> pulls since last 5-star.",
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "first_multi_done": {
+          "type": "object",
+          "propertyNames": { "pattern": "^banner_[a-z0-9_]+$" },
+          "additionalProperties": { "type": "boolean" }
+        },
+        "total_pulls": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bgm_volume", "sfx_volume", "haptics"],
+      "properties": {
+        "bgm_volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "sfx_volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "haptics": { "type": "boolean" }
+      }
+    },
+    "tutorial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed"],
+      "properties": {
+        "completed": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": {
+    "charId": { "type": "string", "pattern": "^char_[a-z][a-z0-9]*_[0-9]{3}$" }
+  }
+}

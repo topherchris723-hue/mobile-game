@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/banners.schema.json",
+  "title": "Summon banners (data/banners.json)",
+  "description": "Gacha banners. Soft currency only. Rates in basis points (10000 = 100%). GDD §11. Sum/pool checks in GDD §15.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "banners"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "banners": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/banner" }
+    }
+  },
+  "$defs": {
+    "charId": { "type": "string", "pattern": "^char_[a-z][a-z0-9]*_[0-9]{3}$" },
+    "assetKey": { "type": "string", "pattern": "^(por|spr|bg|bgm|sfx|vfx|ico|art)_[a-z0-9_]+$" },
+    "bp": { "type": "integer", "minimum": 0, "maximum": 10000 },
+    "banner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "name", "description", "currency_id", "cost_single", "cost_multi", "multi_count",
+        "rates_bp", "pool", "featured", "pity", "multi_min_rarity", "art", "start_at", "end_at"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^banner_[a-z0-9]+(_[a-z0-9]+)*_[0-9]{3}$" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "description": { "type": "string", "maxLength": 120 },
+        "currency_id": {
+          "description": "Must be a soft currency. Real money is not allowed in the prototype.",
+          "type": "string",
+          "pattern": "^cur_[a-z0-9_]+$"
+        },
+        "cost_single": { "type": "integer", "minimum": 1 },
+        "cost_multi": { "type": "integer", "minimum": 1 },
+        "multi_count": { "type": "integer", "const": 10 },
+        "rates_bp": {
+          "description": "Keys are rarities. Must sum to exactly 10000 (validate-data).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["3", "4", "5"],
+          "properties": {
+            "3": { "$ref": "#/$defs/bp" },
+            "4": { "$ref": "#/$defs/bp" },
+            "5": { "$ref": "#/$defs/bp" }
+          }
+        },
+        "pool": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/charId" }
+        },
+        "featured": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["character_id", "share_bp"],
+            "properties": {
+              "character_id": { "$ref": "#/$defs/charId" },
+              "share_bp": {
+                "description": "Share of this fighter's rarity rate, in bp of that rarity (5000 = half).",
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              }
+            }
+          }
+        },
+        "pity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["group", "hard_pity"],
+          "properties": {
+            "group": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "Banners in the same group share a pity counter." },
+            "hard_pity": { "type": "integer", "minimum": 10, "maximum": 200 }
+          }
+        },
+        "multi_min_rarity": {
+          "description": "Pull 10 of a x10 is at least this rarity if pulls 1-9 were all lower.",
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 5
+        },
+        "first_multi_min_rarity": {
+          "description": "Optional: the player's first x10 on this banner contains at least one of this rarity.",
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 5
+        },
+        "art": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["banner"],
+          "properties": {
+            "banner": { "$ref": "#/$defs/assetKey" },
+            "background": { "$ref": "#/$defs/assetKey" }
+          }
+        },
+        "start_at": { "description": "ISO 8601 or null = always open.", "oneOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }] },
+        "end_at": { "description": "ISO 8601 or null = never closes.", "oneOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }] }
+      }
+    }
+  }
+}
