@@ -1,0 +1,19 @@
+{
+  "name": "rule4-rates-not-10000",
+  "file": "banners.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "banners",
+        0,
+        "rates_bp",
+        "3"
+      ],
+      "value": 7999
+    }
+  ],
+  "expect": {
+    "errorRule": "4-banner"
+  }
+}

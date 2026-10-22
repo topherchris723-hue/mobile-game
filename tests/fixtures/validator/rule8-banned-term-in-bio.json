@@ -1,0 +1,18 @@
+{
+  "name": "rule8-banned-term-in-bio",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "bio"
+      ],
+      "value": "A runaway who learned Limit Break from nobody."
+    }
+  ],
+  "expect": {
+    "errorRule": "7-banned-terms"
+  }
+}

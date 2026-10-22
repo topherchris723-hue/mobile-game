@@ -1,0 +1,27 @@
+{
+  "name": "rule3-deck-too-small",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "deck"
+      ],
+      "value": [
+        {
+          "card_id": "card_tavi_spark_jab",
+          "count": 2
+        },
+        {
+          "card_id": "card_tavi_redline_hook",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "errorRule": "3-deck"
+  }
+}

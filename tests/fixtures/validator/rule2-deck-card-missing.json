@@ -1,0 +1,20 @@
+{
+  "name": "rule2-deck-card-missing",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "deck",
+        0,
+        "card_id"
+      ],
+      "value": "card_tavi_no_such_card"
+    }
+  ],
+  "expect": {
+    "errorRule": "2-references"
+  }
+}

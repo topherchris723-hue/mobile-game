@@ -1,0 +1,21 @@
+{
+  "name": "warning-stand-as-power",
+  "file": "story.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "scenes",
+        0,
+        "lines",
+        0,
+        "text"
+      ],
+      "value": "Her Stand rose behind her."
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": "7-banned-terms"
+  }
+}

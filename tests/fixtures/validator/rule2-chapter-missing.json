@@ -1,0 +1,18 @@
+{
+  "name": "rule2-chapter-missing",
+  "file": "stages.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "stages",
+        0,
+        "chapter_id"
+      ],
+      "value": "chapter_99"
+    }
+  ],
+  "expect": {
+    "errorRule": "2-references"
+  }
+}
