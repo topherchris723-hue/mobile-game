@@ -3,8 +3,8 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** 1 — Design complete; next is Phase 2 (Build)
-- **Round:** 1
+- **Phase:** 2 — Build (in progress)
+- **Round:** 2
 - **Core battle loop passed QA:** no
 - **Last release verdict:** none
 - **Unity port started:** no
@@ -31,6 +31,22 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 2 — Build (plan)
+- **Goal:** First build. Project setup, committed data validator, battle engine core,
+  portrait battle screen shell, then QA loop.
+- **Agents:** gameplay-programmer → ui-developer → qa-tester (loop ≤5) → team-coach.
+  Sequential, not parallel: the UI needs the project setup and the logic API first.
+- **Tasks:**
+  - gameplay-programmer: `package.json` (Vite, Phaser 3 pinned, Vitest, Ajv), `npm run
+    validate-data` (schema + GDD §15.3 + §3 banned terms, with negative fixtures),
+    `src/logic/` battle core per GDD §5.0–5.5 (seeded sim, states, arena, Vigor,
+    hand/deck, hits, damage) then as far as §5.6–5.10 fits, a headless battle runner,
+    Vitest tests mapped to GDD AC IDs. Assigned this round: `package.json`, configs,
+    `scripts/`, `tests/`.
+  - ui-developer: `index.html`, Phaser boot, portrait battle scene shell driven by the
+    logic API (placeholder shapes, HUD, hand of cards, swipe/tap input) at 360×640+.
+  - qa-tester: test, play headlessly, check layouts, write `reports/qa/round-2.md`.
 
 ### Round 1 — Design (result)
 - **Result:** Phase 1 complete. `docs/GDD.md` (§1–§16, content sections READY) with 5 title
