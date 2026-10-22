@@ -530,6 +530,8 @@ export class BattleScene extends BaseScene {
       this.smallFlash(t('battle_no_vigor'));
     } else if (e.reason === 'cooldown') {
       this.smallFlash(t('battle_cooldown'));
+    } else if (e.reason === 'not_now' && (inp.type === 'ignite' || inp.type === 'tri_burst') && this.battle.getState().triBurstLock) {
+      this.smallFlash(t('battle_tri_burst_lock'));
     }
   }
 

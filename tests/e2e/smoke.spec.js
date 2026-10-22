@@ -593,3 +593,34 @@ test('BUG-2-06: stage list rows never overlap (all stages cleared)', async ({ pa
   await shot(page, testInfo, '26-story-all-cleared');
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('Tri-Burst lock (GDD §5.0): IGNITE is greyed while a rush runs', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 1);
+  await startStage(page, 'stage_002');
+  await page.evaluate(() => {
+    const b = window.__TEST__.game.scene.getScene('Battle').battle;
+    const t = b.teams.player;
+    t.burst = 100;
+    t.fighters[t.active].ign.available = true;
+  });
+  await page.waitForFunction(() => window.__TEST__.battleState().teams.player.burstReady, null, { timeout: 10000 });
+  await page.evaluate(() => {
+    const T = window.__TEST__;
+    T.lockSeen = null;
+    const sc = T.game.scene.getScene('Battle');
+    const loop = () => {
+      const st = T.battleState();
+      if (st && st.triBurstLock && !T.lockSeen) T.lockSeen = { igniteAlpha: sc.hud.igniteText.alpha, igniteVisible: sc.hud.igniteVisible };
+      if (!T.lockSeen && T.sceneKey === 'Battle') requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  });
+  await tap(page, 'tri_burst');
+  await page.waitForFunction(() => !!window.__TEST__.lockSeen, null, { timeout: 5000 });
+  const seen = await page.evaluate(() => window.__TEST__.lockSeen);
+  console.log('lock seen:', JSON.stringify(seen));
+  expect(seen.igniteVisible).toBe(true);
+  expect(seen.igniteAlpha).toBeLessThan(1);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

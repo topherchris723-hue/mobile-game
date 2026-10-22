@@ -89,6 +89,7 @@
     "result_reason_timeout": "Time up",
     "result_reason_retreat": "Retreated",
     "result_reason_double_ko": "Both teams went down together",
+    "battle_tri_burst_lock": "Wait — Tri-Burst in progress!",
     "back_icon": "◀",
     "pause_icon": "II",
     "battle_tri_burst_button": "TRI\nBURST",

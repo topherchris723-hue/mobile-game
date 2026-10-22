@@ -55,3 +55,16 @@ describe('UI string keys for logic/data enums', () => {
     expect(miss).toEqual([]);
   });
 });
+
+describe('literal string keys used by the UI', () => {
+  it("every t('key') literal in src/scenes and src/ui exists in strings.json", () => {
+    const miss = [];
+    for (const dir of ['src/scenes', 'src/ui']) {
+      for (const f of fs.readdirSync(path.join(ROOT, dir)).filter((x) => x.endsWith('.js') && x !== 'strings.js')) {
+        const src = fs.readFileSync(path.join(ROOT, dir, f), 'utf8');
+        for (const m of src.matchAll(/\bt\('([a-z0-9_]+)'\s*[,)]/g)) if (!keys.has(m[1])) miss.push(dir + '/' + f + ': ' + m[1]);
+      }
+    }
+    expect(miss).toEqual([]);
+  });
+});
