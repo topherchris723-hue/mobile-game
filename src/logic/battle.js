@@ -148,6 +148,7 @@ export class Battle {
       riposteHeld: false,
       buffered: null,
       inFlight: [],              // projectile cards still flying after their thrower was hit
+      rush: null,                // this team's Tri-Burst rush action while it is in progress (GDD §5.10)
       chain: { active: false, cards: 0, hits: 0 },
       stats: { perfectSlips: 0, maxChain: 0, kos: 0, usedTriBurst: false, usedIgnition: false, cardsPlayed: 0 },
     };
@@ -178,6 +179,22 @@ export class Battle {
     if (now < f.invulnUntil) return true;
     if (f.action && f.action.kind === 'tri_burst') return true;
     return false;
+  }
+
+  /**
+   * Is the fighter armored right now? (GDD §5.5 round 2: approach, Windup and Active of an `armor: true`
+   * card, not its Recovery; and during its own Tri-Burst rush.)
+   */
+  isArmored(f) {
+    const a = f.action;
+    if (!a || !a.armor) return false;
+    if (a.kind === 'tri_burst') return true;
+    return a.phase === 'approach' || a.phase === 'windup' || a.phase === 'active';
+  }
+
+  /** Tri-Burst lock (GDD §5.0 round 2, BUG-2-08): true while either side's Tri-Burst rush is in progress. */
+  triBurstLocked() {
+    return this.teams.player.rush !== null || this.teams.enemy.rush !== null;
   }
 
   /** Effective ATK (GDD §5.11): base × ignition × buff factor. */
@@ -330,6 +347,7 @@ export class Battle {
   igniteMode(side) {
     const f = this.activeFighter(side);
     if (this.phase !== 'fight' || this.result || f.ko) return { ok: false, reason: 'not_now' };
+    if (this.triBurstLocked()) return { ok: false, reason: 'not_now' }; // no Ignition during any rush (§5.0)
     if (!f.def.ignition || f.ign.used || !f.ign.available) return { ok: false, reason: 'unavailable' };
     const st = f.state;
     const okState = st === S.Idle || st === S.Dashing || st === S.Windup || st === S.Active || st === S.Recovery || st === S.Hitstun;
@@ -343,6 +361,7 @@ export class Battle {
     const t = this.teams[side];
     const f = this.activeFighter(side);
     if (this.phase !== 'fight' || this.result || f.ko) return { ok: false, reason: 'not_now' };
+    if (this.triBurstLocked()) return { ok: false, reason: 'not_now' }; // a rush is in progress (§5.0 lock)
     if (t.burstUsed || t.burst < this.rules.burst.max) return { ok: false, reason: 'gauge' };
     if (!(f.state === S.Idle || f.state === S.Dashing || (f.state === S.Recovery && f.linkWindow))) return { ok: false, reason: 'state' };
     return { ok: true };
@@ -593,8 +612,41 @@ export class Battle {
     f.dash = null;
     f.linkWindow = false;
     f.state = S.Active;
-    f.action = { kind: 'tri_burst', phase: 'rush', startTick: this.tick, rushEnd: this.tick + R.burst.rushTicks, armor: true, cardId: null };
+    f.action = { kind: 'tri_burst', phase: 'rush', startTick: this.tick, rushEnd: this.tick + R.burst.rushTicks, armor: true, cardId: null, startX: t.x };
+    t.rush = f.action;
     this.emit({ type: 'tri_burst_start', side: side });
+  }
+
+  /**
+   * A Tri-Burst rush that did not land: the gauge is refunded `whiff_refund_pct`, Tri-Burst is not used,
+   * and the attacker is Idle at its rush-start x (GDD §5.10). reason: 'invulnerable' or 'safety_net'.
+   */
+  whiffTriBurst(side, reason) {
+    const R = this.rules;
+    const t = this.teams[side];
+    const rush = t.rush;
+    t.rush = null;
+    t.burst = roundGauge(R.burst.max * R.burst.whiffRefundPct);
+    if (t.burst >= R.burst.max) this.emit({ type: 'burst_ready', side: side });
+    const f = this.activeFighter(side);
+    if (rush && f.action === rush) {
+      this.setIdle(f);
+      t.x = this.clampX(side, rush.startX);
+    }
+    this.emit({ type: 'tri_burst_whiff', side: side, burst: t.burst, reason: reason });
+  }
+
+  /**
+   * Safety net (GDD §5.10 round 2): a rush that ended without landing or whiffing counts as a whiff.
+   * Nothing in today's rules can do that; this guards future rule changes.
+   */
+  checkRushSafetyNet() {
+    for (const side of SIDES) {
+      const t = this.teams[side];
+      if (!t.rush) continue;
+      const f = this.activeFighter(side);
+      if (f.action !== t.rush || f.ko || this.tick > t.rush.rushEnd) this.whiffTriBurst(side, 'safety_net');
+    }
   }
 
   // ------------------------------------------------------------------ card effects (GDD §5.13)
@@ -681,6 +733,7 @@ export class Battle {
     this.resolveHits();
     // 6. KO
     this.checkKos();
+    this.checkRushSafetyNet();
     // 7. win / lose / timer
     this.checkEnd();
     this.tick += 1;
@@ -920,7 +973,9 @@ export class Battle {
       }
       p.landed = true;
       p.defenderInHitstun = d.state === S.Hitstun;
-      const chainContinues = attackerTeam.chain.active && p.defenderInHitstun;
+      p.defArmored = this.isArmored(d);
+      // A hit on an armored fighter never starts or extends a chain (GDD §5.5 round 2).
+      const chainContinues = attackerTeam.chain.active && p.defenderInHitstun && !p.defArmored;
       p.chainIndex = chainContinues ? attackerTeam.chain.cards + 1 : 1;
       const critRate = Math.min(f.def.critRate, R.damage.critCap);
       p.crit = !a.isTagStrike && this.rng.next() < critRate;
@@ -929,6 +984,7 @@ export class Battle {
     } else {
       if (!a.landed) return p; // the first hit decided the whole card
       p.landed = true;
+      p.defArmored = this.isArmored(d);
       p.crit = a.critMult > 1;
       p.critMult = a.critMult;
       p.comboMult = a.comboMult;
@@ -985,10 +1041,7 @@ export class Battle {
     const d = p.d;
     if (!p.landed) {
       if (p.kind === 'tri_burst') {
-        at.burst = roundGauge(R.burst.max * R.burst.whiffRefundPct);
-        if (at.burst >= R.burst.max) this.emit({ type: 'burst_ready', side: side });
-        this.setIdle(p.f);
-        this.emit({ type: 'tri_burst_whiff', side: side, burst: at.burst });
+        this.whiffTriBurst(side, 'invulnerable');
       } else if (p.hitIndex === 0) {
         p.a.landed = false;
         this.emit({ type: 'whiff', side: side, cardId: p.a.cardId, reason: 'invulnerable' });
@@ -1004,6 +1057,7 @@ export class Battle {
     if (p.kind === 'tri_burst') {
       at.burstUsed = true;
       at.burst = 0;
+      at.rush = null;
       at.stats.usedTriBurst = true;
       this.snapToMelee(side);
       this.freezes.push({ kind: 'tri_burst', ticksLeft: R.burst.cinematicTicks, side: side });
@@ -1013,8 +1067,19 @@ export class Battle {
         this.emit({ type: 'tri_burst_hit', side: side, memberSlot: p.members[i], damage: p.damages[i], targetSlot: d.slot, hpAfter: d.hp });
       }
       this.setIdle(p.f);
-      // Assumption (not in GDD): the target of a landed Tri-Burst is knocked down (push + getup).
-      if (!(d.action && d.action.armor)) this.knockdown(dSide, d);
+      // GDD §5.10 round 2: the target's card (armored or not, no refund) and its projectiles in flight are
+      // cancelled, chains on both sides end, and unless the hits KO it the target is knocked down.
+      if (d.action) {
+        this.emit({ type: 'card_cancelled', side: dSide, cardId: d.action.cardId || d.action.kind, reason: 'tri_burst' });
+      }
+      d.action = null;
+      d.dash = null;
+      d.linkWindow = false;
+      dt.buffered = null;
+      dt.inFlight = [];
+      this.endChain(at, 'tri_burst');
+      this.endChain(dt, 'tri_burst');
+      if (d.hp > 0) this.knockdown(dSide, d);
       return 0;
     }
 
@@ -1027,7 +1092,9 @@ export class Battle {
       a.critMult = p.critMult;
       a.comboMult = p.comboMult;
       const c = at.chain;
-      if (p.chainIndex === 1) {
+      if (p.defArmored) {
+        this.endChain(at, 'armor'); // no chain is open after a hit on an armored fighter (GDD §5.5)
+      } else if (p.chainIndex === 1) {
         this.endChain(at, 'restart');
         c.active = true;
         c.cards = 1;
@@ -1040,7 +1107,7 @@ export class Battle {
     }
     const hitsNow = p.damages.length;
     for (let i = 0; i < hitsNow; i++) {
-      at.chain.hits += 1;
+      if (at.chain.active) at.chain.hits += 1;
       this.dealDamage(side, d, p.damages[i]);
       this.emit({
         type: 'hit', side: side, cardId: a.cardId, cardType: card.type, targetSlot: d.slot,
@@ -1050,8 +1117,7 @@ export class Battle {
     }
     a.nextHit += hitsNow;
     // Defender reaction: armor keeps going (GDD §5.5), otherwise hitstun + interrupt + knockback.
-    const defenderArmored = d.action && d.action.armor && (d.action.phase === 'approach' || d.action.phase === 'windup' || d.action.phase === 'active' || d.action.kind === 'tri_burst');
-    if (!defenderArmored) {
+    if (!p.defArmored) {
       if (d.action && d.action.kind === 'card') {
         const da = d.action;
         if (da.phase === 'approach' || da.phase === 'windup') {
@@ -1096,7 +1162,7 @@ export class Battle {
     this.addBurst(t, R.slip.perfectBurstGain);
     t.riposteTicks = R.riposte.windowTicks;
     t.stats.perfectSlips += 1;
-    this.emit({ type: 'perfect_slip', side: side, slot: f.slot });
+    this.emit({ type: 'perfect_slip', side: side, slot: f.slot, slipStart: f.slip.start });
   }
 
   knockdown(side, d) {
@@ -1119,7 +1185,8 @@ export class Battle {
     const a = p.a;
     const t = this.teams[side];
     if (a.detached) {
-      if (a.nextHit >= a.hitTicks.length) t.inFlight.splice(t.inFlight.indexOf(a), 1);
+      const idx = t.inFlight.indexOf(a);
+      if (a.nextHit >= a.hitTicks.length && idx >= 0) t.inFlight.splice(idx, 1);
       return;
     }
     if (f.action !== a) return; // the card was cancelled this tick (trade into hitstun)
@@ -1330,6 +1397,7 @@ export class Battle {
       freeze: fr ? { kind: fr.kind, ticksLeft: fr.ticksLeft, side: fr.side } : null,
       distance: this.distance(),
       arenaWidth: R.arena.width,
+      triBurstLock: this.triBurstLocked(), // IGNITE and the opponent's TRI-BURST are greyed (GDD §5.0)
       result: this.result ? JSON.parse(JSON.stringify(this.result)) : null,
       teams: teams,
     };

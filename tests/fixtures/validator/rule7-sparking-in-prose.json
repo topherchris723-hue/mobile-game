@@ -1,0 +1,20 @@
+{
+  "name": "rule7-sparking-in-prose",
+  "file": "story.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "scenes",
+        0,
+        "lines",
+        0,
+        "text"
+      ],
+      "value": "Her aura was Sparking."
+    }
+  ],
+  "expect": {
+    "errorRule": "7-banned-terms"
+  }
+}

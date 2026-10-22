@@ -49,6 +49,17 @@ describe('§12 / §13 save data', () => {
     expect(s.version).toBe(1);
     expect(validate(s)).toBe(true);
   });
+  it('AC-13.3: a fresh save has settings exactly { bgm 1.0, sfx 1.0, haptics true }, tutorial not completed, empty summon/stages', () => {
+    const s = createFreshSave(economy, NOW_ISO);
+    expect(s.settings).toStrictEqual({ bgm_volume: 1.0, sfx_volume: 1.0, haptics: true });
+    expect(s.tutorial).toStrictEqual({ completed: false });
+    expect(s.summon).toStrictEqual({ pity: {}, first_multi_done: {}, total_pulls: 0 });
+    expect(s.stages).toStrictEqual({});
+    // a missing save also starts with these defaults
+    const r = loadSave(memoryStorage(), { validate, economy, characters, nowMs: NOW });
+    expect(r.save.settings).toStrictEqual({ bgm_volume: 1.0, sfx_volume: 1.0, haptics: true });
+    expect(r.save.tutorial.completed).toBe(false);
+  });
   it('AC-13.2: garbage in game_save → fresh save plus a backup key, no crash', () => {
     for (const garbage of ['{not json', '[]', '{"version": 99}', JSON.stringify({ version: 1, hello: 1 })]) {
       const st = memoryStorage();

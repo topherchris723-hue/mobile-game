@@ -64,8 +64,33 @@ export function parseBannedTerms(gddText) {
   if (terms.length < 20) throw new Error('GDD §3: banned-term list suspiciously short (' + terms.length + ')');
   const errorTerms = terms.filter((t) => warningTerms.indexOf(t) < 0);
   const warns = terms.filter((t) => warningTerms.indexOf(t) >= 0);
-  return { errorTerms: errorTerms, warningTerms: warns };
+  return { errorTerms: errorTerms, warningTerms: warns, nameOnlyTerms: parseNameOnlyTerms(gddText) };
 }
+
+/**
+ * Parse the GDD §3 "Name-only banned terms" list (§15.3 rule 9): the backticked words in the first
+ * sentence of that paragraph, e.g. `Spark` and `Sparks`. Throws if the paragraph is missing, so the
+ * check fails closed.
+ */
+export function parseNameOnlyTerms(gddText) {
+  const start = gddText.indexOf('**Name-only banned terms');
+  if (start < 0) throw new Error('GDD §3: "**Name-only banned terms" paragraph not found');
+  const para = gddText.slice(start, start + 2000);
+  const head = para.indexOf('**', 2);
+  const end = para.indexOf('are banned', head);
+  if (head < 0 || end < 0) throw new Error('GDD §3: name-only banned-term list could not be parsed');
+  const quoted = para.slice(head + 2, end).match(/`([^`]+)`/g) || [];
+  const terms = [];
+  for (const q of quoted) {
+    const t = q.replace(/`/g, '').trim().toLowerCase();
+    if (t.length > 0 && terms.indexOf(t) < 0) terms.push(t);
+  }
+  if (terms.length === 0) throw new Error('GDD §3: name-only banned-term list is empty');
+  return terms;
+}
+
+// GDD §15.3 rule 9: fields that are names (checked at any depth, in every data file).
+export const NAME_FIELDS = ['name', 'name_override', 'epithet'];
 
 function escapeRegex(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -75,6 +100,19 @@ function escapeRegex(s) {
 function termRegex(term) {
   const words = term.split(/\s+/).map(escapeRegex).join('[\\s_-]+');
   return new RegExp('(^|[^a-z0-9])(' + words + ')(?=$|[^a-z0-9])', 'i');
+}
+
+/** Visit every string value stored under a key in `keys` (any depth), calling fn(path, string). */
+function walkNamedStrings(value, path, keys, fn) {
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) walkNamedStrings(value[i], path + '[' + i + ']', keys, fn);
+  } else if (value && typeof value === 'object') {
+    for (const k of Object.keys(value)) {
+      const v = value[k];
+      if (keys.indexOf(k) >= 0 && typeof v === 'string') fn(path + '.' + k, v);
+      else walkNamedStrings(v, path + '.' + k, keys, fn);
+    }
+  }
 }
 
 /** Visit every string value in a JSON value, calling fn(path, string). */
@@ -323,6 +361,20 @@ export function validateDataset(data, schemas, banned, extraFiles) {
         }
         for (const r of warnRes) {
           if (r.re.test(s)) warn('7-banned-terms', entry.file, path, 'context-dependent term "' + r.term + '" (banned only as a power/form/mechanic name) — human review: ' + s.slice(0, 80));
+        }
+      });
+    }
+  }
+
+  // ---- Rule 9: name-only banned terms (GDD §3 "Spark"/"Sparks") in name, name_override and epithet ----
+  if (banned && Array.isArray(banned.nameOnlyTerms)) {
+    const nameRes = banned.nameOnlyTerms.map((t) => ({ term: t, re: termRegex(t) }));
+    for (const entry of DATA_FILES) {
+      const doc = data[entry.file];
+      if (doc === undefined) continue;
+      walkNamedStrings(doc, '', NAME_FIELDS, (path, s) => {
+        for (const r of nameRes) {
+          if (r.re.test(s)) err('9-name-only-terms', entry.file, path, 'name-only banned term "' + r.term + '" in a name field: ' + s.slice(0, 80));
         }
       });
     }

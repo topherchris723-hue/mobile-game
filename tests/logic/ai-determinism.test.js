@@ -70,6 +70,11 @@ describe('§5.15 AI (1,000 seeded headless battles per tier, stage_003, scripted
   let slipsChecked = 0;
   let rookiePerfect = 0;
   let rookieBurst = 0;
+  let approachTimeouts = 0;
+  let perfectPlans = 0;
+  let normalPlans = 0;
+  const slipPlanErrors = [];
+  let normalRollPerfect = 0;
   for (const tier of TIERS) {
     let wins = 0;
     for (let seed = 1; seed <= N; seed++) {
@@ -77,8 +82,11 @@ describe('§5.15 AI (1,000 seeded headless battles per tier, stage_003, scripted
         content, stageId: 'stage_003', playerTeam: TEAM,
         playerController: { aiTier: 'fighter' }, enemyController: { aiTier: tier }, skipIntro: true,
       }, seed);
+      const perfectStarts = { player: {}, enemy: {} };
       while (!b.getResult()) {
         for (const e of b.step()) {
+          if (e.type === 'whiff' && e.reason === 'approach_timeout') approachTimeouts++;
+          if (e.type === 'perfect_slip') perfectStarts[e.side][e.slipStart] = true;
           if (e.type === 'input_rejected') rejected++;
           if (tier === 'rookie' && e.side === 'enemy' && e.type === 'perfect_slip') rookiePerfect++;
           if (tier === 'rookie' && e.side === 'enemy' && e.type === 'tri_burst_start') rookieBurst++;
@@ -88,6 +96,18 @@ describe('§5.15 AI (1,000 seeded headless battles per tier, stage_003, scripted
         for (const s of b.controllers[side].slipLog) {
           slipsChecked++;
           if (s.slipTick - s.windupStart < s.reactionTicks) earlySlips++;
+          // AC-5.15.5: perfect roll → firstHit − 6 (or its decision tick if later); normal roll → firstHit − 15
+          // (or later), never ≤ 9 ticks before the hit, and never a perfect_slip. `planTick` is the decision
+          // tick, or the tick the AI re-planned because the predicted hit tick moved (its own dash).
+          const planned = Math.max(s.firstHit - s.offset, s.planTick);
+          if (s.perfectRoll) {
+            perfectPlans++;
+            if (s.offset !== 6 || s.slipTick !== planned) slipPlanErrors.push(s);
+          } else {
+            normalPlans++;
+            if (s.offset !== 15 || s.slipTick !== planned || s.firstHit - s.slipTick <= 9) slipPlanErrors.push(s);
+            if (perfectStarts[side][s.slipTick]) normalRollPerfect++;
+          }
         }
       }
       if (b.getResult().outcome === 'win') wins++;
@@ -105,6 +125,15 @@ describe('§5.15 AI (1,000 seeded headless battles per tier, stage_003, scripted
   it('AC-5.15.3: a rookie never Perfect Slips and never uses Tri-Burst', () => {
     expect(rookiePerfect).toBe(0);
     expect(rookieBurst).toBe(0);
+  });
+  it('AC-5.1.5 (default data): 0 approach_timeout whiffs in the headless battles', () => {
+    expect(approachTimeouts).toBe(0);
+  });
+  it('AC-5.15.5: AI slips start 6 (perfect roll) or 15 (normal roll) ticks before the hit, or at the decision tick if later; normal rolls never ≤ 9 ticks before and never Perfect', () => {
+    expect(perfectPlans).toBeGreaterThan(50);
+    expect(normalPlans).toBeGreaterThan(50);
+    expect(slipPlanErrors).toEqual([]);
+    expect(normalRollPerfect).toBe(0);
   });
   it('AC-5.15.4: the AI never starts a Slip earlier than reaction_s after the windup start it dodges', () => {
     expect(slipsChecked).toBeGreaterThan(100);

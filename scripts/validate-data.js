@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // `npm run validate-data` — validates data/*.json against data/schemas (Ajv, JSON Schema 2020-12),
-// the GDD §15.3 cross-file rules 1–8 and the GDD §3 banned-term list (read from docs/GDD.md).
+// the GDD §15.3 cross-file rules 1–9 and the GDD §3 banned-term lists (read from docs/GDD.md).
 // Usage: node scripts/validate-data.js [--data-dir <dir>] [--gdd <path>]
 // Exit code 0 = no errors (warnings allowed), 1 = errors found, 2 = could not run.
 
@@ -52,7 +52,8 @@ function main() {
   const errors = parseErrors.concat(result.errors);
 
   console.log('Banned terms from GDD §3: ' + banned.errorTerms.length + ' error terms, ' +
-    banned.warningTerms.length + ' warning terms (' + banned.warningTerms.join(', ') + ')');
+    banned.warningTerms.length + ' warning terms (' + banned.warningTerms.join(', ') + '), name-only terms (' +
+    banned.nameOnlyTerms.join(', ') + ')');
   for (const w of result.warnings) console.log('WARN  [' + w.rule + '] ' + w.file + ' ' + w.path + ': ' + w.message);
   for (const e of errors) console.log('ERROR [' + e.rule + '] ' + e.file + ' ' + e.path + ': ' + e.message);
   console.log('');

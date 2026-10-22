@@ -15,10 +15,12 @@ describe('GDD §5.11 damage formula', () => {
     expect(hit).toBe(546);
     expect(hit * 2).toBe(1092);
   });
-  it('AC-5.11.2: power 0.01 against DEF 3,000 deals 1 (minimum), never 0', () => {
-    // The AC gives no ATK. Raw damage must be < 1 for the clamp to matter: ATK 400 × 0.01 × 0.8 × 0.25 = 0.8.
-    const p = { atk: 400, power: 0.01, hits: 1, typeMult: 0.8, critMult: 1, comboMult: 1, riposteMult: 1, def: 3000 };
+  it('AC-5.11.2 (rewritten): ATK 300, power 0.01, 1 hit, all mults 1.0, DEF 3,000 → raw 0.75 → floor 0 → clamped to 1, never 0', () => {
+    const p = { atk: 300, power: 0.01, hits: 1, typeMult: 1.0, critMult: 1, comboMult: 1, riposteMult: 1, def: 3000 };
+    expect(F.defFactor(3000, R.damage.defConstant)).toBe(0.25);
     expect(F.hitDamage(p, R.damage)).toBe(1);
+    // At ATK 1,000 the same inputs give 2.5 → 2 (does not test the minimum).
+    expect(F.hitDamage({ ...p, atk: 1000 }, R.damage)).toBe(2);
     // Even ATK 1 against DEF 3,000 never deals 0.
     expect(F.hitDamage({ atk: 1, power: 0.01, hits: 10, typeMult: 0.8, critMult: 1, comboMult: 1, riposteMult: 1, def: 3000 }, R.damage)).toBe(1);
   });

@@ -22,7 +22,8 @@ export class AiController {
     this.pendingCombo = false;
     this.pendingRiposte = false;
     this.lastEventCount = 0;
-    this.slipLog = [];         // [{ slipTick, windupStart }] for AC-5.15.4 checks
+    this.slipLog = [];         // [{ slipTick, windupStart, perfectRoll, firstHit, decisionTick }] for AC-5.15.4/5.15.5
+    this.plan = null;          // the current planned slip (roll result and predicted hit tick)
   }
 
   /** The tier parameters in effect right now. */
@@ -117,13 +118,34 @@ export class AiController {
         return null;
       }
       this.plannedSlipAt = Math.max(at, now);
+      this.plan = { perfectRoll: perfect, firstHit: firstHit, decisionTick: now, planTick: now, offset: offset };
+    } else if (this.plannedSlipAt >= 0 && this.plan) {
+      // Re-plan if the predicted hit tick moved (e.g. our own dash changed a projectile's travel time),
+      // so the slip still starts `offset` ticks before the hit and a normal roll never becomes Perfect.
+      const firstHit = this.predictFirstHit(w);
+      if (firstHit !== this.plan.firstHit) {
+        const SL = b.rules.slip;
+        const at = firstHit - this.plan.offset;
+        this.plan.firstHit = firstHit;
+        this.plan.planTick = now;
+        if (!this.plan.perfectRoll && firstHit - Math.max(at, now) <= SL.perfectTicks) {
+          this.watched = null;
+          this.plannedSlipAt = -1;
+          return null;
+        }
+        this.plannedSlipAt = Math.max(at, now);
+      }
     }
     if (this.plannedSlipAt >= 0 && now >= this.plannedSlipAt) {
       this.plannedSlipAt = -1;
       const windupStart = w.windupStart;
       this.watched = null;
       if (b.slipMode(this.side).ok && !b.slipMode(this.side).isBreak) {
-        this.slipLog.push({ slipTick: now, windupStart: windupStart, reactionTicks: tier.reactionTicks });
+        const plan = this.plan || {};
+        this.slipLog.push({
+          slipTick: now, windupStart: windupStart, reactionTicks: tier.reactionTicks,
+          perfectRoll: plan.perfectRoll, firstHit: plan.firstHit, decisionTick: plan.decisionTick, planTick: plan.planTick, offset: plan.offset,
+        });
         return { type: 'slip' };
       }
     }
@@ -150,11 +172,13 @@ export class AiController {
       const m = b.slipMode(this.side);
       if (m.ok && m.isBreak && this.rng.next() < tier.breakSlipChance) return [{ type: 'slip' }];
     }
+    // Rules 2 and 3 are skipped while a Tri-Burst rush is in progress (GDD §5.0 Tri-Burst lock, §5.15).
+    const locked = b.triBurstLocked();
     // 2. Ignite
-    if (b.igniteMode(this.side).ok && now - me.ign.availableAt >= tier.igniteDelayTicks) return [{ type: 'ignite' }];
+    if (!locked && b.igniteMode(this.side).ok && now - me.ign.availableAt >= tier.igniteDelayTicks) return [{ type: 'ignite' }];
     if (me.state === 'Hitstun') return [];
     // 3. Tri-Burst
-    if (tier.usesBurst && b.triBurstMode(this.side).ok) return [{ type: 'tri_burst' }];
+    if (!locked && tier.usesBurst && b.triBurstMode(this.side).ok) return [{ type: 'tri_burst' }];
     // 4. Tag when low
     if (me.hp < tier.tagHpPct * me.def.maxHp) {
       let best = -1;

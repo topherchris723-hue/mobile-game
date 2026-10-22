@@ -7,7 +7,7 @@ import { missionsMet } from '../logic/missions.js';
 export const SAVE_KEY = 'game_save';
 export const SAVE_VERSION = 1;
 
-// Defaults for settings (GDD §14: haptics on by default). Volumes are not specified in the GDD.
+// Fresh-save settings defaults (GDD §13 round 2, AC-13.3; §14 haptics on by default).
 const DEFAULT_SETTINGS = { bgm_volume: 1, sfx_volume: 1, haptics: true };
 
 /**

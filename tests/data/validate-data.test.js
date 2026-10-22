@@ -34,6 +34,25 @@ describe('validate-data: banned terms come from GDD §3', () => {
     expect(banned.errorTerms).not.toContain('stand');
     expect(banned.warningTerms.sort()).toEqual(['hollow', 'stand']);
     expect(banned.errorTerms.length).toBeGreaterThanOrEqual(38);
+    // round 2 additions to §3
+    expect(banned.errorTerms).toContain('legends limited');
+    expect(banned.errorTerms).toContain('legendary finish');
+    expect(banned.errorTerms).toContain('sparking');
+  });
+  it('parses the §3 name-only list (rule 9): spark and sparks, not in the everywhere list', () => {
+    expect(banned.nameOnlyTerms.sort()).toEqual(['spark', 'sparks']);
+    expect(banned.errorTerms).not.toContain('spark');
+    expect(banned.errorTerms).not.toContain('sparks');
+  });
+  it('fails closed when the name-only paragraph is missing', () => {
+    const gdd = loadGdd().replace('**Name-only banned terms', '**Other terms');
+    expect(() => parseBannedTerms(gdd)).toThrow();
+  });
+  it('rule 9 checks name_override (enemies) at any depth', () => {
+    const data = loadAllData();
+    data['enemies.json'].enemies[0].name_override = 'Sparks';
+    const r = validateDataset(data, schemas, banned, []);
+    expect(r.errors.filter((e) => e.rule === '9-name-only-terms').map((e) => e.path)).toEqual(['.enemies[0].name_override']);
   });
   it('throws (fails closed) when the GDD paragraph is missing', () => {
     expect(() => parseBannedTerms('# no list here')).toThrow();
@@ -49,9 +68,9 @@ describe('validate-data: current data passes', () => {
 
 describe('validate-data: negative fixtures (each must FAIL its rule)', () => {
   const files = fs.readdirSync(FIXTURE_DIR).filter((f) => f.endsWith('.json')).sort();
-  it('has at least one fixture per rule 1–8 plus schema', () => {
+  it('has at least one fixture per rule 1–9 plus schema', () => {
     const all = files.map((f) => JSON.parse(fs.readFileSync(path.join(FIXTURE_DIR, f), 'utf8')).name).join(' ');
-    for (const tag of ['schema', 'rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6', 'rule7', 'rule8']) {
+    for (const tag of ['schema', 'rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6', 'rule7', 'rule8', 'rule9']) {
       expect(all).toContain(tag);
     }
   });
