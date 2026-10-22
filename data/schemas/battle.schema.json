@@ -188,6 +188,14 @@
     },
     "intro_s": { "description": "Default 2.0.", "type": "number", "minimum": 0, "maximum": 5 },
     "tutorial_slowmo": { "description": "Default 0.3.", "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+    "tutorial_prompt_max_s": {
+      "description": "Optional (round 3). Cap: a tutorial prompt closes after this many seconds of shown time (pause excluded). Default 20 if absent. GDD §9.4, AC-9.4.3.",
+      "type": "number", "minimum": 5, "maximum": 60, "default": 20
+    },
+    "tutorial_none_s": {
+      "description": "Optional (round 3). Shown time of a tutorial step with required_action 'none'. Default 3.0 if absent. GDD §9.4, AC-9.4.7.",
+      "type": "number", "minimum": 1, "maximum": 10, "default": 3.0
+    },
     "type_chart": {
       "description": "type_chart[attacker][defender] = multiplier. All 25 pairs required.",
       "type": "object",

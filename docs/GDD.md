@@ -1,6 +1,6 @@
 # Game Design Document — Milestone 1 (Battle + Summon)
 
-Owner: game-designer. Round 1, updated round 2 (QA fix loop 1: rules marked "round 2"). Source of truth for rules; `docs/GAME_BRIEF.md` overrides this file.
+Owner: game-designer. Round 1, updated round 2 (QA fix loop 1: rules marked "round 2") and round 3 (rules marked "round 3"). Source of truth for rules; `docs/GAME_BRIEF.md` overrides this file.
 
 Status legend: `DRAFT` = still being decided, do not build. `READY` = fully specified, can be built.
 `BUILT` = implemented and passed QA.
@@ -12,7 +12,7 @@ The numbers in this document are the default values for that data.
 
 ## 0. Contents
 
-1. Working title options — DRAFT (owner picks)
+1. Working title — READY (Jade Tempest; trademark check pending)
 2. Vision, pillars, first 30 seconds — READY
 3. Glossary and banned terms — READY
 4. Milestone scope and screen flow — READY
@@ -27,24 +27,34 @@ The numbers in this document are the default values for that data.
 13. Progression and save data — READY
 14. Mobile UX and layout — READY
 15. Data files, schemas, ID conventions — READY
-16. Open questions for the owner — DRAFT
+16. Open questions for the owner — READY (all decided round 3; the owner delegated them to the Producer)
 
 ---
 
-## 1. Working title options — DRAFT
+## 1. Working title — READY (round 3)
 
-The owner picks one. No title uses franchise words or echoes (no "Dragon", "Ball", "Z", "Legends",
-"Saiyan", "Piece", "Treasure", "Dokkan", "Rising"). A quick web search found no existing game with
-these names, but compliance-checker must run a proper trademark check before release.
-("Overpeak" was dropped because a game with that name is already in development.)
+**Working title: Jade Tempest.** Chosen in round 3 by the Producer (the owner delegated the decision, see
+`docs/STATUS.md` → "Decisions made without the owner"). It ties into the game's only currency (Jade) and the
+storm-of-power tone. Pitch: *A storm of martial artists fights for the Jade Throne in fast, card-powered real-time duels.*
 
-| # | Title | One-line pitch |
-|---|---|---|
-| 1 | **Jade Tempest** | A storm of martial artists fights for the Jade Throne in fast, card-powered real-time duels. |
-| 2 | **Meridian Burst** | Channel your fighters' inner energy lines into tag-team combos and one three-fighter finishing blast. |
-| 3 | **Heavenbreak** | Train three fighters, ignite their hidden forms and hit so hard the sky cracks open. |
-| 4 | **Thunderclap Trio** | Three fighters, one hand of cards, and attacks loud enough to shake the arena. |
-| 5 | **Ironroar** | A roaring tournament of fist-fighters and energy-blasters where every comeback ends in a scream. |
+- **Trademark check: PENDING.** compliance-checker must run a proper trademark/store-name check before any release.
+  Until that check passes, "Jade Tempest" is a working title only (title screen, Home, docs), not a store name.
+  If it fails, the Producer picks the next option below and only the title string changes (no rule depends on it).
+- The title contains no §3 banned term and no "Spark"/"Sparks" (§3 name-only rule). A round-1 web search found no
+  existing game with this name; that is not a trademark check.
+- No title uses franchise words or echoes (no "Dragon", "Ball", "Z", "Legends", "Saiyan", "Piece", "Treasure",
+  "Dokkan", "Rising"). ("Overpeak" was dropped in round 1 because a game with that name is already in development.)
+
+| # | Title | Status | One-line pitch |
+|---|---|---|---|
+| 1 | **Jade Tempest** | **chosen** (trademark check pending) | A storm of martial artists fights for the Jade Throne in fast, card-powered real-time duels. |
+| 2 | Meridian Burst | not chosen (fallback 1) | Channel your fighters' inner energy lines into tag-team combos and one three-fighter finishing blast. |
+| 3 | Heavenbreak | not chosen | Train three fighters, ignite their hidden forms and hit so hard the sky cracks open. |
+| 4 | Thunderclap Trio | not chosen | Three fighters, one hand of cards, and attacks loud enough to shake the arena. |
+| 5 | Ironroar | not chosen | A roaring tournament of fist-fighters and energy-blasters where every comeback ends in a scream. |
+
+- AC-1.1: The title screen shows exactly "Jade Tempest" (from the strings file, not hardcoded in a scene). A grep of
+  `src/` and `data/` for the 4 not-chosen titles finds 0 player-visible uses.
 
 ---
 
@@ -166,6 +176,18 @@ Acceptance:
   the **intro** or **pause** are dropped (they do nothing, ever).
 - **Same-tick order between sides:** in step 1 the player's inputs are applied before the enemy's; AI decisions
   (step 2) come after both. So when both sides act on the same tick, the player's action happens first.
+- **Counting convention for per-tick values (round 3).** This is the one place the convention is defined; every AC with
+  a tick count follows it and names its first and last counted tick.
+  - "Value **before**" an input applied on tick T = the value at the end of tick T − 1. "Value **after**" an event on
+    tick T = the value at the end of tick T (after step 7).
+  - Continuous per-tick changes (Vigor regen, Ignition regen bonus) happen in step 3 of **every** unfrozen tick,
+    including the tick an input was applied on. So between an input applied on tick `t0` (step 1) and an event on tick
+    `th` (step 5), regen runs on ticks `t0 … th` inclusive = `th − t0 + 1` ticks. First counted tick `t0`, last `th`.
+  - A **state that lasts N ticks** and is set in step 5 of tick H (Hitstun `hitstun_s`, Knockdown getup) holds on
+    ticks H … H + N − 1 and ends in step 3 of tick H + N (it is checked there, before movement and hits). Example:
+    a hit with `hitstun_s` 0.6 (36 ticks) on tick H → the defender is in Hitstun at step 5 of ticks H+1 … H+35 and
+    `Idle` from tick H+36. A card whose first hit lands on H+35 continues the chain; one landing on H+36 does not.
+  - Windows and invulnerability that state their own tick ranges (Slip §5.6, Tri-Burst rush §5.10) use those ranges.
 - AC-5.0.1: A Slip input made during a hitstop is applied on the first unfrozen tick after it (the `slip` event has
   that tick). A card tap made during an Ignition cinematic plays no card, before or after the cinematic.
 
@@ -384,10 +406,14 @@ safe but can be seen coming.
 - Only one Riposte per window. The window closes once a card is played or after 0.8 s.
 
 **Acceptance**
-- AC-5.6.1: A Slip started 6 ticks before a hit: no damage, a Riposte window opens, and the Slip's net Vigor effect is 0
-  (Vigor after = Vigor before + regen over those ticks, e.g. 5.0 → 5.1 after 6 ticks at 1.0/s).
-- AC-5.6.2: A Slip started 15 ticks before a hit: no damage, no Riposte window, and Vigor after = Vigor before − 2 +
-  regen (e.g. 5.0 → 3.25 after 15 ticks).
+- AC-5.6.1 (round 3, example corrected): Slip applied on tick `t0`, hit scheduled on `th = t0 + 6`, no other Vigor
+  change, no freezes, regen 1.0/s (`battle.vigor.regen_per_s`), Vigor before = 5.0 (end of tick t0 − 1): no damage, a
+  Riposte window opens on `th`, and the Slip's net Vigor effect is 0. Vigor after (end of tick `th`, §5.0 counting
+  convention) = 5.0 − 2 (step 1 of t0) + 2 (Perfect refund, step 5 of th) + regen on ticks t0 … t0+6 (first counted t0,
+  last counted th; 7 ticks × 1/60) = 5 + 7/60 = **5.1167** (exactly 5.11666…; test with tolerance 1e-6).
+- AC-5.6.2 (round 3, example corrected): same setup with `th = t0 + 15`: no damage, no Riposte window, and Vigor after
+  (end of tick th) = 5.0 − 2 + regen on ticks t0 … t0+15 (first counted t0, last counted th; 16 ticks × 1/60)
+  = 3 + 16/60 = **3.2667** (exactly 3.26666…; tolerance 1e-6).
 - AC-5.6.3: A Slip started 25 ticks before a hit: the hit lands (outside the 21-tick i-frames).
 - AC-5.6.4: A Riposte Fist with power 1.2 deals exactly 1.25× the damage of the same Fist without Riposte
   (same seed, no crit) and costs 0.
@@ -408,6 +434,22 @@ safe but can be seen coming.
   buffered tap is dropped.
 - A **chain** continues while every new card's first hit lands while the defender is still in Hitstun.
   `chain_index` = the card's position in the chain (1, 2, 3…). The **hit counter** shows the total landed hits.
+- **`chain_index`, exact (round 3 ruling).** A chain belongs to the attacking **team** (not the fighter), so it carries
+  across a Tag. Each team has `chain_open` (bool, false at battle start) and `chain_cards` (int, 0 at battle start).
+  `chain_index` is **1-based** and is decided once per card (or Tag Strike), on the tick its first hit lands, from the
+  state at the start of step 5:
+  - if `chain_open` and the defender is in `Hitstun` and the defender is not armored → `chain_index = chain_cards + 1`;
+  - otherwise → `chain_index = 1` (a new chain opens; on an armored defender no chain opens, §5.5).
+  - Then `chain_cards = chain_index` and `chain_open = true` (except on an armored defender).
+  - **Reset** (`chain_open = false`, `chain_cards = 0`) when: the defender is not in Hitstun at step 3 of a tick (left
+    hitstun), Knockdown (incl. the chain cap), the defender's Break Slip or Tag Escape, the defender's KO, the
+    **attacker's own Ignition** (step 1 of §5.9; the defender may stay in Hitstun), the defender's Ignition from Hitstun,
+    or a landed Tri-Burst (both sides). A whiffed card does not reset an open chain by itself (the chain usually ends
+    because hitstun runs out).
+  - Because the enemy can only be in Hitstun after a landed player hit, a **Tag Strike normally has `chain_index` ≥ 2**.
+    It has `chain_index` 1 only when the enemy is still in Hitstun but the player's chain was already reset — in practice
+    when the player's outgoing fighter Ignited while the enemy was in Hitstun (the Ignition resets the chain, the
+    cinematic freeze keeps the enemy's hitstun) and then tagged out.
 - **Combo bonus:** `combo_mult = 1 + 0.05 × min(chain_index − 1, 4)` → 1.00, 1.05, 1.10, 1.15, 1.20.
 - **Chain cap:** after the 5th card of a chain (`max_cards = 5`) finishes its hits, the defender is
   knocked into `Knockdown`: pushed 25 units, then 0.6 s of getup during which they are invulnerable and cannot act.
@@ -464,9 +506,29 @@ type and reshuffles your options.
 - AC-5.8.2: A Tag Escape with Vigor 2.5 fails. With 3.0 it succeeds and the enemy's chain counter resets.
 - AC-5.8.3: When slot 1 is KO'd while slot 2 is alive, slot 2 comes in automatically and Tag is immediately available.
 - AC-5.8.4: A tag-in during the enemy's hitstun produces one Tag Strike hit.
-- AC-5.8.5: A tag-in at distance 30 during the enemy's hitstun puts the incoming fighter at distance 12 on the tag
-  tick, the Tag Strike hit lands on tag tick + 6, and a Fist tapped on the next tick is accepted and, if its first hit
-  lands within the Tag Strike's 36 ticks of hitstun, has `chain_index` 2.
+- AC-5.8.5 (round 3 rewrite; §5.7 `chain_index` ruling, §5.0 counting convention). Default data; test AI idle; the
+  player's Tag cooldown is 0 and Vigor ≥ 2; no wall within 4 units behind the enemy; the enemy's remaining hitstun at
+  the tag tick is ≥ 7 ticks (so it is still in Hitstun at the Tag Strike's hit).
+  - **(a) Normal case — Tag Strike continues the chain.** A player card C1 has landed (`chain_index` 1; chain open,
+    `chain_cards` 1) and the enemy is in Hitstun. On tag tick T the player taps a bench portrait at distance 30. Then:
+    the incoming fighter is at distance 12 on T; the Tag Strike hit lands on T + 6 with `chain_index` **2**
+    (`combo_mult` 1.05) and leaves the distance at 16 (knockback 4); the enemy is in Hitstun on T+6 … T+41 (36 ticks)
+    and `Idle` from T+42. A Fist tapped on T + 7 is accepted (fighter `Idle`, Vigor ≥ 2); it approaches 2 ticks
+    (`ceil((16 − 12 − 1.25) / 2.5)` = 2), so its windup starts on T + 9 and its first hit lands on T + 9 +
+    `round(windup_s × 60)` — for every default Fist (windup 0.10–0.20 s = 6–12 ticks) that is T + 15 … T + 21,
+    inside T+6 … T+41 — with `chain_index` **3** (`combo_mult` 1.10).
+  - **(b) Tag Strike opens the chain.** Same as (a), but on the tick after C1's last hit the player taps IGNITE (allowed
+    in the link window), so the player's chain resets (`chain_cards` 0) while the enemy stays in Hitstun through the
+    90-tick cinematic freeze (the Ignition push moves the enemy 20 units; the tag snap still puts the incoming fighter at
+    distance 12). With the Ignite applied on unfrozen tick I, the first unfrozen tick after the cinematic is I + 1; the
+    player tags on T = I + 1: the Tag Strike lands on T + 6 with `chain_index` **1** (`combo_mult` 1.00), the Ignition
+    ends (tag-out), and the Fist tapped on T + 7 lands on T + 15 … T + 21 with `chain_index` **2** (`combo_mult` 1.05).
+    Reachable with default data: needs a player fighter with Ignition available (e.g. `char_tavi_001` from fight tick
+    3,599) and C1's hitstun to still hold on T + 6 = I + 7: with C1's (last) hit on tick H and N hitstun ticks,
+    H + N − 1 ≥ I + 7. Igniting on I = H + 1 needs N ≥ 9; every default Fist has N ≥ 33. The "no wall" precondition
+    here means the enemy's x before the Ignition push is ≤ 76 (76 + 20 + 4 = 100), so the distance after the strike is 16.
+  - Must-FAIL inputs for a test: in (a), an implementation that gives the Fist `chain_index` 2 (Tag Strike not counted)
+    fails; in (b), one that gives the Tag Strike `chain_index` 2 (chain not reset by Ignition) fails.
 
 ### 5.9 Ignition (transformation) — the big moment
 **Purpose:** a comeback-and-hype moment the owner explicitly asked for. It changes your look,
@@ -643,6 +705,15 @@ Damage numbers show "WEAK!" on ×1.3 hits and "RESIST" on ×0.8 hits.
 - **Pause:** the pause button (top-right, 44×44) freezes everything. The menu has Resume and Retreat
   (Retreat = loss, confirmed with a dialog). The app going to the background pauses the battle automatically.
 - Expected length: Stage 3+ battles 120–200 s of timer plus about 20–40 s of cinematics, which is 2.5–4 min.
+- **Battle length target, measurable (round 3).** BAL-5.14: in the balance-analyst's seeded headless sims of
+  stage_003–stage_005 (its reference player bot vs the stage AI), the **median `elapsed_ticks / 60` of battles that end
+  by KO** is 120–200 s, and ≤ 25% of battles end by timeout. This is a **balance target**, not a QA blocker: the
+  balance-analyst owns and reports it. Round-2 sims measured a mean of about 56 s, so the target is not met yet.
+  Design note for the balance-analyst (no formula changed): with the §5.3/§5.11 formulas, sustained damage from Vigor
+  alone is about `regen_per_s × ATK × (power / cost) × def_factor` per second (default Fist: 1.0 × 900 × 0.575 × 0.69 ≈
+  360/s), so a ★3 HP of 8,500 falls in about 24 s before Ripostes, Climaxes and Tri-Burst. The intended levers are data:
+  HP bands (§6, the balance-analyst may move them), enemy `stat_mult`, and `battle.vigor.regen_per_s`. If the target can
+  only be met by changing a formula, report it to the game-designer instead of changing code.
 
 **Acceptance**
 - AC-5.14.1: With a 180 s timer and no freezes, timeout happens after exactly 10,800 ticks.
@@ -861,10 +932,65 @@ Recommended: 50 Jade each.
 - When a step triggers, the game runs at 0.3× speed (logic ticks scaled) with the prompt and a pointing hand
   until the required action is done (or for 3 s if `none`). Each step fires once per battle. The steps run only
   on the first clear attempt until `tutorial.completed` is set in the save (set on the first win of stage_001).
+
+**Round 3 ruling — prompt exits and triggers (adopts the ui-developer's round-2 fix for BUG-2-01/02, now data-driven).**
+- **Shown time.** Prompt durations are measured in **shown time**: real (wall-clock) time while the prompt is on screen
+  and the battle is **not paused** (pause menu open or app in the background do not count). Cinematics and hitstop during
+  a prompt do count. One rendered frame adds at most 100 ms of shown time (a long frame or a resumed tab cannot skip a
+  prompt). Shown time starts at 0 when the step fires.
+- **Exits.** An active step ends at the first of:
+  1. its `required_action` is done by the player (§9.4 action list; `riposte` = a card played as a Riposte);
+  2. `required_action` is `none` and shown time ≥ `battle.tutorial_none_s` (*data*, default 3.0);
+  3. its `required_action` has become **impossible** (table below), checked every rendered frame;
+  4. shown time ≥ `battle.tutorial_prompt_max_s` (*data*, default **20**) — the **cap**, a last-resort exit;
+  5. the battle ends (Win/Lose/Draw/Retreat).
+  On every exit the speed returns to 1.0× on the next logic tick, the prompt and hand disappear, and a held Riposte
+  window (from a `perfect_slip` step) is released and resumes counting down from where it was held. An ended step never
+  fires again in that battle, whatever the exit.
+
+| required_action | Becomes impossible when (player side) |
+|---|---|
+| `riposte` | the Riposte window is closed, or the player tags, or the player's active fighter is KO'd |
+| `ignite` | the player's active fighter has no Ignition that is available and unused (tagged out, KO'd, used, or none) |
+| `tri_burst` | the player's Tri-Burst is used, or the gauge is < 100 |
+| `tag` | the player has no living benched fighter |
+| `play_card`, `slip`, `dash_forward`, `dash_back` | never (only the cap or battle end can end them early) |
+| `none` | not applicable (ends by time, exit 2) |
+
+- **Triggers fire only for the player's active fighter.** Event triggers: `perfect_slip` and `chain_possible` fire only for
+  a player-side event whose fighter slot is the player's active slot at that moment; `enemy_windup` fires only for the
+  enemy's active fighter's windup; `battle_start` fires on "FIGHT!". State triggers are evaluated for the player's active
+  fighter / team: `ignition_ready` = the player's active fighter's IGNITE can be tapped now (a benched fighter's unlocked
+  Ignition does not fire it; it fires once that fighter is active); `burst_ready` = TRI-BURST can be tapped now (gauge 100,
+  not used, no Tri-Burst lock); `tag_ready` per §5.8; `card_playable`, `vigor_full` for the player's active hand / team Vigor.
+- **One prompt at a time.** While a step is active no other step fires. An event trigger that happens while a step is
+  active is not queued (the step can still fire on a later matching event). State triggers are checked every rendered
+  frame while no step is active and the battle is in the fight phase and not frozen. If several steps could fire on the
+  same frame, the one with the lowest index in `tutorial_steps[]` fires.
+- Worked numbers (default data): the cap is 20 s of shown time; at 0.3× slow-mo that is 20 × 60 × 0.3 = **360 logic
+  ticks**. A `none` step lasts 3 s shown = 54 logic ticks at 0.3×.
 - AC-9.4.1: On a fresh save, Stage 1 shows the "Swipe UP to Slip" step at the first enemy windup and resumes
   normal speed right after a Slip.
 - AC-9.4.2: After a Perfect Slip in Stage 1 on a fresh save, the `perfect_slip` prompt appears, the Riposte window
   is still open after 2 s of prompt, and tapping a card plays a 0-cost Riposte and closes the prompt.
+- AC-9.4.3 (cap): Stage 1, fresh save. When the `tag_ready` step fires (fight tick 300 at the earliest, AC-5.8.0) and the
+  player never tags, the prompt closes after 20.0 s of shown time (± one frame, ≤ 100 ms), the speed returns to 1.0×
+  and the step never fires again in that battle. With a 10 s pause in the middle, it closes after 30 s of wall-clock time
+  (20 s shown). With `tutorial_prompt_max_s` removed from battle.json the result is the same (default 20). Must-FAIL: an
+  implementation with no cap still shows the prompt at 21 s.
+- AC-9.4.4 (impossible action): during the `perfect_slip` (Riposte) prompt, the player waits until its fighter is `Idle`
+  and taps a bench portrait (Tag ready): the Tag happens, the prompt closes on that tick, the Riposte-window hold is
+  released, and the speed is 1.0× on the next logic tick. Same for the player's active fighter being KO'd during that
+  prompt. Must-FAIL: a prompt still shown 1 s after the Tag.
+- AC-9.4.5 (active fighter only): Stage 1, fresh save, with `char_tavi_001` (Ignition trigger `battle_time_s: 60`) tagged
+  out before fight tick 3,599: no `ignition_ready` prompt appears while it is benched (its Ignition unlocks on f = 3,599).
+  When it is tagged back in, the prompt appears on the first frame where it is active and not frozen. Reachable with
+  default data (Tag cooldown 8 s).
+- AC-9.4.6 (event side, unit test on the tutorial controller): with `chain_possible` and `perfect_slip` steps unfired, the
+  events `{type: link_open, side: enemy}` and `{type: perfect_slip, side: enemy}` fire **no** step (must-FAIL inputs);
+  `{type: link_open, side: player, slot: <active slot>}` fires `chain_possible` (must-PASS); the same event with a benched
+  slot fires nothing.
+- AC-9.4.7 (`none` step): the `vigor_full` step ("Cards cost Vigor…", `none`) closes after 3.0 s of shown time (± one frame).
 
 ---
 
@@ -884,15 +1010,38 @@ Recommended: 50 Jade each.
 
 `data/banners.json` (schema `banners.schema.json`). Soft currency (Jade) only. **No real money.**
 
+**Purpose:** collecting fighters is the long-term goal. Rolls must feel exciting, be honest (rates shown, pity
+visible) and be impossible to exploit by quitting. Round 3: this section was re-read as the builders will read it and
+completed with exact rules (marked "round 3"). Logic lives in `src/logic/` (pure, no rendering); the screen in
+`src/scenes/` + `src/ui/`.
+
+**Default data used in the examples** (`data/banners.json`, `data/economy.json`, rarities from `data/characters.json`):
+banner `banner_starter_001`, cost 100 / 1,000, `multi_count` 10, `rates_bp` {5: 300, 4: 1,700, 3: 8,000}, pity group
+`standard`, `hard_pity` 40, `multi_min_rarity` 4, `first_multi_min_rarity` 5. Pool by rarity (in `pool[]` order):
+★3 `char_tavi_001`, `char_lark_001`, `char_dunmore_001` (the 3 starters, owned on a fresh save); ★4 `char_pell_001`,
+`char_thessa_001`, `char_rook_001`; ★5 `char_solenne_001`, `char_corvane_001` (both featured, `share_bp` 5,000 each).
+Economy: start 1,000 Jade, `max_resonance` 4, overflow Jade ★3 10 / ★4 40 / ★5 200, Jade max 999,999.
+
 ### 11.1 Screen
 - Banner art, name, featured fighters (portrait + rarity + aura).
-- Jade balance. Buttons: **Summon ×1 (100 Jade)**, **Summon ×10 (1,000 Jade)**. A button is disabled when the player
-  cannot afford it, with the text "Not enough Jade — clear stages to earn more."
-- **Rates** button → a full rate table (per rarity and per fighter, 2 decimals) and the rules text (pity, 10× guarantee,
-  duplicates). **Pity counter** always visible: "★5 guaranteed within N summons."
-- A confirm dialog shows the cost and the balance after.
-- Reveal animation (skippable with a tap), then a results grid that tags each fighter NEW, "Resonance +1"
-  or "+N Jade".
+- Jade balance. Buttons: **Summon ×1 (100 Jade)**, **Summon ×10 (1,000 Jade)** (amounts from `cost_single` / `cost_multi`).
+  A button is disabled when `jade < cost`, with the text "Not enough Jade — clear stages to earn more."
+- **Rates** button → a full rate table (per rarity and per fighter, 2 decimals, §11.2) and the rules text (pity, ×10
+  guarantee, first ×10 guarantee, duplicates). **Pity counter** always visible: "★5 guaranteed within N summons."
+  with `N = max(1, hard_pity − counter)` (§11.3). Fresh save: N = 40.
+- **First ×10 line (round 3):** while `save.summon.first_multi_done[banner_id]` is not `true` and the banner has
+  `first_multi_min_rarity`, the screen also shows "First ×10: at least one ★{first_multi_min_rarity} guaranteed!"
+  (default "★5"). It is hidden once the first ×10 on that banner is done.
+- **Confirm dialog** shows the cost and the balance after (e.g. "Summon ×10 for 1,000 Jade? Jade after: 0"), with Cancel
+  and Confirm (≥44×44). **Round 3:** the Confirm button must not cover the screen position of the Summon button that
+  opened the dialog, and the dialog ignores input for its first 250 ms (BUG-2-03 lesson), so a double tap can never
+  confirm. While a summon is being processed or revealed, both Summon buttons are disabled (no second summon can start).
+- Reveal animation (skippable: one tap skips to the results), shown in pull order (pull 1 first), then a results grid in
+  pull order that tags each result **NEW**, **"Resonance +1"** (with the new rank, e.g. "R1") or **"+N Jade"**
+  (N = the Jade actually credited, §11.4). An OK button returns to the Summon screen with the updated balance and pity.
+- **Banner availability (round 3):** a banner is shown when (`start_at` is null or now ≥ `start_at`) and (`end_at` is null
+  or now < `end_at`), using the device clock. If no banner is shown, the screen shows "No summons available right now."
+  and no Summon buttons. The default banner has both null (always open).
 
 ### 11.2 Rates (integers in basis points; 10,000 bp = 100%)
 - Default rates: ★5 300 bp (3.00%), ★4 1,700 bp (17.00%), ★3 8,000 bp (80.00%). They must sum to exactly 10,000.
@@ -900,34 +1049,129 @@ Recommended: 50 Jade each.
   (`10000 − Σ featured share_bp`) is split equally across the non-featured pool fighters of that rarity.
   Example: ★5 = 300 bp, featured A share 5,000 → A = 1.50%. Non-featured ★5 B (the only other one) = 1.50%.
 - The pool is explicit (`pool[]`). Only `playable: true` characters may appear in it.
+- **Integer weights (round 3, exact; used both for rolling and for the rate table).** For rarity k: let `F_k` = the
+  featured fighters of rarity k (in `featured[]` order), `P_k` = the non-featured pool fighters of rarity k (in `pool[]`
+  order), `n = |P_k|`, `S = Σ share_bp over F_k`.
+  - If `n > 0`: weight of a featured fighter = `share_bp × n`; weight of each non-featured fighter = `10000 − S`;
+    total `W_k = 10000 × n`.
+  - If `n = 0`: weight of a featured fighter = `share_bp`; total `W_k = S` (= 10,000 by §15.3 rule 4).
+  - The candidate list `L_k` = `F_k` then `P_k` (that order). Fighters with weight 0 are never drawn and show 0.00%.
+- **Displayed rates (round 3).** Rarity: `rates_bp[k] / 100` with exactly 2 decimals (300 → "3.00%"). Fighter j of
+  rarity k: exact percent = `rates_bp[k] × weight_j / W_k / 100`, displayed rounded half-up to 2 decimals. The rate
+  screen shows the note "Fighter rates are rounded to 2 decimals." because rounded fighter rates may not add up exactly to
+  the rarity rate. Default table: Solenne 1.50%, Corvane 1.50% (★5 3.00%); Pell, Thessa, Rook 5.67% each (exact
+  5.6666…; ★4 17.00%); Tavi, Lark, Dunmore 26.67% each (exact 26.6666…; ★3 80.00%).
+- Rates shown are the base rates. The rules text says that pity and the guarantees can only raise the chance of ★4/★5.
 
-### 11.3 Guarantees and pity (order of checks per pull)
-1. **Hard pity:** `pity_counter` counts pulls since the last ★5 (per `pity_group`). If the counter is
-   `hard_pity − 1` before the pull (default `hard_pity = 40`), this pull is ★5.
-2. **First 10× guarantee** (if `first_multi_min_rarity` is set; default 5 on the starter banner): the
-   player's first ever ×10 on that banner contains at least one ★5. If pulls 1–9 have none, pull 10 is ★5.
-3. **10× guarantee:** if pulls 1–9 of a ×10 have no ★4 or better, pull 10 is drawn from ★4+ only,
-   renormalized (★5 = 300/2000 = 15%, ★4 = 85%).
-4. Otherwise a normal roll.
-- Any ★5 resets `pity_counter` to 0. Otherwise it goes up by 1 per pull.
-- **Anti-reroll:** the results and the new balance are saved **before** the reveal animation plays. Quitting does not change
-  results.
-- The RNG is injectable (seeded in tests).
+### 11.3 Rolling, guarantees and pity
+**RNG (round 3).** One summon action (×1 or ×10) uses one `SeededRng` (mulberry32, `src/logic/rng.js`; `next()` returns a
+float in [0, 1)). The seed is injectable (tests, the `?test` hook); otherwise it is one uint32 from
+`crypto.getRandomValues` (fallback `floor(Math.random() × 2^32)`). The seed is returned in the result object for bug
+reports and is not saved. **Every pull makes exactly 2 `next()` calls, in this order: (A) the rarity draw, (B) the
+fighter draw.** Call A is made even when the rarity is forced (its value is then ignored), so the call sequence never
+depends on the outcome. A ×10 makes exactly 20 calls. Pulls inside an action are numbered **1-based** (pull 1 … 10).
+
+**Rarity of pull i (order of checks, round 3 exact):**
+1. **Hard pity:** `counter` = `save.summon.pity[pity.group]` (missing → 0) **before** this pull. If
+   `counter ≥ hard_pity − 1` → ★5 (reason `hard_pity`). Default: counter 39 → ★5. (`≥` so a lowered `hard_pity` in
+   data still guarantees the next pull.)
+2. **×10 guarantees (pull 10 of a ×10 only):** `min = multi_min_rarity`; if `first_multi_done[banner_id]` is not `true`
+   and `first_multi_min_rarity` is set, `min = max(min, first_multi_min_rarity)`. If none of pulls 1–9 of this ×10 has
+   rarity ≥ `min`, draw from rarities ≥ `min` only: `T = Σ rates_bp[k] for k ≥ min`; if `T = 0` → ★5; else
+   `r = floor(A × T)`, walking ★5 then ★4 then ★3 (★5 if `r < rates_bp[5]`, else ★4 if `r < rates_bp[5] + rates_bp[4]`,
+   else ★3). Reason `first_multi` if the first-×10 rule raised `min`, else `multi`. Defaults: first ×10 → `min` 5,
+   pull 10 is ★5; later ×10 → `min` 4, `T = 2,000`, ★5 if `r < 300` (15%), else ★4 (85%). With `multi_min_rarity` 3
+   this rule never changes anything.
+3. **Normal draw:** `r = floor(A × 10000)`; ★5 if `r < rates_bp[5]`, else ★4 if `r < rates_bp[5] + rates_bp[4]`, else
+   ★3. Defaults: r 0–299 → ★5, 300–1,999 → ★4, 2,000–9,999 → ★3.
+
+**Fighter of pull i:** `w = floor(B × W_k)`; walk `L_k` adding weights; the first fighter whose cumulative weight
+exceeds `w` is drawn. Defaults: ★5 `W` = 10,000: w 0–4,999 → Solenne, 5,000–9,999 → Corvane. ★4 `W` = 30,000:
+0–9,999 Pell, 10,000–19,999 Thessa, 20,000–29,999 Rook. ★3 `W` = 30,000: 0–9,999 Tavi, 10,000–19,999 Lark,
+20,000–29,999 Dunmore.
+
+**Counters (persisted in the save, §13):**
+- `pity[group]`: after each pull, a ★5 (from any cause) sets it to 0; any other rarity adds 1. It is shared by all
+  banners with the same `pity.group`, carries over between ×1 and ×10 and between sessions, and is never reset otherwise.
+  Fresh save: absent = 0. Max reachable value with valid data: `hard_pity − 1` (39).
+- `first_multi_done[banner_id]`: set to `true` when a ×10 on that banner completes (whether or not the guarantee was
+  needed). ×1 pulls never set it; ten ×1 pulls are not a ×10. Fresh save: absent = false.
+- `total_pulls`: + 1 per pull (+ 10 per ×10). Fresh save: 0.
+
+**One summon action, in order (round 3, atomic):**
+1. The banner is open (§11.1) and `jade ≥ cost` (`cost_single` or `cost_multi`), else nothing happens.
+2. On Confirm: `jade −= cost`.
+3. For pull 1 … count: rarity (above), fighter (above), update `pity[group]`, then apply the duplicate rule (§11.4) to the
+   in-memory roster/Jade. Pulls are applied one by one, so a fighter that is NEW on pull 3 is a duplicate on pull 7.
+4. If count is 10: `first_multi_done[banner_id] = true`. `total_pulls += count`. `updated_at = now`.
+5. **Save once** (one `localStorage.setItem` of the whole save, §13), **before** any reveal frame is drawn. If the write
+   throws, the in-memory save is restored to its state before step 2, no reveal plays, and the screen shows
+   "Summon failed — no Jade was spent." (anti-reroll and no double spend).
+6. Reveal, then results grid. Quitting at any point after step 5 changes nothing; on reopen the reveal is not shown
+   again and the fighters are in the roster.
+
+**Result object (logic → UI interface, round 3).** `summon(save, banner, data, count, rng)` returns
+`{ seed, banner_id, count, cost, jade_before, jade_after, pity_before, pity_after, results[] }` and the new save; each
+result is `{ pull (1-based), character_id, rarity (3|4|5), outcome, resonance_after, jade_added, guarantee }` with
+`outcome` ∈ {`new`, `resonance`, `jade`} and `guarantee` ∈ {`none`, `hard_pity`, `first_multi`, `multi`}. Logic exports
+both lists from `src/logic`; the UI maps every value (L-shared-009). `jade_added` is 0 unless `outcome` is `jade`.
 
 ### 11.4 Duplicates
-- First copy: added to the roster (Resonance 0).
+- First copy: added to the roster (Resonance 0, `obtained_at` = now). Not added to the team automatically.
 - Each duplicate: Resonance +1, up to 4 (`economy.duplicates.max_resonance`). Each rank gives +5% HP/ATK/DEF.
 - Beyond R4: converted to Jade: ★3 → 10, ★4 → 40, ★5 → 200 *(data)*.
+- **Exact (round 3):** for a drawn fighter with save resonance `r` (if owned): not owned → `new`, R0. Owned and
+  `r < max_resonance` → `resonance`, `r + 1`. Owned and `r ≥ max_resonance` → `jade`: credit
+  `overflow_amount_by_rarity[rarity]` of `overflow_currency_id`, capped at the currency `max` (999,999; the excess is lost);
+  `jade_added` = the amount actually credited (can be 0 at the cap); resonance unchanged. The rarity used is the
+  character's `rarity` in characters.json.
+- Stage rewards of type `character` (§9.1) use the same rule, without touching pity or `total_pulls`.
 
-**Acceptance**
-- AC-11.1: 1,000,000 seeded single pulls with pity disabled in the test: each rarity's frequency is within ±0.1
-  percentage points of its rate.
-- AC-11.2: With the pity counter at 39, the next pull is ★5 (100 of 100 seeded trials).
-- AC-11.3: In a ×10 where a seeded RNG gives 9 ★3, pull 10 is ★4 or ★5.
-- AC-11.4: The in-game rate table equals the data (rarity bp / 100 shown as a percent with 2 decimals) and the per-fighter rates
-  in a rarity sum to that rarity's rate.
-- AC-11.5: Killing the app during the reveal and reopening shows the same fighters owned and the Jade deducted once.
-- AC-11.6: A ×10 with 999 Jade is impossible (the button is disabled).
+**Acceptance (round 3: rewritten and extended; every AC uses the default data above unless it says "test data")**
+- AC-11.1: 1,000,000 normal rarity draws (rule 3 alone, seeded) give ★5 / ★4 / ★3 counts within ±1,000 of
+  30,000 / 170,000 / 800,000 (±0.1 percentage points).
+- AC-11.2 (hard pity): save `pity.standard` = 39, `first_multi_done.banner_starter_001` = true; a ×1 is ★5 in 100 of 100
+  seeds, `guarantee` `hard_pity`, and `pity.standard` is 0 afterwards. Must-FAIL check: with `pity.standard` = 38 and a
+  stubbed `next()` that always returns 0.5 (r = 5,000), the pull is ★3 and the counter becomes 39. Not reachable in the
+  default milestone by play alone (budget ≈ 38 pulls, and the first ×10 already gives a ★5); tests set the save.
+- AC-11.3 (×10 guarantee): `first_multi_done.banner_starter_001` = true, `pity.standard` = 0, stubbed `next()` always
+  0.9999 (A: r = 9,999 → ★3 on pulls 1–9): pull 10 uses `T = 2,000`, r = floor(0.9999 × 2,000) = 1,999 → **★4**,
+  `guarantee` `multi`. With the stub returning 0.0 only for pull 10's call A (call 19): r = 0 → **★5**. Must-FAIL check:
+  if pull 5's call A returns 0.1 (r = 1,000 → ★4), pull 10 is a normal draw: r = 9,999 → **★3**, `guarantee` `none`.
+- AC-11.3b (first ×10): fresh save (Jade 1,000), stub always 0.9999: pulls 1–9 are ★3 and all `char_dunmore_001`
+  (w = floor(0.9999 × 30,000) = 29,997): pulls 1–4 `resonance` R1 … R4, pulls 5–9 `jade` +10 each. Pull 10 is **★5**
+  (`first_multi`), w = floor(0.9999 × 10,000) = 9,999 → `char_corvane_001`, `new`. Afterwards
+  `first_multi_done.banner_starter_001` = true, `pity.standard` = 0, `total_pulls` = 10, Jade = 1,000 − 1,000 + 50 = **50**,
+  Dunmore R4. A second ×10 with the same stub (needs 1,000 Jade, test sets it) gives ★4 on pull 10 (AC-11.3), not ★5.
+- AC-11.3c (pity inside a ×10): `pity.standard` = 35, first ×10 done, stub always 0.9999: pulls 1–4 ★3 (counter 36, 37,
+  38, 39), pull 5 ★5 by `hard_pity` (counter 0), pulls 6–9 ★3, pull 10 a normal draw (pull 5 was ★5 ≥ min 4) → ★3;
+  `pity.standard` after = 5.
+- AC-11.4 (rate table): the Rates screen shows ★5 3.00%, ★4 17.00%, ★3 80.00%; Solenne 1.50%, Corvane 1.50%, Pell /
+  Thessa / Rook 5.67%, Tavi / Lark / Dunmore 26.67%, and the rounding note. Unit test: for each rarity, Σ exact fighter
+  weights = `W_k` and Σ exact fighter percents = rarity percent (150 + 150 = 300 bp; 3 × 1,700 / 3 = 1,700 bp;
+  3 × 8,000 / 3 = 8,000 bp).
+- AC-11.5 (anti-reroll): kill the app during the reveal of a ×10 and reopen: the same fighters are in the roster with the
+  same Resonance, Jade is deducted once, `pity` and `first_multi_done` are as after the summon, and no reveal replays.
+- AC-11.6 (affordability): Jade 999 → ×10 disabled, ×1 enabled. Jade 1,000 → ×10 enabled. Jade 99 → both disabled.
+  Jade 100 → ×1 enabled.
+- AC-11.7 (fighter draw): stubbed call B = 0.4999 on a ★5 → w 4,999 → Solenne; 0.5 → Corvane. On a ★3: 0.3333 →
+  w 9,999 → Tavi; 0.33334 → w 10,000 → Lark. Over 300,000 seeded ★3 fighter draws each fighter is within 1/3 ± 0.005.
+- AC-11.8 (duplicates): a ★3 Tavi pull on a fresh save → `resonance`, R1 ("Resonance +1", R1). Tavi at R4 → `jade`,
+  +10 Jade, still R4. A ★5 at R4 → +200. A fighter NEW on pull 3 and drawn again on pull 7 of the same ×10 → `new` then
+  `resonance` (R1). At Jade 999,950 a ★5 overflow credits 49 (`jade_added` 49, Jade 999,999).
+- AC-11.9 (determinism): the same seed and the same save give identical `results[]`; an instrumented RNG records exactly
+  2 `next()` calls per pull (20 for a ×10), also on forced pulls.
+- AC-11.10 (save order and failure): the save write happens before the first reveal frame (spy on `setItem` vs the
+  reveal start). With `setItem` stubbed to throw, the Jade, roster, pity, `first_multi_done` and `total_pulls` are
+  unchanged and "Summon failed — no Jade was spent." is shown.
+- AC-11.11 (pity and first-×10 display): fresh save shows "★5 guaranteed within 40 summons." and the first-×10 line;
+  after 3 ×1 pulls with no ★5 it shows 37; after any ×10 the first-×10 line is gone; after a ★5 it shows 40 again.
+- AC-11.12 (no double summon): two taps on Confirm 100 ms apart, or a tap on Summon during a reveal, perform at most one
+  summon (Jade deducted once, `total_pulls` + count once).
+- AC-11.13 (availability, test data): a banner with `end_at` in the past is not shown; with no banner shown the screen
+  shows "No summons available right now." and no Summon button.
+- AC-11.14 (validator, §15.3 rule 4): a banner whose pool has no ★5 fighter FAILS validation even if `rates_bp["5"]` is 0;
+  the default banner PASSES.
 
 ---
 
@@ -1047,6 +1291,10 @@ renderer shows a labeled placeholder, never a crash.
 4. Banner: `rates_bp` sums to 10,000. For each rarity, Σ featured share_bp ≤ 10,000; if no non-featured pool
    fighters exist for a rarity with a rate > 0, featured shares for it sum to exactly 10,000. Each rarity with a rate > 0
    has ≥1 pool fighter of that rarity. Pool and featured characters are `playable: true`. Featured ⊆ pool.
+   **Round 3:** ★5 always counts as "a rarity with a rate > 0" for these checks, because hard pity (§11.3) can force a ★5
+   even when `rates_bp["5"]` is 0: every banner needs ≥1 ★5 pool fighter, and if it has no non-featured ★5, its featured
+   ★5 shares sum to exactly 10,000. Negative fixture: a banner with `rates_bp` {3: 9,000, 4: 1,000, 5: 0} and no ★5 in
+   `pool` must FAIL; the default `banner_starter_001` must PASS.
 5. `type_chart` has all 25 pairs.
 6. Starting team: 3 distinct families, all in `starting.characters`.
 7. Text contains none of the banned terms (§3), case-insensitive whole words. Exception: "stand" and "hollow"
@@ -1058,10 +1306,13 @@ renderer shows a labeled placeholder, never a crash.
 
 ---
 
-## 16. Open questions for the owner — DRAFT
+## 16. Open questions for the owner — READY (round 3: all decided)
 
-1. **Title:** pick one of the 5 options in §1 (or ask for more).
-2. **Difficulty feel:** is the stage_005 boss (master AI) the right peak for the milestone, or should the milestone be easier
-   for a first playtest?
-3. **Draw rule:** a timeout tie or a double KO is a Draw (no rewards). Is that okay, or should the player win ties?
-4. **Left-handed mode** (mirror bench and Burst buttons): wanted for the milestone or later?
+Round 3: the owner wrote "and you decide all that", delegating these to the Producer. Decisions (owner may override):
+1. **Title:** Jade Tempest (§1), trademark check pending (compliance-checker).
+2. **Difficulty feel:** stage_005 boss stays at the master AI tier; the balance-analyst tunes stats (data only) so the
+   starter team can win it with skill.
+3. **Draw rule:** a timeout tie or a double KO stays a Draw (no rewards) (§5.14).
+4. **Left-handed mode:** not in this milestone.
+
+No open questions remain.
