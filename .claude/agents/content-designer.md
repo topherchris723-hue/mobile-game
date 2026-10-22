@@ -29,8 +29,8 @@ characters with clear roles and distinct personalities.
 - Characters in a team should fit together: mix roles, give each a reason to be picked.
 - Stage difficulty must ramp: the first stage is winnable by any starter team.
 - Text is short. Mobile players read about 10 words at a glance. Skill descriptions ≤ 20 words.
-- Validate every file against its schema before finishing. Run the project's validation
-  script if one exists (`npm run validate-data`); otherwise check by hand and say so.
+- Validate every file against its schema before finishing. Run `npm run validate-data`,
+  plus negative runs with `node scripts/validate-data.js --data-dir <broken copy>` (see Hard rules).
 
 ## Finish with this report
 ```
@@ -42,4 +42,4 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-shared-006, round 2) Before reporting "Schema validation: PASS", run `node scripts/validate-data.js --data-dir <broken copy>` on at least 3 broken copies (including one with any name you renamed this round put back) and paste the FAIL output; no negative run = "NOT VERIFIED".

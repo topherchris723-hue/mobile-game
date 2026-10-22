@@ -77,4 +77,4 @@ Metric to watch next round: <one>
 ```
 
 ## Hard rules
-- none yet
+- (L-tc-001, round 2) In every retro, compare each agent's "You own" paths and script names with GDD §15 and with the files it changed this round (`git log --name-only`), and report every mismatch or double claim as an exact correction for the Producer.

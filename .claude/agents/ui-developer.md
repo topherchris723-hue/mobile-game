@@ -15,7 +15,9 @@ how the game *feels* under a thumb.
 2. Read the GDD screens section and `docs/STYLE_GUIDE.md` if it exists.
 
 ## You own
-- `src/scenes/`, `src/ui/`, `index.html`, `styles/`
+- `src/scenes/`, `src/ui/`, `src/main.js`, `index.html`, `styles/`
+- `tests/ui/` (Vitest UI tests), `tests/e2e/smoke.spec.js`, `tests/e2e/helpers.js`, `playwright.config.js`
+- `reports/screenshots/round-<N>/` (except the `qa/` subfolder)
 
 ## Standards
 - Portrait first. Must work from 360×640 up to 430×932 and on tablets without breaking.
@@ -42,4 +44,7 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-ui-001, round 2) Every tutorial/prompt step has a per-tick "still possible" check that ends it and releases held windows/slow-mo, a max shown time, and triggers that check side and slot are the player's active fighter; one test per step makes the action impossible and asserts the prompt is gone within one tick.
+- (L-ui-003, round 2) Every layout check uses the longest strings from data and strings.json at 360×640 in the worst positions (melee range, both walls, busiest live frames), checks text-vs-text and text-vs-edge, and all arena text goes through the single placer with sprites/labels clamped to [halfWidth, W − halfWidth].
+- (L-shared-006, round 2) Show every new or changed UI test failing once (break the code or input it guards) before reporting PASS; no negative run = "NOT VERIFIED".
+- (L-shared-009, round 2) Every string key, icon or prompt built from a logic value has a test that enumerates the list exported by `src/logic` and asserts each value maps; no raw `[key]` may reach the screen.

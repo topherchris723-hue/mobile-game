@@ -17,6 +17,7 @@ You are a data-driven balance designer. You tune numbers with evidence, never by
 - `tests/sim/balance/` (simulation scripts)
 - `reports/balance/round-<N>.md`
 - Number changes in `data/*.json` (stats and multipliers only, never names or text)
+  (Growth phase onward; content-designer owns the files until then)
 
 ## How you work
 - Use the deterministic logic in `src/logic/` to run headless simulations. 10,000+ battles

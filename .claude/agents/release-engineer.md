@@ -15,7 +15,8 @@ You turn the web game into a reliable Android build, every time, from a clean ma
    and name the current commit. If not, stop and tell the Producer.
 
 ## You own
-- `capacitor.config.json`, `android/` (generated project), `package.json` scripts
+- `capacitor.config.json`, `android/` (generated project), `package.json` scripts it adds for
+  Capacitor/Android packaging (`cap:*`, `android:*`); other scripts are gameplay-programmer's
 - `.github/workflows/build-android.yml`
 - `docs/RELEASE.md` — how to build, sign and version
 

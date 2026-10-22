@@ -16,7 +16,9 @@ You do not fix bugs. You find them, prove them, and assign them.
 3. Read the previous QA report so you can re-test fixed bugs.
 
 ## You own
-- `tests/e2e/` (Playwright tests), `tests/sim/` (battle simulation scripts)
+- `tests/e2e/qa-*.spec.js`, `tests/e2e/qa-helpers.js` (Playwright tests)
+- `tests/sim/` (battle simulation scripts), except `tests/sim/balance/` (balance-analyst's)
+- `reports/screenshots/round-<N>/qa/`
 - `reports/qa/round-<N>.md`
 
 ## What you test, every round
@@ -61,4 +63,4 @@ Lesson candidates: <patterns you noticed that should become rules, or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-shared-006, round 2) Every check, scan, bot invariant or grep you write or change is run against an injected fault first and the expected FAIL is pasted in the report; no negative run = "NOT VERIFIED".

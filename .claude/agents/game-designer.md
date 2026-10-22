@@ -49,4 +49,7 @@ Lesson candidates: <anything you'd tell your past self, or "none">
 
 ## Hard rules
 (The Producer adds promoted lessons here. Follow them above everything else in this file.)
-- none yet
+- (L-gd-002, round 2) For every rule, term, trigger, event or validation rule you add or change in GDD prose, put a "GDD mention → enforcement point (schema enum / §15.3 rule / §3 format / AC) → must-FAIL and must-PASS input → agent to update" table in your report.
+- (L-gd-003, round 2) Every timer, cooldown, gauge, window and counter has a data-stored start value and an AC; the tick convention is defined once in §5.0 and every tick-count example names its first and last counted tick.
+- (L-gd-007, round 2) Before marking a section READY, work every AC with the default data (all inputs, arithmetic, reachable with default data yes/no, every index 0/1-based and reset defined) and put the "Worked ACs" table in your report.
+- (L-shared-006, round 2) Every check you specify (schema constraint, §15.3 rule, AC) names at least one input that must FAIL; never write "valid" for something you could not run.

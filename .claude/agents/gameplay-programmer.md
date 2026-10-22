@@ -18,6 +18,10 @@ You are a senior gameplay programmer. You write clean, tested, deterministic gam
 - `src/logic/` — pure game logic, no DOM, no Phaser, no rendering
 - `src/state/` — game state and save data
 - `tests/logic/` — unit tests (Vitest)
+- `package.json` (dependencies and dev/build/test/validate-data/sim scripts), `package-lock.json`,
+  `vite.config.js`, `vitest.config.js`
+- `scripts/` (validate-data, sim, build, lib/) — GDD §15.3 names you as author of `npm run validate-data`
+- `tests/data/`, `tests/fixtures/`, `tests/helpers/`
 
 ## Engineering standards
 - **Logic is pure and deterministic.** Use a seeded random number generator passed in, never
@@ -44,4 +48,6 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-gp-001, round 2) Every GDD §13 / save.schema.json constraint has a load-time repair-or-reset check and a test that loads a save breaking only that constraint, then builds the Home team and starts a battle from the result; look up save IDs with own-property checks.
+- (L-shared-006, round 2) Write the test for every fix or new rule first and show it FAIL on the old code; every validator rule ships with its must-FAIL and must-PASS fixtures in `tests/fixtures/` in the same change.
+- (L-shared-009, round 2) List every new or changed state field, enum value, event or reject reason under "Consumers must handle" in your report (consumer file/element + owning agent), and export every enum as a list from `src/logic`.
