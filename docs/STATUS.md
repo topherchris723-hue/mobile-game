@@ -28,6 +28,11 @@ Write anything you liked or disliked here, in your own words. Every line becomes
 lesson and a hard rule at the next `/retro`.
 - Round 3 (owner, on `/round`): "and you decide all that" — the owner delegates the open
   decisions (title choice and the designer's open questions) to the Producer.
+- Round 3 (owner): "You decide all that i want to automate this as much as possible" — the
+  Producer makes every routine decision without asking, and chains rounds automatically
+  (schedules the next `/round` when a round ends; resumes after usage-limit resets). Stop and
+  ask the owner only for the things in CLAUDE.md §8 (keystore, Play Console, paid assets,
+  playtest) or a blocker the rules forbid deciding.
 
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
