@@ -1,0 +1,148 @@
+# Builds the Android app with Capacitor.
+# - "debug"   → unsigned debug APK for testing on your phone. Always allowed.
+# - "release" → signed AAB (for Google Play) + signed APK. Only allowed when
+#               reports/release-review.md says "VERDICT: PASS" for this code.
+#
+# Required secrets for release builds (Settings → Secrets and variables → Actions):
+#   ANDROID_KEYSTORE_BASE64   your .jks keystore, base64-encoded
+#   ANDROID_KEYSTORE_PASSWORD keystore password
+#   ANDROID_KEY_ALIAS         key alias
+#   ANDROID_KEY_PASSWORD      key password
+
+name: Build Android
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "debug or release"
+        required: true
+        default: debug
+        type: choice
+        options: [debug, release]
+  push:
+    tags: ["v*"]   # pushing a tag like v0.1.0 makes a release build
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_TYPE: ${{ github.event_name == 'push' && 'release' || inputs.build_type }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history, needed for the release gate
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test --if-present
+
+      - name: Build web game
+        run: npm run build
+
+      # ---------------- Release gate ----------------
+      - name: Release gate — require a PASS from release-reviewer
+        if: env.BUILD_TYPE == 'release'
+        run: |
+          REVIEW=reports/release-review.md
+          if [ ! -f "$REVIEW" ]; then
+            echo "::error::No release review found. Run the release-reviewer agent first."; exit 1
+          fi
+          VERDICT=$(grep -E '^VERDICT: (PASS|FAIL)$' "$REVIEW" | tail -1)
+          if [ "$VERDICT" != "VERDICT: PASS" ]; then
+            echo "::error::Release review verdict is '$VERDICT'. Fix findings and re-review."; exit 1
+          fi
+          REVIEWED=$(grep -E '^Commit: [0-9a-f]{40}$' "$REVIEW" | head -1 | cut -d' ' -f2)
+          if [ -z "$REVIEWED" ] || ! git cat-file -e "$REVIEWED^{commit}" 2>/dev/null; then
+            echo "::error::Review does not name a valid commit."; exit 1
+          fi
+          if ! git merge-base --is-ancestor "$REVIEWED" HEAD; then
+            echo "::error::Reviewed commit is not part of this build's history."; exit 1
+          fi
+          # Game files must be identical to what the reviewer saw.
+          if ! git diff --quiet "$REVIEWED" HEAD -- src data assets index.html styles package.json package-lock.json capacitor.config.json; then
+            echo "::error::Game files changed after the review. A new review is required."
+            git diff --stat "$REVIEWED" HEAD -- src data assets index.html styles package.json package-lock.json capacitor.config.json
+            exit 1
+          fi
+          echo "Release gate passed: reviewed commit $REVIEWED"
+
+      # ---------------- Android project ----------------
+      - name: Create Android project if missing
+        run: |
+          if [ ! -d android ]; then npx cap add android; fi
+          npx cap sync android
+
+      - name: Build debug APK
+        if: env.BUILD_TYPE == 'debug'
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload debug APK
+        if: env.BUILD_TYPE == 'debug'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-${{ github.sha }}
+          path: android/app/build/outputs/apk/debug/*.apk
+
+      - name: Build release AAB and APK
+        if: env.BUILD_TYPE == 'release'
+        working-directory: android
+        run: ./gradlew bundleRelease assembleRelease --no-daemon
+
+      - name: Sign release builds
+        if: env.BUILD_TYPE == 'release'
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Signing secrets are missing. See README → Signing."; exit 1
+          fi
+          mkdir -p signed
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+
+          # AAB (upload this to Google Play)
+          cp android/app/build/outputs/bundle/release/app-release.aab signed/app-release.aab
+          jarsigner -keystore "$RUNNER_TEMP/release.jks" -storepass "$KS_PASS" -keypass "$KEY_PASS" \
+            signed/app-release.aab "$KEY_ALIAS"
+
+          # APK (for direct installs / itch.io)
+          UNSIGNED=$(ls android/app/build/outputs/apk/release/*-unsigned.apk 2>/dev/null || ls android/app/build/outputs/apk/release/*.apk | head -1)
+          "$BT/zipalign" -f -p 4 "$UNSIGNED" "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-pass "pass:$KS_PASS" \
+            --ks-key-alias "$KEY_ALIAS" --key-pass "pass:$KEY_PASS" \
+            --out signed/app-release.apk "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" verify signed/app-release.apk
+
+          rm -f "$RUNNER_TEMP/release.jks"
+          ls -lh signed/
+
+      - name: Upload release builds
+        if: env.BUILD_TYPE == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ github.ref_name }}-${{ github.sha }}
+          path: signed/*

@@ -1,0 +1,77 @@
+# Runs one production round with Claude Code, unattended, then opens a pull request.
+# You review and merge the PR. Nothing is published to any store automatically.
+#
+# Required secret: CLAUDE_CODE_OAUTH_TOKEN
+#   Create it on a computer with Claude Code installed: run `claude setup-token`,
+#   then add the token under Settings → Secrets and variables → Actions.
+#
+# Start a round from the GitHub app or website: Actions → Claude round → Run workflow.
+# To run automatically, remove the "#" in front of the two schedule lines below.
+
+name: Claude round
+
+on:
+  workflow_dispatch:
+    inputs:
+      goal:
+        description: "Goal for this round (leave empty to use the 'Next' goal in docs/STATUS.md)"
+        required: false
+        default: ""
+  # schedule:
+  #   - cron: "17 2 * * *"   # every day at 02:17 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: claude-round   # never run two rounds at the same time
+  cancel-in-progress: false
+
+jobs:
+  round:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install project and test browser (if the project exists yet)
+        run: |
+          if [ -f package-lock.json ]; then npm ci; fi
+          npx --yes playwright install --with-deps chromium
+
+      - name: Configure git
+        run: |
+          git config user.name "claude-round[bot]"
+          git config user.email "claude-round[bot]@users.noreply.github.com"
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are the Producer described in CLAUDE.md, running UNATTENDED (CLAUDE.md section 7).
+            Nobody can answer questions during this run.
+
+            Run one full production round exactly as described in .claude/commands/round.md,
+            including the /retro step at the end (.claude/commands/retro.md).
+
+            Goal for this round: ${{ inputs.goal || 'use the Next goal in docs/STATUS.md' }}
+
+            When finished:
+            1. Create a branch named claude/round-<N> and commit all work to it.
+            2. Push the branch and open a pull request with `gh pr create`.
+               PR title: "Round <N>: <one-line summary>".
+               PR body: what was built, QA verdict, release-review verdict (if run),
+               lessons learned, decisions made without the owner, next goal.
+            Never push to main. Never publish anything. Never touch signing secrets.
+          claude_args: |
+            --max-turns 300
+            --allowedTools "Agent,Task,Read,Write,Edit,Glob,Grep,Bash,WebSearch,WebFetch"
