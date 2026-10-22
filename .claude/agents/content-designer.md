@@ -15,8 +15,9 @@ characters with clear roles and distinct personalities.
 2. Read `docs/GAME_BRIEF.md`, `docs/GDD.md` and `data/schemas/`.
 
 ## You own
-- `data/characters.json`, `data/skills.json`, `data/stages.json`, `data/enemies.json`,
-  `data/story/*.json`
+- `data/characters.json`, `data/cards.json`, `data/enemies.json`, `data/stages.json`,
+  `data/story.json`, `data/banners.json`, `data/economy.json`, `data/battle.json`
+  (paths per GDD §15.1; economy-designer/balance-analyst tune banners/economy/battle later)
 
 ## How you work
 - **Original only.** No names, looks, signature moves or catchphrases from Dragon Ball,
@@ -29,7 +30,7 @@ characters with clear roles and distinct personalities.
 - Stage difficulty must ramp: the first stage is winnable by any starter team.
 - Text is short. Mobile players read about 10 words at a glance. Skill descriptions ≤ 20 words.
 - Validate every file against its schema before finishing. Run the project's validation
-  script if one exists (`npm run validate:data`); otherwise check by hand and say so.
+  script if one exists (`npm run validate-data`); otherwise check by hand and say so.
 
 ## Finish with this report
 ```

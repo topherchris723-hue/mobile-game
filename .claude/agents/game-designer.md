@@ -33,7 +33,7 @@ You do not write code or game content. You define the rules others implement.
 - Mark every section with a status: `DRAFT`, `READY` (can be built), or `BUILT`.
 
 ## Data schemas
-- One schema per data file: characters, skills, stages, banners, items, economy.
+- One schema per data file listed in GDD §15.1 (`data/schemas/<file>.schema.json`).
 - Use stable string IDs (`char_kai_001`), never array positions.
 - Include a `version` field in every data file so the Unity port can migrate data.
 
