@@ -138,6 +138,85 @@ playable, owned fighters of distinct families:
 unlocked; any other unlocks when that stage's record has `cleared: true`. `stagesById` is `content.stages`
 from `createContent`. Unknown stage id → `false`.
 
+## Summon (gacha) — GDD §11 round 3 (`src/logic/summon.js`, `src/state/summon-save.js`)
+
+Pure and deterministic. Soft currency only. Every number comes from `data/banners.json` and `data/economy.json`.
+Pass the banners file to `createContent`: `createContent({ battle, characters, cards, enemies, stages, economy, banners })`
+(`economy` is required for summons). `content.banners` is a map id → banner.
+
+```js
+import { getOpenBanners, checkSummon, getBannerRates, getPityStatus } from './src/logic/index.js';
+import { summonAndSave } from './src/state/summon-save.js';
+
+const nowIso = new Date().toISOString();
+const banners = getOpenBanners(content, nowIso);           // [] → "No summons available right now." (AC-11.13)
+const chk = checkSummon(save, banners[0].id, 10, content, nowIso);
+// { ok, reason, bannerId, count, currencyId, cost, balance, balanceAfter } → button enabled = chk.ok (AC-11.6);
+// confirm dialog: chk.cost, chk.balanceAfter.
+const r = summonAndSave(window.localStorage, save, banners[0].id, 10, content, Date.now() /*, seed for ?test */);
+if (r.ok) { save = r.saveAfter; /* already written (one setItem) — now play the reveal from r.results */ }
+else if (r.reason === 'save_failed') { /* "Summon failed — no Jade was spent." — keep the old save */ }
+```
+
+**`summon(save, bannerId, count, content, { nowIso, seed | rng })`** (pure; never changes `save`) returns
+`{ ok, reason, seed, banner_id, count, cost, jade_before, jade_after, pity_before, pity_after, results, saveAfter, events }`.
+- `results[i]` = `{ pull (1-based), character_id, rarity (3|4|5), outcome, resonance_after, jade_added, guarantee }`.
+  Results grid: `new` → NEW; `resonance` → "Resonance +1" (R`resonance_after`); `jade` → "+`jade_added` Jade" (amount actually credited,
+  can be 0 at the 999,999 cap).
+- `count` is 1 or `multi_count` (10). Exactly 2 `next()` calls per pull (A rarity, B fighter), also on forced pulls.
+- Rarity per pull (GDD §11.3): hard pity (`pity[group] ≥ hard_pity − 1` → ★5) → on pull 10 of a ×10 only, if no earlier pull of
+  this ×10 reached `min = max(multi_min_rarity, first_multi_min_rarity if the first ×10 is not done)`, draw from rarities ≥ min
+  (`T = Σ rates`, walk ★5 → ★4 → ★3) → normal draw (`floor(A × 10000)`, walk ★5 → ★4 → ★3).
+- Fighter: integer weights (featured `share × n`, non-featured `10000 − S`, `W = 10000 × n`; n = 0 → `share`, `W = S`); candidate
+  order `featured[]` then `pool[]`; `w = floor(B × W)`.
+- Counters: ★5 → `pity[group] = 0`, else +1; a ×10 sets `first_multi_done[banner] = true`; `total_pulls += count`; `updated_at = nowIso`.
+  No new save fields (absent → 0 / false / 0).
+- On a reject: `ok` false, `results` and `events` empty, `saveAfter === save`.
+- The logic never picks a random seed: pass `seed` (uint32) or `rng` (tests). Without either it throws.
+
+**`summonAndSave(storage, save, bannerId, count, content, nowMs, seed?)`** — GDD §11.3 steps 1–5. Picks a seed with
+`crypto.getRandomValues` (fallback `Math.random`) unless one is given, runs `summon`, then writes the whole save with **one**
+`setItem` **before returning**, so the UI can only start the reveal after the save (anti-reroll, AC-11.5). If `setItem` throws it
+returns `{ ok: false, reason: 'save_failed', results: [], saveAfter: <the unchanged input save> }` (AC-11.10). `saved` tells
+whether it was written. The returned `seed` is for bug reports (not saved). The UI must still block a second summon while one is
+being processed or revealed (AC-11.12).
+
+**Display helpers.**
+- `getBannerRates(bannerId, content)` → `null` or `{ bannerId, name, currencyId, costSingle, costMulti, multiCount,
+  rarities: [{ rarity, bp, percentText }], fighters: [{ characterId, rarity, featured, weight, totalWeight, exactBp, bp, percentText }],
+  rules: { pityGroup, hardPity, multiMinRarity, firstMultiMinRarity|null, maxResonance, overflowCurrencyId, overflowAmountByRarity } }`,
+  ★5 first, fighters in candidate order. `percentText` = 2 decimals; fighter values are rounded half-up, so show the GDD note
+  "Fighter rates are rounded to 2 decimals." (AC-11.4).
+- `getPityStatus(save, bannerId, content)` → `null` or `{ bannerId, group, counter, hardPity, pullsUntilGuaranteed, firstMultiAvailable,
+  firstMultiMinRarity|null }`. "★5 guaranteed within `pullsUntilGuaranteed` summons." (= max(1, hard_pity − counter)); show the
+  first-×10 line while `firstMultiAvailable` (AC-11.11).
+- `getOpenBanners(content, nowIso)`, `isBannerOpen(banner, nowIso)`, `bpToPercentText(bp)`.
+- Lower level (tests, sims): `rarityFromRoll`, `fighterFromRoll`, `fighterWeights`, `drawPull`.
+
+**Events** (`SUMMON_EVENT_TYPES`): `summon_charged` { bannerId, currencyId, amount, balanceAfter }, `summon_pull` { pull, result },
+`summon_pity_reset` { group, pull }, `summon_currency_capped` { currencyId, lost }.
+
+**Save repair on load (L-gp-001).** `loadSave` always runs `repairSummon(save)` (pure → `{ summon, warnings }`) before schema
+validation, so a damaged or old `summon` section is repaired instead of resetting the whole save. Warnings are
+`{ code, characterId: null, key }`. Well-formed entries for unknown pity groups / banners are kept. A counter above `hard_pity`
+is left as is and means "next pull is ★5". `grantCharacter` now also returns `credited` for the overflow case.
+
+**Tutorial timing (GDD §9.4 round 3).** `buildRules(battle).tutorialPromptMaxS` (data `tutorial_prompt_max_s`, default 20) and
+`tutorialNoneS` (`tutorial_none_s`, default 3) — the UI's tutorial controller should read these instead of its own constants.
+
+### Consumers must handle (L-shared-009)
+
+| New value | Exported list | Consumer (owner) |
+|---|---|---|
+| Reject reasons `unknown_banner`, `invalid_count`, `banner_closed`, `empty_pool`, `insufficient_currency`, `save_failed` | `SUMMON_REJECT_REASONS` | Summon screen buttons / confirm / error text + strings.json (ui-developer) |
+| Outcomes `new`, `resonance`, `jade` | `SUMMON_OUTCOMES` | Results grid tags (ui-developer) |
+| Guarantees `none`, `hard_pity`, `first_multi`, `multi` | `SUMMON_GUARANTEES` | Optional reveal callout (ui-developer, vfx-developer) |
+| Events `summon_charged`, `summon_pull`, `summon_pity_reset`, `summon_currency_capped` | `SUMMON_EVENT_TYPES` | Reveal sequence; Jade-cap warning (ui-developer, vfx-developer, audio-designer) |
+| Load warnings `summon_reset`, `summon_pity_reset`, `summon_pity_entry_dropped`, `summon_first_multi_reset`, `summon_first_multi_entry_dropped`, `summon_total_pulls_reset`, `summon_extra_field` (+ the 7 team codes) | `SAVE_REPAIR_WARNING_CODES` | Home notice after load, if shown by code (ui-developer) |
+| `content.banners` (pass `banners` to `createContent`) | — | `src/ui/game-data.js` (ui-developer) |
+| `rules.tutorialPromptMaxS`, `rules.tutorialNoneS` | — | `src/ui/tutorial.js` (ui-developer) |
+| Result fields are snake_case (`character_id`, `resonance_after`, `jade_added`) per GDD §11.3 | — | ui-developer, qa-tester |
+
 ## Headless runs
 
 `npm run sim -- --stage stage_003 --seed 1 --count 100 --player-tier fighter [--json]` runs AI vs AI with no renderer.

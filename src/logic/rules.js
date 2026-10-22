@@ -137,6 +137,9 @@ export function buildRules(b) {
     timer: { defaultS: b.timer.default_s },
     introTicks: t(b.intro_s),
     tutorialSlowmo: b.tutorial_slowmo,
+    // GDD §9.4 round 3: prompt cap and 'none' step length in seconds of shown time (optional in data)
+    tutorialPromptMaxS: typeof b.tutorial_prompt_max_s === 'number' ? b.tutorial_prompt_max_s : 20,
+    tutorialNoneS: typeof b.tutorial_none_s === 'number' ? b.tutorial_none_s : 3,
     typeChart: b.type_chart,
     aiTiers: aiTiers,
   };

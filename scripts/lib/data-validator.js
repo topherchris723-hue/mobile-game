@@ -303,7 +303,11 @@ export function validateDataset(data, schemas, banned, extraFiles) {
       else if (ch.playable !== true) err('4-banner', 'banners.json', p + '.featured[' + j + ']', id + ' is not playable');
       if (pool.indexOf(id) < 0) err('4-banner', 'banners.json', p + '.featured[' + j + ']', id + ' is featured but not in pool');
     });
-    for (const rarityKey of Object.keys(rates)) {
+    // GDD §15.3 rule 4 (round 3): ★5 always counts as "a rarity with a rate > 0", because hard pity can force a ★5
+    // even when rates_bp["5"] is 0. AC-11.14.
+    const rarityKeys = Object.keys(rates);
+    if (rarityKeys.indexOf('5') < 0) rarityKeys.push('5');
+    for (const rarityKey of rarityKeys) {
       const rarity = Number(rarityKey);
       const inPool = pool.filter((id) => charById[id] && charById[id].rarity === rarity);
       const feat = featured.filter((f) => f && charById[f.character_id] && charById[f.character_id].rarity === rarity);
@@ -311,8 +315,8 @@ export function validateDataset(data, schemas, banned, extraFiles) {
       for (const f of feat) share += f.share_bp;
       const nonFeatured = inPool.filter((id) => !feat.some((f) => f.character_id === id));
       if (share > 10000) err('4-banner', 'banners.json', p + '.featured', 'rarity ' + rarity + ' featured shares sum to ' + share + ' (> 10000)');
-      if (rates[rarityKey] > 0) {
-        if (inPool.length === 0) err('4-banner', 'banners.json', p + '.pool', 'rarity ' + rarity + ' has rate > 0 but no pool fighter');
+      if (rates[rarityKey] > 0 || rarity === 5) {
+        if (inPool.length === 0) err('4-banner', 'banners.json', p + '.pool', 'rarity ' + rarity + (rarity === 5 ? ' (hard pity target)' : ' has rate > 0 but') + ' has no pool fighter');
         if (nonFeatured.length === 0 && feat.length > 0 && share !== 10000) {
           err('4-banner', 'banners.json', p + '.featured', 'rarity ' + rarity + ' has no non-featured fighters, so featured shares must sum to 10000 (got ' + share + ')');
         }

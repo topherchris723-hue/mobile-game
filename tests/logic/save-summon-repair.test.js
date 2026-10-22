@@ -44,7 +44,7 @@ function expectPlayable(r) {
   expect(validate(r.save)).toBe(true);
   const b = createBattle({ content, stageId: 'stage_001', playerTeam: r.save.team.slice(), skipIntro: true }, 1);
   expect(b.getState().teams.player.fighters.length).toBe(3);
-  const sm = summon(r.save, BANNER.id, BANNER.multi_count, content, { nowIso: NOW_ISO });
+  const sm = summon(r.save, BANNER.id, BANNER.multi_count, content, { nowIso: NOW_ISO, seed: 7 });
   expect(sm.ok).toBe(true);
   expect(validate(sm.saveAfter)).toBe(true);
 }
@@ -125,7 +125,7 @@ describe('L-gp-001: summon section repair on load (progress kept, not reset)', (
     s.summon.pity[BANNER.pity.group] = BANNER.pity.hard_pity + 100;
     const { r } = load(s);
     expect(r.repaired).toBe(false);
-    const sm = summon(r.save, BANNER.id, 1, content, { nowIso: NOW_ISO });
+    const sm = summon(r.save, BANNER.id, 1, content, { nowIso: NOW_ISO, seed: 7 });
     expect(sm.results[0].rarity).toBe(5);
     expectPlayable(r);
   });

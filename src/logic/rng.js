@@ -4,6 +4,7 @@
 export class SeededRng {
   /** Create a generator from a 32-bit integer seed. */
   constructor(seed) {
+    this.seed = seed >>> 0; // the starting seed, kept for bug reports (summon result `seed`)
     this.state = seed >>> 0;
   }
 

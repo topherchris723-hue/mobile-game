@@ -124,7 +124,7 @@ describe('§12 / §13 save data', () => {
     const save = createFreshSave(economy, NOW_ISO);
     const tavi = characters.char_tavi_001;
     for (let i = 1; i <= 4; i++) expect(grantCharacter(save, economy, tavi, NOW_ISO)).toEqual({ kind: 'resonance', resonance: i });
-    expect(grantCharacter(save, economy, tavi, NOW_ISO)).toEqual({ kind: 'currency', amount: 10 });
+    expect(grantCharacter(save, economy, tavi, NOW_ISO)).toEqual({ kind: 'currency', amount: 10, credited: 10 });
     expect(grantCharacter(save, economy, characters.char_solenne_001, NOW_ISO)).toEqual({ kind: 'new' });
     expect(addCurrency(save, economy, 'cur_jade', 5000000)).toBe(999999 - 1010);
     expect(save.currencies.cur_jade).toBe(999999);

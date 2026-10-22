@@ -1,0 +1,12 @@
+{
+  "name": "ok-rule4-five-star-rate-zero-with-five-in-pool (must PASS)",
+  "file": "banners.json",
+  "ops": [
+    { "op": "set", "path": ["banners", 0, "rates_bp"], "value": { "3": 9000, "4": 1000, "5": 0 } },
+    { "op": "set", "path": ["banners", 0, "pool"], "value": ["char_tavi_001", "char_pell_001", "char_solenne_001"] },
+    { "op": "set", "path": ["banners", 0, "featured"], "value": [] }
+  ],
+  "expect": {
+    "errorRule": null
+  }
+}

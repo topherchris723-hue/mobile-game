@@ -301,7 +301,8 @@ export function addCurrency(save, economy, currencyId, amount) {
 
 /**
  * Give one copy of a character (GDD §11.4): new → roster at R0; duplicate → Resonance +1 up to max;
- * beyond max → overflow currency by rarity. Returns { kind: 'new'|'resonance'|'currency', amount? }.
+ * beyond max → overflow currency by rarity, capped at the currency max (GDD §11.4).
+ * Returns { kind: 'new'|'resonance'|'currency', resonance?, amount? (data amount), credited? (actually added) }.
  */
 export function grantCharacter(save, economy, character, nowIso) {
   const d = economy.duplicates;
@@ -312,8 +313,8 @@ export function grantCharacter(save, economy, character, nowIso) {
         return { kind: 'resonance', resonance: r.resonance };
       }
       const amount = d.overflow_amount_by_rarity[String(character.rarity)];
-      addCurrency(save, economy, d.overflow_currency_id, amount);
-      return { kind: 'currency', amount: amount };
+      const credited = addCurrency(save, economy, d.overflow_currency_id, amount);
+      return { kind: 'currency', amount: amount, credited: credited }; // credited < amount at the currency cap
     }
   }
   save.roster.push({ character_id: character.id, resonance: 0, obtained_at: nowIso });
