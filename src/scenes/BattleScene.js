@@ -11,8 +11,10 @@ import { FighterView } from '../ui/fighter-view.js';
 import { BattleHud } from '../ui/battle-hud.js';
 import { sfx, haptic } from '../ui/feedback.js';
 import { cardColor } from '../ui/icons.js';
+import { FloatPlacer } from '../ui/float-placer.js';
 
 const TICK_MS = 1000 / 60;
+const MENU_ARM_MS = 300; // new menus (and the battle after a menu closes) ignore input this long
 const MAX_STEPS_PER_FRAME = 8; // keeps real-time speed down to ~8 fps; below that the battle slows instead of jumping
 
 function randomSeed() {
@@ -74,9 +76,9 @@ export class BattleScene extends BaseScene {
     });
 
     const st = this.battle.getState();
+    this.render(st, 0); // first: the intro is laid out around the fighters' name labels
     if (st.phase === 'intro') this.showIntro(st);
     if (st.paused) this.openPause();
-    this.render(st, 0);
   }
 
   restartData() {
@@ -114,6 +116,8 @@ export class BattleScene extends BaseScene {
   }
 
   buildFx() {
+    this.floats = new FloatPlacer();
+    this.shoutTxt = {};
     this.fxLayer = this.add.container(0, 0).setDepth(50);
     const a = this.L.arena;
     this.comboText = this.text(16, a.top + 56, '', 22, COLORS.accentText, { fontStyle: 'bold', stroke: '#000000', strokeThickness: 5 }).setOrigin(0, 0.5).setDepth(51).setAlpha(0);
@@ -168,7 +172,7 @@ export class BattleScene extends BaseScene {
     const at = (p) => cam.getWorldPoint(p.x, p.y);
     // Time gestures by the DOM event's own timestamp, not by when a busy frame got round to it.
     const ts = (p) => (p.event && p.event.timeStamp ? p.event.timeStamp : performance.now());
-    const blocked = (w) => this.menuOpen || this.ending || contains(this.L.pause, w.x, w.y);
+    const blocked = (w) => this.menuOpen || this.ending || contains(this.L.pause, w.x, w.y) || performance.now() < (this.inputArmedAt || 0);
     this.input.on('pointerdown', (p) => {
       const w = at(p);
       if (blocked(w)) return;
@@ -310,12 +314,15 @@ export class BattleScene extends BaseScene {
     const bw = W - 64;
     let b1;
     let b2;
+    // BUG-2-03: the destructive "Yes, retreat" never sits where "Retreat" was (that slot holds Cancel),
+    // and every menu button ignores presses for MENU_ARM_MS after it appears.
+    const arm = MENU_ARM_MS;
     if (kind === 'pause') {
-      b1 = this.button({ id: 'menu_resume', x: 32, y: panelTop + 96, w: bw, h: 56, label: t('battle_resume'), onTap: () => this.closePause() });
-      b2 = this.button({ id: 'menu_retreat', x: 32, y: panelTop + 176, w: bw, h: 56, label: t('battle_retreat'), kind: 'secondary', onTap: () => this.showMenu('confirm') });
+      b1 = this.button({ id: 'menu_resume', x: 32, y: panelTop + 96, w: bw, h: 56, label: t('battle_resume'), armMs: arm, onTap: () => this.closePause() });
+      b2 = this.button({ id: 'menu_retreat', x: 32, y: panelTop + 176, w: bw, h: 56, label: t('battle_retreat'), kind: 'secondary', armMs: arm, onTap: () => this.showMenu('confirm') });
     } else {
-      b1 = this.button({ id: 'menu_cancel', x: 32, y: panelTop + 96, w: bw, h: 56, label: t('battle_cancel'), kind: 'secondary', onTap: () => this.showMenu('pause') });
-      b2 = this.button({ id: 'menu_retreat_yes', x: 32, y: panelTop + 176, w: bw, h: 56, label: t('battle_retreat_yes'), kind: 'danger', onTap: () => this.doRetreat() });
+      b1 = this.button({ id: 'menu_retreat_yes', x: 32, y: panelTop + 96, w: bw, h: 56, label: t('battle_retreat_yes'), kind: 'danger', armMs: arm, onTap: () => this.doRetreat() });
+      b2 = this.button({ id: 'menu_cancel', x: 32, y: panelTop + 176, w: bw, h: 56, label: t('battle_cancel'), kind: 'secondary', armMs: arm, onTap: () => this.showMenu('pause') });
     }
     m.add([b1.container, b1.zone, b2.container, b2.zone]);
     for (let i = before; i < this.targets.length; i++) this.targets[i].menu = true;
@@ -330,6 +337,7 @@ export class BattleScene extends BaseScene {
     this.targets = this.targets.filter((tg) => !tg.menu);
     this.menuOpen = false;
     this.acc = 0;
+    this.inputArmedAt = performance.now() + MENU_ARM_MS; // the 2nd tap of a double tap on Resume is not a card tap
     this.battle.setPaused(false);
   }
 
@@ -451,7 +459,7 @@ export class BattleScene extends BaseScene {
           sfx('perfect_slip');
           break;
         case 'dodge':
-          this.floatText(this.fighters[e.side].headPos(), t('battle_dodge'), '#9fd8ff', 16);
+          this.floatText(this.bodyPos(e.side), t('battle_dodge'), '#9fd8ff', 16);
           break;
         case 'riposte':
           this.callout(t('battle_riposte'), '#ffffff', 30, e.side);
@@ -460,12 +468,12 @@ export class BattleScene extends BaseScene {
           sfx('slip');
           break;
         case 'tag':
-          this.floatText(this.fighters[e.side].headPos(), t('battle_tag'), COLORS.accentText, 20);
+          this.floatText(this.bodyPos(e.side), t('battle_tag'), COLORS.accentText, 20);
           this.shoutChar(e.side, st, 'tag_in');
           sfx('tag');
           break;
         case 'tag_strike':
-          this.floatText(this.fighters[e.side].headPos(), t('battle_tag_strike'), COLORS.accentText, 18);
+          this.floatText(this.bodyPos(e.side), t('battle_tag_strike'), COLORS.accentText, 18);
           break;
         case 'ko':
           this.callout(t('battle_ko'), COLORS.bad, 48);
@@ -532,10 +540,12 @@ export class BattleScene extends BaseScene {
     this.hud.onDamage(target);
     const pos = fv.headPos();
     const crit = e.crit;
-    this.floatText({ x: pos.x + (Math.random() - 0.5) * 30, y: pos.y + 10 }, String(e.damage), crit ? '#ffd84a' : '#ffffff', crit ? 26 : 20, true);
-    if (crit) this.floatText({ x: pos.x, y: pos.y - 22 }, t('battle_crit'), '#ffd84a', 14);
-    if (e.typeMult > 1.0001 && e.hitIndex === 0) this.floatText({ x: pos.x, y: pos.y - 40 }, t('battle_weak'), COLORS.good, 16);
-    if (e.typeMult < 0.9999 && e.hitIndex === 0) this.floatText({ x: pos.x, y: pos.y - 40 }, t('battle_resist'), COLORS.textDim, 14);
+    // Numbers and type tags share the body row under the name labels; the placer stacks them (BUG-2-10).
+    const bodyY = this.L.arena.floorY - 50;
+    this.floatText({ x: pos.x, y: bodyY }, String(e.damage), crit ? '#ffd84a' : '#ffffff', crit ? 26 : 20, true);
+    if (crit) this.floatText({ x: pos.x, y: bodyY - 30 }, t('battle_crit'), '#ffd84a', 14);
+    if (e.typeMult > 1.0001 && e.hitIndex === 0) this.floatText({ x: pos.x, y: bodyY - 30 }, t('battle_weak'), COLORS.good, 16);
+    if (e.typeMult < 0.9999 && e.hitIndex === 0) this.floatText({ x: pos.x, y: bodyY - 30 }, t('battle_resist'), COLORS.textDim, 14);
     this.impact(pos.x, pos.y + 60, cardColor(e.cardType));
     if (target === 'player') haptic(20);
     if (e.cardType === 'climax' || crit) this.cameras.main.shake(120, 0.006);
@@ -547,15 +557,102 @@ export class BattleScene extends BaseScene {
     const pos = this.fighters[target].headPos();
     this.fighters[target].hitFlash();
     this.hud.onDamage(target);
-    this.floatText({ x: pos.x + (Math.random() - 0.5) * 40, y: pos.y + 10 }, String(e.damage), '#ffa53d', 28, true);
+    this.floatText({ x: pos.x, y: this.L.arena.floorY - 50 }, String(e.damage), '#ffa53d', 28, true);
   }
 
   // ------------------------------------------------------------------ fx helpers
-  floatText(pos, str, color, size, pop) {
-    const tx = this.text(pos.x, pos.y, str, size, color, { fontStyle: 'bold', stroke: '#000000', strokeThickness: 4 }).setOrigin(0.5).setDepth(60);
-    if (pop) tx.setScale(1.6);
+  bodyPos(side) {
+    return { x: this.fighters[side].headPos().x, y: this.L.arena.floorY - 50 };
+  }
+
+  /**
+   * Rows for floating texts (logical y). The fighters' name labels sit on one fixed row; nothing floats
+   * across it. `upper` = above the names (shouts, callouts), `body` = below them (numbers, tags).
+   */
+  floatBands() {
+    const a = this.L.arena;
+    const fp = this.fighters.player;
+    const fe = this.fighters.enemy;
+    const nameTop = Math.min(fp.nameTop(), fe.nameTop());
+    const nameBottom = Math.max(fp.nameBottom(), fe.nameBottom());
+    return { upper: { top: a.top + 2, bottom: nameTop - 2 }, body: { top: nameBottom + 2, bottom: a.floorY - 2 } };
+  }
+
+  /** Fixed texts the floating ones must not cover: name labels, combo counters, the tutorial prompt. */
+  floatAvoid() {
+    const out = [this.fighters.player.nameRect(), this.fighters.enemy.nameRect()];
+    for (const tx of [this.comboText, this.comboHits, this.enemyCombo]) {
+      if (tx && tx.alpha > 0.05 && tx.text) {
+        const b = tx.getBounds();
+        out.push({ x: b.x, y: b.y, w: b.width, h: b.height });
+      }
+    }
+    if (this.tutLayer && this.tutLayer.visible && this.tutRect) out.push(this.tutRect);
+    return out;
+  }
+
+  /**
+   * Spawn one floating text through the placer. o: { x, y, str, size, color, style, bands: ['body'|'upper'],
+   * priority, pop (start scale), rise (px), hold (ms before fading), fade (ms), depth }.
+   * Returns the Text or null when there is no room (low-priority texts are simply skipped).
+   */
+  spawnFloat(o) {
+    const style = Object.assign({ fontStyle: 'bold', stroke: '#000000', strokeThickness: 4, align: 'center' }, o.style || {});
+    const tx = this.text(0, 0, o.str, o.size, o.color, style).setOrigin(0.5).setDepth(o.depth || 60);
+    const pop = o.pop || 1;
+    const rise = o.rise || 0;
+    const hold = o.hold !== undefined ? o.hold : 180;
+    const fade = o.fade || 650;
+    const bands = this.floatBands();
+    const evict = () => {
+      this.tweens.killTweensOf(tx);
+      tx.destroy();
+    };
+    const res = this.floats.place({
+      w: tx.width * pop + 2,
+      h: tx.height * pop + rise + 2,
+      x: o.x,
+      y: o.y,
+      bands: (o.bands || ['body']).map((k) => bands[k]),
+      avoid: this.floatAvoid(),
+      minX: 2,
+      maxX: this.L.W - 2,
+      now: this.time.now,
+      ttl: hold + fade + 160,
+      priority: o.priority || 0,
+      onEvict: evict,
+    });
+    if (!res) {
+      tx.destroy();
+      return null;
+    }
+    tx.setPosition(res.x, res.y + rise / 2).setScale(pop);
+    if (o.fadeIn) {
+      tx.setAlpha(0);
+      this.tweens.add({ targets: tx, alpha: 1, duration: 120 });
+    }
     this.tweens.add({ targets: tx, scale: 1, duration: 140, ease: 'Back.Out' });
-    this.tweens.add({ targets: tx, y: pos.y - 36, alpha: 0, duration: 650, delay: 180, ease: 'Quad.In', onComplete: () => tx.destroy() });
+    this.tweens.add({
+      targets: tx,
+      y: res.y - rise / 2,
+      alpha: 0,
+      duration: fade,
+      delay: hold,
+      ease: 'Quad.In',
+      onComplete: () => {
+        this.floats.release(evict);
+        tx.destroy();
+      },
+    });
+    tx.evict = () => {
+      this.floats.release(evict);
+      evict();
+    };
+    return tx;
+  }
+
+  floatText(pos, str, color, size, pop) {
+    return this.spawnFloat({ x: pos.x, y: pos.y, str, color, size, pop: pop ? 1.35 : 1, rise: 14, bands: ['body'], priority: 2 });
   }
 
   impact(x, y, color) {
@@ -572,10 +669,18 @@ export class BattleScene extends BaseScene {
     const a = this.L.arena;
     const x = side === 'enemy' ? this.L.W * 0.66 : side === 'player' ? this.L.W * 0.34 : this.L.W / 2;
     const y = a.top + (a.floorY - a.top) * 0.35;
-    const tx = this.text(x, y, str, size, color, { fontStyle: 'bold', stroke: '#000000', strokeThickness: 6, align: 'center' }).setOrigin(0.5).setDepth(65);
-    tx.setScale(2).setAlpha(0);
-    this.tweens.add({ targets: tx, scale: 1, alpha: 1, duration: 160, ease: 'Back.Out' });
-    this.tweens.add({ targets: tx, alpha: 0, y: y - 20, duration: 300, delay: 750, onComplete: () => tx.destroy() });
+    return this.spawnFloat({
+      x, y, str, color, size,
+      style: { strokeThickness: 6 },
+      bands: ['upper', 'body'],
+      priority: size >= 40 ? 4 : 3,
+      pop: 1.3,
+      fadeIn: true,
+      rise: 12,
+      hold: 750,
+      fade: 300,
+      depth: 65,
+    });
   }
 
   smallFlash(str) {
@@ -589,14 +694,22 @@ export class BattleScene extends BaseScene {
   shout(side, str) {
     if (!str) return;
     const pos = this.fighters[side].headPos();
-    const x = Math.max(70, Math.min(this.L.W - 70, pos.x));
-    if (this.shoutTxt && this.shoutTxt[side]) this.shoutTxt[side].destroy();
-    this.shoutTxt = this.shoutTxt || {};
-    const tx = this.text(x, pos.y - 26, str, 13, '#ffffff', { fontStyle: 'italic', align: 'center', stroke: '#000000', strokeThickness: 3, wordWrap: { width: 150 } }).setOrigin(0.5, 1).setDepth(58);
-    this.shoutTxt[side] = tx;
-    tx.setScale(0.6);
-    this.tweens.add({ targets: tx, scale: 1, duration: 120, ease: 'Back.Out' });
-    this.tweens.add({ targets: tx, alpha: 0, duration: 300, delay: 900, onComplete: () => tx.destroy() });
+    const old = this.shoutTxt[side];
+    if (old && old.scene && old.evict) old.evict();
+    this.shoutTxt[side] = this.spawnFloat({
+      x: pos.x,
+      y: this.floatBands().upper.bottom - 12,
+      str,
+      size: 13,
+      color: '#ffffff',
+      style: { fontStyle: 'italic', strokeThickness: 3, wordWrap: { width: 150 } },
+      bands: ['upper'],
+      priority: 1,
+      pop: 1.1,
+      hold: 900,
+      fade: 300,
+      depth: 58,
+    });
   }
 
   shoutChar(side, st, key) {
@@ -627,14 +740,26 @@ export class BattleScene extends BaseScene {
     const e = st.teams.enemy.fighters[st.teams.enemy.activeSlot];
     const c = this.add.container(0, 0).setDepth(75);
     const g = this.add.graphics();
-    g.fillStyle(0x000000, 0.55);
-    g.fillRect(0, a.top + 40, W, 120);
     c.add(g);
-    c.add(this.text(W * 0.25, a.top + 80, p.name, 24, hex(auraColor(p.aura)), { fontStyle: 'bold', stroke: '#000000', strokeThickness: 5 }).setOrigin(0.5));
-    c.add(this.text(W / 2, a.top + 80, t('battle_vs'), 26, COLORS.accentText, { fontStyle: 'bold', stroke: '#000000', strokeThickness: 5 }).setOrigin(0.5));
-    c.add(this.text(W * 0.75, a.top + 80, e.name, 24, hex(auraColor(e.aura)), { fontStyle: 'bold', stroke: '#000000', strokeThickness: 5 }).setOrigin(0.5));
+    // BUG-2-09: stack names, then the shout, inside a band that ends above the fighters' name labels.
+    const top = a.top + 8;
+    const limit = this.floatBands().upper.bottom; // just above the name labels
+    const rowY = top + 24;
+    const nameStyle = { fontStyle: 'bold', stroke: '#000000', strokeThickness: 5 };
+    c.add(this.text(W * 0.25, rowY, p.name, 24, hex(auraColor(p.aura)), nameStyle).setOrigin(0.5));
+    c.add(this.text(W / 2, rowY, t('battle_vs'), 26, COLORS.accentText, nameStyle).setOrigin(0.5));
+    c.add(this.text(W * 0.75, rowY, e.name, 24, hex(auraColor(e.aura)), nameStyle).setOrigin(0.5));
+    let bottom = rowY + 22;
     const ch = data.character(p.characterId);
-    if (ch && ch.shouts && ch.shouts.intro) c.add(this.text(W / 2, a.top + 128, ch.shouts.intro, 14, '#ffffff', { fontStyle: 'italic', align: 'center', wordWrap: { width: W - 40 } }).setOrigin(0.5));
+    if (ch && ch.shouts && ch.shouts.intro) {
+      const sh = this.text(W / 2, bottom + 4, ch.shouts.intro, 14, '#ffffff', { fontStyle: 'italic', align: 'center', wordWrap: { width: W - 40 } }).setOrigin(0.5, 0);
+      if (sh.y + sh.height > limit - 4) sh.setY(Math.max(rowY + 18, limit - 4 - sh.height));
+      c.add(sh);
+      bottom = sh.y + sh.height;
+    }
+    const panelBottom = Math.min(limit - 1, bottom + 8);
+    g.fillStyle(0x000000, 0.55);
+    g.fillRect(0, top, W, panelBottom - top);
     c.setAlpha(0);
     this.tweens.add({ targets: c, alpha: 1, duration: 200 });
     this.introC = c;
@@ -713,6 +838,7 @@ export class BattleScene extends BaseScene {
       this.tutBox.clear();
       this.tutBox.fillStyle(0x000000, 0.8);
       this.tutBox.fillRoundedRect(16, y, L.W - 32, h, 12);
+      this.tutRect = { x: 16, y: y, w: L.W - 32, h: h };
       this.tutBox.lineStyle(2, COLORS.accent, 1);
       this.tutBox.strokeRoundedRect(16, y, L.W - 32, h, 12);
       this.tutLayer.setVisible(true).setAlpha(0);

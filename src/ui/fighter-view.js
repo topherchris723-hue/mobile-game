@@ -11,8 +11,12 @@ export class FighterView {
     this.glow = scene.add.graphics();
     this.body = scene.add.graphics();
     this.windupRing = scene.add.graphics();
-    this.nameTag = scene.text(0, -112, '', 13, COLORS.text, { fontStyle: 'bold', stroke: '#000000', strokeThickness: 3 }).setOrigin(0.5);
-    this.root.add([this.glow, this.windupRing, this.body, this.nameTag]);
+    // The name label lives outside the rotating body so it stays on one fixed row above the head
+    // (it never swings into the damage-number area on Knockdown/KO; floating texts avoid this row).
+    this.nameTag = scene.text(0, 0, '', 13, COLORS.text, { fontStyle: 'bold', stroke: '#000000', strokeThickness: 3 }).setOrigin(0.5).setDepth(1);
+    this.nameOffset = -122;
+    this.floorY = 0;
+    this.root.add([this.glow, this.windupRing, this.body]);
     this.key = null;
     this.flash = 0;
     this.x = null;
@@ -55,7 +59,8 @@ export class FighterView {
     g.strokeCircle(28 * s * this.facing, -58 * s, 8 * s);
     drawAuraIcon(g, f.aura, 0, -56 * s, 9, 0xffffff);
     this.nameTag.setText(f.name);
-    this.nameTag.setY(-122 * s);
+    this.nameOffset = -122 * s;
+    this.scale = s;
     this.aura = f.aura;
   }
 
@@ -112,7 +117,9 @@ export class FighterView {
     this.root.setPosition(this.x + ox, floorY + oy);
     this.root.setRotation(rot);
     this.body.setAlpha(alpha);
-    this.nameTag.setRotation(-rot);
+    this.floorY = floorY;
+    this.nameTag.setPosition(this.x + ox, floorY + this.nameOffset);
+    this.nameTag.setAlpha(st === 'KO' ? 0.6 : 1);
 
     // Ignition aura glow / hit flash
     this.glow.clear();
@@ -141,5 +148,20 @@ export class FighterView {
 
   headPos() {
     return { x: this.root.x, y: this.root.y - 120 };
+  }
+
+  /** Bounds of the name label in logical px (its row is fixed; only x follows the fighter). */
+  nameRect() {
+    const b = this.nameTag.getBounds();
+    return { x: b.x, y: b.y, w: b.width, h: b.height };
+  }
+
+  /** Top of the name row (y) — the same for every pose. */
+  nameTop() {
+    return this.floorY + this.nameOffset - this.nameTag.height / 2;
+  }
+
+  nameBottom() {
+    return this.floorY + this.nameOffset + this.nameTag.height / 2;
   }
 }

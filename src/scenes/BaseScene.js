@@ -60,6 +60,8 @@ export class BaseScene extends Phaser.Scene {
   /**
    * A button: rounded rect + label. Press state on pointerdown (scale + highlight, < 1 frame),
    * action on release inside. kind: 'primary' | 'secondary' | 'danger' | 'disabled'.
+   * armMs: ignore presses for this long after the button is created, so the second tap of a double tap
+   * that opened a menu cannot hit a button drawn under the finger (BUG-2-03). Use it for every new menu.
    */
   button(opts) {
     const o = Object.assign({ kind: 'primary', fontSize: 20, enabled: true }, opts);
@@ -108,8 +110,10 @@ export class BaseScene extends Phaser.Scene {
     };
     draw();
     const zone = this.add.zone(o.x, o.y, w, h).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+    const armedAt = performance.now() + (o.armMs || 0);
     zone.on('pointerdown', () => {
       if (this.leaving) return;
+      if (performance.now() < armedAt) return;
       state.pressed = true;
       c.setScale(0.95);
       draw();

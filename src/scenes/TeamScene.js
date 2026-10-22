@@ -44,7 +44,7 @@ export class TeamScene extends BaseScene {
     this.dyn.removeAll(true);
     this.targets = this.targets.filter((tg) => !tg.dynamic);
     const { W, H } = this;
-    const team = data.save.team;
+    const team = data.team();
     const slotW = 104;
     const slotH = 132;
     const gap = 8;
@@ -86,6 +86,7 @@ export class TeamScene extends BaseScene {
 
   fighterTile(charId, x, y, w, h, selected, badge, id, onTap, compact) {
     const ch = data.character(charId);
+    if (!ch) return null; // unknown id: draw nothing rather than crash (BUG-2-04 guard)
     const c = this.add.container(x + w / 2, y + h / 2);
     const g = this.add.graphics();
     const col = auraColor(ch.aura);
@@ -119,7 +120,7 @@ export class TeamScene extends BaseScene {
   }
 
   place(charId) {
-    const team = data.save.team.slice();
+    const team = data.team().slice();
     const from = team.indexOf(charId);
     if (from === this.selected) return;
     if (from >= 0) {

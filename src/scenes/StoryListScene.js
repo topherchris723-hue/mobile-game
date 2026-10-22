@@ -39,28 +39,47 @@ export class StoryListScene extends BaseScene {
         onDisabledTap: () => this.toast(t('stage_locked'), y - 24),
       });
       const c = btn.container;
-      const left = -(W - 32) / 2 + 12;
+      const innerW = W - 32;
+      const left = -innerW / 2 + 12;
+      const right = innerW / 2 - 10;
       const nameColor = unlocked ? COLORS.text : COLORS.textDim;
-      c.add(this.text(left, -cardH / 2 + 8, stage.order + '. ' + stage.name, 15, nameColor, { fontStyle: 'bold' }));
+      const title = this.text(left, -cardH / 2 + 8, stage.order + '. ' + stage.name, 15, nameColor, { fontStyle: 'bold' });
+      c.add(title);
       c.add(
         this.text(left, -cardH / 2 + 30, unlocked ? stage.description : t('stage_locked'), 12, COLORS.textDim, {
-          wordWrap: { width: W - 32 - 24 },
+          wordWrap: { width: innerW - 24 },
           maxLines: 2,
         })
       );
       const powerOk = teamPower >= stage.recommended_power;
-      c.add(
-        this.text(left, cardH / 2 - 20, t('stage_rec_power', { rec: stage.recommended_power, team: teamPower }), 12, powerOk ? COLORS.good : COLORS.bad)
-      );
+      const power = this.text(left, cardH / 2 - 20, t('stage_rec_power', { rec: stage.recommended_power, team: teamPower }), 12, powerOk ? COLORS.good : COLORS.bad);
+      c.add(power);
       if (rec && rec.cleared) {
         const total = (stage.missions || []).length;
-        const tag = this.text((W - 32) / 2 - 10, -cardH / 2 + 9, t('stage_cleared'), 12, COLORS.good, { fontStyle: 'bold' }).setOrigin(1, 0);
+        const tag = this.text(right, -cardH / 2 + 9, t('stage_cleared'), 12, COLORS.good, { fontStyle: 'bold' }).setOrigin(1, 0);
         c.add(tag);
-        c.add(
-          this.text((W - 32) / 2 - 10, cardH / 2 - 20, t('stage_missions', { done: rec.missions_completed.length, total: total }), 12, COLORS.textDim).setOrigin(1, 0)
-        );
+        // BUG-2-06: the Missions count shares the bottom row with the power line. Never let them touch:
+        // fall back to the short form, then trim the power line.
+        const vars = { done: rec.missions_completed.length, total: total };
+        const ms = this.text(right, cardH / 2 - 20, t('stage_missions', vars), 12, COLORS.textDim).setOrigin(1, 0);
+        if (power.x + power.width + 12 > right - ms.width) ms.setText(t('stage_missions_short', vars));
+        c.add(ms);
+        this.fitText(power, right - ms.width - 12 - left);
+        this.fitText(title, right - tag.width - 10 - left);
+      } else {
+        this.fitText(title, right - left);
+        this.fitText(power, right - left);
       }
     });
+  }
+
+  /** Trim a one-line text with an ellipsis until it is at most maxW wide. */
+  fitText(tx, maxW) {
+    let str = tx.text;
+    while (tx.width > maxW && str.length > 1) {
+      str = str.slice(0, -1);
+      tx.setText(str.trimEnd() + '…');
+    }
   }
 
   startStage(stage) {

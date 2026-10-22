@@ -10,3 +10,8 @@ export function t(key, vars) {
   }
   return s;
 }
+
+/** True if the strings table has this key (use before showing a key built from a logic enum). */
+export function hasString(key) {
+  return table.strings[key] !== undefined;
+}

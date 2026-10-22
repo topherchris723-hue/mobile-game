@@ -13,7 +13,7 @@ import story from '../../data/story.json';
 import saveSchema from '../../data/schemas/save.schema.json';
 
 import { createContent, playerFighterDef, formulas } from '../logic/index.js';
-import { loadSave, writeSave, applyBattleResult, checkTeamFamilies } from '../state/save.js';
+import { loadSave, writeSave, applyBattleResult, checkTeamFamilies, isStageUnlocked } from '../state/save.js';
 
 const content = createContent({ battle, characters, cards, enemies, stages, economy });
 
@@ -60,6 +60,7 @@ export const data = {
     const res = loadSave(this.storage, { validate, economy, characters: content.characters, nowMs: Date.now() });
     this.save = res.save;
     this.saveDamaged = res.damaged;
+    if (res.repaired && res.warnings && res.warnings.length) console.warn('[save] team repaired on load', res.warnings);
   },
 
   persist() {
@@ -95,24 +96,33 @@ export const data = {
     return this.save.stages[id] || null;
   },
 
-  /**
-   * GDD §9.1: stage unlocked if it requires nothing or its required stage is cleared.
-   * NOTE for the Producer: this one-line progression rule lives here because src/state/save.js has no
-   * isStageUnlocked() yet; it should move there.
-   */
+  /** GDD §9.1 (rule lives in src/state/save.js). */
   isUnlocked(stage) {
-    if (!stage.unlock_requires) return true;
-    const rec = this.save.stages[stage.unlock_requires];
-    return !!(rec && rec.cleared);
+    return isStageUnlocked(this.save, stage.id, content.stages);
   },
 
   rosterEntry(charId) {
     return this.save.roster.find((r) => r.character_id === charId) || null;
   },
 
+  /**
+   * The team the UI shows and fields. loadSave already repairs the team (BUG-2-04/05); this is a second,
+   * read-only guard so no screen can crash on an id the data does not know: if any slot is unknown,
+   * fall back to the starter team and log a warning. Never writes the save.
+   */
+  team() {
+    const t = this.save && this.save.team;
+    if (Array.isArray(t) && t.length === 3 && t.every((id) => !!content.characters[id])) return t;
+    if (!this.warnedTeam) {
+      this.warnedTeam = true;
+      console.warn('[team] save team has unknown character ids; using the starter team', t);
+    }
+    return economy.starting.team.filter((id) => !!content.characters[id]);
+  },
+
   /** Team as logic entries ({ characterId, resonance }). */
   teamEntries() {
-    return this.save.team.map((id) => {
+    return this.team().map((id) => {
       const r = this.rosterEntry(id);
       return { characterId: id, resonance: r ? r.resonance : 0 };
     });
@@ -130,7 +140,7 @@ export const data = {
 
   teamPower(team) {
     let p = 0;
-    for (const id of team || this.save.team) p += this.fighterPower(id);
+    for (const id of team || this.team()) if (content.characters[id]) p += this.fighterPower(id);
     return p;
   },
 

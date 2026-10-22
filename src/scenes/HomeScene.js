@@ -14,10 +14,11 @@ export class HomeScene extends BaseScene {
     this.topBar(t('game_title'));
 
     // Team preview in the upper half (non-interactive).
-    const team = data.save.team;
+    const team = data.team();
     const g = this.add.graphics();
     team.forEach((id, i) => {
       const ch = data.character(id);
+      if (!ch) return; // data.team() only returns known ids; belt and braces
       const cx = W / 2 + (i - 1) * 104;
       const cy = H * 0.3;
       g.fillStyle(COLORS.panel, 1);

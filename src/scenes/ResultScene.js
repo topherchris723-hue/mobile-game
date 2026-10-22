@@ -3,6 +3,7 @@ import { BaseScene, t } from './BaseScene.js';
 import { COLORS } from '../ui/theme.js';
 import { data } from '../ui/game-data.js';
 import { sfx } from '../ui/feedback.js';
+import { hasString } from '../ui/strings.js';
 
 export class ResultScene extends BaseScene {
   constructor() {
@@ -25,7 +26,8 @@ export class ResultScene extends BaseScene {
     sfx('result_' + res.outcome);
 
     const reasonKey = 'result_reason_' + res.reason;
-    if (res.outcome !== 'win' && res.reason) this.text(W / 2, 152, t(reasonKey), 14, COLORS.textDim).setOrigin(0.5);
+    if (res.reason && !hasString(reasonKey)) console.warn('[result] no string for reason', res.reason);
+    if (res.outcome !== 'win' && res.reason && hasString(reasonKey)) this.text(W / 2, 152, t(reasonKey), 14, COLORS.textDim).setOrigin(0.5);
     this.text(W / 2, 180, t('result_time', { time: (res.timeElapsedS || 0).toFixed(1) }), 16, COLORS.text).setOrigin(0.5);
     const s = res.stats || {};
     this.text(W / 2, 206, t('result_stats', { ps: s.perfectSlips || 0, chain: s.maxChain || 0, kos: s.playerKos || 0 }), 12, COLORS.textDim, {
