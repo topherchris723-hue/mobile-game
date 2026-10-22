@@ -116,6 +116,15 @@
         "epithet": { "type": "string", "maxLength": 32 },
         "rarity": { "type": "integer", "minimum": 3, "maximum": 5 },
         "aura": { "$ref": "#/$defs/aura" },
+        "role": {
+          "description": "Optional, descriptive only (no rule effect). GDD §6.",
+          "enum": ["striker", "blaster", "guardian", "trickster"]
+        },
+        "art_brief": {
+          "description": "Optional visual brief for the art-director. GDD §6.",
+          "type": "string",
+          "maxLength": 300
+        },
         "playable": { "type": "boolean", "description": "false = enemy-only; never in banners or rewards." },
         "base_stats": {
           "type": "object",

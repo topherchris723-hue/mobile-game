@@ -82,11 +82,11 @@
       "required": ["trigger", "text", "required_action"],
       "properties": {
         "trigger": {
-          "enum": ["battle_start", "enemy_windup", "card_playable", "vigor_full", "chain_possible", "tag_ready", "ignition_ready", "burst_ready"]
+          "enum": ["battle_start", "enemy_windup", "perfect_slip", "card_playable", "vigor_full", "chain_possible", "tag_ready", "ignition_ready", "burst_ready"]
         },
         "text": { "type": "string", "minLength": 1, "maxLength": 90 },
         "required_action": {
-          "enum": ["play_card", "slip", "dash_forward", "dash_back", "tag", "ignite", "tri_burst", "none"]
+          "enum": ["play_card", "slip", "riposte", "dash_forward", "dash_back", "tag", "ignite", "tri_burst", "none"]
         }
       }
     },

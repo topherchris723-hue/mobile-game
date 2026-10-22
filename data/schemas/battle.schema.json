@@ -102,6 +102,13 @@
       "required": ["cooldown_s", "escape_cost", "invuln_s", "strike_power", "strike_hitstun_s", "strike_knockback", "strike_first_hit_delay_s"],
       "properties": {
         "cooldown_s": { "description": "Default 8.", "type": "number", "minimum": 0 },
+        "initial_cooldown_s": {
+          "description": "Tag cooldown at the moment 'FIGHT!' appears. Optional; if absent, code uses the default 5.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 30,
+          "default": 5
+        },
         "escape_cost": { "description": "Default 3.", "type": "number", "minimum": 0 },
         "invuln_s": { "description": "Default 0.5.", "type": "number", "minimum": 0 },
         "strike_power": { "description": "Default 0.8.", "type": "number", "minimum": 0 },

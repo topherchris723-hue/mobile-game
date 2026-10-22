@@ -101,8 +101,11 @@ Tag, Ignition and Tri-Burst get their own prompts when they first become availab
 rarities, and should not appear in card names: Arts, Strike Arts, Blast Arts, Special Arts,
 Ultimate Arts, Ki, Rising Rush, Main Ability, Unique Ability, Z Ability, Vanish, Vanishing Step,
 Cover Change, Z Counter, Sparking, Extreme (as a rarity), Hero (as a rarity), Chrono Crystals,
-Zenkai, Dragon Ball(s), Saiyan, Super Saiyan, Ascended, Kamehameha, Dokkan, Awaken/Awakening,
-Haki, Devil Fruit, Captain Ability, Limit Break, Soul Boost. QA should grep the data for these.
+Zenkai, Dragon Ball(s), Saiyan, Super Saiyan, Ascended, Kamehameha, Spirit Bomb, Solar Flare,
+Dokkan, Awaken/Awakening, Haki, Devil Fruit, Captain Ability, Limit Break, Soul Boost, Chakra, Jutsu,
+Rasengan, Bankai, Hollow, Quirk, Stand (as a power name). QA should grep the data for these.
+"Stand" and "Hollow" are ordinary English words. They are banned only as the name of a power, form,
+creature type or mechanic (e.g. "her Stand", "Hollow form"), not in sentences like "stand your ground".
 
 ---
 
@@ -349,6 +352,11 @@ type and reshuffles your options.
 **Rules** *(data `battle.tag`)*
 - Each team has 3 slots. Slot 1 starts active. Tag is free with `cooldown_s = 8` shared by the team,
   starting when the tag happens. The bench portraits show a radial cooldown.
+- **Initial cooldown:** when "FIGHT!" appears, each team's Tag cooldown starts at `initial_cooldown_s = 5`
+  *(data `battle.tag.initial_cooldown_s`; optional field, default 5 if absent)*. This stops an instant swap
+  before the player has seen slot 1 fight, and it means the tutorial `tag_ready` trigger fires 5 s into the fight.
+  The intro does not count toward this time. `tag_ready` means: the cooldown is 0, the active fighter is in a state
+  that allows Tag, and at least one living bench fighter exists.
 - Tag swaps instantly. The incoming fighter appears at the outgoing fighter's x, in `Idle`, with
   `invuln_s = 0.5`.
 - **Tag Escape:** a Tag while in hitstun. Cost 3 Vigor, plus the normal cooldown. It ends the enemy's chain.
@@ -369,6 +377,8 @@ type and reshuffles your options.
 - An enemy whose KO happens during its own Climax cinematic: the cinematic finishes, then the KO happens.
 
 **Acceptance**
+- AC-5.8.0: With the default data, Tag is impossible for exactly the first 300 unfrozen ticks after "FIGHT!"
+  and possible on tick 300. With `initial_cooldown_s` removed from battle.json, the result is the same (default 5).
 - AC-5.8.1: After a Tag, a second Tag is impossible for exactly 480 ticks.
 - AC-5.8.2: A Tag Escape with Vigor 2.5 fails. With 3.0 it succeeds and the enemy's chain counter resets.
 - AC-5.8.3: When slot 1 is KO'd while slot 2 is alive, slot 2 comes in automatically and Tag is immediately available.
@@ -575,9 +585,22 @@ after `reaction_s`. It never reads the player's hand or inputs before they happe
 A fighter is defined entirely in `data/characters.json` (schema `characters.schema.json`).
 
 **Fields:** `id`, `family` (the same person across variants; a team cannot hold 2 of the same family),
-`name` (≤16 chars), `epithet` (≤32), `rarity` (3/4/5 stars), `aura` (type), `playable` (false =
-enemy-only, never in banners), `base_stats` {hp, atk, def, crit_rate}, `deck`, optional `ignition`,
-`art` keys, `shouts`, `bio` (≤200 chars).
+`name` (≤16 chars), `epithet` (≤32), `rarity` (3/4/5 stars), `aura` (type), optional `role`, optional
+`art_brief` (≤300 chars), `playable` (false = enemy-only, never in banners), `base_stats` {hp, atk, def,
+crit_rate}, `deck`, optional `ignition`, `art` keys, `shouts`, `bio` (≤200 chars).
+
+**Roles** (optional `role`; a label shown on the fighter card and in Team Select; **no rule effect** in this
+milestone). Each role sets what the fighter's deck should emphasise:
+
+| role | Deck emphasis |
+|---|---|
+| `striker` | Fist-heavy, fast windups, chain starters |
+| `blaster` | Bolt/beam-heavy, good from long range |
+| `guardian` | def_up/heal effects, higher DEF within the band |
+| `trickster` | debuffs, vigor_gain, multi-hit cards that are strong for Riposte |
+
+**Art brief** (optional `art_brief`): a plain-language visual description for the art-director (silhouette, palette,
+outfit, Ignition look). It must be original and name no franchise or existing character. It is not shown in-game.
 
 **Stat bands by rarity** (content-designer stays inside these; the balance-analyst may move them later)
 
@@ -693,14 +716,20 @@ Recommended: 50 Jade each.
 
 ### 9.4 Tutorial steps (data-driven)
 `tutorial_steps[]`: `{ trigger, text (≤90), required_action }`.
-- Triggers: `battle_start`, `enemy_windup`, `card_playable`, `vigor_full`, `chain_possible`, `tag_ready`,
-  `ignition_ready`, `burst_ready`.
-- Required actions: `play_card`, `slip`, `dash_forward`, `dash_back`, `tag`, `ignite`, `tri_burst`, `none`.
+- Triggers: `battle_start`, `enemy_windup`, `perfect_slip` (the player just made a Perfect Slip, so a Riposte
+  window is open), `card_playable`, `vigor_full`, `chain_possible`, `tag_ready` (§5.8), `ignition_ready`, `burst_ready`.
+- Required actions: `play_card`, `slip`, `riposte` (play a card as a Riposte), `dash_forward`, `dash_back`, `tag`,
+  `ignite`, `tri_burst`, `none`.
+- A `perfect_slip` step pauses the Riposte window timer for as long as the prompt is shown, so the player cannot
+  miss the window while reading. The step completes when a Riposte is played. If the player makes no Perfect Slip,
+  the step never fires and does not block the tutorial.
 - When a step triggers, the game runs at 0.3× speed (logic ticks scaled) with the prompt and a pointing hand
   until the required action is done (or for 3 s if `none`). Each step fires once per battle. The steps run only
   on the first clear attempt until `tutorial.completed` is set in the save (set on the first win of stage_001).
 - AC-9.4.1: On a fresh save, Stage 1 shows the "Swipe UP to Slip" step at the first enemy windup and resumes
   normal speed right after a Slip.
+- AC-9.4.2: After a Perfect Slip in Stage 1 on a fresh save, the `perfect_slip` prompt appears, the Riposte window
+  is still open after 2 s of prompt, and tapping a card plays a 0-cost Riposte and closes the prompt.
 
 ---
 
@@ -880,7 +909,9 @@ renderer shows a labeled placeholder, never a crash.
    has ≥1 pool fighter of that rarity. Pool and featured characters are `playable: true`. Featured ⊆ pool.
 5. `type_chart` has all 25 pairs.
 6. Starting team: 3 distinct families, all in `starting.characters`.
-7. Text contains none of the banned terms (§3), case-insensitive whole words.
+7. Text contains none of the banned terms (§3), case-insensitive whole words. Exception: "stand" and "hollow"
+   are reported as **warnings** for a human to review, not errors, because they are ordinary English words.
+8. `art_brief` and `bio` follow rule 7 as well.
 
 ---
 
