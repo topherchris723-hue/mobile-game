@@ -103,9 +103,22 @@ Ultimate Arts, Ki, Rising Rush, Main Ability, Unique Ability, Z Ability, Vanish,
 Cover Change, Z Counter, Sparking, Extreme (as a rarity), Hero (as a rarity), Chrono Crystals,
 Zenkai, Dragon Ball(s), Saiyan, Super Saiyan, Ascended, Kamehameha, Spirit Bomb, Solar Flare,
 Dokkan, Awaken/Awakening, Haki, Devil Fruit, Captain Ability, Limit Break, Soul Boost, Chakra, Jutsu,
-Rasengan, Bankai, Hollow, Quirk, Stand (as a power name). QA should grep the data for these.
+Rasengan, Bankai, Legends Limited, Legendary Finish, Hollow, Quirk, Stand (as a power name). QA should grep the data for these.
 "Stand" and "Hollow" are ordinary English words. They are banned only as the name of a power, form,
 creature type or mechanic (e.g. "her Stand", "Hollow form"), not in sentences like "stand your ground".
+
+**Name-only banned terms (round 2 ruling).** `Spark` and `Sparks` (whole word, any case) are banned in every
+**name** field of the data: any field called `name`, `name_override` or `epithet` in any data file (fighter names,
+epithets, Ignition form names, card names, stage and chapter names, banner names, currency names), plus the game
+title and any mechanic, rarity, currency or mode name. Reason: "Sparking" is a Dragon Ball Legends rarity and part of
+a Dragon Ball game title, so a name built on "Spark" reads as an echo. In prose (story `text`, `description`, `bio`,
+`shout`, `art_brief`) the word is an ordinary English word and is allowed with no warning (e.g. "little sparks").
+"Sparking" stays banned everywhere (list above). The validator enforces this as §15.3 rule 9.
+Content that must be renamed (content-designer, round 2): card `card_tavi_spark_jab` name "Spark Jab", and stage
+`stage_001` name "Qualifier: First Spark". IDs and asset keys are not player-visible and are not names, so
+`card_tavi_spark_jab`, `ico_card_tavi_spark_jab` and `vfx_tavi_spark_jab` keep their IDs (nothing has shipped, but
+renaming them would only churn tests). The stage_001 description ("what a spark can do") and the story line
+"little sparks" are prose and stay.
 
 ---
 
@@ -912,6 +925,9 @@ renderer shows a labeled placeholder, never a crash.
 7. Text contains none of the banned terms (§3), case-insensitive whole words. Exception: "stand" and "hollow"
    are reported as **warnings** for a human to review, not errors, because they are ordinary English words.
 8. `art_brief` and `bio` follow rule 7 as well.
+9. **Name-only terms (§3):** the whole words `spark` and `sparks` (case-insensitive) in any field named `name`,
+   `name_override` or `epithet`, at any depth in any data file, are **errors**. Other fields are not checked for them.
+   Negative fixture: a card with name "Spark Kick" must FAIL; a story line "little sparks" must PASS.
 
 ---
 

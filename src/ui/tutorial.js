@@ -87,7 +87,7 @@ export class TutorialController {
   start(index, nowMs) {
     this.fired.add(index);
     const step = this.steps[index];
-    this.active = { index, step, startMs: nowMs };
+    this.active = { index, step, startMs: nowMs, shownMs: 0 };
     if (step.trigger === 'perfect_slip') this.battle.holdRiposteWindow('player', true);
     this.emit();
   }
@@ -135,10 +135,15 @@ export class TutorialController {
 
   /** Check state-based triggers and the timed 'none' steps. Call once per frame. */
   handleState(state, nowMs) {
+    // Prompt age counts only frames that reach here (not while the pause menu is open); one long frame
+    // or a backgrounded tab adds at most 100 ms.
+    const dt = this.lastStateMs === undefined ? 0 : Math.max(0, Math.min(100, nowMs - this.lastStateMs));
+    this.lastStateMs = nowMs;
     if (state.result) return;
     if (this.active) {
       const action = this.active.step.required_action;
-      const age = nowMs - this.active.startMs;
+      this.active.shownMs += dt;
+      const age = this.active.shownMs;
       if (action === 'none' && age >= this.noneMs) this.complete();
       else if (STILL_POSSIBLE[action] && !STILL_POSSIBLE[action](state)) this.complete();
       else if (age >= this.maxPromptMs) this.complete();
