@@ -331,7 +331,18 @@ export class BattleHud {
         this.s.tweens.add({ targets: this.igniteC, scale: 1, duration: 260, ease: 'Back.Out' });
       }
     }
-    if (canShow) {
+    // GDD §5.0: while any Tri-Burst rush runs, IGNITE is locked: draw it grey, no pulse.
+    const locked = !!state.triBurstLock;
+    if (canShow && locked) {
+      const ig = this.igniteG;
+      ig.clear();
+      ig.fillStyle(COLORS.disabled, 1);
+      ig.fillCircle(0, 0, 26);
+      ig.lineStyle(2, 0x555a78, 1);
+      ig.strokeCircle(0, 0, 26);
+      this.igniteText.setAlpha(0.5);
+    } else if (canShow) {
+      this.igniteText.setAlpha(1);
       const ig = this.igniteG;
       ig.clear();
       const pulse = 0.5 + 0.5 * Math.sin(now / 120);
@@ -346,7 +357,7 @@ export class BattleHud {
     // TRI-BURST (64×64): ring gauge, pulses at 100, USED after
     const bg = this.burstG;
     const frac = team.burstUsed ? 0 : team.burst / team.burstMax;
-    if (!this.dirty('burst', Math.round(frac * 200) + '|' + team.burstUsed + '|' + team.burstReady) && !team.burstReady) return;
+    if (!this.dirty('burst', Math.round(frac * 200) + '|' + team.burstUsed + '|' + team.burstReady + '|' + locked) && !team.burstReady) return;
     bg.clear();
     bg.fillStyle(COLORS.panel, 1);
     bg.fillCircle(0, 0, 31);
@@ -367,7 +378,7 @@ export class BattleHud {
       bg.strokePath();
     }
     this.burstText.setText(team.burstUsed ? t('battle_tri_burst_used') : t('battle_tri_burst_button'));
-    this.burstText.setAlpha(team.burstReady || team.burstUsed ? 1 : 0.75);
+    this.burstText.setAlpha(locked && !team.burstReady ? 0.45 : team.burstReady || team.burstUsed ? 1 : 0.75);
   }
 
   ignitionMax(f) {
