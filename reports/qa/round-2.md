@@ -244,3 +244,95 @@ None. This is the first QA round (round 1 had no build).
 - game-designer: 08.
 
 QA RESULT: FAIL
+
+---
+
+# Loop 2 (round 2, QA loop 2 of 5)
+
+Tester: qa-tester. Build: working tree at `4d2c180`.
+
+**Read first:** the GDD round-2 changes:
+- §3 adds "Legends Limited" and "Legendary Finish", plus the name-only Spark/Sparks ruling.
+- §5.0 Tri-Burst lock.
+- §5.9 AC-5.9.5–5.9.7.
+- §5.10 rush rules and AC-5.10.4–5.10.7.
+- §15.3 rule 9.
+
+I re-read my lessons files. Nothing new was added since loop 1.
+
+## L2.1 Commands and results
+
+| Check | Result |
+|---|---|
+| `npm test` | **215/215 passed** (12 files, including the new tests/ui/*) |
+| `npm run validate-data` | PASS: 8 files, 0 errors, 0 warnings. 42 error terms + 2 warning terms + name-only (spark, sparks) read from GDD §3 |
+| Rule 9 negative proof (`--data-dir` broken copies) | card name "Spark Kick" → `ERROR [9-name-only-terms] … "spark"`. Enemy `name_override` "Sparks McGee" → `"sparks"` error. Epithet "The SPARK of Dawn" + Ignition name "Spark Form" → 2 errors. Story text "little sparks fly everywhere" → **PASS** (prose allowed, as specified) |
+| Banned-term grep (fresh from §3) | `node tests/sim/banned-grep.mjs`: 44 terms, 41 files, **0 hard, 0 review**. New name-only pass: `name-only terms=["spark","sparks"] name_hits=0`. Proof on a test file: `Spark Kick` (name) and `SPARKS ARENA` (game_title) → 2 NAME-HITs. "little sparks" in a description → no hit. "Legends Limited" → HIT. No store text exists yet |
+| `npm run build` | OK |
+| Logic purity grep | 0 lines (unchanged method) |
+| Bot playthrough | `--per-stage 50 --ai-per-stage 8 --seed 2000` gives 410 battles; `--per-stage 30 --seed 99001` gives 150. **560 battles, 0 failed.** New invariant (AC-5.10.7): every `tri_burst_start` is followed by exactly one `tri_burst`/`tri_burst_whiff` 18 unfrozen ticks later, and Ignition never cancels a rush. **781 rushes checked, 0 violations.** The 5 fault injections still fail as expected |
+| Engine probes | `node tests/sim/edge-cases.mjs`: **8 PASS, 0 FAIL.** The probe for AC-5.9.7 is now a PASS/FAIL check: the enemy taps IGNITE on every tick T..T+18, giving 19/19 `not_now` rejects, `tri_burst` at T+18, no cancel, and the enemy's Ignition is still unused and available. A new probe for AC-5.10.6 (simultaneous TRI-BURST) shows only the player's rush starting, the enemy's tap rejected `not_now`, and the enemy gauge still at 100. Negative proof: with `igniteMode` patched to ignore the lock, the probe FAILs (`rejects=0/19 … cancelledByIgnition=true`) |
+| E2E (`npx playwright test`) | **28/29 executed passed** (11 skipped by design). The 1 failure is `qa-busy.spec.js` → BUG-2-11. My new `qa-tribust-lock.spec.js` passes **2/2** (run separately) |
+| Console errors | **0** across all specs (`CONSOLE ERRORS (0)`, no `pageerror`) |
+
+## L2.2 Re-tests of loop-1 bugs
+
+| Bug | Status | Evidence |
+|---|---|---|
+| BUG-2-01 tutorial stuck after Tag during the Riposte prompt | **VERIFIED FIXED** | `node tests/sim/tutorial-stuck.mjs` Scenario A: `stuckTicks:0, held:false`. The prompt is released, the window is no longer held, and the next prompt can fire |
+| BUG-2-02 IGNITE prompt for a benched fighter | **VERIFIED FIXED** | Scenario B2: `ignition_ready` for benched Tavi while Lark is active now gives `tutorialPrompt:null, slowmoSpeed:1`. Scenario B (Tavi active) still prompts correctly |
+| BUG-2-03 double tap on Retreat skips the confirm | **VERIFIED FIXED** | `qa-abuse.spec.js` › "double taps…": `after double tap on Retreat: result= null confirm shown= true`. "Yes, retreat" now sits at the top and Cancel under the finger. Menus are armed after 250 ms |
+| BUG-2-04 unknown team id gives a black screen | **VERIFIED FIXED** | `qa-abuse.spec.js` › "save with a team id that no longer exists…" passes: Home is reached, errors = none |
+| BUG-2-05 unowned fighter kept in the team | **VERIFIED FIXED** | `qa-abuse.spec.js` › "…not owned": `unowned team member kept after load: false ["char_lark_001","char_dunmore_001","char_tavi_001"]` |
+| BUG-2-06 Story list overlap | **VERIFIED FIXED** | `qa-screens.spec.js` layout scan: 0 problems at 3 sizes. Checked by eye: `reports/screenshots/round-2/qa/360x640-23-story-all-cleared.png` ("Team power 5915 / Rec. 4550" … "Missions 3/3", clear) |
+| BUG-2-07 raw `[result_reason_double_ko]` | **VERIFIED FIXED** | `360x640-24-result-draw-double-ko.png` reads "Both teams went down together". The raw-key scan is clean at 3 sizes |
+| BUG-2-08 Ignition vs Tri-Burst rush (GDD gap) | **VERIFIED FIXED** | GDD §5.0 lock + AC-5.9.7/5.10.6/5.10.7. Headless probes and 781 rush checks pass (above). In the browser from the player's side (`qa-tribust-lock.spec.js`, logic slowed to 5% so real taps land inside the rush): (1) IGNITE taps during the player's own rush → `["not_now","not_now"]`, no Ignition, resolve `tri_burst @T+18`, enemy in `Knockdown`, `burstUsed true`, Tavi's Ignition still unused. (2) During the enemy's rush the player's TRI-BURST → `["not_now"]`, IGNITE → `["not_now"]`, Slip accepted, player gauge stays 100. IGNITE is drawn greyed in both (`tblock-player-rush-ignite-greyed.png`, `tblock-enemy-rush-player-buttons.png`) |
+| BUG-2-09 intro shout over name labels | **VERIFIED FIXED** | `360x640-19-battle-intro-005.png`: the shout now sits inside the intro banner, clear of the labels. 0 scan problems |
+| BUG-2-10 (Producer-found) floating texts overlapping each other and the name labels | **VERIFIED FIXED** (for floating texts) | New `qa-busy.spec.js` scans real rendered Text bounds about every 120 ms during a bot-driven stage_003 fight at 3 sizes (53–85 frames per size, up to 12 arena texts in one frame). Result: **0 overlaps between floating texts** (damage, WEAK!/RESIST/CRIT, shouts, DODGE/TAG, callouts) and **0 floats over name labels**. Checked by eye: `360x640-busy-frame-clean.png` (RESIST, two "234"s and "Three!" all apart). Negative proof: with `QA_BREAK_PLACER=1` (placer returns the wanted spot unchecked) the same spec finds 410 / 357 / 338 overlaps. The only remaining overlap is label-to-label, filed as BUG-2-11 |
+
+**Re-tested fixes: 10/10 confirmed fixed.**
+
+Note on the new design: "COMBO xN" overlaps "N HITS" only during the 160 ms pop-scale tween. At rest they are clear (`360x640-busy-overlap-*` from the first run). I excluded that pair as transient and did not file it.
+
+## L2.3 New bugs
+
+### BUG-2-11: Fighter name labels collide at close range, and the enemy label and body are clipped at the right wall
+Severity: MINOR
+Owner: ui-developer
+Steps:
+1. Clear stage_002 (or load `clearedSave(2)` from tests/e2e/qa-helpers.js).
+2. Play stage_003 (enemy "Umbral Rook").
+3. Fight at melee range, or get pushed toward the right wall (knockback, chain-cap knockdown).
+
+Expected (GDD §14 / AC-14.1 "nothing is clipped"; BUG-2-10 intent): name labels are readable and do not overlap; the fighters stay on screen.
+Actual:
+- At melee range (distance 12, the most common distance) the labels render as "TaviUmbral Rook". The presentation gap (MIN_GAP 62 px) is narrower than the two labels.
+- Near the right wall the two sprites stack on each other, the label reads "TaUmbral Roo", and the enemy's body and label run off the right edge of the screen.
+
+The same happens at all 3 sizes. It is not caught by the ui-developer's BUG-2-09/2-10 smoke test, because stage_001 uses short names (Tavi/Rook).
+Evidence:
+- `tests/e2e/qa-busy.spec.js` (fails): `"Tavi"(a1) × "Umbral Rook"(a1) 11x16` at 360/390/430.
+- `reports/screenshots/round-2/qa/390x844-busy-overlap-2.png` (wall: stacked sprites, clipped label).
+- `360x640-busy-overlap-1.png`.
+- `tblock-player-rush-ignite-greyed.png` (mid-arena "TaviUmbral Rook").
+- Details: `reports/screenshots/round-2/qa/busy-findings.txt`.
+
+Root-cause guess: BattleScene.render keeps only a 62 px centre gap and clamps the midpoint to the arena edges, not to the sprite and label half-widths. The labels are drawn at the sprite x with no collision handling. Possible fixes: shift labels apart and clamp each label inside [0, W]; clamp sprite x to `[left + halfSpriteW, right − halfSpriteW]`; widen the gap to at least the sum of half label widths.
+
+## L2.4 Observations (not bugs)
+- The TRI-BURST button label is grey in every state I captured. Readiness is shown by the orange gauge ring. During the enemy's rush the ring stays full (the player's gauge is 100) while the tap is rejected. The rejection is correct and the button does shake. The UI difference between "ready" and "locked" is subtle; I suggest an art-director or ui-developer check of whether "greyed" is obvious enough.
+- Balance is unchanged from loop 1: average timer about 56 s, stage_005 win rate low. This is for the balance-analyst.
+- Running the suite regenerates the ui-developer's screenshots in `reports/screenshots/round-2/` and my own in `qa/`. Those changes are expected.
+
+## L2.5 Counts (loop 2, open bugs)
+
+| Severity | Count | Bugs |
+|---|---|---|
+| BLOCKER | 0 | — |
+| MAJOR | 0 | — |
+| MINOR | 1 | BUG-2-11 |
+| POLISH | 0 | — |
+
+Loop-1 bugs 2-01…2-09 and Producer bug 2-10: 10/10 VERIFIED FIXED.
+
+QA RESULT: PASS

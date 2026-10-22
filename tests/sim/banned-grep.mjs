@@ -50,3 +50,22 @@ for (const f of files) {
 }
 console.log('terms=' + terms.size + ' files=' + files.length + ' hard_hits=' + hard + ' review_hits=' + review);
 process.exitCode = hard > 0 ? 1 : 0;
+
+// GDD §3 round-2 ruling: name-only terms (Spark/Sparks) in any `name`, `name_override` or `epithet` field of
+// data JSON at any depth, plus UI title strings. Parsed fresh from the "Name-only banned terms" paragraph.
+const nameSec = gdd.split('**Name-only banned terms')[1];
+const nameTerms = nameSec ? [...nameSec.split('\n\n')[0].matchAll(/`([A-Za-z]+)`/g)].map((m) => m[1].toLowerCase()).filter((t) => /^spark/.test(t) || t.length < 12 && !['name', 'name_override', 'epithet', 'text', 'description', 'bio', 'shout', 'art_brief'].includes(t)) : [];
+const nameRe = nameTerms.length ? new RegExp('(?<![A-Za-z])(' + nameTerms.join('|') + ')(?![A-Za-z])', 'i') : null;
+let nameHits = 0;
+function walkJson(v, p, file) {
+  if (Array.isArray(v)) v.forEach((x, i) => walkJson(x, p + '[' + i + ']', file));
+  else if (v && typeof v === 'object') for (const k of Object.keys(v)) {
+    if (['name', 'name_override', 'epithet', 'game_title'].includes(k) && typeof v[k] === 'string' && nameRe && nameRe.test(v[k])) {
+      nameHits++; console.log('NAME-HIT ' + path.relative(root, file) + ' ' + p + '.' + k + ': ' + v[k]);
+    }
+    walkJson(v[k], p + '.' + k, file);
+  }
+}
+for (const f of files) if (f.endsWith('.json')) { try { walkJson(JSON.parse(fs.readFileSync(f, 'utf8')), '', f); } catch (e) { /* not JSON data */ } }
+console.log('name-only terms=' + JSON.stringify(nameTerms) + ' name_hits=' + nameHits);
+if (nameHits > 0) process.exitCode = 1;

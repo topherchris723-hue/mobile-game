@@ -6,21 +6,37 @@ const out = [];
 const log = (k, name, msg) => { out.push(k); console.log(k + ' ' + name + ': ' + msg); };
 const run = (b, n, inp) => { const evs = []; for (let i = 0; i < n; i++) evs.push(...b.step(i === 0 && inp ? inp : undefined)); return evs; };
 
-// 1. Enemy ignites during the player's Tri-Burst rush (GDD §5.9 says "its current card cancelled"; §5.10 is silent).
+// 1. BUG-2-08 / AC-5.9.7: the enemy taps IGNITE on every tick of the player's Tri-Burst rush (T..T+18).
+//    Round-2 rule (GDD §5.0 Tri-Burst lock): every one is rejected `not_now`, the rush resolves on T+18 and is not
+//    cancelled, and the enemy's Ignition stays unused and available.
 {
   const b = scriptedBattle({ enemyTeam: ['enemy_corvane_001'] });
   setClose(b);
   b.teams.player.burst = 100;
-  const e = b.activeFighter('enemy');
-  const ef = b.teams.enemy.fighters.find((f) => f.def.ignition);
-  b.teams.enemy.active = ef.slot; b.teams.enemy.fighters.forEach((f) => { f.state = f === ef ? 'Idle' : 'Benched'; });
+  const ef = b.activeFighter('enemy');
   ef.ign.available = true;
-  b.step({ player: [{ type: 'tri_burst' }] });
-  const evs = run(b, 1, { player: [], enemy: [{ type: 'ignite' }] });
-  run(b, 200);
-  const t = b.teams.player;
-  log(t.burst === 0 && !t.burstUsed ? 'INFO' : 'INFO', 'ignite-vs-tri-burst-rush',
-    'cancelled=' + evs.some((x) => x.type === 'card_cancelled') + ' playerBurstAfter=' + t.burst + ' burstUsed=' + t.burstUsed + ' (gauge lost without refund, Tri-Burst not spent)');
+  const T = b.tick;
+  const evs = [...b.step({ player: [{ type: 'tri_burst' }], enemy: [{ type: 'ignite' }] })];
+  for (let i = 0; i < 18; i++) evs.push(...b.step({ player: [], enemy: [{ type: 'ignite' }] }));
+  const rejects = evs.filter((e) => e.type === 'input_rejected' && e.side === 'enemy' && e.input.type === 'ignite');
+  const notNow = rejects.every((e) => e.reason === 'not_now');
+  const resolve = evs.find((e) => e.type === 'tri_burst' || e.type === 'tri_burst_whiff');
+  const cancelled = evs.some((e) => e.type === 'card_cancelled' && e.reason === 'ignition');
+  const ok = rejects.length === 19 && notNow && resolve && resolve.tick === T + 18 && !cancelled && !ef.ign.used && ef.ign.available && b.teams.player.burstUsed === (resolve.type === 'tri_burst');
+  log(ok ? 'PASS' : 'FAIL', 'ignite-vs-tri-burst-rush (AC-5.9.7)',
+    'enemy ignite rejects=' + rejects.length + '/19 all not_now=' + notNow + ' resolve=' + (resolve && resolve.type) + '@T+' + (resolve ? resolve.tick - T : '-') +
+    ' cancelledByIgnition=' + cancelled + ' enemyIgnitionUsed=' + ef.ign.used + ' available=' + ef.ign.available + ' playerBurstUsed=' + b.teams.player.burstUsed);
+}
+
+// 1b. AC-5.10.6: both teams at 100 tap TRI-BURST on the same tick: only the player's rush starts.
+{
+  const b = scriptedBattle();
+  setClose(b);
+  b.teams.player.burst = 100; b.teams.enemy.burst = 100;
+  const evs = b.step({ player: [{ type: 'tri_burst' }], enemy: [{ type: 'tri_burst' }] });
+  const starts = evs.filter((e) => e.type === 'tri_burst_start').map((e) => e.side);
+  const rej = evs.find((e) => e.type === 'input_rejected' && e.side === 'enemy' && e.input.type === 'tri_burst');
+  log(starts.join() === 'player' && rej && rej.reason === 'not_now' && b.teams.enemy.burst === 100 ? 'PASS' : 'FAIL', 'simultaneous-tri-burst (AC-5.10.6)', 'starts=' + starts + ' enemyReject=' + (rej && rej.reason) + ' enemyBurst=' + b.teams.enemy.burst);
 }
 
 // 2. Double tap on the same card slot in one tick: one card, one Vigor charge.

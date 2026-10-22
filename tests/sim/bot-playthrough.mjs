@@ -116,6 +116,8 @@ function runOne(stageId, seed, mode, opts = {}) {
   let enemyVigorRejects = 0;
   const prob = opts.inputProb ?? 0.06;
   let pausedTicks = 0;
+  const rush = { player: null, enemy: null };
+  let rushCount = 0;
   try {
     while (!b.getResult() && realTicks < cap) {
       // random pause for a few ticks (backgrounding) — state must not move
@@ -145,6 +147,14 @@ function runOne(stageId, seed, mode, opts = {}) {
         const s = e.type + (e.damage || 0) + e.tick + (e.side || '');
         for (let i = 0; i < s.length; i++) hash = Math.imul(hash ^ s.charCodeAt(i), 16777619) >>> 0;
         if (e.type === 'input_rejected' && e.side === 'enemy' && e.reason === 'vigor') enemyVigorRejects++;
+        // AC-5.10.7: every rush resolves exactly once, 18 unfrozen ticks after it starts; Ignition never cancels it.
+        if (e.type === 'tri_burst_start') { if (rush[e.side] !== null) fail('second rush started while one pending'); rush[e.side] = e.tick; rushCount++; }
+        if (e.type === 'tri_burst' || e.type === 'tri_burst_whiff') {
+          if (rush[e.side] === null) fail(e.type + ' without a rush start at tick ' + e.tick);
+          else if (e.tick - rush[e.side] !== 18) fail(e.type + ' ' + (e.tick - rush[e.side]) + ' ticks after rush start (want 18)');
+          rush[e.side] = null;
+        }
+        if (e.type === 'card_cancelled' && e.reason === 'ignition' && (e.cardId === 'tri_burst' || e.cardId === null)) fail('Ignition cancelled a Tri-Burst rush at tick ' + e.tick);
       }
       const st = b.getState();
       if (st.timer.ticksLeft > prevTimer) fail('timer increased at real tick ' + realTicks);
@@ -198,6 +208,11 @@ function runOne(stageId, seed, mode, opts = {}) {
     if (!validateSave(save)) fail('save invalid after result: ' + JSON.stringify(validateSave.errors).slice(0, 200));
     if (save.currencies.cur_jade < 0 || !Number.isFinite(save.currencies.cur_jade)) fail('jade ' + save.currencies.cur_jade);
   }
+  if (res && (rush.player !== null || rush.enemy !== null) && res.reason !== 'retreat') {
+    // a rush pending when the battle ended is only OK if the battle ended on that same resolve; flag otherwise
+    fail('rush still pending at battle end: ' + JSON.stringify(rush));
+  }
+  globalThis.__rushTotal = (globalThis.__rushTotal || 0) + rushCount;
   if (enemyVigorRejects > 0) fail('enemy AI had ' + enemyVigorRejects + ' Vigor-rejected actions (AC-5.15.2)');
   return { team, res, realTicks, digest: hash.toString(16), fails, inputLog, pausedTicks };
 }
@@ -248,6 +263,7 @@ function main() {
     });
   }
   console.log('TALLY ' + JSON.stringify(tally));
+  console.log('tri-burst rushes checked=' + globalThis.__rushTotal);
   console.log('battles run=' + run + ' failed=' + failed + ' avgTimerS=' + (lengths.reduce((a, b) => a + b, 0) / lengths.length).toFixed(1) + ' wallS=' + ((Date.now() - t0) / 1000).toFixed(1));
   process.exitCode = failed > 0 ? 1 : 0;
 }
