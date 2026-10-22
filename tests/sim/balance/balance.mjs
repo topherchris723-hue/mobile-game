@@ -28,7 +28,7 @@ async function stages() {
   const tiers = arg('--tiers', 'rookie,fighter,veteran,master').split(',');
   const jobs = [];
   for (const st of STAGES) for (const t of tiers) {
-    jobs.push({ cfg: { stageId: st, team: STARTERS, playerTier: t }, seed0: 1000000 * TIER_SEED[t] + 10000 * Number(st.slice(-3)), count: N, patches });
+    jobs.push({ cfg: { stageId: st, team: STARTERS, playerTier: t }, seed0: 1000000 * TIER_SEED[t] + 10000 * Number(st.slice(-3)) + Number(arg('--seed-offset', '0')), count: N, patches });
   }
   const res = await runJobs(jobs);
   console.log('Starter team ' + STARTERS.join(',') + ' — ' + N + ' battles per cell');
@@ -53,7 +53,7 @@ async function mirror() {
   for (const c of data.characters.characters) if (c.playable) (byR[c.rarity] = byR[c.rarity] || []).push(c.id);
   const jobs = [];
   const pairs = [];
-  let seedBase = 5000000;
+  let seedBase = 5000000 + Number(arg('--seed-offset', '0'));
   for (const r of Object.keys(byR)) {
     for (const a of byR[r]) for (const bId of byR[r]) {
       if (a === bId) continue;
@@ -154,7 +154,7 @@ async function sweep() {
   for (const c of data.characters.characters) if (c.playable && (!rarity || String(c.rarity) === rarity)) (byR[c.rarity] = byR[c.rarity] || []).push(c.id);
   const jobs = []; const meta = [];
   for (const [name, extra] of Object.entries(sets)) for (const tier of tiers) {
-    let seedBase = 5000000;
+    let seedBase = 5000000 + Number(arg('--seed-offset', '0'));
     for (const r of Object.keys(byR)) for (const a of byR[r]) for (const bId of byR[r]) {
       if (a === bId) continue;
       meta.push({ name, tier, a, b: bId });
