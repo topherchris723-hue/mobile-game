@@ -1,0 +1,400 @@
+{
+  "version": 1,
+  "chapters": [
+    {
+      "id": "chapter_01",
+      "name": "The Highcliff Open",
+      "order": 1
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage_001",
+      "chapter_id": "chapter_01",
+      "order": 1,
+      "name": "Qualifier: First Spark",
+      "description": "A cocky street champion blocks the entrance. Show him what a spark can do.",
+      "enemy_team": [
+        "enemy_rook_001"
+      ],
+      "timer_s": 120,
+      "recommended_power": 4550,
+      "unlock_requires": null,
+      "background": "bg_highcliff_gate",
+      "bgm": "bgm_battle_01",
+      "story": {
+        "pre": "scene_001_pre",
+        "post": "scene_001_post"
+      },
+      "rewards": {
+        "first_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 300
+          }
+        ],
+        "repeat_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 30
+          }
+        ]
+      },
+      "missions": [
+        {
+          "id": "mission_001_a",
+          "type": "win",
+          "text": "Win the qualifier",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_001_b",
+          "type": "no_ko",
+          "text": "Win with no fighter KO'd",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_001_c",
+          "type": "perfect_slips_at_least",
+          "value": 2,
+          "text": "Land 2 Perfect Slips",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        }
+      ],
+      "tutorial_steps": [
+        {
+          "trigger": "battle_start",
+          "text": "Tap a card to attack!",
+          "required_action": "play_card"
+        },
+        {
+          "trigger": "enemy_windup",
+          "text": "He's winding up! Swipe UP to Slip!",
+          "required_action": "slip"
+        },
+        {
+          "trigger": "vigor_full",
+          "text": "Cards cost Vigor. Watch the bar.",
+          "required_action": "none"
+        },
+        {
+          "trigger": "chain_possible",
+          "text": "He's stunned! Tap another card to COMBO!",
+          "required_action": "play_card"
+        },
+        {
+          "trigger": "tag_ready",
+          "text": "Tap a bench portrait to Tag in a teammate!",
+          "required_action": "tag"
+        },
+        {
+          "trigger": "ignition_ready",
+          "text": "IGNITE is glowing! Tap it to transform!",
+          "required_action": "ignite"
+        },
+        {
+          "trigger": "burst_ready",
+          "text": "Burst Gauge full! Tap TRI-BURST for a team finisher!",
+          "required_action": "tri_burst"
+        }
+      ]
+    },
+    {
+      "id": "stage_002",
+      "chapter_id": "chapter_01",
+      "order": 2,
+      "name": "Round Two: Bells and Gambits",
+      "description": "Rook wants a rematch and brought a lantern monk. Two on three!",
+      "enemy_team": [
+        "enemy_rook_002",
+        "enemy_pell_001"
+      ],
+      "timer_s": 150,
+      "recommended_power": 5200,
+      "unlock_requires": "stage_001",
+      "background": "bg_lantern_bridge",
+      "bgm": "bgm_battle_01",
+      "story": {
+        "pre": "scene_002_pre",
+        "post": "scene_002_post"
+      },
+      "rewards": {
+        "first_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 300
+          }
+        ],
+        "repeat_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 30
+          }
+        ]
+      },
+      "missions": [
+        {
+          "id": "mission_002_a",
+          "type": "win",
+          "text": "Win the tag match",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_002_b",
+          "type": "max_chain_at_least",
+          "value": 3,
+          "text": "Chain 3 cards in one combo",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_002_c",
+          "type": "use_ignition",
+          "text": "Use an Ignition",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "stage_003",
+      "chapter_id": "chapter_01",
+      "order": 3,
+      "name": "Semifinal Eclipse",
+      "description": "The sky goes dark. Thessa arrives with shadow copies of your friends.",
+      "enemy_team": [
+        "enemy_umbral_rook_001",
+        "enemy_umbral_pell_001",
+        "enemy_thessa_001"
+      ],
+      "timer_s": 180,
+      "recommended_power": 5850,
+      "unlock_requires": "stage_002",
+      "background": "bg_highcliff_ring_dusk",
+      "bgm": "bgm_battle_02",
+      "story": {
+        "pre": "scene_003_pre",
+        "post": "scene_003_post"
+      },
+      "rewards": {
+        "first_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 400
+          }
+        ],
+        "repeat_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 40
+          }
+        ]
+      },
+      "missions": [
+        {
+          "id": "mission_003_a",
+          "type": "win",
+          "text": "Drive back the shadows",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_003_b",
+          "type": "use_tri_burst",
+          "text": "Land a Tri-Burst",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_003_c",
+          "type": "no_ko",
+          "text": "Win with no fighter KO'd",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "stage_004",
+      "chapter_id": "chapter_01",
+      "order": 4,
+      "name": "The Champion's Trial",
+      "description": "Solenne will not let you face the king until you beat her best.",
+      "enemy_team": [
+        "enemy_rook_003",
+        "enemy_pell_002",
+        "enemy_solenne_001"
+      ],
+      "timer_s": 180,
+      "recommended_power": 6750,
+      "unlock_requires": "stage_003",
+      "background": "bg_highcliff_summit",
+      "bgm": "bgm_battle_02",
+      "story": {
+        "pre": "scene_004_pre",
+        "post": "scene_004_post"
+      },
+      "rewards": {
+        "first_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 500
+          }
+        ],
+        "repeat_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        ]
+      },
+      "missions": [
+        {
+          "id": "mission_004_a",
+          "type": "win",
+          "text": "Pass the Champion's Trial",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_004_b",
+          "type": "time_under_s",
+          "value": 150,
+          "text": "Win in under 150 seconds",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_004_c",
+          "type": "perfect_slips_at_least",
+          "value": 3,
+          "text": "Land 3 Perfect Slips",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        }
+      ]
+    },
+    {
+      "id": "stage_005",
+      "chapter_id": "chapter_01",
+      "order": 5,
+      "name": "Crown of the Starless King",
+      "description": "Corvane takes the summit. Beat his herald, his shadow and the king himself!",
+      "enemy_team": [
+        "enemy_thessa_002",
+        "enemy_umbral_solenne_001",
+        "enemy_corvane_001"
+      ],
+      "timer_s": 180,
+      "recommended_power": 7650,
+      "unlock_requires": "stage_004",
+      "background": "bg_starless_summit",
+      "bgm": "bgm_boss_01",
+      "story": {
+        "pre": "scene_005_pre",
+        "post": "scene_005_post"
+      },
+      "rewards": {
+        "first_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 600
+          },
+          {
+            "type": "character",
+            "character_id": "char_rook_001"
+          }
+        ],
+        "repeat_clear": [
+          {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 60
+          }
+        ]
+      },
+      "missions": [
+        {
+          "id": "mission_005_a",
+          "type": "win",
+          "text": "Defeat the Starless King",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_005_b",
+          "type": "max_chain_at_least",
+          "value": 4,
+          "text": "Chain 4 cards in one combo",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        },
+        {
+          "id": "mission_005_c",
+          "type": "use_tri_burst",
+          "text": "Land a Tri-Burst on the boss stage",
+          "reward": {
+            "type": "currency",
+            "currency_id": "cur_jade",
+            "amount": 50
+          }
+        }
+      ]
+    }
+  ]
+}
