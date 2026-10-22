@@ -3,8 +3,8 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** 2 — Build; battle core passed QA. Next: summon screen + start Growth (balance)
-- **Round:** 2
+- **Phase:** 2/Growth — summon screen build + balance (in progress)
+- **Round:** 3
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** none
 - **Unity port started:** no
@@ -26,9 +26,15 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
 ## Owner feedback
 Write anything you liked or disliked here, in your own words. Every line becomes a
 lesson and a hard rule at the next `/retro`.
-- none yet
+- Round 3 (owner, on `/round`): "and you decide all that" — the owner delegates the open
+  decisions (title choice and the designer's open questions) to the Producer.
 
 ## Decisions made without the owner
+- Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
+  currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 3 (delegated by owner): kept the round-1 defaults — stage_005 boss at the hardest AI
+  tier (balance-analyst tunes stats so starters can win with skill); a timeout tie / double KO
+  stays a Draw; no left-handed layout in this milestone.
 - Round 1: kept game-designer defaults for its open questions: stage_005 boss uses the
   hardest AI tier; timeout tie / double KO = Draw (no rewards); no left-handed mirrored
   layout in this milestone. Owner can override any of these.
@@ -42,6 +48,18 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 3 — Summon screen + balance (plan)
+- **Goal:** complete the milestone's features (summon screen) and start Growth (balance),
+  clear round-2 leftovers, then QA. Retro includes the playbook upgrade (round 3 = step C).
+- **Agents and order:**
+  1. In parallel: game-designer (title in GDD §1, AC-5.8.5 ruling, AC-5.6.1/5.6.2 example
+     fix, tutorial prompt cap §9.4); gameplay-programmer (GDD §11 summon logic + save);
+     balance-analyst (sims, propose and apply stat-only data changes for battle length and
+     stage difficulty).
+  2. ui-developer: summon screen with rates and pity shown, BUG-2-11, screenshot env flag,
+     Tri-Burst locked look, title string.
+  3. qa-tester loop (≤5). 4. team-coach retro with step C.
 
 ### Round 2 — Build (result)
 - **Result:** first playable build. npm project (Phaser 3.90, Vite, Vitest, Ajv, Playwright);
