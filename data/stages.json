@@ -87,6 +87,11 @@
           "required_action": "slip"
         },
         {
+          "trigger": "perfect_slip",
+          "text": "PERFECT SLIP! Tap a card now to Riposte!",
+          "required_action": "riposte"
+        },
+        {
           "trigger": "vigor_full",
           "text": "Cards cost Vigor. Watch the bar.",
           "required_action": "none"
