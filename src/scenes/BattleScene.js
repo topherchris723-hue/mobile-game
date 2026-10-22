@@ -14,7 +14,7 @@ import { cardColor } from '../ui/icons.js';
 import { FloatPlacer } from '../ui/float-placer.js';
 
 const TICK_MS = 1000 / 60;
-const MENU_ARM_MS = 300; // new menus (and the battle after a menu closes) ignore input this long
+const MENU_ARM_MS = 250; // new menus (and the battle after a menu closes) ignore input this long
 const MAX_STEPS_PER_FRAME = 8; // keeps real-time speed down to ~8 fps; below that the battle slows instead of jumping
 
 function randomSeed() {

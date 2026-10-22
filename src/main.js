@@ -87,4 +87,5 @@ if (window.__TEST__) {
     return s && s.scene.isActive() && s.tutorial && s.tutorial.active ? s.tutorial.active.step : null;
   };
   T.save = () => JSON.parse(JSON.stringify(data.save));
+  T.data = data;
 }

@@ -282,3 +282,314 @@ test('stage_001 tutorial: Slip prompt, Perfect Slip → Riposte prompt holds the
   expect(stepNow === null || stepNow.trigger !== 'perfect_slip').toBe(true);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// ------------------------------------------------------------------ round 2, QA fix loop 1
+
+const SAVE_NOW = '2026-10-22T00:00:00.000Z';
+/** A valid save with stages 1..upTo cleared (tutorial done), built from the shipped economy data. */
+async function bootWithSave(page, upTo, mutate) {
+  await page.goto('/?test=1&seed=777&renderer=canvas');
+  await waitScene(page, 'Title');
+  await page.evaluate(({ upTo, now, mutate }) => {
+    const d = window.__TEST__.data;
+    const e = d.raw.economy;
+    const s = {
+      version: 1, created_at: now, updated_at: now,
+      currencies: { ...e.starting.currencies },
+      roster: e.starting.characters.map((id) => ({ character_id: id, resonance: 0, obtained_at: now })),
+      team: e.starting.team.slice(), stages: {},
+      summon: { pity: {}, first_multi_done: {}, total_pulls: 0 },
+      settings: { bgm_volume: 1, sfx_volume: 1, haptics: true }, tutorial: { completed: upTo >= 1 },
+    };
+    for (const st of d.raw.stages.stages) {
+      if (st.order <= upTo) s.stages[st.id] = { cleared: true, clears: 1, best_time_s: 42.5, missions_completed: (st.missions || []).map((m) => m.id) };
+    }
+    if (mutate) new Function('s', mutate)(s);
+    localStorage.setItem('game_save', JSON.stringify(s));
+  }, { upTo, now: SAVE_NOW, mutate: mutate || null });
+  await page.reload();
+  await waitScene(page, 'Title');
+}
+
+async function dbl(page, id) {
+  const tg = await target(page, id);
+  const x = tg.x + tg.w / 2;
+  const y = tg.y + tg.h / 2;
+  await page.touchscreen.tap(x, y);
+  await page.touchscreen.tap(x, y);
+}
+
+const hasTarget = (page, id) => page.evaluate((i) => window.__TEST__.targets().some((t) => t.id === i), id);
+
+async function startStage(page, stageId) {
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  await tap(page, 'home_story');
+  await waitScene(page, 'Story');
+  await tap(page, 'stage_' + stageId);
+  await page.waitForFunction(() => ['Dialogue', 'Team'].includes(window.__TEST__.sceneKey), null, { timeout: 10000 });
+  await page.waitForTimeout(300);
+  if ((await page.evaluate(() => window.__TEST__.sceneKey)) === 'Dialogue') {
+    await tap(page, 'dialogue_skip');
+    await waitScene(page, 'Team');
+  }
+  await tap(page, 'team_fight');
+  await waitScene(page, 'Battle');
+  await page.waitForFunction(() => window.__TEST__.battleState().phase === 'fight', null, { timeout: 10000 });
+}
+
+test('BUG-2-03: double tap on every pause/confirm/result button does one thing only', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 1);
+  await startStage(page, 'stage_001');
+  await page.evaluate(() => {
+    window.__starts = [];
+    for (const sc of window.__TEST__.game.scene.scenes) sc.events.on('create', () => window.__starts.push(sc.scene.key));
+  });
+
+  // battle_pause ×2 → paused, one menu
+  await dbl(page, 'battle_pause');
+  await page.waitForTimeout(350);
+  expect((await battleState(page)).paused).toBe(true);
+  // menu_resume ×2 → resumed, and the 2nd tap (over the hand) plays no card
+  await page.evaluate(() => (window.__TEST__.inputLog = []));
+  await dbl(page, 'menu_resume');
+  await page.waitForTimeout(350);
+  expect((await battleState(page)).paused).toBe(false);
+  expect(await page.evaluate(() => window.__TEST__.inputLog.length), 'no battle input from the 2nd tap on Resume').toBe(0);
+  // menu_retreat ×2 → confirm shown, battle not ended
+  await tap(page, 'battle_pause');
+  await page.waitForTimeout(350);
+  await dbl(page, 'menu_retreat');
+  await page.waitForTimeout(350);
+  expect((await battleState(page)).result).toBeNull();
+  expect(await hasTarget(page, 'menu_retreat_yes')).toBe(true);
+  // the destructive button is not where "Retreat" was
+  const yes = await target(page, 'menu_retreat_yes');
+  const cancel = await target(page, 'menu_cancel');
+  expect(yes.y + yes.h).toBeLessThanOrEqual(cancel.y);
+  await shot(page, testInfo, '21-battle-retreat-confirm-swapped');
+  // menu_cancel ×2 → back to the pause menu, still not retreated
+  await dbl(page, 'menu_cancel');
+  await page.waitForTimeout(350);
+  expect(await hasTarget(page, 'menu_resume')).toBe(true);
+  expect(await hasTarget(page, 'menu_retreat_yes')).toBe(false);
+  expect((await battleState(page)).result).toBeNull();
+  // retreat → yes ×2 → exactly one Result
+  await tap(page, 'menu_retreat');
+  await page.waitForTimeout(350);
+  await dbl(page, 'menu_retreat_yes');
+  await waitScene(page, 'Result');
+  await page.waitForTimeout(400);
+  // result_retry ×2 → one Battle
+  await dbl(page, 'result_retry');
+  await waitScene(page, 'Battle');
+  await page.waitForTimeout(500);
+  let starts = await page.evaluate(() => window.__starts);
+  expect(starts).toEqual(['Result', 'Battle']);
+  // lose again, result_to_story ×2 → one Story
+  await page.waitForFunction(() => window.__TEST__.battleState().phase === 'fight', null, { timeout: 10000 });
+  await tap(page, 'battle_pause');
+  await page.waitForTimeout(350);
+  await tap(page, 'menu_retreat');
+  await page.waitForTimeout(350);
+  await tap(page, 'menu_retreat_yes');
+  await waitScene(page, 'Result');
+  await dbl(page, 'result_to_story');
+  await waitScene(page, 'Story');
+  await page.waitForTimeout(400);
+  starts = await page.evaluate(() => window.__starts);
+  expect(starts).toEqual(['Result', 'Battle', 'Result', 'Story']);
+  // win → result_continue ×2 → one post-story Dialogue (or Story)
+  await tap(page, 'stage_stage_001');
+  await page.waitForFunction(() => ['Dialogue', 'Team'].includes(window.__TEST__.sceneKey), null, { timeout: 10000 });
+  await page.waitForTimeout(300);
+  if ((await page.evaluate(() => window.__TEST__.sceneKey)) === 'Dialogue') {
+    await tap(page, 'dialogue_skip');
+    await waitScene(page, 'Team');
+  }
+  await tap(page, 'team_fight');
+  await waitScene(page, 'Battle');
+  await page.waitForFunction(() => window.__TEST__.battleState().phase === 'fight', null, { timeout: 10000 });
+  await page.evaluate(() => { for (const f of window.__TEST__.game.scene.getScene('Battle').battle.teams.enemy.fighters) f.hp = 1; });
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline) {
+    const st = await battleState(page);
+    if (!st || st.result || (await page.evaluate(() => window.__TEST__.sceneKey)) !== 'Battle') break;
+    const f = st.teams.player.fighters[st.teams.player.activeSlot];
+    const i = f.hand.findIndex((c) => c && c.playable);
+    if (i >= 0) await tap(page, 'card_' + i);
+    await page.waitForTimeout(150);
+  }
+  await waitScene(page, 'Result');
+  await page.evaluate(() => (window.__starts = []));
+  await dbl(page, 'result_continue');
+  await page.waitForFunction(() => ['Dialogue', 'Story'].includes(window.__TEST__.sceneKey), null, { timeout: 10000 });
+  await page.waitForTimeout(600);
+  starts = await page.evaluate(() => window.__starts);
+  expect(starts.length, starts.join(' > ')).toBe(1);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('BUG-2-04 UI guard: an unknown character id in the in-memory team never crashes Home/Team/Story/Battle', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  const warnings = [];
+  page.on('console', (m) => m.type() === 'warning' && warnings.push(m.text()));
+  await bootWithSave(page, 1);
+  // Bypass the (already repairing) loader: corrupt the live save as a later data change could.
+  await page.evaluate(() => (window.__TEST__.data.save.team = ['char_tavi_001', 'char_lark_001', 'char_removed_099']));
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  await shot(page, testInfo, '22-home-unknown-team-id');
+  await tap(page, 'home_team');
+  await waitScene(page, 'Team');
+  await tap(page, 'back');
+  await waitScene(page, 'Home');
+  await tap(page, 'home_story');
+  await waitScene(page, 'Story');
+  await tap(page, 'stage_stage_002');
+  await page.waitForFunction(() => ['Dialogue', 'Team'].includes(window.__TEST__.sceneKey), null, { timeout: 10000 });
+  await page.waitForTimeout(300);
+  if ((await page.evaluate(() => window.__TEST__.sceneKey)) === 'Dialogue') {
+    await tap(page, 'dialogue_skip');
+    await waitScene(page, 'Team');
+  }
+  await tap(page, 'team_fight');
+  await waitScene(page, 'Battle');
+  const st = await battleState(page);
+  const ids = st.teams.player.fighters.map((f) => f.characterId);
+  const starters = await page.evaluate(() => window.__TEST__.data.raw.economy.starting.team);
+  expect(ids).toEqual(starters);
+  expect(warnings.some((w) => /unknown character ids/.test(w))).toBe(true);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+/** Visible texts with bounds (logical px), excluding ones under a modal or fully faded. */
+async function battleTexts(page) {
+  return page.evaluate(() => {
+    const s = window.__TEST__.activeScene();
+    const out = [];
+    const names = new Set([s.fighters.player.nameTag, s.fighters.enemy.nameTag]);
+    const floats = [];
+    const walk = (list, alpha, depth) => {
+      for (const o of list) {
+        const a = alpha * (o.alpha === undefined ? 1 : o.alpha);
+        if (o.visible === false || a < 0.05) continue;
+        const d = depth + (o.depth || 0);
+        if (o.type === 'Text' && o.text && o.text.trim()) {
+          const b = o.getBounds();
+          const r = { text: o.text.replace(/\n/g, ' ').slice(0, 40), x: b.x, y: b.y, w: b.width, h: b.height, depth: d, name: names.has(o) };
+          if (r.name || (d >= 55 && d <= 75)) floats.push(r);
+        }
+        if (o.list) walk(o.list, a, d);
+      }
+    };
+    walk(s.children.list, 1, 0);
+    return floats;
+  });
+}
+
+function overlaps(texts) {
+  const out = [];
+  const shrink = 2;
+  for (let i = 0; i < texts.length; i++) {
+    for (let j = i + 1; j < texts.length; j++) {
+      const a = texts[i];
+      const b = texts[j];
+      const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) - shrink * 2;
+      const oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) - shrink * 2;
+      if (ox > 0 && oy > 0) out.push(`"${a.text}" × "${b.text}" (${ox.toFixed(0)}x${oy.toFixed(0)})`);
+    }
+  }
+  return out;
+}
+
+test('BUG-2-09/2-10: intro and floating battle texts never overlap each other or the name labels', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 1);
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  await tap(page, 'home_story');
+  await waitScene(page, 'Story');
+  await tap(page, 'stage_stage_002');
+  await page.waitForFunction(() => ['Dialogue', 'Team'].includes(window.__TEST__.sceneKey), null, { timeout: 10000 });
+  await page.waitForTimeout(300);
+  if ((await page.evaluate(() => window.__TEST__.sceneKey)) === 'Dialogue') {
+    await tap(page, 'dialogue_skip');
+    await waitScene(page, 'Team');
+  }
+  await tap(page, 'team_fight');
+  await waitScene(page, 'Battle');
+  // intro (BUG-2-09)
+  await page.waitForTimeout(300);
+  const intro = await battleTexts(page);
+  expect(overlaps(intro), 'intro overlaps').toEqual([]);
+  await shot(page, testInfo, '23-battle-intro-no-overlap');
+  await page.waitForFunction(() => window.__TEST__.battleState().phase === 'fight', null, { timeout: 10000 });
+  // Heavy play: tap every playable card for 12 s and sample the texts every ~60 ms (BUG-2-10).
+  // Both sides get lots of HP so the fight keeps going.
+  await page.evaluate(() => {
+    const b = window.__TEST__.game.scene.getScene('Battle').battle;
+    for (const side of ['player', 'enemy']) for (const f of b.teams[side].fighters) f.hp = f.def.maxHp = 10 ** 7;
+  });
+  const probs = new Set();
+  let samples = 0;
+  let maxFloats = 0;
+  let shotTaken = false;
+  const end = Date.now() + 12000;
+  while (Date.now() < end) {
+    const st = await battleState(page);
+    if (!st || st.result) break;
+    const f = st.teams.player.fighters[st.teams.player.activeSlot];
+    const i = f.hand.findIndex((c) => c && c.playable);
+    if (i >= 0 && !st.paused) await tap(page, 'card_' + i);
+    for (let k = 0; k < 3; k++) {
+      const tx = await battleTexts(page);
+      samples++;
+      const nonName = tx.filter((x) => !x.name).length;
+      maxFloats = Math.max(maxFloats, nonName);
+      for (const p of overlaps(tx)) probs.add(p);
+      if (!shotTaken && nonName >= 3) {
+        shotTaken = true;
+        await page.screenshot({ path: `reports/screenshots/round-2/${testInfo.project.name.replace('phone-', '')}-24-battle-floats-busy.png` });
+      }
+      await page.waitForTimeout(40);
+    }
+  }
+  console.log(`[${testInfo.project.name}] float samples: ${samples}, max floating texts at once: ${maxFloats}, overlaps: ${probs.size}`);
+  expect(samples).toBeGreaterThan(50);
+  expect(maxFloats, 'the check saw floating texts').toBeGreaterThanOrEqual(2);
+  expect([...probs]).toEqual([]);
+  await shot(page, testInfo, '25-battle-floats');
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('BUG-2-06: stage list rows never overlap (all stages cleared)', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 5, "s.stages.stage_005.missions_completed = s.stages.stage_005.missions_completed.slice(0, 1);");
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  await tap(page, 'home_story');
+  await waitScene(page, 'Story');
+  await page.waitForTimeout(300);
+  const texts = await page.evaluate(() => {
+    const s = window.__TEST__.activeScene();
+    const out = [];
+    const walk = (list) => {
+      for (const o of list) {
+        if (o.type === 'Text' && o.text && o.text.trim()) {
+          const b = o.getBounds();
+          out.push({ text: o.text.replace(/\n/g, ' ').slice(0, 40), x: b.x, y: b.y, w: b.width, h: b.height });
+        }
+        if (o.list) walk(o.list);
+      }
+    };
+    walk(s.children.list);
+    return { texts: out, W: s.W };
+  });
+  expect(texts.texts.filter((x) => /Missions|\d\/\d/.test(x.text)).length).toBe(5);
+  expect(overlaps(texts.texts)).toEqual([]);
+  for (const x of texts.texts) expect(x.x + x.w, x.text).toBeLessThanOrEqual(texts.W + 3);
+  await shot(page, testInfo, '26-story-all-cleared');
+  expect(errors, errors.join('\n')).toEqual([]);
+});
