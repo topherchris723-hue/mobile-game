@@ -3,18 +3,25 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** 2 — Build (in progress)
+- **Phase:** 2 — Build; battle core passed QA. Next: summon screen + start Growth (balance)
 - **Round:** 2
-- **Core battle loop passed QA:** no
+- **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** none
 - **Unity port started:** no
 
 ## Open issues
 - Owner to pick a working title (GDD §1): Jade Tempest, Meridian Burst, Heavenbreak,
   Thunderclap Trio, Ironroar. Trademark check by compliance-checker before release.
-- No committed data validator yet (`npm run validate-data`, GDD §15.3) — round 2 task.
+- BUG-2-11 (MINOR, ui-developer): name labels collide at melee range / clipped at right wall.
+- AC-5.8.5 chain_index ambiguity and AC-5.6.1/5.6.2 example off-by-one (game-designer).
+- Tutorial 20 s prompt cap was chosen by ui-developer; GDD §9.4 must rule on it.
+- TRI-BURST locked vs ready look too similar (ui-developer / art-director).
+- smoke.spec.js overwrites committed screenshots on every run (ui-developer: gate behind env flag).
+- Security before Launch: `window.__TEST__` hook (src/main.js, `?test`) must be stripped from
+  release builds (release-engineer; release-reviewer to check).
 - Balance risks flagged for later (stage_005 hard for starters, Riposte/Tri-Burst numbers)
-  — balance-analyst once the engine exists. See reports/round-1-notes.md.
+  — balance-analyst. Sim: battles ~56 s vs GDD 120–200 s; starters win stage_004 ~3%,
+  stage_005 0%.
 
 ## Owner feedback
 Write anything you liked or disliked here, in your own words. Every line becomes a
@@ -27,10 +34,35 @@ lesson and a hard rule at the next `/retro`.
   layout in this milestone. Owner can override any of these.
 - Round 1: game-designer has no shell, so the Producer validates every schema change with
   Draft 2020-12 `check_schema` and re-validates data (chosen over widening its tools).
+- Round 2: Phaser pinned to 3.90.0 (latest 3.x) per CLAUDE.md, although Phaser 4 exists.
+- Round 2: accepted `tests/ui/` as ui-developer's; applied team-coach ownership corrections to 8
+  playbooks (gameplay-programmer owns package.json/scripts/validator; release-engineer only its
+  cap:*/android:* scripts; economy-designer/balance-analyst own their data files from Growth).
 
 ---
 
 ## Round log
+
+### Round 2 — Build (result)
+- **Result:** first playable build. npm project (Phaser 3.90, Vite, Vitest, Ajv, Playwright);
+  `npm run validate-data` (schema + §15.3 rules 1–9 + §3 banned terms, 38 negative fixtures);
+  deterministic battle engine for all of GDD §5 incl. AI tiers; save/missions with repair on
+  load; headless sim; portrait Phaser UI Title → Home → Story → Team → Battle (+ stage_001
+  tutorial) → Result. Summon screen not built yet (disabled button). 215 unit tests, 30 e2e.
+- **QA:** 2 loops. Loop 1 FAIL (4 major, 4 minor, 1 polish; Producer found 1 more). Loop 2 PASS:
+  10/10 verified fixed, 560 bot battles 0 failures, 1 new minor (BUG-2-11).
+- **GDD:** game-designer ruled BUG-2-08 (Tri-Burst can't be cancelled), adopted 11/12 programmer
+  decisions, banned "Spark" in names (renamed to Cinder Jab, Qualifier: Gatecrasher).
+- **Verdict:** none (milestone not feature-complete; no release review yet).
+- **Interruptions:** usage limit hit once; two agents resumed after reset.
+- **Retro:** 8 new lessons, 4 repeats; 13 hard rules promoted across 6 agents (nothing loosened —
+  only "none yet" placeholders removed). Ownership lists corrected.
+- **Next:** Round 3 — (a) summon screen: gameplay-programmer builds GDD §11 rolls/pity/duplicates
+  in logic, ui-developer builds the summon screen with rates shown; (b) ui-developer fixes
+  BUG-2-11, screenshot env flag, Tri-Burst locked look; game-designer rules on AC-5.8.5 and the
+  tutorial cap; (c) Growth starts: balance-analyst simulates and proposes stat changes for
+  battle length and stage_004/005 difficulty; then QA loop. Round 3 retro includes the playbook
+  upgrade (step C).
 
 ### Round 2 — Build (plan)
 - **Goal:** First build. Project setup, committed data validator, battle engine core,
