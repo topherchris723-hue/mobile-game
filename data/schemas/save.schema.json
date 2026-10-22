@@ -79,9 +79,9 @@
       "additionalProperties": false,
       "required": ["bgm_volume", "sfx_volume", "haptics"],
       "properties": {
-        "bgm_volume": { "type": "number", "minimum": 0, "maximum": 1 },
-        "sfx_volume": { "type": "number", "minimum": 0, "maximum": 1 },
-        "haptics": { "type": "boolean" }
+        "bgm_volume": { "description": "Fresh-save default 1.0 (GDD §13).", "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
+        "sfx_volume": { "description": "Fresh-save default 1.0 (GDD §13).", "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
+        "haptics": { "description": "Fresh-save default true (GDD §13, §14).", "type": "boolean", "default": true }
       }
     },
     "tutorial": {

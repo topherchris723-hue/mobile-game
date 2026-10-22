@@ -1,6 +1,6 @@
 # Game Design Document — Milestone 1 (Battle + Summon)
 
-Owner: game-designer. Round 1. Source of truth for rules; `docs/GAME_BRIEF.md` overrides this file.
+Owner: game-designer. Round 1, updated round 2 (QA fix loop 1: rules marked "round 2"). Source of truth for rules; `docs/GAME_BRIEF.md` overrides this file.
 
 Status legend: `DRAFT` = still being decided, do not build. `READY` = fully specified, can be built.
 `BUILT` = implemented and passed QA.
@@ -156,6 +156,18 @@ Acceptance:
 - **Order inside one tick:** (1) player inputs → (2) AI decisions → (3) timers advance →
   (4) movement → (5) hit resolution: every hit scheduled this tick is computed from the state at
   the start of step 5, then all are applied together → (6) KO checks → (7) win/lose checks.
+- **Tick numbering (round 2):** fight tick `f = 0` is the first unfrozen tick after "FIGHT!". `f` counts unfrozen
+  fight ticks only (intro, hitstop, cinematics, KO animation and pause do not count). During tick `f`,
+  `elapsed_ticks = f + 1` (the current tick counts). Every "battle time" rule uses `elapsed_ticks`: the
+  `battle_time_s` Ignition trigger (§5.9), the timeout (§5.14), `time_under_s` missions and the result time.
+- **Inputs during freezes (round 2):** inputs made during a **hitstop** are queued and applied, in the order they
+  were made, in step 1 of the first unfrozen tick after it. Each is checked against the rules at that moment, as
+  if it had just been made. Inputs made during a **cinematic** (Climax, Ignition, Tri-Burst), the **KO animation**,
+  the **intro** or **pause** are dropped (they do nothing, ever).
+- **Same-tick order between sides:** in step 1 the player's inputs are applied before the enemy's; AI decisions
+  (step 2) come after both. So when both sides act on the same tick, the player's action happens first.
+- AC-5.0.1: A Slip input made during a hitstop is applied on the first unfrozen tick after it (the `slip` event has
+  that tick). A card tap made during an Ignition cinematic plays no card, before or after the cinematic.
 
 **Fighter states:** `Idle`, `Dashing`, `Windup`, `Active` (hits landing), `Recovery`, `Slipping`,
 `SlipRecovery`, `Hitstun`, `Knockdown`, `Cinematic`, `KO`, `Benched`.
@@ -173,6 +185,12 @@ Acceptance:
 
 Disallowed inputs are ignored. A disallowed card tap shakes the card (no Vigor spent, no card used).
 
+**Tri-Burst lock (round 2, BUG-2-08):** while **any** Tri-Burst rush is in progress (from the tick it starts through
+the tick it resolves, §5.10), **neither side may Ignite**, and the side that is not rushing may not start a Tri-Burst.
+These inputs are rejected (`input_rejected`, reason `not_now`) and cost nothing; the IGNITE / TRI-BURST button shows
+greyed during the rush and a tap shakes it. This overrides the "Ignite: yes" cells in the table. Slip and Tag stay
+allowed (dodging the rush is the intended counter).
+
 ### 5.1 Arena and distance
 **Purpose:** distance makes moving matter. Melee is strong but you have to close in. Ranged attacks are
 safe but can be seen coming.
@@ -187,18 +205,34 @@ safe but can be seen coming.
 - Melee-delivery cards **auto-approach**: if `distance > melee_range`, the attacker moves toward the
   enemy at 150 units/s *(data `arena.approach_speed`)* until `distance ≤ melee_range`, and the
   windup starts after that. Example: distance 40 → approach 28 units → 0.187 s → 11 ticks, then windup.
+- **Approach, exact per-tick rule (round 2):** `step = approach_speed / 60` (default 2.5 units). The approach begins
+  on the tap tick but first moves on the next tick. On each later tick, in step 4: if `distance − melee_range ≤ step / 2`
+  the attacker has **arrived** (no move this tick); otherwise it moves `step` toward the defender and then checks the same
+  condition again. On arrival its x is snapped so `distance = melee_range` exactly (if it was farther), and the windup
+  starts on that tick. For a still defender: `approach_ticks = ceil((d − melee_range − step/2) / step)`, minimum 1.
+  Example: d = 40 → ceil(26.75 / 2.5) = 11 ticks. d = 13 → 1 tick (no move, snap to 12).
 - Knockback pushes the defender away by the card's `knockback` units (clamped at the wall).
 
 **Edge cases**
 - Defender against a wall: knockback is clamped to 0. Nothing else changes.
-- The defender moves during an approach: the approach keeps going until in range or 0.6 s
-  has passed (`arena.approach_timeout_s`). After a timeout the card whiffs and enters Recovery.
+- The defender moves during an approach: the approach keeps going until in range or `arena.approach_timeout_s`
+  (0.6 s = 36 ticks) after the tap. After a timeout the card whiffs (Vigor lost) and enters Recovery for its `recovery_s`.
+  **This is a safety net only.** With the default data it can never fire: the attacker never has to travel more than
+  `100 − 12 = 88` units (both fighters stay in [0, 100]), which takes at most 35 ticks; a defender's dash back only
+  shortens that because it ends at the wall; a hit during an approach interrupts the card (or, on armor, causes no
+  knockback). It exists so that future data (a slower `approach_speed`, a wider arena) cannot cause an endless approach.
 
 **Acceptance**
 - AC-5.1.1: From the start positions (distance 40), one forward dash leaves distance 20.
   Two dashes leave distance 8 (clamped), not 0.
 - AC-5.1.2: Playing a Fist card at distance 40 puts its first hit 11 ticks + windup ticks after the tap.
 - AC-5.1.3: No fighter's x is ever outside [0, 100].
+- AC-5.1.4: A Fist tapped at distance 40 (still defender) starts its windup on tap tick + 11 with distance exactly 12.
+  A Fist tapped at distance 13 starts its windup on tap tick + 1 with distance exactly 12.
+- AC-5.1.5 (safety net, test data): in a test copy of battle.json with `approach_timeout_s` = 0.1 (6 ticks), a Fist
+  tapped at distance 40 against a still defender whiffs on tap tick + 6 (distance 25 at that moment, `whiff` reason
+  `approach_timeout`), enters Recovery and its Vigor is not refunded. With the default data, 1,000 seeded headless
+  battles log 0 `approach_timeout` whiffs.
 
 ### 5.2 Controls and gestures
 **Purpose:** one thumb plays the whole game.
@@ -287,17 +321,36 @@ safe but can be seen coming.
   applies 1/hits of the knockback.
 - **Interrupt:** if a fighter is hit during its own `Windup` or approach and the card is not
   `armor: true`, the card is cancelled and its Vigor is lost. Climax cards always have armor.
+- **Hit during Active (round 2):** if a non-armored fighter is hit while its own card is `Active`, it enters Hitstun
+  and its card ends. Hits of a `melee` or `beam` card that have not landed yet are lost. A `projectile` card's hits
+  were all thrown when its windup ended, so they keep flying and resolve on schedule (first-hit rule above still
+  decides them). An opponent's Ignition (§5.9) or landed Tri-Burst (§5.10) cancels projectiles in flight too.
+- **Armor (round 2):** a fighter is **armored** during the approach, Windup and Active phases of an `armor: true` card
+  (not its Recovery) and during its own Tri-Burst rush. An armored fighter that is hit takes the damage (Burst gains,
+  hitstop and the attacker's `on: "hit"` effects apply as normal) but gets **no hitstun, no knockback and no
+  interrupt**; its card continues. A hit on an armored fighter does not start or extend a chain (`chain_index` 1,
+  `combo_mult` 1.00, and no chain is open afterwards). Armor does **not** protect against a landed Tri-Burst or an
+  Ignition push/cancel.
 - **Trade:** if both fighters land hits on the same tick, both take damage and both enter hitstun.
 - **Hitstop:** on each landed hit, a global freeze of `battle.hitstop_s[type]` *(data: fist 0.04,
   bolt 0.03, signature 0.06, climax 0)* happens, for game feel.
 - **Climax cinematic:** if a Climax's first hit lands, a cinematic of `cinematic_s` plays (a global
-  freeze; the hits are applied during it, with damage numbers shown). If it whiffs, there is no cinematic.
+  freeze). If it whiffs, there is no cinematic. **Round 2:** all of a Climax's hits are computed and applied on its
+  first-hit tick (step 5, before the cinematic starts), with one crit roll for the card; the renderer then shows the
+  damage numbers spread over the cinematic, `hit_interval_s` apart. The defender gets the full `knockback` and enters
+  Hitstun for `hitstun_s`, which starts counting after the cinematic (freezes stop timers).
 
 **Acceptance**
 - AC-5.5.1: A 3-hit card whose first hit is dodged deals 0 damage on all 3 hits.
 - AC-5.5.2: A non-armor Signature hit during its windup is cancelled and the Vigor is not refunded.
-- AC-5.5.3: A Climax hit during its windup is not cancelled (the attacker takes the damage and keeps going).
+- AC-5.5.3: A Climax hit during its windup is not cancelled: the attacker takes the damage, stays in Windup (not
+  Hitstun), its x does not change (no knockback) and its first hit lands on the originally scheduled tick.
 - AC-5.5.4: Two attacks landing on the same tick both deal damage.
+- AC-5.5.5: A multi-hit projectile Bolt whose thrower is hit after the windup ends but before the first hit lands:
+  every hit still resolves on its scheduled tick. A 2-hit melee Fist whose attacker is hit (by a projectile in flight)
+  after its first hit landed and before its second: only the first hit's damage is dealt.
+- AC-5.5.6: When a Climax's first hit lands, the defender's HP drops by the sum of all its hits on that tick, HP does
+  not change during the cinematic, and the defender stays in Hitstun for exactly 60 unfrozen ticks after the first-hit tick.
 
 ### 5.6 Slip (dodge), Perfect Slip and Riposte (counter)
 **Purpose:** the skill hook. Reading a wind-up and dodging late feels great and pays off with a free counter.
@@ -309,10 +362,16 @@ safe but can be seen coming.
   and `th − t0 ≤ perfect_window_s (0.15 s = 9 ticks)`. Reward: 2 Vigor refunded, +5 Burst Gauge, the text
   "PERFECT SLIP!", and a Riposte window.
 - A normal dodge (`th − t0` from 10 to 21 ticks) avoids the damage with no other reward.
+- **Exact tick windows (round 2):** with `t0` = the tick the Slip input is applied, the fighter is invulnerable for
+  hits with `0 ≤ th − t0 ≤ round(iframes_s × 60)` = 21 (22 ticks, `Slipping`). Perfect: `0 ≤ th − t0 ≤ 9`. It is in
+  `SlipRecovery` (vulnerable) for `th − t0` from 22 to 30 (`round(recovery_s × 60)` = 9 ticks) and `Idle` from 31.
+  A Slip applied on the same tick as the hit (`th − t0 = 0`) is Perfect, because inputs come before hits (§5.0).
 - **Riposte window:** `window_s = 0.8` from the Perfect Slip. The next Fist, Bolt or Signature card
   tapped in the window is a **Riposte**: cost 0, approach and windup skipped (the attacker appears at
   melee range or fires from where it is), first hit after 0.1 s, damage ×1.25 *(data)*. Climax cards
-  cannot be Riposte cards. The enemy whose attack was slipped is still in Recovery from that whiffed
+  cannot be Riposte cards. **Placement (round 2):** a `melee` Riposte puts the attacker at `distance = melee_range`
+  on the tap tick (if it was farther); a `projectile` or `beam` Riposte fires from where the attacker stands, and its
+  first hit lands 0.1 s (6 ticks) after the tap at any distance (no travel time). The enemy whose attack was slipped is still in Recovery from that whiffed
   card, so a Riposte almost always lands, unless the enemy uses Ignition or is invulnerable.
 - **Break Slip:** a Slip used while in `Hitstun`. Cost 4. Same i-frames. It ends hitstun at once. It never
   counts as Perfect.
@@ -325,12 +384,18 @@ safe but can be seen coming.
 - Only one Riposte per window. The window closes once a card is played or after 0.8 s.
 
 **Acceptance**
-- AC-5.6.1: A Slip started 6 ticks before a hit: no damage, Vigor net 0, a Riposte window opens.
-- AC-5.6.2: A Slip started 15 ticks before a hit: no damage, Vigor −2, no Riposte window.
+- AC-5.6.1: A Slip started 6 ticks before a hit: no damage, a Riposte window opens, and the Slip's net Vigor effect is 0
+  (Vigor after = Vigor before + regen over those ticks, e.g. 5.0 → 5.1 after 6 ticks at 1.0/s).
+- AC-5.6.2: A Slip started 15 ticks before a hit: no damage, no Riposte window, and Vigor after = Vigor before − 2 +
+  regen (e.g. 5.0 → 3.25 after 15 ticks).
 - AC-5.6.3: A Slip started 25 ticks before a hit: the hit lands (outside the 21-tick i-frames).
 - AC-5.6.4: A Riposte Fist with power 1.2 deals exactly 1.25× the damage of the same Fist without Riposte
   (same seed, no crit) and costs 0.
 - AC-5.6.5: A Break Slip in hitstun with Vigor 3.9 fails. With 4.0 it succeeds and leaves 0.0.
+- AC-5.6.6: Boundaries, with `th − t0` = 0 → Perfect; 9 → Perfect; 10 → normal dodge; 21 → normal dodge; 22 → the hit lands.
+- AC-5.6.7: A melee Riposte tapped at distance 30 puts the attacker at distance 12 on the tap tick and its first hit
+  lands on tap tick + 6. A projectile Bolt Riposte tapped at distance 30 leaves the distance at 30 and its first hit
+  also lands on tap tick + 6.
 
 ### 5.7 Combos
 **Purpose:** chaining cards rewards fast reading of the hand, and the combo counter is a hype moment.
@@ -375,7 +440,10 @@ type and reshuffles your options.
 - **Tag Escape:** a Tag while in hitstun. Cost 3 Vigor, plus the normal cooldown. It ends the enemy's chain.
 - **Tag Strike:** if the enemy is in Hitstun on the tag-in tick, the incoming fighter auto-performs a
   free melee hit: power `tag_strike_power = 0.8`, 1 hit, hitstun 0.6 s, knockback 4, no windup (first hit
-  after 0.1 s). It counts as a card in the chain.
+  after 0.1 s). It counts as a card in the chain. **Round 2:** on the tag-in tick the incoming fighter is placed at
+  `distance = melee_range` (if farther). The Tag Strike cannot crit and has **0 recovery**: the fighter is `Idle` on
+  the tick after its hit resolves (landed or whiffed) and can play a card at once; that card continues the chain if
+  its first hit lands while the enemy is still in Hitstun.
 - Buffs and debuffs on the outgoing fighter stay with it, and their timers pause while it is benched.
   Ignition ends when its fighter tags out.
 - **KO:** at HP 0 the fighter is KO'd. The KO animation is a global freeze of 1.5 s. Then the next living
@@ -391,11 +459,14 @@ type and reshuffles your options.
 
 **Acceptance**
 - AC-5.8.0: With the default data, Tag is impossible for exactly the first 300 unfrozen ticks after "FIGHT!"
-  and possible on tick 300. With `initial_cooldown_s` removed from battle.json, the result is the same (default 5).
+  and possible on fight tick f = 300 (§5.0 numbering). With `initial_cooldown_s` removed from battle.json, the result is the same (default 5).
 - AC-5.8.1: After a Tag, a second Tag is impossible for exactly 480 ticks.
 - AC-5.8.2: A Tag Escape with Vigor 2.5 fails. With 3.0 it succeeds and the enemy's chain counter resets.
 - AC-5.8.3: When slot 1 is KO'd while slot 2 is alive, slot 2 comes in automatically and Tag is immediately available.
 - AC-5.8.4: A tag-in during the enemy's hitstun produces one Tag Strike hit.
+- AC-5.8.5: A tag-in at distance 30 during the enemy's hitstun puts the incoming fighter at distance 12 on the tag
+  tick, the Tag Strike hit lands on tag tick + 6, and a Fist tapped on the next tick is accepted and, if its first hit
+  lands within the Tag Strike's 36 ticks of hitstun, has `chain_index` 2.
 
 ### 5.9 Ignition (transformation) — the big moment
 **Purpose:** a comeback-and-hype moment the owner explicitly asked for. It changes your look,
@@ -404,7 +475,8 @@ stats and cards for a short power spike.
 **Rules** (per fighter in `characters.json` → `ignition`; fighters without an `ignition` block cannot use it)
 - **Trigger:** the IGNITE button (56×56 px) appears when **any** of the fighter's triggers is met:
   - `hp_below_pct` (value 1–99): current HP ≤ value% of max.
-  - `battle_time_s`: at least this many seconds of battle timer have elapsed.
+  - `battle_time_s`: at least this many seconds of battle timer have elapsed, i.e. `elapsed_ticks ≥ round(value × 60)`
+    (§5.0), checked in step 3. For value 60 it is met on fight tick f = 3,599, and IGNITE input is accepted from f = 3,600.
   - `cards_played`: this fighter has played at least this many cards this battle.
   - `ally_ko`: at least this many teammates have been KO'd.
   Once available, it stays available until used. **Once per fighter per battle.** It can only be used
@@ -413,11 +485,16 @@ stats and cards for a short power spike.
   1. The fighter's current card is cancelled (no refund). Its chain ends.
   2. A global freeze cinematic of `battle.ignition.cinematic_s = 1.5` plays, with the shout text and the form name.
   3. Effects: heal `heal_pct` of max HP; +3 Vigor; the enemy is pushed 20 units and its current card
-     cancelled (this ignores i-frames and deals no damage); the deck is swapped to `ignition.deck`,
-     the hand redrawn to 4.
+     cancelled, along with its projectiles in flight (this ignores i-frames and armor and deals no damage); the deck
+     is swapped to `ignition.deck`, the hand redrawn to 4.
+  - **Not allowed while any Tri-Burst rush is in progress** (either side's), see the Tri-Burst lock in §5.0.
   4. For `duration_s` (excluding freezes): ATK × `stat_mult.atk`, DEF × `stat_mult.def`, Vigor regen
      + `vigor_regen_bonus` per second.
 - **End:** when the duration runs out, on tag-out or on KO. Stats and deck revert, and the hand is redrawn to 4 from the base deck.
+- **Deck reset, exact (round 2):** at Ignition start and at Ignition end (not on KO), the fighter's hand, draw pile,
+  discard pile and pending refill timers are all cleared; the **full** new deck (Ignition deck at start, base deck at
+  end) is shuffled with the seeded RNG and 4 cards are drawn. The base deck's draw/discard state from before Ignition
+  is not remembered.
 - The timer bar is shown under the fighter's HP bar.
 
 **Example:** Ignition (atk 1.30, def 1.20, regen +0.2, heal 10%, duration 25 s). A fighter with HP 3,000/10,000
@@ -434,6 +511,13 @@ ignites → HP 4,000. ATK 1,000 → 1,300. Vigor 4.0 → 7.0 and then regenerate
 - AC-5.9.2: After use, IGNITE never appears again for that fighter in that battle.
 - AC-5.9.3: ATK is ×1.30 for exactly 1,500 unfrozen ticks, then reverts. The hand then contains only base-deck cards.
 - AC-5.9.4: Igniting in hitstun ends hitstun and pushes the enemy 20 units.
+- AC-5.9.5: When `char_tavi_001`'s Ignition ends by duration, its hand holds 4 base-deck cards, its discard pile is
+  empty and its draw pile holds 4 cards (base deck 8 − 4), whatever its piles held before Ignition.
+- AC-5.9.6: `char_tavi_001` (trigger `battle_time_s: 60`) taking no damage and playing fewer cards than any card
+  trigger: `ignition_ready` fires on fight tick 3,599 and not earlier; an IGNITE input on f = 3,600 is accepted.
+- AC-5.9.7 (BUG-2-08): An enemy with IGNITE available taps IGNITE on every tick of the player's Tri-Burst rush
+  (rush start tick T through T + 18): every one is rejected with reason `not_now`, the rush resolves on T + 18, and the
+  enemy's Ignition is still unused and available afterwards (usable again once its state allows, e.g. after getup).
 
 ### 5.10 Tri-Burst (team finisher)
 **Purpose:** a team-wide hype finisher. The whole team appears for one huge attack. It charges
@@ -450,6 +534,18 @@ from fighting, so every battle reaches it.
   (invulnerable and armored during the rush). The rush hits the enemy at the end of the rush. If the enemy is invulnerable
   on that tick (Slip, getup, tag-in), it **whiffs**: the gauge is refunded 50% and Tri-Burst can be used again
   once it is full. If it lands: a cinematic of 4.0 s (a global freeze) with every **living** team member.
+- **The rush cannot be cancelled (round 2, BUG-2-08).** The gauge is set to 0 when the rush starts. The rush
+  starts on tick T and resolves in step 5 of tick T + `round(rush_time_s × 60)` (default T + 18). Nothing can cancel it:
+  neither side may Ignite during it, and the opponent may not start its own Tri-Burst during it (§5.0 Tri-Burst lock).
+  If both teams tap TRI-BURST on the same tick, the player's starts (§5.0 order) and the enemy's is rejected with its
+  gauge unchanged. Safety net: if a rush ever ends without landing or whiffing, it counts as a whiff (gauge refunded
+  `whiff_refund_pct`, not marked used).
+- **After a whiff (round 2):** the attacker is `Idle` on the resolve tick at the x it had when the rush started.
+- **After a landing (round 2):** the attacker is placed at `distance = melee_range` (if farther) and is `Idle` after
+  the cinematic. The target's current card (armored or not, Vigor not refunded) and its projectiles in flight are
+  cancelled, any chain on either side ends, and unless the hits KO it the target is knocked into `Knockdown`
+  (pushed `combo.knockdown_distance` = 25 units, clamped at the wall, then `combo.getup_s` = 0.6 s of getup,
+  invulnerable). Armor never prevents this: the Tri-Burst is the one attack that always connects in full.
 - **Damage:** one hit per living member *i*:
   `hit_i = floor( ATK_i × 3.0 × max(1.0, type_mult(aura_i, target)) × def_factor(target) )`, then the min/max caps from §5.11.
   `ATK_i` is that member's stat after Resonance, plus buffs and Ignition only if it is the active fighter. Tri-Burst cannot crit and has no combo bonus.
@@ -462,7 +558,15 @@ from fighting, so every battle reaches it.
 - AC-5.10.1: Dealing exactly 2,500 damage to a 10,000 HP enemy raises the gauge by exactly 10.
 - AC-5.10.2: The example team above against that target deals exactly 6,600 (no crit possible).
 - AC-5.10.3: After a landed Tri-Burst, the gauge shows USED and stays 0 for the rest of the battle.
-- AC-5.10.4: A whiffed Tri-Burst leaves the gauge at 50.
+- AC-5.10.4: A whiffed Tri-Burst leaves the gauge at 50, the attacker `Idle` on the resolve tick at its rush-start x.
+- AC-5.10.5: A Tri-Burst that lands on a target in the Windup of an armored Climax: the Climax is cancelled (no Vigor
+  refund, no Climax hit ever lands), and after the 4.0 s cinematic the target is in Knockdown, 25 units farther away
+  (or at the wall), and cannot be hit for 36 unfrozen ticks.
+- AC-5.10.6: Both teams at 100 Burst tap TRI-BURST on the same tick: only the player's rush starts; the enemy's input is
+  rejected (`not_now`) and its gauge stays 100.
+- AC-5.10.7 (BUG-2-08): In 1,000 seeded headless battles with master-tier AI on both sides, every `tri_burst_start`
+  is followed by exactly one `tri_burst` or `tri_burst_whiff` 18 unfrozen ticks later, and 0 `card_cancelled` events
+  with reason `ignition` target a Tri-Burst.
 
 ### 5.11 Damage formula, crits and caps
 **Purpose:** one predictable formula that the balance analyst can simulate.
@@ -493,7 +597,9 @@ hit = clamp(hit, 1, 99999)
 
 **Acceptance**
 - AC-5.11.1: The example above gives exactly 546 per hit (a unit test with fixed inputs).
-- AC-5.11.2: Power 0.01 against DEF 3,000 deals 1 (the minimum), never 0.
+- AC-5.11.2: Fixed inputs ATK_eff 300, power 0.01, hits 1, type_mult 1.0, crit_mult 1.0, combo_mult 1.0,
+  riposte_mult 1.0, DEF_eff 3,000 (def_factor 0.25): raw = 300 × 0.01 × 0.25 = 0.75 → floor 0 → clamped to **1**, never 0.
+  (At ATK 1,000 the same inputs give 2.5 → 2, which does not test the minimum.)
 - AC-5.11.3: Over 100,000 seeded card uses at crit_rate 0.05, the crit frequency is within 0.05 ± 0.003.
 - AC-5.11.4: The buff factor never goes outside [0.5, 1.5], even with 4 stacked buffs.
 
@@ -526,7 +632,9 @@ Damage numbers show "WEAK!" on ×1.3 hits and "RESIST" on ×0.8 hits.
 ### 5.14 Win, lose, timer
 **Rules**
 - Battle intro: 2.0 s of names and shouts, then "FIGHT!" (not counted on the timer).
-- The timer is `stage.timer_s` (default 180). It counts down in unfrozen ticks and is shown as `ceil(seconds)`.
+- The timer is `stage.timer_s` (default 180). It counts down in unfrozen ticks and is shown as `ceil(seconds)`,
+  where `seconds = (timer_s × 60 − elapsed_ticks) / 60` (§5.0). Timeout is checked in step 7 of the tick where
+  `elapsed_ticks = timer_s × 60`, i.e. fight tick f = 10,799 for 180 s (after exactly 10,800 unfrozen ticks).
 - **Win:** all enemy fighters KO'd. **Lose:** all player fighters KO'd.
 - **Timeout:** compare `team_hp_ratio = Σ current HP / Σ max HP` over all 3 fighters (KO'd = 0). Higher
   wins. An exact tie = **Draw**.
@@ -549,7 +657,11 @@ Burst rules, and reads only public state plus its own hand. It reacts to the pla
 after `reaction_s`. It never reads the player's hand or inputs before they happen.
 
 **Decision loop**
-- Every `think_interval_s` (±20% seeded jitter), when able to act, it goes down this list and does the first that applies:
+- The first think is on fight tick f = 0. After each think, the next one is `max(1, round(think_interval_s × 60 ×
+  (1 + think_jitter × (2r − 1))))` ticks later, `r` a seeded roll in [0, 1).
+- Every `think_interval_s` (±20% seeded jitter), when able to act, it goes down this list and does the first that applies.
+  A rule whose roll fails does not end the think: the AI goes on to the next rule (e.g. a failed `aggression` roll in
+  rule 6 falls through to rule 7, Move). Rule 2 and 3 are skipped while the Tri-Burst lock (§5.0) applies.
   1. In Hitstun: if `vigor ≥ slip.break_cost` (4) and roll < `break_slip_chance` → Break Slip.
   2. IGNITE available for at least `ignite_delay_s` → Ignite.
   3. Burst full, `uses_burst`, and its state allows it → Tri-Burst.
@@ -562,6 +674,11 @@ after `reaction_s`. It never reads the player's hand or inputs before they happe
 - **Reactive dodge:** when the player's card windup starts, the AI waits `reaction_s`. If its first hit has not landed by then,
   it rolls `slip_chance` (needs Vigor ≥ 2). On success it rolls `perfect_slip_chance`: success → it starts the Slip
   6 ticks before the hit; else → 15 ticks before. If that tick is already past, it slips now.
+  **Round 2, exact:** the offsets come from the slip data: perfect offset `floor(perfect_ticks × 2 / 3)` = floor(9 × 2/3)
+  = 6; normal offset `floor((perfect_ticks + iframe_ticks) / 2)` = floor((9 + 21) / 2) = 15, where
+  `perfect_ticks = round(perfect_window_s × 60)` and `iframe_ticks = round(iframes_s × 60)`. If the roll was **not**
+  perfect and the earliest possible Slip tick (now, or the planned tick if later) would be ≤ `perfect_ticks` before the
+  hit, the AI does **not** slip (a failed perfect roll must never produce a Perfect Slip).
 - **Combo:** when its card lands and the link window opens, roll `combo_continue` → play the next affordable card.
 - **Riposte:** after its own Perfect Slip, roll `riposte_chance` → play a Riposte.
 
@@ -590,6 +707,11 @@ after `reaction_s`. It never reads the player's hand or inputs before they happe
 - AC-5.15.2: The AI never takes an action it could not afford (log assertion over 1,000 battles).
 - AC-5.15.3: A rookie never Perfect Slips. A rookie never uses Tri-Burst.
 - AC-5.15.4: The AI never starts a Slip earlier than `reaction_s` after the windup start of the attack it dodges (check in the log).
+- AC-5.15.5: In the AI slip log over 1,000 seeded battles, every planned perfect-roll Slip starts 6 ticks before the hit
+  (or at its decision tick, if that is later), every normal-roll Slip starts 15 ticks before (or later, but never
+  ≤ 9 ticks before), and no normal-roll Slip produces a `perfect_slip` event.
+- AC-5.15.6: The AI's first think happens on fight tick f = 0 (an AI-controlled side with an affordable card and
+  `aggression` 1.0 and `vigor_reserve` 0 in test data, Vigor 5 and a cost-2 Fist in hand, emits `card_played` on f = 0).
 
 ---
 
@@ -835,6 +957,10 @@ Schema `save.schema.json` (runtime save, not shipped content). Stored as JSON in
 first_multi_done {banner_id: bool}, total_pulls}, `settings` {bgm_volume, sfx_volume, haptics},
 `tutorial` {completed}.
 
+**Fresh-save defaults (round 2):** `settings` = { `bgm_volume`: 1.0, `sfx_volume`: 1.0, `haptics`: true };
+`tutorial.completed` = false; `summon.pity` = {}, `first_multi_done` = {}, `total_pulls` = 0; `stages` = {};
+currencies, roster and team from `economy.json` → `starting` (§12).
+
 **Rules**
 - On load: parse and validate against the schema. If that fails, copy the raw text to `game_save_corrupt_<unix_ms>`,
   start a fresh save and show "Save data was damaged and has been reset." on Home.
@@ -842,6 +968,7 @@ first_multi_done {banner_id: bool}, total_pulls}, `settings` {bgm_volume, sfx_vo
 - IDs in the save that no longer exist in the data are ignored on load (they are not deleted, so a later data fix restores them).
 - AC-13.1: Win stage_001, close the app, reopen: stage_001 shows cleared and Jade includes the reward.
 - AC-13.2: Writing garbage to `game_save` leads to a fresh save plus a backup key, with no crash.
+- AC-13.3: A fresh save has `settings` exactly { bgm_volume 1.0, sfx_volume 1.0, haptics true } and `tutorial.completed` false.
 
 ---
 

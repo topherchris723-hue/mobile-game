@@ -25,7 +25,7 @@
         "dash_distance": { "description": "Default 20.", "type": "number", "minimum": 1 },
         "dash_time_s": { "description": "Default 0.20.", "type": "number", "minimum": 0.05, "maximum": 1 },
         "approach_speed": { "description": "Default 150 units/s.", "type": "number", "minimum": 10 },
-        "approach_timeout_s": { "description": "Default 0.6.", "type": "number", "minimum": 0.1, "maximum": 3 }
+        "approach_timeout_s": { "description": "Default 0.6. Safety net only: cannot fire with default arena/approach data (GDD §5.1, AC-5.1.5).", "type": "number", "minimum": 0.1, "maximum": 3 }
       }
     },
     "vigor": {
