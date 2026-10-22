@@ -1,0 +1,25 @@
+{
+  "name": "anime-card-battler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mobile anime fighting card battler prototype (Phaser 3 + pure JS logic).",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build.js",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate-data": "node scripts/validate-data.js",
+    "sim": "node scripts/sim.js"
+  },
+  "dependencies": {
+    "phaser": "3.90.0"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}
