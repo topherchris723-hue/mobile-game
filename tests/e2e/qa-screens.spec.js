@@ -1,5 +1,5 @@
 // QA round 2: every screen at 360×640, 390×844, 430×932 (+ 360×800 for AC-14.2). Screenshots go to
-// reports/screenshots/round-2/qa/. Automated layout scan: text clipped off-screen, font < 12 px,
+// reports/screenshots/round-3/qa/. Automated layout scan: text clipped off-screen, font < 12 px,
 // text/text overlap, touch targets ≥ 44 and ≥ 8 px apart (GDD §14, AC-14.1), no shop/purchase UI (AC-4.2),
 // zero console errors. Runs once (in the 360 project) and opens its own contexts per size.
 import { test, expect } from '@playwright/test';
@@ -34,10 +34,31 @@ test('QA screens at 3 phone sizes: layout scan + screenshots', async ({ browser 
     await tap(page, 'start');
     await waitScene(page, 'Home');
     await check(page, n, '02-home', findings);
-    await tap(page, 'home_summon'); // disabled: toast only
+    // Round 3: Summon is built (GDD §11.1)
+    await tap(page, 'home_summon');
+    await waitScene(page, 'Summon');
+    await check(page, n, '03a-summon', findings);
+    await tap(page, 'summon_rates');
+    await page.waitForTimeout(400);
+    await check(page, n, '03b-summon-rates', findings, { overlayDepth: 200, targetFilter: (t) => t.id === 'summon_rates_close' });
     await page.waitForTimeout(300);
-    await check(page, n, '03-home-summon-toast', findings);
-    await page.waitForTimeout(2000);
+    await tap(page, 'summon_rates_close');
+    await page.waitForTimeout(300);
+    await tap(page, 'summon_x10');
+    await page.waitForTimeout(400);
+    await check(page, n, '03c-summon-confirm', findings, { overlayDepth: 200, targetFilter: (t) => t.id === 'summon_confirm' || t.id === 'summon_cancel' });
+    await page.waitForTimeout(300);
+    await tap(page, 'summon_confirm');
+    await waitScene(page, 'SummonReveal');
+    await check(page, n, '03d-summon-reveal', findings);
+    await tap(page, 'summon_skip');
+    await page.waitForTimeout(800);
+    await check(page, n, '03e-summon-results', findings);
+    await tap(page, 'summon_ok');
+    await waitScene(page, 'Summon');
+    await check(page, n, '03f-summon-after', findings);
+    await tap(page, 'back');
+    await waitScene(page, 'Home');
     await tap(page, 'home_story');
     await waitScene(page, 'Story');
     await check(page, n, '04-story-fresh', findings);
@@ -180,6 +201,7 @@ test('QA screens at 3 phone sizes: layout scan + screenshots', async ({ browser 
     await ctx.close();
   }
 
+  fs.mkdirSync(QA_SHOTS, { recursive: true });
   fs.writeFileSync(`${QA_SHOTS}/layout-findings.json`, JSON.stringify(findings, null, 2));
   const problems = findings.flatMap((f) => f.problems.map((p) => `${f.size} ${f.screen}: ${p}`));
   console.log('LAYOUT PROBLEMS (' + problems.length + '):\n' + problems.join('\n'));

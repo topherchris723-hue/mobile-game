@@ -6,7 +6,7 @@
 // is recorded and screenshotted.
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
-import { SIZES, QA_SHOTS, boot, newPhone, waitScene, tap, clearedSave, watchErrors } from './qa-helpers.js';
+import { SIZES, QA_SHOTS, boot, newPhone, waitScene, tap, clearedSave, watchErrors, rawShot } from './qa-helpers.js';
 
 async function scanArena(page) {
   return page.evaluate(() => {
@@ -41,6 +41,11 @@ async function scanArena(page) {
       const oy = Math.min(A.y + A.h, B.y + B.h) - Math.max(A.y, B.y) - pad * 2;
       if (ox > 0 && oy > 0) overlaps.push(`"${A.t}"(a${A.a}) × "${B.t}"(a${B.a}) ${ox.toFixed(0)}x${oy.toFixed(0)}`);
     }
+    for (const A of texts) if (A.d < 70 && (A.x < -3 || A.x + A.w > s.W + 3)) overlaps.push(`text off-screen: "${A.t}" x ${A.x.toFixed(0)}..${(A.x + A.w).toFixed(0)} of ${s.W}`);
+    if (s.lastArena) for (const side of ['player', 'enemy']) {
+      const f = s.lastArena[side];
+      if (f.x - f.ext.left < -1 || f.x + f.ext.right > s.W + 1) overlaps.push(`${side} fighter off-screen: ${(f.x - f.ext.left).toFixed(0)}..${(f.x + f.ext.right).toFixed(0)} of ${s.W}`);
+    }
     return { tick: st.tick, phase: st.phase, freeze: st.freeze && st.freeze.kind, cine: !!cine, result: !!st.result, n: texts.length, overlaps };
   });
 }
@@ -53,12 +58,16 @@ test('QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes'
   for (const size of SIZES) {
     const { ctx, page } = await newPhone(browser, size);
     const errors = watchErrors(page);
-    await boot(page, clearedSave(2), '&renderer=canvas&seed=777');
+    // L-qa-002: longest names in data — player Solenne/Corvane/Dunmore (7 chars) vs stage_005's "Umbral Solenne" (14).
+    const sv = clearedSave(4);
+    for (const id of ['char_solenne_001', 'char_corvane_001']) sv.roster.push({ character_id: id, resonance: 0, obtained_at: sv.created_at });
+    sv.team = ['char_solenne_001', 'char_corvane_001', 'char_dunmore_001'];
+    await boot(page, sv, '&renderer=canvas&seed=777');
     await tap(page, 'start');
     await waitScene(page, 'Home');
     await tap(page, 'home_story');
     await waitScene(page, 'Story');
-    await tap(page, 'stage_stage_003');
+    await tap(page, 'stage_stage_005');
     await waitScene(page, 'Dialogue');
     await tap(page, 'dialogue_skip');
     await waitScene(page, 'Team');
@@ -69,7 +78,12 @@ test('QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes'
       const T = window.__TEST__;
       const sc = T.activeScene();
       // L-shared-006 negative proof: QA_BREAK_PLACER=1 makes the placer return the wanted spot unchecked.
-      if (breakPlacer) sc.floats.place = (o) => ({ x: o.x, y: o.y });
+      if (breakPlacer === 'placer' || breakPlacer === 'all') sc.floats.place = (o) => ({ x: o.x, y: o.y });
+      // QA_BREAK_PLACER=labels: after each render, put the enemy label on the player's and push the enemy off-screen.
+      if (breakPlacer === 'labels' || breakPlacer === 'all') sc.events.on('postupdate', () => {
+        sc.fighters.enemy.nameTag.setX(sc.fighters.player.nameTag.x + 10);
+        if (sc.lastArena) sc.lastArena.enemy.x = sc.W + 5;
+      });
       const canvas = T.game.canvas;
       const r = canvas.getBoundingClientRect();
       const k = r.width / sc.W;
@@ -99,8 +113,11 @@ test('QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes'
         requestAnimationFrame(loop);
       };
       requestAnimationFrame(loop);
-    }, !!process.env.QA_BREAK_PLACER);
+    }, process.env.QA_BREAK_PLACER === '1' ? 'placer' : (process.env.QA_BREAK_PLACER || ''));
     await page.waitForFunction(() => window.__TEST__.battleState().phase === 'fight', null, { timeout: 10000 });
+    // KO enemy 1 so the longest enemy name ("Umbral Solenne", slot 2) is on screen for the whole sample
+    await page.evaluate(() => { window.__TEST__.game.scene.getScene('Battle').battle.teams.enemy.fighters[0].hp = 0; });
+    await page.waitForFunction(() => { const s = window.__TEST__.battleState(); return s.teams.enemy.activeSlot === 1 && !s.freeze; }, null, { timeout: 10000 });
     let frames = 0;
     let busiest = 0;
     let shots = 0;
@@ -112,24 +129,24 @@ test('QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes'
       if (r.cine) { await page.waitForTimeout(120); continue; }
       frames++;
       busiest = Math.max(busiest, r.n);
-      if (r.n >= 4 && shots < 1 && r.overlaps.length === 0) { await page.screenshot({ path: `${QA_SHOTS}/${size.name}-busy-frame-clean.png` }); shots = shots; }
+      if (r.n >= 5 && shots < 2 && r.overlaps.length === 0) { shots++; await rawShot(page, `${size.name}-busy-frame-clean-${shots}.png`); }
       for (const o of r.overlaps) {
         if (!seen.has(o)) {
           seen.add(o);
-          const p = `${QA_SHOTS}/${size.name}-busy-overlap-${seen.size}.png`;
-          if (seen.size <= 4) await page.screenshot({ path: p });
-          report.push(`${size.name} tick ${r.tick}: ${o}` + (seen.size <= 4 ? ` [${p}]` : ''));
+          const p = seen.size <= 4 ? await rawShot(page, `${size.name}-busy-overlap-${seen.size}.png`) : null;
+          report.push(`${size.name} tick ${r.tick}: ${o}` + (p ? ` [${p}]` : ''));
         }
       }
       await page.waitForTimeout(120);
     }
     await page.evaluate(() => (window.__TEST__.stopBusy = true));
-    await page.screenshot({ path: `${QA_SHOTS}/${size.name}-busy-end.png` });
+    await rawShot(page, `${size.name}-busy-end.png`);
     console.log(`[${size.name}] busy frames scanned=${frames}, max arena texts in one frame=${busiest}, overlaps=${seen.size}`);
     report.unshift(`${size.name}: frames=${frames} maxTexts=${busiest} overlaps=${seen.size}`);
     allErrors.push(...errors.map((e) => size.name + ' ' + e));
     await ctx.close();
   }
+  fs.mkdirSync(QA_SHOTS, { recursive: true });
   fs.writeFileSync(`${QA_SHOTS}/busy-findings.txt`, report.join('\n') + '\n');
   console.log(report.join('\n'));
   expect.soft(allErrors).toEqual([]);

@@ -11,14 +11,14 @@ const stage = D.stages.stages[0];
 
 function setup(seed) {
   const b = createBattle({ content, stageId: stage.id, playerTeam: D.economy.starting.team }, seed);
-  const tut = new TutorialController(stage.tutorial_steps, b, 0.3);
+  const tut = new TutorialController(stage.tutorial_steps, b, content.rules); // round 3 signature
   let ms = 0;
   let lastWind = null;
   const step = (inputs) => {
     const evs = b.step(inputs || []);
     for (const e of evs) if (e.type === 'windup_start' && e.side === 'enemy') lastWind = e;
     tut.handleEvents(evs, ms);
-    ms += 1000 / 60;
+    ms += 1000 / 60 / tut.speed(); // real ms per logic tick (slow-mo stretches it)
     tut.handleState(b.getState(), ms);
     return evs;
   };
@@ -106,4 +106,29 @@ console.log('Scenario A (tag during held Riposte prompt):', JSON.stringify(A));
     }
   }
   console.log('Scenario B2 (ignition_ready from a benched fighter):', JSON.stringify(out));
+}
+
+// Scenario C (round 3, AC-9.4.3 cap): the tag_ready prompt is never answered → it closes after
+// tutorial_prompt_max_s of shown time, speed returns to 1.0 and the step never fires again.
+// QA_BREAK=nocap sets the cap to 1e9 to prove this check fails.
+{
+  const { b, tut, step } = setup(5);
+  if (process.env.QA_BREAK === 'nocap') tut.maxPromptMs = 1e12;
+  let shownAt = null, closedAt = null, refired = false, ms = 0, idx = null;
+  for (let i = 0; i < 60 * 150 && !b.getResult(); i++) {
+    const act = tut.active && tut.active.step;
+    if (act && act.required_action !== 'tag') tut.complete(); // only study the tag prompt
+    step([]);
+    ms += 1000 / 60 / tut.speed();
+    const now = tut.active && tut.active.step.trigger === 'tag_ready';
+    if (now && shownAt === null) { shownAt = ms; idx = tut.active.index; }
+    if (shownAt !== null && closedAt === null && !now) closedAt = ms;
+    if (closedAt !== null && now) refired = true;
+    b.teams.player.fighters.forEach((f) => { if (f.hp < f.def.maxHp / 2) f.hp = f.def.maxHp; }); // keep the fight going
+    b.teams.enemy.fighters.forEach((f) => { if (f.hp < f.def.maxHp / 2) f.hp = f.def.maxHp; });
+  }
+  const shownS = closedAt !== null ? (closedAt - shownAt) / 1000 : null;
+  const ok = shownS !== null && Math.abs(shownS - content.rules.tutorialPromptMaxS) <= 0.1 && !refired;
+  console.log((ok ? 'PASS' : 'FAIL') + ' Scenario C (AC-9.4.3 cap): tag prompt shown ' + (shownS === null ? 'never closed' : shownS.toFixed(2) + ' s') + ', cap ' + content.rules.tutorialPromptMaxS + ' s, refired=' + refired + ', speed after=' + tut.speed());
+  if (!ok) process.exitCode = 1;
 }

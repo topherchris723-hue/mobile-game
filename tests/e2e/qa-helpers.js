@@ -2,8 +2,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const QA_SHOTS = 'reports/screenshots/round-2/qa';
-fs.mkdirSync(QA_SHOTS, { recursive: true });
+// Round 3: screenshots only with QA_SHOTS=1 (or UI_SHOTS=1), so normal test runs never rewrite evidence.
+export const QA_SHOTS = 'reports/screenshots/round-3/qa';
+export const WRITE_QA_SHOTS = process.env.QA_SHOTS === '1' || process.env.UI_SHOTS === '1';
+if (WRITE_QA_SHOTS) fs.mkdirSync(QA_SHOTS, { recursive: true });
 
 export const SIZES = [
   { name: '360x640', w: 360, h: 640, dpr: 2 },
@@ -104,8 +106,16 @@ export async function tap(page, id) {
 
 export async function shot(page, name) {
   await page.waitForTimeout(400);
+  if (!WRITE_QA_SHOTS) return null;
   await page.screenshot({ path: `${QA_SHOTS}/${name}.png` });
   return `${QA_SHOTS}/${name}.png`;
+}
+
+/** Raw screenshot (busy-frame evidence), gated like shot(). */
+export async function rawShot(page, file) {
+  if (!WRITE_QA_SHOTS) return null;
+  await page.screenshot({ path: `${QA_SHOTS}/${file}` });
+  return `${QA_SHOTS}/${file}`;
 }
 
 /**

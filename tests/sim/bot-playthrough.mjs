@@ -154,6 +154,9 @@ function runOne(stageId, seed, mode, opts = {}) {
           else if (e.tick - rush[e.side] !== 18) fail(e.type + ' ' + (e.tick - rush[e.side]) + ' ticks after rush start (want 18)');
           rush[e.side] = null;
         }
+        if (e.type === 'tri_burst_whiff' && e.reason === 'safety_net') fail('safety_net whiff at tick ' + e.tick);
+        if (e.type === 'ko' && rush[e.side] !== null) fail('KO of ' + e.side + ' while its rush is in progress, tick ' + e.tick);
+        if (process.env.QA_INJECT === 'rushhang' && e.type === 'tri_burst_start') { const a = b.activeFighter(e.side).action; if (a) a.rushEnd = 1e12; }
         if (e.type === 'card_cancelled' && e.reason === 'ignition' && (e.cardId === 'tri_burst' || e.cardId === null)) fail('Ignition cancelled a Tri-Burst rush at tick ' + e.tick);
       }
       const st = b.getState();
@@ -208,9 +211,12 @@ function runOne(stageId, seed, mode, opts = {}) {
     if (!validateSave(save)) fail('save invalid after result: ' + JSON.stringify(validateSave.errors).slice(0, 200));
     if (save.currencies.cur_jade < 0 || !Number.isFinite(save.currencies.cur_jade)) fail('jade ' + save.currencies.cur_jade);
   }
-  if (res && (rush.player !== null || rush.enemy !== null) && res.reason !== 'retreat') {
-    // a rush pending when the battle ended is only OK if the battle ended on that same resolve; flag otherwise
-    fail('rush still pending at battle end: ' + JSON.stringify(rush));
+  if (res) {
+    // AC-5.10.7: a rush with no resolve is only allowed when the battle ended on a tick in T … T + 17.
+    const endTick = res.ticks - 1;
+    for (const side of ['player', 'enemy']) {
+      if (rush[side] !== null && !(endTick >= rush[side] && endTick <= rush[side] + 17)) fail(side + ' rush from tick ' + rush[side] + ' never resolved; battle ended tick ' + endTick);
+    }
   }
   globalThis.__rushTotal = (globalThis.__rushTotal || 0) + rushCount;
   if (enemyVigorRejects > 0) fail('enemy AI had ' + enemyVigorRejects + ' Vigor-rejected actions (AC-5.15.2)');
@@ -250,7 +256,7 @@ function main() {
     jobs.forEach(([mode, seed], idx) => {
       const r = runOne(stageId, seed, mode, { inputProb: idx % 3 === 0 ? 0.25 : 0.06 });
       run++;
-      if (r.res) { tally[stageId][r.res.outcome]++; lengths.push(r.res.timeElapsedS); }
+      if (r.res) { tally[stageId][r.res.reason] = (tally[stageId][r.res.reason] || 0) + 1; tally[stageId][r.res.outcome]++; lengths.push(r.res.timeElapsedS); }
       tally[stageId].maxReal = Math.max(tally[stageId].maxReal, r.realTicks);
       if (idx % 5 === 0 && r.pausedTicks === 0) {
         const again = replayDigest(stageId, seed, mode, r.team, r.inputLog);
