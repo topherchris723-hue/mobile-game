@@ -4,7 +4,7 @@ import { createBattle, createContent } from '../../src/logic/index.js';
 const read = (f) => JSON.parse(fs.readFileSync(new URL('../../data/' + f, import.meta.url)));
 const D = { battle: read('battle.json'), characters: read('characters.json'), cards: read('cards.json'), enemies: read('enemies.json'), stages: read('stages.json'), economy: read('economy.json') };
 const content = createContent(D);
-for (const enemy of ['enemy_rook_003', 'enemy_thessa_002', 'enemy_corvane_001']) {
+for (const enemy of ['enemy_rook_001', 'enemy_rook_003', 'enemy_thessa_002', 'enemy_corvane_001']) {
   const out = {}; let planned = 0, slipped = 0; const lostState = {};
   for (let seed = 1; seed <= 2000; seed++) {
     const b = createBattle({ content, enemyTeam: [enemy], playerTeam: ['char_pell_001', 'char_lark_001', 'char_dunmore_001'], skipIntro: true }, seed);

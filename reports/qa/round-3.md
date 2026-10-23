@@ -175,3 +175,68 @@ Root-cause guess: `AiController.decide()` runs decision-loop items 5–7 (play a
 Re-tested fixes: 2/2 VERIFIED FIXED (BUG-2-11, BUG-3-01).
 
 QA RESULT: FAIL
+
+---
+
+# Loop 2 (round 3, QA loop 2)
+
+Build: `cbe5ae2`. That is BUG-3-02 fixed in `cc3e627` (`AiController.slipCommitted()`) plus the balance-analyst's re-check (no data change). Regression scope is proportional to an AI-only logic change: the full headless set plus the full e2e suite.
+
+## L2.1 Re-test
+
+| Bug | Status | Evidence |
+|---|---|---|
+| BUG-3-02 planned AI Slips lost to own card | **VERIFIED FIXED (every tier)** | `node tests/sim/ai-slip-rate.mjs 4000`: rookie 9.4% (10%), fighter 23.9% (25%), **veteran 38.1% (40%)**, **master 53.4% (55%)**. All PASS within ±2 pp; 0 cards with more than 1 roll. `node tests/sim/ai-slip-breakdown.mjs` (now includes rookie): planned → slipped rookie 121/121, fighter 226/226, veteran 341/341, master 388/388, **0 lost**. **Negative proofs:** new `QA_BREAK=nocommit` (`slipCommitted` forced false = the fix switched off) brings back the loop-1 numbers (veteran 26.3%, master 15.7%) → FAIL. `QA_BREAK=reroll` (the BUG-3-01 bug) → 3 of 4 tiers FAIL at n=500 |
+
+## L2.2 Regression pass
+
+| Check | Result |
+|---|---|
+| `npm test` | **381/381 passed** (26 files; +6 per-tier outcome tests) |
+| `npm run validate-data` | PASS, 0 errors, 0 warnings |
+| Bot playthrough (`--per-stage 50 --ai-per-stage 8 --seed 4000`) | **410 battles, 0 failed**, 560 rushes checked. Average timer 120.2 s, max 13,212 real ticks. Timeouts by stage: s1 0, s2 3, s3 40, s4 27, s5 49 of 82 (random-tap bots, as in loop 1). The injection self-tests are unchanged from loop 1 (bot script not modified this loop) |
+| AC-5.10.7 (`node tests/sim/ac-5-10-7.mjs 1000`) | **PASS: 2,002 battles, 4,275 rushes, 0 failing.** The checker is unchanged; its loop-1 negative proof (`QA_BREAK=late`) still applies |
+| Engine / tutorial probes | edge-cases 8 PASS; tutorial Scenario C (AC-9.4.3 cap) PASS 20.02 s |
+| Banned-term grep | 44 terms, 48 files, 0 hard, 0 review, 0 name-only hits |
+| Release bundle | clean build: `__TEST__` / `sfxLog` / `inputLog` / `eventLog` / `battleState` / `test-hooks` all **0**. `VITE_TEST_HOOKS=1` build → `__TEST__` 3 (the check can fail). Clean again → 0 |
+| E2E `npx playwright test` | First run: 43/45 passed, 2 failed. After fixing my own test defect (below): `qa-tribust-lock` 2/2 passes, the ENEMY-rush test **4/4 repeated runs**. The remaining failure is `qa-busy` → **BUG-3-03**. So the e2e result is **44/45**, with the 1 failure being a filed bug |
+| Console errors | **0** across the suite |
+
+**Test defect fixed (mine, not a game bug): `qa-tribust-lock.spec.js` › "…during the ENEMY's rush…"**
+- What happened: it started the enemy's rush with `applyInput('enemy', …)` without checking that the rush started. With the fixed AI, the enemy is sometimes committed to a Slip or spends its own full gauge first, so no rush started and `burstReady` stayed true. The failing runs (2 of 3) are the evidence that the assertion fails when no rush is running.
+- Fix: the enemy AI is switched off for that test (`controllers.enemy = null`). The test waits for `triBurstMode('enemy').ok` and asserts that the rush started.
+
+## L2.3 New bugs
+
+### BUG-3-03: The "RIPOSTE!" callout is drawn over the combo hit counter ("N HITS")
+Severity: MINOR
+Owner: ui-developer (`src/scenes/BattleScene.js` / `src/ui/float-placer.js`)
+
+Steps:
+1. Run `QA_SHOTS=1 npx playwright test tests/e2e/qa-busy.spec.js` (stage_005, longest names, bot-driven fight).
+2. Wait until the player has a chain running (combo counter visible top-left) and a Perfect Slip leads to a Riposte.
+
+Expected (GDD §14; BUG-2-10 intent; L-qa-002): battle texts never overlap.
+Actual: "RIPOSTE!" (30 px callout at about W × 0.34 in the upper band) covers "2 HITS". The combo counter (`comboText` / `comboHits`) is drawn at a fixed spot and is not registered as an `avoid` rectangle in the float placer, so callouts are placed on top of it.
+- Seen at 360×640 (2 frames, overlap 12×17 px) in the second run, and at 390×844 (3 frames) in the full-suite run.
+- It was latent before. It shows now because the BUG-3-02 fix makes the AI Slip at its designed rate, so Perfect Slips and Ripostes happen more often while a chain is shown.
+
+Evidence:
+- `tests/e2e/qa-busy.spec.js` (fails): `360x640 tick 474: "2 HITS"(a1) × "RIPOSTE!"(a1) 12x17`.
+- Screenshot `reports/screenshots/round-3/qa/360x640-busy-overlap-1.png`, checked by eye: it reads "2 HIT" with the rest hidden under "RIPOSTE!".
+- `reports/screenshots/round-3/qa/busy-findings.txt`.
+
+Root-cause guess: add the combo counter's current bounds (while visible) to `floatAvoid()`, or move the counter into a band the placer reserves.
+
+## L2.4 Counts (loop 2, open bugs)
+
+| Severity | Count | Bugs |
+|---|---|---|
+| BLOCKER | 0 | — |
+| MAJOR | 0 | — |
+| MINOR | 1 | BUG-3-03 |
+| POLISH | 0 | — |
+
+Re-tested fixes: 1/1 VERIFIED FIXED (BUG-3-02).
+
+QA RESULT: PASS

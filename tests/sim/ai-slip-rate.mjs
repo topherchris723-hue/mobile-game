@@ -23,6 +23,7 @@ for (const [tier, enemy] of Object.entries(tiers)) {
     f.deck.hand[0] = 'card_pell_thousand_dawns'; f.deck.refillAt[0] = -1;
     b.teams.player.vigor = 6000 * 10; b.teams.enemy.vigor = 6000 * 10;
     if (b.activeFighter('enemy').state !== 'Idle') continue;
+    if (process.env.QA_BREAK === 'nocommit') b.controllers.enemy.slipCommitted = () => false; // BUG-3-02 fix switched off
     if (process.env.QA_BREAK === 'reroll') { const ai = b.controllers.enemy; const orig = ai.decide.bind(ai); ai.decide = () => { if ('watched' in ai) ai.watched = null; return orig(); }; }
     const evs = b.step([{ type: 'card', slot: 0 }]);
     if (!evs.some((e) => e.type === 'card_played' && e.side === 'player')) continue;

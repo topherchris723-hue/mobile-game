@@ -91,13 +91,18 @@ test("player: TRI-BURST and IGNITE during the ENEMY's rush are rejected (not_now
     b.teams.player.vigor = 6000 * 10;
     b.activeFighter('player').ign.available = true;
     b.teams.enemy.burst = 100;
+    b.controllers.enemy = null; // QA: enemy driven only by this test (the AI could otherwise spend its full gauge first)
     b.teams.player.x = 44; b.teams.enemy.x = 56;
     window.__TEST__.eventLog = [];
   });
   await slow(page, 0.05);
   await page.waitForTimeout(200);
   // QA shim: start the enemy's rush through the same input path the AI uses.
+  // Precondition (round 3 loop 2): the enemy must be in a state that allows Tri-Burst; with the BUG-3-02 fix the AI
+  // may be committed to a Slip at this moment. Wait for it, start the rush, and assert it really started.
+  await page.waitForFunction(() => window.__TEST__.game.scene.getScene('Battle').battle.triBurstMode('enemy').ok, null, { timeout: 15000 });
   await page.evaluate(() => window.__TEST__.game.scene.getScene('Battle').battle.applyInput('enemy', { type: 'tri_burst' }));
+  await page.waitForFunction(() => window.__TEST__.eventLog.some((e) => e.type === 'tri_burst_start' && e.side === 'enemy') || window.__TEST__.game.scene.getScene('Battle').battle.activeFighter('enemy').action?.kind === 'tri_burst', null, { timeout: 3000 });
   const st = await battle(page);
   expect(st.teams.player.burstReady, 'TRI-BURST not ready while the enemy rushes').toBe(false);
   expect(st.teams.player.igniteReady, 'IGNITE not ready while the enemy rushes').toBe(false);
