@@ -219,7 +219,7 @@
           {
             "type": "currency",
             "currency_id": "cur_jade",
-            "amount": 40
+            "amount": 45
           }
         ]
       },
@@ -363,7 +363,7 @@
           {
             "type": "currency",
             "currency_id": "cur_jade",
-            "amount": 60
+            "amount": 75
           }
         ]
       },

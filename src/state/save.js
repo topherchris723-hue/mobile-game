@@ -7,8 +7,24 @@ import { missionsMet } from '../logic/missions.js';
 export const SAVE_KEY = 'game_save';
 export const SAVE_VERSION = 1;
 
-// Fresh-save settings defaults (GDD §13 round 2, AC-13.3; §14 haptics on by default).
-const DEFAULT_SETTINGS = { bgm_volume: 1, sfx_volume: 1, haptics: true };
+// Fresh-save settings defaults (GDD §13 ruling R4-1, AC-13.4). `reduce_motion` here is the fallback when the caller
+// does not pass the device's prefers-reduced-motion value (logic stays DOM-free: the caller reads the media query).
+export const DEFAULT_SETTINGS = { master_volume: 1, bgm_volume: 1, sfx_volume: 1, muted: false, haptics: true, reduce_motion: false };
+/** The settings fields (R4-1). Volumes are numbers 0.0–1.0 stored rounded to 1 decimal; the rest are booleans. */
+export const SETTINGS_FIELDS = ['master_volume', 'bgm_volume', 'sfx_volume', 'muted', 'haptics', 'reduce_motion'];
+const SETTINGS_VOLUMES = ['master_volume', 'bgm_volume', 'sfx_volume'];
+
+/** Fresh settings; reduceMotion = the prefers-reduced-motion query result now (false if unknown/unsupported). */
+export function freshSettings(reduceMotion) {
+  return {
+    master_volume: DEFAULT_SETTINGS.master_volume,
+    bgm_volume: DEFAULT_SETTINGS.bgm_volume,
+    sfx_volume: DEFAULT_SETTINGS.sfx_volume,
+    muted: DEFAULT_SETTINGS.muted,
+    haptics: DEFAULT_SETTINGS.haptics,
+    reduce_motion: reduceMotion === true,
+  };
+}
 
 /**
  * Migrations: MIGRATIONS[n] turns a version-n save into a version-(n+1) save.
@@ -16,8 +32,11 @@ const DEFAULT_SETTINGS = { bgm_volume: 1, sfx_volume: 1, haptics: true };
  */
 export const MIGRATIONS = {};
 
-/** A fresh save from economy.json `starting` (GDD §12, AC-12.1). nowIso = ISO date-time string. */
-export function createFreshSave(economy, nowIso) {
+/**
+ * A fresh save from economy.json `starting` (GDD §12, AC-12.1). nowIso = ISO date-time string.
+ * env (optional) = { reduceMotion: bool } — the device's prefers-reduced-motion query at creation (GDD §13 R4-1).
+ */
+export function createFreshSave(economy, nowIso, env) {
   const currencies = {};
   for (const id of Object.keys(economy.starting.currencies)) currencies[id] = economy.starting.currencies[id];
   return {
@@ -29,7 +48,7 @@ export function createFreshSave(economy, nowIso) {
     team: economy.starting.team.slice(),
     stages: {},
     summon: { pity: {}, first_multi_done: {}, total_pulls: 0 },
-    settings: { bgm_volume: DEFAULT_SETTINGS.bgm_volume, sfx_volume: DEFAULT_SETTINGS.sfx_volume, haptics: DEFAULT_SETTINGS.haptics },
+    settings: freshSettings(!!(env && env.reduceMotion === true)),
     tutorial: { completed: false },
   };
 }
@@ -145,6 +164,7 @@ export const SAVE_REPAIR_WARNING_CODES = [
   'team_not_array', 'team_unknown_id', 'team_not_playable', 'team_unowned', 'team_duplicate', 'team_extra', 'team_refilled',
   'summon_reset', 'summon_pity_reset', 'summon_pity_entry_dropped', 'summon_first_multi_reset',
   'summon_first_multi_entry_dropped', 'summon_total_pulls_reset', 'summon_extra_field',
+  'settings_repaired',
 ];
 
 const PITY_GROUP_PATTERN = /^[a-z][a-z0-9_]*$/; // save.schema.json summon.pity propertyNames
@@ -213,20 +233,60 @@ export function repairSummon(save) {
 }
 
 /**
+ * Repair the `settings` section (GDD §13 ruling R4-1, AC-13.4) before schema validation. Pure: does not change `save`.
+ * Each field that is missing, of the wrong type or out of range gets its fresh default (`reduce_motion`: reduceMotionNow,
+ * the media query now); volumes are rounded to 1 decimal; unknown keys are removed. Returns { settings, warnings },
+ * one warning { code: 'settings_repaired', characterId: null, key: field } per changed or removed field.
+ */
+export function repairSettings(save, reduceMotionNow) {
+  const warnings = [];
+  const warn = (key) => warnings.push({ code: 'settings_repaired', characterId: null, key: key });
+  const fresh = freshSettings(reduceMotionNow === true);
+  const src = save ? save.settings : undefined;
+  if (!isPlainObject(src)) {
+    warn('settings');
+    return { settings: fresh, warnings: warnings };
+  }
+  const out = {};
+  for (const k of SETTINGS_FIELDS) {
+    const has = Object.prototype.hasOwnProperty.call(src, k);
+    const v = has ? src[k] : undefined;
+    if (SETTINGS_VOLUMES.indexOf(k) >= 0) {
+      if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 1) {
+        const r = Math.round(v * 10) / 10;
+        out[k] = r;
+        if (r !== v) warn(k);
+      } else {
+        out[k] = fresh[k];
+        warn(k);
+      }
+    } else if (typeof v === 'boolean') {
+      out[k] = v;
+    } else {
+      out[k] = fresh[k];
+      warn(k);
+    }
+  }
+  for (const k of Object.keys(src)) if (SETTINGS_FIELDS.indexOf(k) < 0) warn(k);
+  return { settings: out, warnings: warnings };
+}
+
+/**
  * Load the save from storage ({ getItem, setItem }). GDD §13 / AC-13.2:
  * missing → fresh; unparsable, schema-invalid or unknown version → backup raw text to
  * `game_save_corrupt_<unix_ms>`, start fresh and report `damaged: true` so Home can show the notice.
  * The `summon` section is always repaired (see repairSummon). If `characters` is given, the team is repaired first (see repairTeam): unknown, unowned or duplicate
  * team ids are dropped and the team is refilled; the repaired save is written back and returned with
  * `repaired: true` and the `warnings` list. A team that cannot be repaired counts as damaged.
- * opts = { validate(save) → bool, economy, characters?, nowMs }
+ * The `settings` section is always repaired (see repairSettings; warning `settings_repaired`, never damaged).
+ * opts = { validate(save) → bool, economy, characters?, nowMs, reduceMotion? (prefers-reduced-motion now, bool) }
  * Returns { save, damaged, backupKey, repaired, warnings }.
  */
 export function loadSave(storage, opts) {
   const nowIso = new Date(opts.nowMs).toISOString();
   const raw = storage.getItem(SAVE_KEY);
   if (raw === null || raw === undefined) {
-    const fresh = createFreshSave(opts.economy, nowIso);
+    const fresh = createFreshSave(opts.economy, nowIso, { reduceMotion: opts.reduceMotion === true });
     storage.setItem(SAVE_KEY, JSON.stringify(fresh));
     return { save: fresh, damaged: false, backupKey: null, repaired: false, warnings: [] };
   }
@@ -257,12 +317,20 @@ export function loadSave(storage, opts) {
       repaired = true;
     }
   }
+  if (save && isPlainObject(save)) {
+    const setfix = repairSettings(save, opts.reduceMotion === true);
+    if (setfix.warnings.length > 0) {
+      save.settings = setfix.settings;
+      warnings = warnings.concat(setfix.warnings);
+      repaired = true;
+    }
+  }
   if (save && !opts.validate(save)) save = null;
   if (save && opts.characters && !checkTeamFamilies(save, opts.characters)) save = null;
   if (!save) {
     const backupKey = SAVE_KEY + '_corrupt_' + opts.nowMs;
     storage.setItem(backupKey, raw);
-    const fresh = createFreshSave(opts.economy, nowIso);
+    const fresh = createFreshSave(opts.economy, nowIso, { reduceMotion: opts.reduceMotion === true });
     storage.setItem(SAVE_KEY, JSON.stringify(fresh));
     return { save: fresh, damaged: true, backupKey: backupKey, repaired: false, warnings: [] };
   }

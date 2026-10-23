@@ -22,6 +22,14 @@ function memoryStorage() {
   const m = {};
   return { getItem: (k) => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, keys: () => Object.keys(m), raw: m };
 }
+/** Sum of the cur_jade currency rewards in a reward list (P-class: computed from live data, GDD §15.4). */
+function jadeOf(rewards) {
+  let n = 0;
+  for (const r of rewards || []) if (r && r.type === 'currency' && r.currency_id === 'cur_jade') n += r.amount;
+  return n;
+}
+const START_JADE = economy.starting.currencies.cur_jade;
+
 function winResult(stats, timeS) {
   return { outcome: 'win', reason: 'ko', timeElapsedS: timeS || 60, stats: { playerKos: 0, perfectSlips: 0, maxChain: 1, usedTriBurst: false, usedIgnition: false, cardsPlayed: 5, ...stats } };
 }
@@ -41,23 +49,23 @@ describe('§9.3 missions', () => {
 });
 
 describe('§12 / §13 save data', () => {
-  it('AC-12.1: a fresh save has exactly 1,000 Jade and the 3 starters, and passes save.schema.json', () => {
+  it('AC-12.1 (P): a fresh save has economy.starting Jade and the 3 starters, and passes save.schema.json', () => {
     const s = createFreshSave(economy, NOW_ISO);
-    expect(s.currencies.cur_jade).toBe(1000);
+    expect(s.currencies.cur_jade).toBe(START_JADE);
     expect(s.roster.map((r) => r.character_id)).toEqual(economy.starting.characters);
     expect(s.team).toEqual(economy.starting.team);
     expect(s.version).toBe(1);
     expect(validate(s)).toBe(true);
   });
-  it('AC-13.3: a fresh save has settings exactly { bgm 1.0, sfx 1.0, haptics true }, tutorial not completed, empty summon/stages', () => {
+  it('AC-13.3 (tutorial part) + AC-13.4 (settings, supersedes AC-13.3 settings): fresh settings are the six R4-1 defaults, tutorial not completed, empty summon/stages', () => {
     const s = createFreshSave(economy, NOW_ISO);
-    expect(s.settings).toStrictEqual({ bgm_volume: 1.0, sfx_volume: 1.0, haptics: true });
+    expect(s.settings).toStrictEqual({ master_volume: 1.0, bgm_volume: 1.0, sfx_volume: 1.0, muted: false, haptics: true, reduce_motion: false });
     expect(s.tutorial).toStrictEqual({ completed: false });
     expect(s.summon).toStrictEqual({ pity: {}, first_multi_done: {}, total_pulls: 0 });
     expect(s.stages).toStrictEqual({});
     // a missing save also starts with these defaults
     const r = loadSave(memoryStorage(), { validate, economy, characters, nowMs: NOW });
-    expect(r.save.settings).toStrictEqual({ bgm_volume: 1.0, sfx_volume: 1.0, haptics: true });
+    expect(r.save.settings).toStrictEqual({ master_volume: 1.0, bgm_volume: 1.0, sfx_volume: 1.0, muted: false, haptics: true, reduce_motion: false });
     expect(r.save.tutorial.completed).toBe(false);
   });
   it('AC-13.2: garbage in game_save → fresh save plus a backup key, no crash', () => {
@@ -68,7 +76,7 @@ describe('§12 / §13 save data', () => {
       expect(r.damaged).toBe(true);
       expect(r.backupKey).toBe('game_save_corrupt_' + NOW);
       expect(st.getItem(r.backupKey)).toBe(garbage);
-      expect(JSON.parse(st.getItem(SAVE_KEY)).currencies.cur_jade).toBe(1000);
+      expect(JSON.parse(st.getItem(SAVE_KEY)).currencies.cur_jade).toBe(START_JADE);
     }
   });
   it('a team with two fighters of one family is treated as damaged', () => {
@@ -104,12 +112,14 @@ describe('§12 / §13 save data', () => {
     writeSave(st, save, NOW);
     const reopened = loadSave(st, { validate, economy, characters, nowMs: NOW + 5000 }).save;
     expect(reopened.stages.stage_001.cleared).toBe(true);
-    expect(reopened.currencies.cur_jade).toBe(1000 + 300 + 3 * 50);
-    expect(out.missions.sort()).toEqual(['mission_001_a', 'mission_001_b', 'mission_001_c']);
+    const firstClear = jadeOf(s1.rewards.first_clear);
+    const missionJade = jadeOf(s1.missions.map((m) => m.reward));
+    expect(out.missions.sort()).toEqual(s1.missions.map((m) => m.id).sort());
+    expect(reopened.currencies.cur_jade).toBe(START_JADE + firstClear + missionJade);
     expect(reopened.tutorial.completed).toBe(true);
-    // repeat clear: 30 Jade, missions not paid twice
+    // repeat clear: repeat_clear Jade only, missions not paid twice
     applyBattleResult(reopened, s1, winResult({ perfectSlips: 2 }), economy, characters, NOW_ISO);
-    expect(reopened.currencies.cur_jade).toBe(1000 + 450 + 30);
+    expect(reopened.currencies.cur_jade).toBe(START_JADE + firstClear + missionJade + jadeOf(s1.rewards.repeat_clear));
     expect(reopened.stages.stage_001.clears).toBe(2);
     expect(validate(reopened)).toBe(true);
   });
@@ -117,7 +127,7 @@ describe('§12 / §13 save data', () => {
     const save = createFreshSave(economy, NOW_ISO);
     const s1 = stages.find((s) => s.id === 'stage_001');
     applyBattleResult(save, s1, { ...winResult({}), outcome: 'draw' }, economy, characters, NOW_ISO);
-    expect(save.currencies.cur_jade).toBe(1000);
+    expect(save.currencies.cur_jade).toBe(START_JADE);
     expect(save.stages.stage_001).toBeUndefined();
   });
   it('§11.4 duplicates (W, FX-GDD): Resonance +1 up to 4, then ★-based Jade; Jade capped at 999,999', () => {
