@@ -3,14 +3,15 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { BATTLE_EVENT_TYPES, HIT_DISCARD_REASONS, TRI_BURST_WHIFF_REASONS } from '../../src/logic/index.js';
-import { HIT_DISCARD_TEXT_KEYS, TRI_BURST_WHIFF_TEXT_KEYS } from '../../src/ui/hud-state.js';
+import * as logic from '../../src/logic/index.js';
+const { BATTLE_EVENT_TYPES, HIT_DISCARD_REASONS, TRI_BURST_WHIFF_REASONS } = logic;
+import { HIT_DISCARD_TEXT_KEYS, TRI_BURST_WHIFF_TEXT_KEYS, WHIFF_TEXT_KEYS } from '../../src/ui/hud-state.js';
 import { hasString } from '../../src/ui/strings.js';
 import { ROOT } from '../helpers/load-data.js';
 
 const scene = fs.readFileSync(path.join(ROOT, 'src/scenes/BattleScene.js'), 'utf8');
 // Events the scene deliberately shows nothing for (feedback comes from the snapshot or another event).
-const NO_FEEDBACK = new Set(['whiff', 'interrupt', 'card_cancelled', 'link_open', 'knockdown', 'getup', 'riposte_window_end',
+const NO_FEEDBACK = new Set(['interrupt', 'card_cancelled', 'link_open', 'knockdown', 'getup', 'riposte_window_end',
   'ignition_ready', 'ignition_end', 'burst_ready', 'effect', 'buff_end', 'card_drawn',
   'windup_start', 'dash']); // windup ring, dash pose, IGNITE button, gauge and hand come from the snapshot
 
@@ -35,8 +36,17 @@ describe('Battle events → UI (L-shared-009)', () => {
     expect(missingReasonKeys(TRI_BURST_WHIFF_REASONS, TRI_BURST_WHIFF_TEXT_KEYS)).toEqual([]);
     expect(missingReasonKeys(['future_reason'], TRI_BURST_WHIFF_TEXT_KEYS)).toEqual(['future_reason']);
   });
+  it('whiff reasons: every reason the engine emits (exported list, else scanned from battle.js) is reviewed in WHIFF_TEXT_KEYS', () => {
+    const src = fs.readFileSync(path.join(ROOT, 'src/logic/battle.js'), 'utf8');
+    const scanned = [...src.matchAll(/type: 'whiff'[^}]*reason: '([a-z_]+)'/g)].map((m) => m[1]);
+    const reasons = [...new Set((logic.WHIFF_REASONS || []).concat(scanned))];
+    expect(reasons.length).toBeGreaterThan(0);
+    expect(reasons.filter((r) => !Object.prototype.hasOwnProperty.call(WHIFF_TEXT_KEYS, r))).toEqual([]);
+    for (const r of reasons) if (WHIFF_TEXT_KEYS[r]) expect(hasString(WHIFF_TEXT_KEYS[r]), r).toBe(true);
+    expect(WHIFF_TEXT_KEYS.rush_invulnerable).toBe('battle_hit_immune'); // AC-5.10.9 (pending export)
+  });
   it('hit_discarded shows no damage number, flash, HP drop or DODGE', () => {
-    const body = scene.slice(scene.indexOf('  onHitDiscarded(e) {'), scene.indexOf('\n  }\n', scene.indexOf('  onHitDiscarded(e) {')));
+    const body = scene.slice(scene.indexOf('  onHitDiscarded(e, keyOverride) {'), scene.indexOf('\n  }\n', scene.indexOf('  onHitDiscarded(e, keyOverride) {')));
     expect(body.length).toBeGreaterThan(50);
     for (const bad of ['onHit(', 'hitFlash', 'onDamage', 'battle_dodge', 'e.damage', 'impact(']) expect(body, bad).not.toContain(bad);
     const c = scene.slice(scene.indexOf("case 'hit_discarded':"), scene.indexOf('break;', scene.indexOf("case 'hit_discarded':")));

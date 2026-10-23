@@ -28,3 +28,6 @@ export const TRI_BURST_WHIFF_TEXT_KEYS = { invulnerable: 'battle_tri_burst_whiff
 export function reasonTextKey(map, reason, fallback) {
   return Object.prototype.hasOwnProperty.call(map, reason) ? map[reason] : fallback;
 }
+
+/** whiff.reason → small feedback text, or null = no text (the miss is already visible as the attack animation). */
+export const WHIFF_TEXT_KEYS = { approach_timeout: null, invulnerable: null, rush_invulnerable: 'battle_hit_immune' };

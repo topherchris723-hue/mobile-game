@@ -12,7 +12,7 @@
       "art_brief": "Wiry teen with one long copper braid, an oversized crimson work jacket tied at the waist, white tank top, taped knuckles, mismatched high-tops and a small chin scar. Warm reds and oranges. Ignition: the braid catches fire and the jacket edges glow white-hot.",
       "playable": true,
       "base_stats": {
-        "hp": 8200,
+        "hp": 16400,
         "atk": 850,
         "def": 400,
         "crit_rate": 0.05
@@ -112,7 +112,7 @@
       "art_brief": "Slim courier girl with a short teal bob and one white streak, a messenger bag across her chest, fingerless gloves and two kite-shaped wind fins on her back that unfold like wings. Teal, white and sky-blue palette. Light, fast, always mid-stride.",
       "playable": true,
       "base_stats": {
-        "hp": 8400,
+        "hp": 16800,
         "atk": 950,
         "def": 430,
         "crit_rate": 0.05
@@ -164,7 +164,7 @@
       "art_brief": "Huge, broad gentle giant with a braided beard and tiny round spectacles, a moss-green work apron over a rough shirt, and gauntlets made of stacked river stones. Earthy browns, greys and moss green. A wide, square silhouette.",
       "playable": true,
       "base_stats": {
-        "hp": 9000,
+        "hp": 18000,
         "atk": 950,
         "def": 480,
         "crit_rate": 0.05
@@ -216,7 +216,7 @@
       "art_brief": "Young monk with long silver hair in a low ponytail, layered white-and-gold robes with small bells on the sleeves, and a paper-lantern staff. Calm half-smile. Ignition: a halo of floating paper lanterns and robes glowing gold.",
       "playable": true,
       "base_stats": {
-        "hp": 9800,
+        "hp": 18400,
         "atk": 950,
         "def": 500,
         "crit_rate": 0.05
@@ -258,7 +258,7 @@
         "duration_s": 30,
         "stat_mult": {
           "atk": 1.2,
-          "def": 1.3
+          "def": 1.1
         },
         "vigor_regen_bonus": 0.3,
         "heal_pct": 0.05,
@@ -316,9 +316,9 @@
       "art_brief": "Tall woman in an ink-black long coat with a lining flecked with silver stars, a cracked porcelain half-mask over the left eye, and ink dripping from her fingertips. Black, violet and silver palette. Ignition: the mask falls away and her eyes go fully dark.",
       "playable": true,
       "base_stats": {
-        "hp": 9700,
-        "atk": 1000,
-        "def": 470,
+        "hp": 19400,
+        "atk": 1050,
+        "def": 530,
         "crit_rate": 0.07
       },
       "deck": [
@@ -416,7 +416,7 @@
       "art_brief": "Lanky young man in a black-and-white checkered hoodie with sleeves pushed up, windswept dark hair with one shaved stripe, and sneakers with spring-steel soles. Black, white and pale green palette. Cocky stance, one hand raised counting on his fingers.",
       "playable": true,
       "base_stats": {
-        "hp": 9500,
+        "hp": 19000,
         "atk": 1050,
         "def": 450,
         "crit_rate": 0.08
@@ -516,7 +516,7 @@
       "art_brief": "Tall woman with short ash-blonde hair, golden-red bracers shaped like sun rays, a white tournament sash with nine notches and a burn scar on one forearm. Gold, white and red palette. Ignition: a blazing sun disc rises behind her shoulders.",
       "playable": true,
       "base_stats": {
-        "hp": 10500,
+        "hp": 22000,
         "atk": 1120,
         "def": 540,
         "crit_rate": 0.08
@@ -616,7 +616,7 @@
       "art_brief": "Towering, gaunt king in robes made of drifting black ribbons, with a crown of floating obsidian shards, violet eyes and hands like cracked glass lit violet from inside. Black and violet palette. Ignition: the shard crown grows into a throne-like halo.",
       "playable": true,
       "base_stats": {
-        "hp": 11000,
+        "hp": 22000,
         "atk": 1100,
         "def": 580,
         "crit_rate": 0.06
