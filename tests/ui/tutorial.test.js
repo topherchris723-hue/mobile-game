@@ -11,7 +11,7 @@ const stage = bundle.stages.stages.find((s) => s.id === 'stage_001');
 
 function setup(seed) {
   const b = createBattle({ content, stageId: stage.id, playerTeam: bundle.economy.starting.team }, seed);
-  const tut = new TutorialController(stage.tutorial_steps, b, 0.3);
+  const tut = new TutorialController(stage.tutorial_steps, b, content.rules);
   let ms = 0;
   let lastWind = null;
   const step = (inputs) => {
@@ -55,8 +55,10 @@ describe('TutorialController exits (lesson: every held step needs an exit when i
     expect(h.b.teams.player.riposteHeld).toBe(true);
     expect(h.tut.speed()).toBeLessThan(1);
     h.step([{ type: 'tag', slot: h.b.getState().teams.player.activeSlot === 0 ? 1 : 0 }]);
+    // AC-9.4.4: closed on the Tag tick, hold released, normal speed for the next logic tick
     expect(trig(h.tut)).not.toBe('perfect_slip');
     expect(h.b.teams.player.riposteHeld).toBe(false);
+    if (!h.tut.active) expect(h.tut.speed()).toBe(1);
     let stuck = 0;
     for (let k = 0; k < 600; k++) {
       h.step([]);
@@ -113,7 +115,7 @@ describe('TutorialController exits (lesson: every held step needs an exit when i
   it('an ignite prompt ends if its fighter leaves (tagged out) before igniting', () => {
     const fake = { teams: { player: { active: 0 } }, holdRiposteWindow() {} };
     const steps = [{ trigger: 'ignition_ready', text: 'x', required_action: 'ignite' }];
-    const tut = new TutorialController(steps, fake, 0.3);
+    const tut = new TutorialController(steps, fake, content.rules);
     const f = (slot, active, ign) => ({ slot, active, ko: false, hand: [], ignition: { has: ign, available: ign, used: false, active: false } });
     const st = (activeSlot, ready) => ({
       phase: 'fight', freeze: null, result: null,
@@ -129,7 +131,7 @@ describe('TutorialController exits (lesson: every held step needs an exit when i
   it('a prompt never holds slow-mo longer than the cap, and time in the pause menu does not count', () => {
     const fake = { teams: { player: { active: 0 } }, holdRiposteWindow() {} };
     const steps = [{ trigger: 'vigor_full', text: 'x', required_action: 'slip' }];
-    const tut = new TutorialController(steps, fake, 0.3, 3000, 1000);
+    const tut = new TutorialController(steps, fake, Object.assign({}, content.rules, { tutorialPromptMaxS: 1 }));
     const s = { phase: 'fight', freeze: null, result: null, teams: { player: { vigor: 10, vigorMax: 10, fighters: [] } } };
     tut.handleState(s, 0);
     expect(tut.active).not.toBeNull();

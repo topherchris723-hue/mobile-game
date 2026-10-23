@@ -3,10 +3,10 @@
 // false, so the bundler drops every hook branch and the release bundle contains no "__TEST__" at all
 // (proved by tests/ui/release-bundle.test.js). Never read window.__TEST__ directly: use testHooks().
 
-const env = import.meta.env || {};
-
-/** Compile-time constant: true only in dev or a test build. */
-export const TEST_HOOKS = !!(env.DEV || env.VITE_TEST_HOOKS === '1');
+/** Compile-time constant: true only in dev mode (`vite`) or a test build (MODE, not DEV: DEV is also true when a
+ *  build runs with NODE_ENV=test, e.g. from Vitest). Keep the direct import.meta.env.X form: Vite
+ *  replaces exactly these expressions at build time, which lets the minifier delete the hook code. */
+export const TEST_HOOKS = !!(import.meta.env.MODE === 'development' || import.meta.env.VITE_TEST_HOOKS === '1');
 
 /** Create the hook object (main.js, when the URL has ?test). Returns null in release builds. */
 export function installTestHooks() {

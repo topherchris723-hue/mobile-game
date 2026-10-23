@@ -80,9 +80,9 @@
       "character_id": "char_rook_001",
       "ai_tier": "fighter",
       "stat_mult": {
-        "hp": 1.0,
-        "atk": 1.0,
-        "def": 1.0
+        "hp": 0.88,
+        "atk": 0.88,
+        "def": 0.88
       },
       "ignition_enabled": false,
       "boss": false
@@ -92,9 +92,9 @@
       "character_id": "char_pell_001",
       "ai_tier": "fighter",
       "stat_mult": {
-        "hp": 1.0,
-        "atk": 1.0,
-        "def": 1.0
+        "hp": 0.88,
+        "atk": 0.88,
+        "def": 0.88
       },
       "ignition_enabled": false,
       "boss": false
@@ -104,9 +104,9 @@
       "character_id": "char_solenne_001",
       "ai_tier": "veteran",
       "stat_mult": {
-        "hp": 1.0,
-        "atk": 1.0,
-        "def": 1.0
+        "hp": 0.88,
+        "atk": 0.88,
+        "def": 0.88
       },
       "ignition_enabled": true,
       "boss": false
@@ -116,9 +116,9 @@
       "character_id": "char_thessa_001",
       "ai_tier": "veteran",
       "stat_mult": {
-        "hp": 1.05,
-        "atk": 1.05,
-        "def": 1.05
+        "hp": 0.75,
+        "atk": 0.75,
+        "def": 0.75
       },
       "ignition_enabled": true,
       "boss": false
@@ -129,9 +129,9 @@
       "name_override": "Umbral Solenne",
       "ai_tier": "veteran",
       "stat_mult": {
-        "hp": 1.05,
-        "atk": 1.05,
-        "def": 1.05
+        "hp": 0.75,
+        "atk": 0.75,
+        "def": 0.75
       },
       "ignition_enabled": true,
       "boss": false
@@ -141,9 +141,9 @@
       "character_id": "char_corvane_001",
       "ai_tier": "master",
       "stat_mult": {
-        "hp": 1.2,
-        "atk": 1.1,
-        "def": 1.1
+        "hp": 1.0,
+        "atk": 0.7,
+        "def": 0.8
       },
       "ignition_enabled": true,
       "boss": true

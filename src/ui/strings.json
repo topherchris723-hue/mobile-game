@@ -139,6 +139,7 @@
     "summon_event_summon_charged": "−{amount} {currency}",
     "summon_event_summon_pull": "Pull {pull}",
     "summon_event_summon_pity_reset": "Pity reset",
-    "summon_event_summon_currency_capped": "Jade is at the maximum: {lost} Jade could not be added."
+    "summon_event_summon_currency_capped": "Jade is at the maximum: {lost} Jade could not be added.",
+    "summon_rates_percent": "{percent}%"
   }
 }

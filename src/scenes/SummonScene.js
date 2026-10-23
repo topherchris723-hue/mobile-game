@@ -8,7 +8,7 @@ import { drawAuraIcon } from '../ui/icons.js';
 import { sfx } from '../ui/feedback.js';
 import { summonScreenModel, rateTableModel, rejectText, rarityColor, stars } from '../ui/summon-view.js';
 import { summonAndSave } from '../state/summon-save.js';
-import { testHooks, testSeedParam } from '../ui/test-hooks.js';
+import { TEST_HOOKS, testHooks, testSeedParam } from '../ui/test-hooks.js';
 
 const MENU_ARM_MS = 250; // GDD §11.1: the dialog ignores input for its first 250 ms (BUG-2-03 lesson)
 const MODAL_DEPTH = 200;
@@ -55,7 +55,7 @@ export class SummonScene extends BaseScene {
     this.ui.buttons[b1.id] = this.summonButton(b1, 16, ySingle, bw, 'secondary');
     this.ui.buttons[b10.id] = this.summonButton(b10, 16, yMulti, bw, 'primary');
 
-    const T = testHooks();
+    const T = TEST_HOOKS ? testHooks() : null;
     if (T) T.summonScreen = () => this.snapshot();
   }
 
@@ -202,9 +202,9 @@ export class SummonScene extends BaseScene {
     if (this.processing || this.leaving) return; // AC-11.12: one summon per confirm, ever
     this.processing = true;
     this.modal.confirmBtn.setEnabled(false);
-    const seed = testSeedParam('summonSeed'); // test builds only; release builds pick a crypto seed
+    const seed = TEST_HOOKS ? testSeedParam('summonSeed') : null; // test builds only; release builds pick a crypto seed
     const r = summonAndSave(data.storage, data.save, this.model.banner.id, b.count, data.content, Date.now(), seed === null ? undefined : seed);
-    const T = testHooks();
+    const T = TEST_HOOKS ? testHooks() : null;
     if (T) (T.summonLog = T.summonLog || []).push({ type: 'summon_returned', ok: r.ok, reason: r.reason, t: performance.now() });
     if (!r.ok) {
       // AC-11.10: nothing changed (the logic never touched data.save); say so and stay here.

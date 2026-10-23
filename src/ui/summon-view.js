@@ -104,7 +104,7 @@ export function summonScreenModel(save, content, nowIso, currencyName) {
 export function rateTableModel(rates, characters, economy) {
   const rows = [];
   for (const r of rates.rarities) {
-    rows.push({ kind: 'rarity', rarity: r.rarity, label: t('summon_rates_rarity', { rarity: r.rarity, percent: r.percentText }), percent: r.percentText });
+    rows.push({ kind: 'rarity', rarity: r.rarity, label: t('summon_rates_rarity', { rarity: r.rarity, percent: r.percentText }), percent: t('summon_rates_percent', { percent: r.percentText }) });
     for (const f of rates.fighters) {
       if (f.rarity !== r.rarity) continue;
       const ch = characters[f.characterId];
@@ -113,7 +113,7 @@ export function rateTableModel(rates, characters, economy) {
         rarity: f.rarity,
         characterId: f.characterId,
         label: t('summon_rates_fighter', { name: ch ? ch.name : f.characterId, featured: f.featured ? t('summon_rates_featured_mark') : '' }),
-        percent: f.percentText,
+        percent: t('summon_rates_percent', { percent: f.percentText }),
       });
     }
   }

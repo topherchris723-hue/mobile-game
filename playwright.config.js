@@ -1,4 +1,5 @@
-// Playwright UI checks (tests/e2e/*.spec.js). Runs against the production build via `vite preview`.
+// Playwright UI checks (tests/e2e/*.spec.js). Runs against a production build with test hooks (VITE_TEST_HOOKS=1)
+// via `vite preview`.
 // Chromium comes from PLAYWRIGHT_BROWSERS_PATH (preinstalled); set PW_CHROMIUM to override the binary.
 import { defineConfig, devices } from '@playwright/test';
 
@@ -33,6 +34,8 @@ export default defineConfig({
   webServer: {
     command: `node scripts/build.js && node node_modules/vite/bin/vite.js preview --port ${PORT} --strictPort --host 127.0.0.1`,
     url: `http://127.0.0.1:${PORT}`,
+    // Test build: VITE_TEST_HOOKS=1 keeps window.__TEST__ (src/ui/test-hooks.js). A normal `npm run build` has none.
+    env: { ...process.env, VITE_TEST_HOOKS: '1' },
     reuseExistingServer: false, // always rebuild; a reused server would serve a stale dist/
     timeout: 120000,
   },

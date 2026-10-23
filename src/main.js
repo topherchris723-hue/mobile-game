@@ -2,7 +2,7 @@
 import Phaser from 'phaser';
 import { computeViewport } from './ui/layout.js';
 import { data } from './ui/game-data.js';
-import { installTestHooks } from './ui/test-hooks.js';
+import { TEST_HOOKS, installTestHooks } from './ui/test-hooks.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { HomeScene } from './scenes/HomeScene.js';
 import { StoryListScene } from './scenes/StoryListScene.js';
@@ -16,7 +16,7 @@ import { SummonRevealScene } from './scenes/SummonRevealScene.js';
 const params = new URLSearchParams(window.location.search);
 // Read-only hooks for Playwright (scene key, touch targets, battle snapshot, sound-hook log).
 // Dev / test builds only (src/ui/test-hooks.js): a release bundle has no hook code at all.
-const T = params.has('test') ? installTestHooks() : null;
+const T = TEST_HOOKS && params.has('test') ? installTestHooks() : null;
 
 data.init();
 

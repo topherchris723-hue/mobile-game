@@ -11,15 +11,19 @@ import { FighterView } from '../ui/fighter-view.js';
 import { BattleHud } from '../ui/battle-hud.js';
 import { sfx, haptic } from '../ui/feedback.js';
 import { cardColor } from '../ui/icons.js';
-import { FloatPlacer } from '../ui/float-placer.js';
-import { testHooks, testSeedParam } from '../ui/test-hooks.js';
+import { FloatPlacer, silhouetteExtent, placeFighters, placeNameLabels } from '../ui/float-placer.js';
+import { TEST_HOOKS, testHooks, testSeedParam } from '../ui/test-hooks.js';
 
 const TICK_MS = 1000 / 60;
 const MENU_ARM_MS = 250; // new menus (and the battle after a menu closes) ignore input this long
+const MIN_GAP = 62; // px between the two fighters' anchors at melee range (presentation only)
+const ARENA_EDGE = 2; // silhouettes stay this far inside the screen edges
+const LABEL_EDGE = 4; // name labels stay this far inside the screen edges
+const LABEL_GAP = 8; // px between the two name labels
 const MAX_STEPS_PER_FRAME = 8; // keeps real-time speed down to ~8 fps; below that the battle slows instead of jumping
 
 function randomSeed() {
-  const fixed = testSeedParam('seed'); // test builds only
+  const fixed = TEST_HOOKS ? testSeedParam('seed') : null; // test builds only
   if (fixed !== null) return fixed;
   const a = new Uint32Array(1);
   (window.crypto || window.msCrypto).getRandomValues(a);
@@ -46,7 +50,7 @@ export class BattleScene extends BaseScene {
       this.seed = randomSeed();
       this.battle = createBattle({ content: data.content, stageId: this.stage.id, playerTeam: data.teamEntries() }, this.seed);
       this.tutorial = data.tutorialActive(this.stage)
-        ? new TutorialController(this.stage.tutorial_steps, this.battle, data.raw.battle.tutorial_slowmo)
+        ? new TutorialController(this.stage.tutorial_steps, this.battle, data.content.rules)
         : null;
     }
     this.acc = 0;
@@ -246,7 +250,7 @@ export class BattleScene extends BaseScene {
   queue(input) {
     if (this.ending) return;
     this.pendingInputs.push(input);
-    const T = testHooks();
+    const T = TEST_HOOKS ? testHooks() : null;
     if (T) (T.inputLog = T.inputLog || []).push(input);
   }
 
@@ -340,6 +344,7 @@ export class BattleScene extends BaseScene {
     this.menuOpen = false;
     this.acc = 0;
     this.inputArmedAt = performance.now() + MENU_ARM_MS; // the 2nd tap of a double tap on Resume is not a card tap
+    if (this.tutorial) this.tutorial.resetClock(performance.now()); // paused time is not shown time (GDD §9.4)
     this.battle.setPaused(false);
   }
 
@@ -381,25 +386,41 @@ export class BattleScene extends BaseScene {
     const L = this.L;
     const now = performance.now();
     const frozen = !!st.freeze || st.paused;
-    // Presentation only: keep the two silhouettes from overlapping at close range (logic distance is unchanged).
-    let px = arenaToScreen(st.teams.player.x, st.arenaWidth, L);
-    let ex = arenaToScreen(st.teams.enemy.x, st.arenaWidth, L);
-    const MIN_GAP = 62;
-    if (ex - px < MIN_GAP) {
-      const mid = Math.max(L.arena.left + MIN_GAP / 2, Math.min(L.arena.right - MIN_GAP / 2, (px + ex) / 2));
-      px = mid - MIN_GAP / 2;
-      ex = mid + MIN_GAP / 2;
-    }
-    const sx = { player: px, enemy: ex };
+    // Presentation only (logic distance is unchanged): the single placer keeps the silhouettes apart and fully on
+    // screen, then the name labels apart and inside the edges (BUG-2-11, L-ui-003).
+    const views = this.fighters;
+    const fs = {};
+    const poses = {};
+    const ext = {};
     for (const side of ['player', 'enemy']) {
       const team = st.teams[side];
-      const f = team.fighters[team.activeSlot];
-      this.fighters[side].update(f, sx[side], L.arena.floorY, now, frozen);
+      fs[side] = team.fighters[team.activeSlot];
+      views[side].setFighter(fs[side]);
+      poses[side] = views[side].pose(fs[side], now, frozen);
+      ext[side] = silhouetteExtent(poses[side].rot, views[side].scale, views[side].facing, poses[side].ox, poses[side].glow);
     }
+    const placed = placeFighters(
+      { x: arenaToScreen(st.teams.player.x, st.arenaWidth, L), left: ext.player.left, right: ext.player.right },
+      { x: arenaToScreen(st.teams.enemy.x, st.arenaWidth, L), left: ext.enemy.left, right: ext.enemy.right },
+      L.W,
+      ARENA_EDGE,
+      MIN_GAP
+    );
+    const sx = { player: placed.px, enemy: placed.ex };
+    for (const side of ['player', 'enemy']) {
+      const range = { min: ARENA_EDGE + ext[side].left, max: L.W - ARENA_EDGE - ext[side].right };
+      views[side].update(fs[side], sx[side], L.arena.floorY, now, frozen, poses[side], range);
+    }
+    const np = views.player.nameTag;
+    const ne = views.enemy.nameTag;
+    const labels = placeNameLabels({ x: np.x, w: np.width }, { x: ne.x, w: ne.width }, L.W, LABEL_EDGE, LABEL_GAP);
+    np.setX(labels.px);
+    ne.setX(labels.ex);
+    this.lastArena = { player: { x: views.player.x, ext: ext.player }, enemy: { x: views.enemy.x, ext: ext.enemy } };
     this.hud.update(st, delta || 0, now);
     this.updateCombo(st);
     this.updateTutorialUi(now);
-    const T = testHooks();
+    const T = TEST_HOOKS ? testHooks() : null;
     if (T) T.lastFrame = now;
   }
 
@@ -427,7 +448,7 @@ export class BattleScene extends BaseScene {
   // ------------------------------------------------------------------ events → feedback
   handleEvents(events, now) {
     const st = events.length ? this.battle.getState() : null;
-    const T = testHooks();
+    const T = TEST_HOOKS ? testHooks() : null;
     if (T && events.length) {
       const log = (T.eventLog = T.eventLog || []);
       for (const e of events) log.push(e);

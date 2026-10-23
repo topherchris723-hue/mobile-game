@@ -45,8 +45,12 @@ const STILL_POSSIBLE = {
   tag: (s) => s.teams.player.fighters.some((f) => !f.active && !f.ko),
 };
 
-/** Longest a prompt may hold slow-mo, in real ms, whatever happens (last-resort exit; GDD §9.4 has no cap). */
-export const MAX_PROMPT_MS = 20000;
+// Timings come from data via buildRules (GDD §9.4 round 3): rules.tutorialPromptMaxS = the cap (exit 4, a
+// last-resort exit; battle.json tutorial_prompt_max_s, default 20 in src/logic/rules.js), rules.tutorialNoneS =
+// how long a `none` step shows (exit 2; tutorial_none_s, default 3), rules.tutorialSlowmo = the slow-mo factor.
+// Both are measured in shown time: wall-clock time while the prompt is on screen and the battle is not paused,
+// at most 100 ms per rendered frame.
+const MAX_FRAME_MS = 100;
 
 const ACTION_DONE = {
   play_card: (e) => e.type === 'card_played' && e.side === 'player',
@@ -60,13 +64,16 @@ const ACTION_DONE = {
 };
 
 export class TutorialController {
-  /** steps = stage.tutorial_steps; slowmo = battle.json tutorial_slowmo (0.3). */
-  constructor(steps, battle, slowmo, noneMs, maxPromptMs) {
+  /** steps = stage.tutorial_steps; rules = content.rules (buildRules: tutorialSlowmo, tutorialNoneS, tutorialPromptMaxS). */
+  constructor(steps, battle, rules) {
+    if (!rules || typeof rules.tutorialPromptMaxS !== 'number' || typeof rules.tutorialNoneS !== 'number' || typeof rules.tutorialSlowmo !== 'number') {
+      throw new Error('TutorialController needs rules from buildRules (tutorialSlowmo, tutorialNoneS, tutorialPromptMaxS)');
+    }
     this.steps = steps || [];
-    this.maxPromptMs = maxPromptMs || MAX_PROMPT_MS;
     this.battle = battle;
-    this.slowmo = slowmo || 0.3;
-    this.noneMs = noneMs || 3000;
+    this.slowmo = rules.tutorialSlowmo;
+    this.noneMs = rules.tutorialNoneS * 1000;
+    this.maxPromptMs = rules.tutorialPromptMaxS * 1000;
     this.fired = new Set();
     this.active = null; // { index, step, startMs }
     this.listeners = [];
@@ -133,11 +140,16 @@ export class TutorialController {
     }
   }
 
-  /** Check state-based triggers and the timed 'none' steps. Call once per frame. */
+  /** Call when the battle resumes from pause / background (nowMs = resume time): the paused time is not shown time (GDD §9.4). */
+  resetClock(nowMs) {
+    this.lastStateMs = typeof nowMs === 'number' ? nowMs : undefined;
+  }
+
+  /** Check state-based triggers and the timed 'none' steps. Call once per rendered frame (not while paused). */
   handleState(state, nowMs) {
-    // Prompt age counts only frames that reach here (not while the pause menu is open); one long frame
+    // Shown time counts only frames that reach here (not while the pause menu is open); one long frame
     // or a backgrounded tab adds at most 100 ms.
-    const dt = this.lastStateMs === undefined ? 0 : Math.max(0, Math.min(100, nowMs - this.lastStateMs));
+    const dt = this.lastStateMs === undefined ? 0 : Math.max(0, Math.min(MAX_FRAME_MS, nowMs - this.lastStateMs));
     this.lastStateMs = nowMs;
     if (state.result) return;
     if (this.active) {

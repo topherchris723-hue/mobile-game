@@ -1,7 +1,7 @@
-// Round 2 UI smoke test: full flow at 360×640 and 430×932, gestures, pause/background, tutorial,
-// touch-target sizes (GDD §14, AC-14.1), no console errors. Screenshots → reports/screenshots/round-2/.
+// UI smoke test: full flow at 360×640 and 430×932, gestures, pause/background, tutorial, summon (round 3),
+// touch-target sizes (GDD §14, AC-14.1), no console errors. Screenshots (UI_SHOTS=1 only) → reports/screenshots/round-3/.
 import { test, expect } from '@playwright/test';
-import { watchErrors, shot, waitScene, target, tap, swipe, touchHold, padCenter, checkTargets, battleState, goToBattle } from './helpers.js';
+import { watchErrors, shot, rawShot, waitScene, target, tap, swipe, touchHold, padCenter, checkTargets, battleState, goToBattle } from './helpers.js';
 
 test('flow: title → home → stage → story → team → battle → pause/retreat → result → back', async ({ page }, testInfo) => {
   const errors = watchErrors(page);
@@ -551,7 +551,7 @@ test('BUG-2-09/2-10: intro and floating battle texts never overlap each other or
       for (const p of overlaps(tx)) probs.add(p);
       if (!shotTaken && nonName >= 3) {
         shotTaken = true;
-        await page.screenshot({ path: `reports/screenshots/round-2/${testInfo.project.name.replace('phone-', '')}-24-battle-floats-busy.png` });
+        await rawShot(page, testInfo, '24-battle-floats-busy');
       }
       await page.waitForTimeout(40);
     }
@@ -622,5 +622,322 @@ test('Tri-Burst lock (GDD §5.0): IGNITE is greyed while a rush runs', async ({ 
   console.log('lock seen:', JSON.stringify(seen));
   expect(seen.igniteVisible).toBe(true);
   expect(seen.igniteAlpha).toBeLessThan(1);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// ------------------------------------------------------------------ round 3: Summon (GDD §11.1)
+import fs from 'node:fs';
+const BANNERS = JSON.parse(fs.readFileSync('data/banners.json', 'utf8'));
+const BANNER = BANNERS.banners[0]; // numbers from data: the balance-analyst may change them
+
+async function toSummon(page) {
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  await tap(page, 'home_summon');
+  await waitScene(page, 'Summon');
+  await page.waitForTimeout(200);
+}
+const summonSnap = (page) => page.evaluate(() => window.__TEST__.summonScreen());
+
+/** All visible texts of the active scene with bounds (logical px) for overlap / edge checks. */
+async function sceneTexts(page) {
+  return page.evaluate(() => {
+    const s = window.__TEST__.activeScene();
+    const out = [];
+    const walk = (list, alpha, depth) => {
+      for (const o of list) {
+        const a = alpha * (o.alpha === undefined ? 1 : o.alpha);
+        if (o.visible === false || a < 0.05) continue;
+        const d = Math.max(depth, o.depth || 0);
+        if (o.type === 'Text' && o.text && o.text.trim()) {
+          const b = o.getBounds();
+          out.push({ text: o.text.replace(/\n/g, ' ').slice(0, 50), x: b.x, y: b.y, w: b.width, h: b.height, depth: d, size: parseFloat(o.style.fontSize) });
+        }
+        if (o.list) walk(o.list, a, d);
+      }
+    };
+    walk(s.children.list, 1, 0);
+    return { texts: out, W: s.W, H: s.H };
+  });
+}
+function layoutProblems(t, minDepth) {
+  const list = t.texts.filter((x) => x.depth >= (minDepth || 0));
+  const out = overlaps(list);
+  for (const x of list) {
+    if (x.x < -1 || x.x + x.w > t.W + 1 || x.y < -1 || x.y + x.h > t.H + 1) out.push(`"${x.text}" off screen`);
+    if (x.size < 12) out.push(`"${x.text}" ${x.size}px < 12px`);
+  }
+  return out;
+}
+
+test('Summon: fresh save — pity + first-×10 lines, rates, confirm (armed, one summon), save before reveal, results, Home/Team updated', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await page.goto('/?test=1&renderer=canvas&summonSeed=4242');
+  await waitScene(page, 'Title');
+  await toSummon(page);
+  await checkTargets(page, 'Summon');
+  let s = await summonSnap(page);
+  expect(s.pity).toBe(`★5 guaranteed within ${BANNER.pity.hard_pity} summons.`); // AC-11.11
+  expect(s.firstMulti).toBe(`First ×${BANNER.multi_count}: at least one ★${BANNER.first_multi_min_rarity} guaranteed!`);
+  expect(s.buttons.map((b) => b.ok)).toEqual([true, true]); // fresh save Jade ≥ cost_multi (economy)
+  expect(layoutProblems(await sceneTexts(page))).toEqual([]);
+  await shot(page, testInfo, '30-summon-fresh');
+
+  // Rates (AC-11.4): every rarity and fighter row with its percent from the logic, and the rounding note
+  await tap(page, 'summon_rates');
+  await page.waitForTimeout(300);
+  s = await summonSnap(page);
+  const rates = await page.evaluate(() => window.__TEST__.activeScene().model.rates);
+  expect(s.rates.filter((r) => r.kind === 'rarity').map((r) => r.percent)).toEqual(rates.rarities.map((r) => r.percentText + '%'));
+  expect(s.rates.filter((r) => r.kind === 'fighter').map((r) => r.percent)).toEqual(rates.fighters.map((f) => f.percentText + '%'));
+  expect(s.rules[0]).toBe('Fighter rates are rounded to 2 decimals.');
+  const rt = await sceneTexts(page);
+  expect(layoutProblems(rt, 200), 'rates panel layout').toEqual([]);
+  const maxScroll = await page.evaluate(() => window.__TEST__.activeScene().modal.maxScroll);
+  console.log(`[${testInfo.project.name}] rates panel maxScroll=${maxScroll}`);
+  await shot(page, testInfo, '31-summon-rates');
+  await checkTargets(page, 'Summon');
+  await tap(page, 'summon_rates_close');
+  await page.waitForTimeout(200);
+
+  // Confirm dialog: Confirm does not cover the ×10 button; double tap 100 ms apart = at most one summon (AC-11.12)
+  const before = await page.evaluate(() => window.__TEST__.save());
+  const x10 = await target(page, 'summon_x' + BANNER.multi_count);
+  await page.evaluate(() => {
+    const T = window.__TEST__;
+    T.storageLog = [];
+    const orig = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (k, v) {
+      if (k === 'game_save') T.storageLog.push({ t: performance.now(), log: (T.summonLog || []).length });
+      return orig.call(this, k, v);
+    };
+  });
+  await page.touchscreen.tap(x10.x + x10.w / 2, x10.y + x10.h / 2);
+  await page.waitForTimeout(100);
+  await page.touchscreen.tap(x10.x + x10.w / 2, x10.y + x10.h / 2); // 2nd tap of a double tap: must do nothing
+  await page.waitForTimeout(150);
+  const conf = await target(page, 'summon_confirm');
+  const overlapX10 = !(conf.y + conf.h <= x10.y || conf.y >= x10.y + x10.h);
+  expect(overlapX10, 'Confirm covers the Summon button').toBe(false);
+  expect((await summonSnap(page)).modal).toBe('confirm');
+  await shot(page, testInfo, '32-summon-confirm');
+  await checkTargets(page, 'Summon');
+  await page.waitForTimeout(300); // armed after 250 ms
+  await page.touchscreen.tap(conf.x + conf.w / 2, conf.y + conf.h / 2);
+  await page.waitForTimeout(100);
+  await page.touchscreen.tap(conf.x + conf.w / 2, conf.y + conf.h / 2);
+  await waitScene(page, 'SummonReveal');
+  const after = await page.evaluate(() => window.__TEST__.save());
+  expect(after.summon.total_pulls).toBe(before.summon.total_pulls + BANNER.multi_count);
+  const log = await page.evaluate(() => ({ storage: window.__TEST__.storageLog, summon: window.__TEST__.summonLog }));
+  // AC-11.10: exactly one save write, before the reveal started
+  expect(log.storage.length).toBe(1);
+  const revealAt = log.summon.find((e) => e.type === 'reveal_start').t;
+  expect(log.storage[0].t).toBeLessThan(revealAt);
+  expect(log.summon.filter((e) => e.type === 'summon_returned').length).toBe(1);
+  // the stored save is the new one (anti-reroll: quitting now keeps the fighters)
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('game_save')));
+  expect(stored.summon.total_pulls).toBe(after.summon.total_pulls);
+  expect(stored.summon.first_multi_done[BANNER.id]).toBe(true);
+  await page.waitForTimeout(250);
+  await rawShot(page, testInfo, '33-summon-reveal');
+  await page.waitForTimeout(600);
+  await rawShot(page, testInfo, '34-summon-reveal-card');
+  // one tap skips to the results
+  await tap(page, 'summon_skip');
+  await page.waitForFunction(() => window.__TEST__.summonReveal().phase === 'results', null, { timeout: 3000 });
+  const rv = await page.evaluate(() => window.__TEST__.summonReveal());
+  expect(rv.rows.length).toBe(BANNER.multi_count);
+  expect(rv.rows.map((r) => r.pull)).toEqual([...Array(BANNER.multi_count).keys()].map((i) => i + 1));
+  for (const r of rv.rows) expect(r.tag, JSON.stringify(r)).toMatch(/^(NEW|Resonance \+1 \(R\d\)|\+[\d,]+ Jade)$/);
+  for (const r of rv.rows) expect(r.nameRight, 'name vs tag').toBeLessThan(r.pillLeft - 4);
+  expect(rv.rows.some((r) => r.rarity >= BANNER.first_multi_min_rarity), 'first ×10 guarantee').toBe(true);
+  const credited = rv.rows.reduce((n, r) => n + (/^\+([\d,]+) Jade$/.test(r.tag) ? Number(r.tag.slice(1).split(' ')[0].replace(/,/g, '')) : 0), 0);
+  expect(after.currencies.cur_jade, 'Jade deducted once').toBe(before.currencies.cur_jade - BANNER.cost_multi + credited);
+  await page.waitForTimeout(400);
+  expect(layoutProblems(await sceneTexts(page))).toEqual([]);
+  await shot(page, testInfo, '35-summon-results');
+  await checkTargets(page, 'SummonReveal');
+  await tap(page, 'summon_ok');
+  await waitScene(page, 'Summon');
+  s = await summonSnap(page);
+  expect(s.firstMulti).toBeNull(); // AC-11.11: gone after the first ×10
+  const pityNow = after.summon.pity[BANNER.pity.group] || 0;
+  expect(s.pity).toBe(`★5 guaranteed within ${Math.max(1, BANNER.pity.hard_pity - pityNow)} summons.`);
+  await shot(page, testInfo, '36-summon-after');
+  // Jade on Home and Summon = the saved balance; the new fighters are in Team select
+  const jadeShown = async () => page.evaluate(() => window.__TEST__.activeScene().children.list.filter((o) => o.type === 'Text').map((o) => o.text));
+  expect(await jadeShown()).toContain(String(after.currencies.cur_jade));
+  await tap(page, 'back');
+  await waitScene(page, 'Home');
+  expect(await jadeShown()).toContain(String(after.currencies.cur_jade));
+  await tap(page, 'home_team');
+  await waitScene(page, 'Team');
+  const ids = (await page.evaluate(() => window.__TEST__.targets())).map((x) => x.id);
+  for (const r of after.roster) expect(ids, r.character_id).toContain('roster_' + r.character_id);
+  expect(after.roster.length).toBeGreaterThan(before.roster.length);
+  await shot(page, testInfo, '37-team-after-summon');
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('Summon: affordability (AC-11.6) and save failure (AC-11.10)', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  const cases = [
+    [BANNER.cost_multi - 1, [true, false]],
+    [BANNER.cost_multi, [true, true]],
+    [BANNER.cost_single - 1, [false, false]],
+    [BANNER.cost_single, [true, false]],
+  ];
+  for (const [jade, want] of cases) {
+    await bootWithSave(page, 1, `s.currencies.cur_jade = ${jade};`);
+    await toSummon(page);
+    const s = await summonSnap(page);
+    expect(s.buttons.map((b) => b.ok), 'Jade ' + jade).toEqual(want);
+    for (const b of s.buttons) if (!b.ok) expect(b.sublabel).toBe('Not enough Jade — clear stages to earn more.');
+    const tg = await target(page, s.buttons[1].id);
+    expect(tg.enabled).toBe(want[1]);
+    if (jade === BANNER.cost_single - 1) {
+      expect(layoutProblems(await sceneTexts(page))).toEqual([]);
+      await shot(page, testInfo, '38-summon-not-enough');
+      // a tap on a disabled button opens nothing
+      await tap(page, s.buttons[0].id);
+      await page.waitForTimeout(300);
+      expect((await summonSnap(page)).modal).toBeNull();
+    }
+  }
+  // AC-11.10: setItem throws → nothing changes, the failure text shows, no reveal
+  await bootWithSave(page, 1, `s.currencies.cur_jade = ${BANNER.cost_single};`);
+  await toSummon(page);
+  const before = await page.evaluate(() => window.__TEST__.save());
+  await page.evaluate(() => {
+    Storage.prototype.setItem = function () {
+      throw new Error('QuotaExceededError (test)');
+    };
+  });
+  await tap(page, 'summon_x1');
+  await page.waitForTimeout(400);
+  await tap(page, 'summon_confirm');
+  await page.waitForTimeout(400);
+  expect(await page.evaluate(() => window.__TEST__.sceneKey)).toBe('Summon');
+  const s = await summonSnap(page);
+  expect(s.error).toBe('Summon failed — no Jade was spent.');
+  const after = await page.evaluate(() => window.__TEST__.save());
+  expect(after.currencies).toEqual(before.currencies);
+  expect(after.roster).toEqual(before.roster);
+  expect(after.summon).toEqual(before.summon);
+  expect(s.buttons[0].ok).toBe(true);
+  await shot(page, testInfo, '39-summon-save-failed');
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// ------------------------------------------------------------------ round 3: BUG-2-11 live frames
+test('BUG-2-11: longest names at melee range and both walls — labels apart, nothing off screen (live frames)', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  // Longest player name in front, stage_005 (has "Umbral Solenne", the longest enemy name in data).
+  const chars = JSON.parse(fs.readFileSync('data/characters.json', 'utf8')).characters;
+  const enemies = JSON.parse(fs.readFileSync('data/enemies.json', 'utf8')).enemies;
+  const ename = (e) => e.name_override || chars.find((c) => c.id === e.character_id).name;
+  const longestEnemy = enemies.slice().sort((a, b) => ename(b).length - ename(a).length)[0];
+  const stage = JSON.parse(fs.readFileSync('data/stages.json', 'utf8')).stages.find((st) => (st.enemy_team || []).includes(longestEnemy.id));
+  const starters = JSON.parse(fs.readFileSync('data/economy.json', 'utf8')).starting.team;
+  const lead = starters.slice().sort((a, b) => chars.find((c) => c.id === b).name.length - chars.find((c) => c.id === a).name.length)[0];
+  const team = [lead, ...starters.filter((x) => x !== lead)];
+  await bootWithSave(page, stage.order - 1, `s.team = ${JSON.stringify(team)};`);
+  await startStage(page, stage.id);
+  const slot = stage.enemy_team.indexOf(longestEnemy.id);
+  await page.evaluate((slot) => {
+    const b = window.__TEST__.game.scene.getScene('Battle').battle;
+    for (const side of ['player', 'enemy']) for (const f of b.teams[side].fighters) f.hp = f.def.maxHp = 10 ** 7;
+    for (let i = 0; i < slot; i++) b.teams.enemy.fighters[i].hp = 0; // the longest-named enemy comes in
+  }, slot);
+  await page.waitForFunction((slot) => { const s = window.__TEST__.battleState(); return s.teams.enemy.activeSlot === slot && !s.freeze; }, slot, { timeout: 15000 });
+  const W0 = await page.evaluate(() => window.__TEST__.battleState().arenaWidth);
+  const melee = 12;
+  const spots = { 'melee-centre': [W0 / 2 - melee / 2, W0 / 2 + melee / 2], 'right-wall': [W0 - melee, W0], 'left-wall': [0, melee], stacked: [W0, W0] };
+  const problems = [];
+  let frames = 0;
+  for (const [name, [px, ex]] of Object.entries(spots)) {
+    await page.evaluate(({ px, ex }) => {
+      const T = window.__TEST__;
+      T.pin = { px, ex };
+      const b = T.game.scene.getScene('Battle').battle;
+      if (!T.pinLoop) {
+        T.pinLoop = true;
+        const loop = () => {
+          if (T.sceneKey !== 'Battle') return;
+          b.teams.player.x = T.pin.px;
+          b.teams.enemy.x = T.pin.ex;
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      }
+    }, { px, ex });
+    await page.waitForTimeout(500);
+    for (let k = 0; k < 15; k++) {
+      const r = await page.evaluate(() => {
+        const s = window.__TEST__.activeScene();
+        const n = [s.fighters.player.nameTag, s.fighters.enemy.nameTag].map((o) => { const b = o.getBounds(); return { text: o.text, x: b.x, w: b.width }; });
+        const a = s.lastArena;
+        const st = s.battle.getState();
+        return { n, a, W: s.W, states: [st.teams.player, st.teams.enemy].map((t) => t.fighters[t.activeSlot].state) };
+      });
+      frames++;
+      const [p, e] = r.n;
+      if (e.text !== ename(longestEnemy)) problems.push(`${name}: enemy label is "${e.text}"`);
+      if (p.x + p.w > e.x - 2) problems.push(`${name}: "${p.text}" × "${e.text}" overlap ${(p.x + p.w - e.x).toFixed(1)} px (${r.states})`);
+      for (const l of r.n) if (l.x < 0 || l.x + l.w > r.W) problems.push(`${name}: label "${l.text}" off screen ${l.x.toFixed(1)}..${(l.x + l.w).toFixed(1)}`);
+      for (const side of ['player', 'enemy']) {
+        const f = r.a[side];
+        if (f.x - f.ext.left < 0 || f.x + f.ext.right > r.W) problems.push(`${name}: ${side} body off screen ${(f.x - f.ext.left).toFixed(1)}..${(f.x + f.ext.right).toFixed(1)} (${r.states})`);
+      }
+      await page.waitForTimeout(60);
+    }
+    await rawShot(page, testInfo, `40-battle-names-${name}`);
+  }
+  console.log(`[${testInfo.project.name}] BUG-2-11 frames=${frames} problems=${problems.length}`);
+  expect(frames).toBeGreaterThanOrEqual(60);
+  expect([...new Set(problems)].slice(0, 12)).toEqual([]);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// ------------------------------------------------------------------ round 3: TRI-BURST looks
+test('TRI-BURST: charging, ready and locked look different (label + shape), locked during the enemy rush', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 1);
+  await startStage(page, 'stage_002');
+  const look = () => page.evaluate(() => { const h = window.__TEST__.activeScene().hud; return { vis: h.burstVisual, label: h.burstText.text, alpha: h.burstText.alpha }; });
+  await page.evaluate(() => { const b = window.__TEST__.game.scene.getScene('Battle').battle; b.teams.player.burst = 40; });
+  await page.waitForTimeout(200);
+  const charging = await look();
+  await page.evaluate(() => { const b = window.__TEST__.game.scene.getScene('Battle').battle; b.teams.player.burst = 100; });
+  await page.waitForFunction(() => window.__TEST__.battleState().teams.player.burstReady, null, { timeout: 10000 });
+  await page.waitForTimeout(100);
+  const ready = await look();
+  await rawShot(page, testInfo, '41-burst-ready');
+  // the enemy's rush locks the player's TRI-BURST (GDD §5.0)
+  await page.evaluate(() => {
+    const T = window.__TEST__;
+    const sc = T.game.scene.getScene('Battle');
+    const b = sc.battle;
+    b.teams.enemy.burst = 100;
+    b.teams.player.x = 44; b.teams.enemy.x = 56;
+    T.lockLook = null;
+    const loop = () => {
+      const st = T.battleState();
+      if (st && st.triBurstLock && st.teams.player.burst >= 100 && !T.lockLook && sc.hud.burstVisual === 'locked') T.lockLook = { vis: sc.hud.burstVisual, label: sc.hud.burstText.text };
+      if (!T.lockLook && T.sceneKey === 'Battle') requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+    b.applyInput('enemy', { type: 'tri_burst' });
+  });
+  await page.waitForFunction(() => !!window.__TEST__.lockLook, null, { timeout: 5000 });
+  await rawShot(page, testInfo, '42-burst-locked');
+  const locked = await page.evaluate(() => window.__TEST__.lockLook);
+  console.log('burst looks:', JSON.stringify({ charging, ready, locked }));
+  expect(charging.vis).toBe('charging');
+  expect(ready.vis).toBe('ready');
+  expect(locked.vis).toBe('locked');
+  expect(locked.label).not.toBe(ready.label);
+  expect(locked.label).toBe('WAIT');
   expect(errors, errors.join('\n')).toEqual([]);
 });

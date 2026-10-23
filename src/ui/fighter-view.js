@@ -64,12 +64,8 @@ export class FighterView {
     this.aura = f.aura;
   }
 
-  /** f = Fighter snapshot, sx/floorY = screen position, t = ms clock (for idle bob / flicker). */
-  update(f, sx, floorY, t, frozen) {
-    this.setFighter(f);
-    if (this.x === null) this.x = sx;
-    // ease toward the logic position (smooths 60 Hz steps on high-refresh screens)
-    this.x += (sx - this.x) * 0.5;
+  /** Pose offsets for this frame from the logic state only. Computed once per frame (Hitstun shake is random). */
+  pose(f, t, frozen) {
     let ox = 0;
     let oy = 0;
     let rot = 0;
@@ -113,12 +109,29 @@ export class FighterView {
       default:
         break;
     }
+    return { ox, oy, rot, alpha, glow: !!(f.ignition && f.ignition.active) };
+  }
+
+  /**
+   * f = Fighter snapshot, sx/floorY = screen position (from placeFighters), t = ms clock, pose = this.pose(),
+   * range = { min, max } allowed anchor x for this pose (keeps every pixel on screen while easing).
+   */
+  update(f, sx, floorY, t, frozen, pose, range) {
+    this.setFighter(f);
+    const P = pose || this.pose(f, t, frozen);
+    if (this.x === null) this.x = sx;
+    // ease toward the placed position (smooths 60 Hz steps on high-refresh screens), never off screen
+    this.x += (sx - this.x) * 0.5;
+    if (range) this.x = Math.max(range.min, Math.min(range.max, this.x));
+    const { ox, oy, rot } = P;
+    let alpha = P.alpha;
+    const st = f.state;
     if (f.invulnerable && st !== 'Slipping' && Math.floor(t / 70) % 2 === 0) alpha *= 0.55;
     this.root.setPosition(this.x + ox, floorY + oy);
     this.root.setRotation(rot);
     this.body.setAlpha(alpha);
     this.floorY = floorY;
-    this.nameTag.setPosition(this.x + ox, floorY + this.nameOffset);
+    this.nameTag.setPosition(this.x + ox, floorY + this.nameOffset); // x is final after placeNameLabels (BattleScene)
     this.nameTag.setAlpha(st === 'KO' ? 0.6 : 1);
 
     // Ignition aura glow / hit flash

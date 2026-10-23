@@ -5,7 +5,7 @@ import { COLORS, FONT, hex } from '../ui/theme.js';
 import { t } from '../ui/strings.js';
 import { data } from '../ui/game-data.js';
 import { sfx } from '../ui/feedback.js';
-import { testHooks } from '../ui/test-hooks.js';
+import { TEST_HOOKS, testHooks } from '../ui/test-hooks.js';
 
 export class BaseScene extends Phaser.Scene {
   init(initData) {
@@ -30,7 +30,7 @@ export class BaseScene extends Phaser.Scene {
     };
     this.game.events.on('viewport-changed', onViewport);
     this.events.once('shutdown', () => this.game.events.off('viewport-changed', onViewport));
-    const T = testHooks();
+    const T = TEST_HOOKS ? testHooks() : null;
     if (T) T.sceneKey = this.scene.key;
   }
 

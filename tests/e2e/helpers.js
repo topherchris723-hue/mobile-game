@@ -2,8 +2,20 @@
 import { expect } from '@playwright/test';
 import fs from 'node:fs';
 
-export const SHOTS = 'reports/screenshots/round-2';
-fs.mkdirSync(SHOTS, { recursive: true });
+// Screenshots are written only with UI_SHOTS=1 (ui-developer's own review runs), so QA runs never rewrite the
+// committed ones. Round 3 → reports/screenshots/round-3/.
+export const SHOTS = 'reports/screenshots/round-3';
+export const WRITE_SHOTS = process.env.UI_SHOTS === '1';
+if (WRITE_SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
+
+/** Screenshot to SHOTS/<size>-<name>.png, only when UI_SHOTS=1. */
+export async function rawShot(page, testInfo, name) {
+  if (!WRITE_SHOTS) return null;
+  const size = testInfo.project.name.replace('phone-', '');
+  const p = `${SHOTS}/${size}-${name}.png`;
+  await page.screenshot({ path: p });
+  return p;
+}
 
 export function watchErrors(page) {
   const errors = [];
@@ -15,9 +27,9 @@ export function watchErrors(page) {
 }
 
 export async function shot(page, testInfo, name) {
-  const size = testInfo.project.name.replace('phone-', '');
+  if (!WRITE_SHOTS) return;
   await page.waitForTimeout(350); // let fades/tweens settle
-  await page.screenshot({ path: `${SHOTS}/${size}-${name}.png` });
+  await rawShot(page, testInfo, name);
 }
 
 export async function waitScene(page, key) {
@@ -123,8 +135,8 @@ export async function goToBattle(page, testInfo, withShots, query = '&renderer=c
   await waitScene(page, 'Home');
   if (withShots) await shot(page, testInfo, '02-home');
   await checkTargets(page, 'Home');
-  // Summon is disabled this round
-  expect((await target(page, 'home_summon')).enabled).toBe(false);
+  // Summon is open from round 3 (GDD §11.1)
+  expect((await target(page, 'home_summon')).enabled).toBe(true);
   await tap(page, 'home_story');
   await waitScene(page, 'Story');
   if (withShots) await shot(page, testInfo, '03-stage-select');

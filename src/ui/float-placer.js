@@ -98,3 +98,83 @@ export class FloatPlacer {
     this.items = [];
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------
+// Fighters and their name labels (BUG-2-11, hard rule L-ui-003). The single placer for every arena text and
+// sprite position: BattleScene.render asks these functions where to draw, nothing else positions them.
+
+/**
+ * Horizontal reach of the placeholder fighter silhouette from its anchor (feet centre), for a pose.
+ * rot = body rotation (rad, Phaser: clockwise positive), s = scale (boss 1.12), facing = +1 right / −1 left,
+ * ox = pose x offset, glow = Ignition glow drawn. Returns { left, right } (both ≥ 0, logical px).
+ */
+export function silhouetteExtent(rot, s, facing, ox, glow) {
+  const pts = [
+    [0, -107 * s], [-13 * s, -94 * s], [13 * s, -94 * s], // head
+    [-22 * s, -80 * s], [22 * s, -80 * s], [-22 * s, -30 * s], [22 * s, -30 * s], // torso
+    [facing * 36 * s, -58 * s], [facing * 36 * s, -66 * s], // fist
+    [-32 * s, 0], [32 * s, 0], [-32 * s, 8], [32 * s, 8], // shadow / feet
+    [-42, -58 * s], [42, -58 * s], // wind-up ring (r ≤ 38 + 4 px line)
+  ];
+  if (glow) pts.push([-45, -60], [45, -60], [0, -130], [0, 10]);
+  const c = Math.cos(rot || 0);
+  const sn = Math.sin(rot || 0);
+  let lo = 0;
+  let hi = 0;
+  for (const [x, y] of pts) {
+    const xr = x * c - y * sn + (ox || 0);
+    lo = Math.min(lo, xr);
+    hi = Math.max(hi, xr);
+  }
+  return { left: -lo + 2, right: hi + 2 }; // +2 for the 2 px outline
+}
+
+/**
+ * Screen x of the two fighters. The player is always left of the enemy. Keeps at least minGap between the
+ * anchors (presentation only; logic distance is unchanged) and every pixel of both silhouettes inside
+ * [margin, W − margin] (AC-14.1). p/e = { x (wanted), left, right } (extents from silhouetteExtent).
+ * Returns { px, ex }.
+ */
+export function placeFighters(p, e, W, margin, minGap) {
+  let px = p.x;
+  let ex = e.x;
+  if (ex - px < minGap) {
+    const mid = (px + ex) / 2;
+    px = mid - minGap / 2;
+    ex = mid + minGap / 2;
+  }
+  const pMin = margin + p.left;
+  const eMax = W - margin - e.right;
+  if (px < pMin) {
+    px = pMin;
+    ex = Math.max(ex, px + minGap);
+  }
+  if (ex > eMax) {
+    ex = eMax;
+    px = Math.min(px, ex - minGap);
+  }
+  // both walls at once (cannot happen at 360 wide with default art; edges win over the gap)
+  px = Math.max(pMin, Math.min(px, W - margin - p.right));
+  ex = Math.min(eMax, Math.max(ex, margin + e.left));
+  return { px, ex };
+}
+
+/**
+ * Centres of the two name labels (one fixed row). Each label is clamped to [margin + w/2, W − margin − w/2];
+ * if they would touch (closer than gap), both are pushed apart around their midpoint and clamped again, so
+ * long names ("Umbral Solenne") never overlap at melee range or at a wall. p/e = { x (wanted), w }.
+ * Returns { px, ex }. Labels only overlap if w_p + w_e + gap > W − 2·margin (impossible for ≤ 20-char names).
+ */
+export function placeNameLabels(p, e, W, margin, gap) {
+  const clampL = (x, w) => Math.max(margin + w / 2, Math.min(W - margin - w / 2, x));
+  let px = clampL(p.x, p.w);
+  let ex = clampL(e.x, e.w);
+  const need = p.w / 2 + e.w / 2 + gap;
+  if (ex - px < need) {
+    const mid = (px + ex) / 2;
+    px = clampL(mid - need / 2, p.w);
+    ex = clampL(px + need, e.w);
+    px = clampL(ex - need, p.w); // pushed back from the right wall
+  }
+  return { px, ex };
+}

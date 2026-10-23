@@ -1,4 +1,5 @@
 // Battle HUD (GDD §14 layout). Reads the logic snapshot every frame; never changes logic state.
+import { burstVisual, BURST_LABEL_KEYS } from './hud-state.js';
 import { COLORS, auraColor } from './theme.js';
 import { drawAuraIcon, drawCardTypeIcon, cardColor } from './icons.js';
 import { t } from './strings.js';
@@ -354,31 +355,61 @@ export class BattleHud {
       ig.strokeCircle(0, 0, 26);
     }
 
-    // TRI-BURST (64×64): ring gauge, pulses at 100, USED after
+    // TRI-BURST (64×64), 4 looks (round 3): charging = dark + orange ring filling; ready = orange pulsing disc +
+    // white ring + scale pulse; locked (gauge full, tap refused now) = grey disc, grey dashed ring, padlock, "WAIT";
+    // used = dark, no ring, "USED".
     const bg = this.burstG;
+    const vis = burstVisual(team);
     const frac = team.burstUsed ? 0 : team.burst / team.burstMax;
-    if (!this.dirty('burst', Math.round(frac * 200) + '|' + team.burstUsed + '|' + team.burstReady + '|' + locked) && !team.burstReady) return;
+    this.burstVisual = vis;
+    if (!this.dirty('burst', Math.round(frac * 200) + '|' + vis) && vis !== 'ready') return;
     bg.clear();
-    bg.fillStyle(COLORS.panel, 1);
-    bg.fillCircle(0, 0, 31);
-    if (team.burstReady) {
+    this.burstC.setScale(1);
+    if (vis === 'ready') {
       const pulse = 0.5 + 0.5 * Math.sin(now / 110);
-      bg.fillStyle(COLORS.burst, 0.5 + 0.4 * pulse);
-      bg.fillCircle(0, 0, 31);
+      bg.fillStyle(COLORS.burst, 0.35);
+      bg.fillCircle(0, 0, 31 + pulse * 3);
+      bg.fillStyle(COLORS.burst, 1);
+      bg.fillCircle(0, 0, 29);
+      bg.lineStyle(3, 0xffffff, 1);
+      bg.strokeCircle(0, 0, 29);
       this.burstC.setScale(1 + 0.05 * pulse);
-    } else {
-      this.burstC.setScale(1);
-    }
-    bg.lineStyle(6, 0x333a5c, 1);
-    bg.strokeCircle(0, 0, 27);
-    if (frac > 0) {
-      bg.lineStyle(6, COLORS.burst, 1);
+    } else if (vis === 'locked') {
+      bg.fillStyle(COLORS.disabled, 1);
+      bg.fillCircle(0, 0, 31);
+      bg.lineStyle(4, 0x6a7090, 1);
+      for (let i = 0; i < 12; i++) {
+        const a0 = (Math.PI * 2 * i) / 12;
+        bg.beginPath();
+        bg.arc(0, 0, 27, a0, a0 + Math.PI / 12, false);
+        bg.strokePath();
+      }
+      // padlock above the label
+      bg.lineStyle(2, 0xd8dcf0, 1);
       bg.beginPath();
-      bg.arc(0, 0, 27, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac, false);
+      bg.arc(0, -15, 4, Math.PI, 0, false);
       bg.strokePath();
+      bg.fillStyle(0xd8dcf0, 1);
+      bg.fillRect(-6, -15, 12, 9);
+    } else {
+      bg.fillStyle(COLORS.panel, 1);
+      bg.fillCircle(0, 0, 31);
+      if (vis === 'charging') {
+        bg.lineStyle(6, 0x333a5c, 1);
+        bg.strokeCircle(0, 0, 27);
+        if (frac > 0) {
+          bg.lineStyle(6, COLORS.burst, 1);
+          bg.beginPath();
+          bg.arc(0, 0, 27, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac, false);
+          bg.strokePath();
+        }
+      }
     }
-    this.burstText.setText(team.burstUsed ? t('battle_tri_burst_used') : t('battle_tri_burst_button'));
-    this.burstText.setAlpha(locked && !team.burstReady ? 0.45 : team.burstReady || team.burstUsed ? 1 : 0.75);
+    this.burstText.setText(t(BURST_LABEL_KEYS[vis]));
+    this.burstText.setY(vis === 'locked' ? 6 : 0);
+    this.burstText.setColor(vis === 'ready' ? COLORS.textDark : vis === 'locked' ? '#d8dcf0' : '#ffffff');
+    this.burstText.setStroke(vis === 'ready' ? '#ffffff' : '#000000', vis === 'ready' ? 0 : 3);
+    this.burstText.setAlpha(vis === 'charging' ? 0.75 : 1);
   }
 
   ignitionMax(f) {
