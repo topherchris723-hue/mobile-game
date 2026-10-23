@@ -211,6 +211,7 @@ describe('L-gp-001: summon section repair on load (progress kept, not reset)', (
       'team_not_array', 'team_unknown_id', 'team_not_playable', 'team_unowned', 'team_duplicate', 'team_extra', 'team_refilled',
       'summon_reset', 'summon_pity_reset', 'summon_pity_entry_dropped', 'summon_first_multi_reset',
       'summon_first_multi_entry_dropped', 'summon_total_pulls_reset', 'summon_extra_field',
+      'settings_repaired', // round 4, GDD §13 R4-1
     ]);
   });
 
