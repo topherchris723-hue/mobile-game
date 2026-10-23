@@ -5,6 +5,7 @@ import { COLORS, FONT, hex } from '../ui/theme.js';
 import { t } from '../ui/strings.js';
 import { data } from '../ui/game-data.js';
 import { sfx } from '../ui/feedback.js';
+import { setMusicContext } from '../audio/index.js';
 import { TEST_HOOKS, testHooks } from '../ui/test-hooks.js';
 
 export class BaseScene extends Phaser.Scene {
@@ -32,6 +33,13 @@ export class BaseScene extends Phaser.Scene {
     this.events.once('shutdown', () => this.game.events.off('viewport-changed', onViewport));
     const T = TEST_HOOKS ? testHooks() : null;
     if (T) T.sceneKey = this.scene.key;
+    const mus = this.musicContext();
+    if (mus) setMusicContext(mus[0], mus[1]); // GDD §18.3 (same track keeps playing across scenes)
+  }
+
+  /** [context, bgmKey] for GDD §18.3, or null to leave the music alone (Result: the battle-end stinger runs it). */
+  musicContext() {
+    return ['menu'];
   }
 
   /** Data used to rebuild this scene after a resize. */
@@ -119,7 +127,8 @@ export class BaseScene extends Phaser.Scene {
       state.pressed = true;
       c.setScale(0.95);
       draw();
-      sfx(state.enabled ? 'ui_press' : 'ui_denied');
+      if (!state.enabled) sfx('ui_denied');
+      else if (o.pressSfx !== null) sfx(o.pressSfx || 'ui_press'); // pressSfx null: the action plays its own sound
     });
     const release = (fire) => {
       if (!state.pressed) return;
@@ -175,8 +184,8 @@ export class BaseScene extends Phaser.Scene {
     this.time.delayedCall(1700, () => this.tweens.add({ targets: cont, alpha: 0, duration: 250, onComplete: () => cont.destroy() }));
   }
 
-  /** Top bar: back button (left, 44×44), title, Jade balance (right, GDD §4). */
-  topBar(title, backTo, backData) {
+  /** Top bar: back button (left, 44×44), title, Jade balance (right, GDD §4); opts.gear = Settings gear (R4-2/R4-3). */
+  topBar(title, backTo, backData, opts) {
     const g = this.add.graphics();
     g.fillStyle(COLORS.bgTop, 1);
     g.fillRect(0, 0, this.W, 52);
@@ -195,7 +204,16 @@ export class BaseScene extends Phaser.Scene {
         onTap: () => this.goTo(backTo, backData || {}),
       });
     }
-    const jade = this.jadeLabel(this.W - 12, 26);
+    let jadeRight = this.W - 12;
+    if (opts && opts.gear) {
+      const gx = this.W - 4 - 44;
+      const btn = this.button({ id: 'home_settings', x: gx, y: 4, w: 44, h: 44, label: '', kind: 'secondary', onTap: opts.gear });
+      const gg = this.add.graphics();
+      drawGear(gg, 0, 0, 11);
+      btn.container.add(gg);
+      jadeRight = gx - 10;
+    }
+    const jade = this.jadeLabel(jadeRight, 26);
     if (title) {
       const x = backTo ? 58 : 14;
       const maxW = jade.name.x - jade.name.width - 12 - x;
@@ -252,6 +270,25 @@ export class BaseScene extends Phaser.Scene {
       };
     });
   }
+}
+
+/** Gear icon (geometric, not one of the aura / card-type shapes; STYLE_GUIDE §5). */
+export function drawGear(g, cx, cy, r) {
+  g.fillStyle(0xf4f6ff, 1);
+  g.lineStyle(2, 0x000000, 0.6);
+  const teeth = 8;
+  const pts = [];
+  for (let i = 0; i < teeth * 2; i++) {
+    const a = (Math.PI * i) / teeth - Math.PI / 2;
+    const rr = i % 2 === 0 ? r : r * 0.72;
+    const a0 = a - Math.PI / (teeth * 2.6);
+    const a1 = a + Math.PI / (teeth * 2.6);
+    pts.push({ x: cx + Math.cos(a0) * rr, y: cy + Math.sin(a0) * rr }, { x: cx + Math.cos(a1) * rr, y: cy + Math.sin(a1) * rr });
+  }
+  g.fillPoints(pts, true);
+  g.strokePoints(pts, true);
+  g.fillStyle(0x2a3260, 1);
+  g.fillCircle(cx, cy, r * 0.32);
 }
 
 export { t };

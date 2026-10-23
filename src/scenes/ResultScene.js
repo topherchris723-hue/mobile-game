@@ -10,6 +10,10 @@ export class ResultScene extends BaseScene {
     super('Result');
   }
 
+  musicContext() {
+    return null; // endBattleMusic() + the result_<outcome> stinger start the menu track (GDD §18.3)
+  }
+
   create() {
     this.setupView();
     const { W, H } = this;

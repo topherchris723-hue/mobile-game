@@ -12,6 +12,9 @@ import { BattleScene } from './scenes/BattleScene.js';
 import { ResultScene } from './scenes/ResultScene.js';
 import { SummonScene } from './scenes/SummonScene.js';
 import { SummonRevealScene } from './scenes/SummonRevealScene.js';
+import { SettingsScene } from './scenes/SettingsScene.js';
+import audioData from '../data/audio.json';
+import { initAudio, audioDebug } from './audio/index.js';
 
 const params = new URLSearchParams(window.location.search);
 // Read-only hooks for Playwright (scene key, touch targets, battle snapshot, sound-hook log).
@@ -19,6 +22,8 @@ const params = new URLSearchParams(window.location.search);
 const T = TEST_HOOKS && params.has('test') ? installTestHooks() : null;
 
 data.init();
+// Audio once, before any scene (GDD §18.1: the AudioContext is created on the first gesture, not here).
+initAudio(audioData, data.save.settings);
 
 const parent = document.getElementById('game');
 
@@ -47,7 +52,7 @@ const game = new Phaser.Game({
   callbacks: {
     preBoot: (g) => g.registry.set('viewport', vp),
   },
-  scene: [TitleScene, HomeScene, StoryListScene, DialogueScene, TeamScene, BattleScene, ResultScene, SummonScene, SummonRevealScene],
+  scene: [TitleScene, HomeScene, StoryListScene, DialogueScene, TeamScene, BattleScene, ResultScene, SummonScene, SummonRevealScene, SettingsScene],
 });
 
 let resizeTimer = null;
@@ -89,4 +94,7 @@ if (T) {
   };
   T.save = () => JSON.parse(JSON.stringify(data.save));
   T.data = data;
+  T.audioDebug = () => audioDebug();
+  // ?vfxQuality=low forces the VFX quality (AC-17.6); read by the scenes that create a VFX layer.
+  T.vfxQuality = params.get('vfxQuality') === 'low' ? 'low' : null;
 }

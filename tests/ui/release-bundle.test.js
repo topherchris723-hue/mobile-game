@@ -21,18 +21,18 @@ function buildTo(dir, testHooks) {
 
 /** Hook markers that must never ship. */
 export function hookMarkers(js) {
-  return ['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep'].filter((m) => js.includes(m));
+  return ['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow'].filter((m) => js.includes(m));
 }
 
 describe('release bundle has no test hooks', () => {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'jt-bundle-'));
-  it('npm run build (no VITE_TEST_HOOKS) contains no __TEST__ / summonSeed / summonLog / tutorialStep', () => {
+  it('npm run build (no VITE_TEST_HOOKS) contains no test-hook names (__TEST__, summonSeed, summonLog, tutorialStep, audioDebug, vfxQuality, settingsScreen, particlesNow)', () => {
     const js = buildTo(path.join(tmp, 'rel'), false);
     expect(js.length).toBeGreaterThan(100000);
     expect(hookMarkers(js)).toEqual([]);
   }, 180000);
   it('negative run: a VITE_TEST_HOOKS=1 build does contain them (the scan can fail)', () => {
     const js = buildTo(path.join(tmp, 'test'), true);
-    expect(hookMarkers(js)).toEqual(['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep']);
+    expect(hookMarkers(js)).toEqual(['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow']);
   }, 180000);
 });

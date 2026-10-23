@@ -8,6 +8,7 @@ import { data } from '../ui/game-data.js';
 import { drawAuraIcon } from '../ui/icons.js';
 import { sfx, haptic } from '../ui/feedback.js';
 import { outcomeTag, guaranteeText, eventText, rarityColor, stars } from '../ui/summon-view.js';
+import { createVfx } from '../vfx/index.js';
 import { TEST_HOOKS, testHooks } from '../ui/test-hooks.js';
 
 const SKIP_ARM_MS = 300; // the 2nd tap of the Confirm double tap must not skip the reveal
@@ -23,6 +24,10 @@ export class SummonRevealScene extends BaseScene {
   restartData() {
     // After a resize, go straight to the results (never replay a reveal).
     return Object.assign({}, this.initData, { skipped: true });
+  }
+
+  musicContext() {
+    return ['summon'];
   }
 
   create() {
@@ -55,6 +60,14 @@ export class SummonRevealScene extends BaseScene {
     this.tweens.add({ targets: bg, angle: 360, duration: 30000, repeat: -1 });
     this.bg = bg;
     this.jadeLabel(W - 12, 26);
+    // VFX (GDD §17.2 summon_orb / summon_reveal): screen flash (limited, reduce-motion aware) drawn as a rect just
+    // above the background rays and below the card, as in R3; the shake and particles are the layer's too.
+    this.vfx = createVfx(this, null, data.save.settings, {
+      mode: 'summon',
+      center: { x: W / 2, y: H * 0.42 },
+      flashDepth: -1,
+      quality: T && T.vfxQuality ? T.vfxQuality : undefined,
+    });
 
     if (this.initData.skipped) {
       this.showResults();
@@ -75,6 +88,7 @@ export class SummonRevealScene extends BaseScene {
   skip() {
     if (this.phase !== 'reveal') return;
     sfx('ui_press');
+    if (this.vfx) this.vfx.clear(); // a tap skips with no further effects (§17.2)
     this.showResults();
   }
 
@@ -104,6 +118,7 @@ export class SummonRevealScene extends BaseScene {
     orb.setPosition(cx, cy).setScale(0.1);
     this.layer.add(orb);
     sfx('summon_orb_' + res.rarity);
+    this.vfx.onSummon('orb', res.rarity);
     const chargeMs = res.rarity >= 5 ? 700 : res.rarity === 4 ? 420 : 260;
     this.tweens.add({ targets: orb, scale: 1, duration: 220, ease: 'Back.Out' });
     if (res.rarity >= 4) this.tweens.add({ targets: orb, angle: { from: -6, to: 6 }, duration: 60, yoyo: true, repeat: Math.floor(chargeMs / 120), delay: 200 });
@@ -117,16 +132,10 @@ export class SummonRevealScene extends BaseScene {
   }
 
   flash(col, rarity) {
-    const { W, H } = this;
-    const f = this.add.graphics();
-    f.fillStyle(rarity >= 5 ? 0xffffff : col, rarity >= 5 ? 0.9 : 0.45);
-    f.fillRect(0, 0, W, H);
-    this.layer.add(f);
-    this.tweens.add({ targets: f, alpha: 0, duration: rarity >= 5 ? 420 : 220, onComplete: () => f.destroy() });
-    if (rarity >= 5) {
-      this.cameras.main.shake(260, 0.012);
-      haptic(80);
-    }
+    // R3 flash + ★5 shake now come from the VFX layer (summon_reveal.<rarity>), so reduce motion and the flash
+    // limit apply (GDD §17.3). Haptics stay here (Vibration setting).
+    this.vfx.onSummon('reveal', rarity);
+    if (rarity >= 5) haptic(80);
     sfx('summon_reveal_' + rarity);
   }
 

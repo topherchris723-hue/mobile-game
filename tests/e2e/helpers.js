@@ -3,8 +3,8 @@ import { expect } from '@playwright/test';
 import fs from 'node:fs';
 
 // Screenshots are written only with UI_SHOTS=1 (ui-developer's own review runs), so QA runs never rewrite the
-// committed ones. Round 3 → reports/screenshots/round-3/.
-export const SHOTS = 'reports/screenshots/round-3';
+// committed ones. Round 4 → reports/screenshots/round-4/.
+export const SHOTS = 'reports/screenshots/round-4';
 export const WRITE_SHOTS = process.env.UI_SHOTS === '1';
 if (WRITE_SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 

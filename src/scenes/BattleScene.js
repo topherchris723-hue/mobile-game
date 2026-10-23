@@ -10,6 +10,8 @@ import { TutorialController } from '../ui/tutorial.js';
 import { FighterView } from '../ui/fighter-view.js';
 import { BattleHud } from '../ui/battle-hud.js';
 import { sfx, haptic } from '../ui/feedback.js';
+import { setMusicContext, onBattleEvent, setPaused as setAudioPaused, resetDuck, endBattleMusic } from '../audio/index.js';
+import { createVfx } from '../vfx/index.js';
 import { cardColor } from '../ui/icons.js';
 import { FloatPlacer, silhouetteExtent, placeFighters, placeNameLabels } from '../ui/float-placer.js';
 import { HIT_DISCARD_TEXT_KEYS, TRI_BURST_WHIFF_TEXT_KEYS, WHIFF_TEXT_KEYS, reasonTextKey } from '../ui/hud-state.js';
@@ -34,6 +36,10 @@ function randomSeed() {
 export class BattleScene extends BaseScene {
   constructor() {
     super('Battle');
+  }
+
+  musicContext() {
+    return null; // create() sets the battle track with stage.bgm
   }
 
   create() {
@@ -63,6 +69,7 @@ export class BattleScene extends BaseScene {
     this.comboShown = { player: 0, enemy: 0 };
 
     this.buildArena();
+    this.buildVfx();
     const R = data.content.rules;
     this.hud = new BattleHud(this, this.L, { refillTicks: R.hand.refillTicks, riposteWindowTicks: R.riposte.windowTicks });
     this.buildPause();
@@ -79,8 +86,16 @@ export class BattleScene extends BaseScene {
     this.events.once('shutdown', () => {
       document.removeEventListener('visibilitychange', this.onVisibility);
       this.game.events.off('hidden', this.onVisibility);
+      resetDuck(); // GDD §18.4: no cinematic or pause duck survives the battle
+    });
+    // Back from Settings (scene resumed): the pause menu is still open, the battle still paused.
+    this.events.on('resume', () => {
+      const T = TEST_HOOKS ? testHooks() : null;
+      if (T) T.sceneKey = this.scene.key;
+      this.showMenu('pause');
     });
 
+    if (!this.initData.live || !this.initData.musicStarted) setMusicContext('battle', this.stage.bgm);
     const st = this.battle.getState();
     this.render(st, 0); // first: the intro is laid out around the fighters' name labels
     if (st.phase === 'intro') this.showIntro(st);
@@ -88,7 +103,7 @@ export class BattleScene extends BaseScene {
   }
 
   restartData() {
-    return { stageId: this.stage.id, live: { battle: this.battle, tutorial: this.tutorial, seed: this.seed } };
+    return { stageId: this.stage.id, musicStarted: true, live: { battle: this.battle, tutorial: this.tutorial, seed: this.seed } };
   }
 
   // ------------------------------------------------------------------ build
@@ -129,12 +144,30 @@ export class BattleScene extends BaseScene {
     this.comboText = this.text(16, a.top + 56, '', 22, COLORS.accentText, { fontStyle: 'bold', stroke: '#000000', strokeThickness: 5 }).setOrigin(0, 0.5).setDepth(51).setAlpha(0);
     this.comboHits = this.text(18, a.top + 80, '', 14, COLORS.text, { stroke: '#000000', strokeThickness: 3 }).setOrigin(0, 0.5).setDepth(51).setAlpha(0);
     this.enemyCombo = this.text(this.L.W - 16, a.top + 56, '', 18, COLORS.bad, { fontStyle: 'bold', stroke: '#000000', strokeThickness: 4 }).setOrigin(1, 0.5).setDepth(51).setAlpha(0);
+    // BUG-3-03: the combo counters sit at fixed spots. Their areas are reserved in the float placer for the whole
+    // battle (sized for the longest strings), so a callout placed before a chain starts can never end up under them.
+    this.comboZones = this.measureComboZones();
     this.cinematic = this.add.container(0, 0).setDepth(80).setVisible(false);
     this.cinG = this.add.graphics();
     this.cinTitle = this.text(this.L.W / 2, 0, '', 30, '#ffffff', { fontStyle: 'bold', align: 'center', stroke: '#000000', strokeThickness: 6, wordWrap: { width: this.L.W - 32 } }).setOrigin(0.5);
     this.cinSub = this.text(this.L.W / 2, 0, '', 16, '#ffffff', { fontStyle: 'bold', align: 'center', stroke: '#000000', strokeThickness: 4, wordWrap: { width: this.L.W - 40 } }).setOrigin(0.5);
     this.cinematic.add([this.cinG, this.cinTitle, this.cinSub]);
+    // VFX cinematic decor (radial lines, Tri-Burst stripes, portraits) above the band fill, below the title, so it
+    // fades with the overlay and ends at freeze_end like the rest of the cinematic (GDD §17.1).
+    if (this.vfx) this.cinematic.addAt(this.vfx.cinematicDecor, 1);
     this.tooltip = this.add.container(0, 0).setDepth(90).setVisible(false);
+  }
+
+  /** VFX layer (GDD §17): reads events and snapshots only. Hooks for sprite swap / text pop are no-ops: the approved
+   *  R3 look keeps the placeholder body and our own text pops (L-shared-014). */
+  buildVfx() {
+    const T = TEST_HOOKS ? testHooks() : null;
+    this.vfx = createVfx(this, null, data.save.settings, {
+      mode: 'battle',
+      fighters: this.fighters,
+      quality: T && T.vfxQuality ? T.vfxQuality : undefined,
+      hooks: { onSpriteSwap: () => {}, onTextPop: () => {} },
+    });
   }
 
   buildTutorialUi() {
@@ -291,10 +324,22 @@ export class BattleScene extends BaseScene {
   openPause() {
     if (this.menuOpen || this.ending || this.battle.getResult()) return;
     this.battle.setPaused(true);
+    setAudioPaused(true); // GDD §18.4 pause duck
     this.menuOpen = true;
     this.gestures.cancel();
     this.releasePress();
     this.showMenu('pause');
+  }
+
+  /** Pause → Settings (R4-4): the battle stays paused under the Settings scene; Back resumes this scene's menu. */
+  openSettings() {
+    if (this.leaving) return;
+    sfx('ui_open');
+    if (this.menu) this.menu.destroy();
+    this.menu = null;
+    this.targets = this.targets.filter((tg) => !tg.menu);
+    this.scene.launch('Settings', { from: 'Battle' });
+    this.scene.pause();
   }
 
   showMenu(kind) {
@@ -309,29 +354,35 @@ export class BattleScene extends BaseScene {
     // swallow taps behind the menu
     const blocker = this.add.zone(0, 0, W, H).setOrigin(0).setInteractive();
     m.add([dim, blocker]);
-    const panelTop = H - 300;
+    // R4-4: Resume / Settings / Retreat (top to bottom); nothing covers the Pause button (top right).
+    const panelTop = H - 340;
     const pg = this.add.graphics();
     pg.fillStyle(COLORS.panel, 1);
-    pg.fillRoundedRect(16, panelTop, W - 32, 268, 16);
+    pg.fillRoundedRect(16, panelTop, W - 32, 308, 16);
     pg.lineStyle(2, COLORS.stroke, 1);
-    pg.strokeRoundedRect(16, panelTop, W - 32, 268, 16);
+    pg.strokeRoundedRect(16, panelTop, W - 32, 308, 16);
     m.add(pg);
     const title = kind === 'pause' ? t('battle_paused') : t('battle_retreat_confirm');
     m.add(this.text(W / 2, panelTop + 40, title, kind === 'pause' ? 24 : 16, '#ffffff', { fontStyle: 'bold', align: 'center', wordWrap: { width: W - 64 } }).setOrigin(0.5));
     const bw = W - 64;
-    let b1;
-    let b2;
-    // BUG-2-03: the destructive "Yes, retreat" never sits where "Retreat" was (that slot holds Cancel),
+    const rows = [panelTop + 80, panelTop + 148, panelTop + 216];
+    let btns;
+    // BUG-2-03 / L-ui-002: the destructive "Yes, retreat" never sits where "Retreat" was (that slot holds Cancel),
     // and every menu button ignores presses for MENU_ARM_MS after it appears.
     const arm = MENU_ARM_MS;
     if (kind === 'pause') {
-      b1 = this.button({ id: 'menu_resume', x: 32, y: panelTop + 96, w: bw, h: 56, label: t('battle_resume'), armMs: arm, onTap: () => this.closePause() });
-      b2 = this.button({ id: 'menu_retreat', x: 32, y: panelTop + 176, w: bw, h: 56, label: t('battle_retreat'), kind: 'secondary', armMs: arm, onTap: () => this.showMenu('confirm') });
+      btns = [
+        this.button({ id: 'menu_resume', x: 32, y: rows[0], w: bw, h: 56, label: t('battle_resume'), armMs: arm, onTap: () => this.closePause() }),
+        this.button({ id: 'menu_settings', x: 32, y: rows[1], w: bw, h: 56, label: t('settings_title'), kind: 'secondary', armMs: arm, onTap: () => this.openSettings() }),
+        this.button({ id: 'menu_retreat', x: 32, y: rows[2], w: bw, h: 56, label: t('battle_retreat'), kind: 'secondary', armMs: arm, onTap: () => this.showMenu('confirm') }),
+      ];
     } else {
-      b1 = this.button({ id: 'menu_retreat_yes', x: 32, y: panelTop + 96, w: bw, h: 56, label: t('battle_retreat_yes'), kind: 'danger', armMs: arm, onTap: () => this.doRetreat() });
-      b2 = this.button({ id: 'menu_cancel', x: 32, y: panelTop + 176, w: bw, h: 56, label: t('battle_cancel'), kind: 'secondary', armMs: arm, onTap: () => this.showMenu('pause') });
+      btns = [
+        this.button({ id: 'menu_retreat_yes', x: 32, y: rows[0], w: bw, h: 56, label: t('battle_retreat_yes'), kind: 'danger', armMs: arm, onTap: () => this.doRetreat() }),
+        this.button({ id: 'menu_cancel', x: 32, y: rows[2], w: bw, h: 56, label: t('battle_cancel'), kind: 'secondary', armMs: arm, onTap: () => this.showMenu('pause') }),
+      ];
     }
-    m.add([b1.container, b1.zone, b2.container, b2.zone]);
+    for (const b of btns) m.add([b.container, b.zone]);
     for (let i = before; i < this.targets.length; i++) this.targets[i].menu = true;
     m.setAlpha(0);
     this.tweens.add({ targets: m, alpha: 1, duration: 120 });
@@ -346,6 +397,7 @@ export class BattleScene extends BaseScene {
     this.acc = 0;
     this.inputArmedAt = performance.now() + MENU_ARM_MS; // the 2nd tap of a double tap on Resume is not a card tap
     if (this.tutorial) this.tutorial.resetClock(performance.now()); // paused time is not shown time (GDD §9.4)
+    setAudioPaused(false);
     this.battle.setPaused(false);
   }
 
@@ -353,6 +405,7 @@ export class BattleScene extends BaseScene {
     if (this.menu) this.menu.destroy();
     this.menu = null;
     this.targets = this.targets.filter((tg) => !tg.menu);
+    setAudioPaused(false);
     this.battle.setPaused(false);
     this.battle.retreat();
     this.finishBattle(this.battle.getResult(), 200);
@@ -373,6 +426,10 @@ export class BattleScene extends BaseScene {
         this.pendingInputs = [];
         const events = this.battle.step(inputs);
         this.handleEvents(events, now);
+        if (events.length) {
+          for (const e of events) onBattleEvent(e); // audio ducking (GDD §18.4)
+          this.vfx.onBattleEvents(events, this.battle.getState()); // reads only (GDD §17.1)
+        }
         if (this.tutorial) this.tutorial.handleEvents(events, now);
         if (this.ending) break;
       }
@@ -489,6 +546,10 @@ export class BattleScene extends BaseScene {
           break;
         case 'riposte':
           this.callout(t('battle_riposte'), '#ffffff', 30, e.side);
+          sfx('riposte');
+          break;
+        case 'knockdown':
+          sfx('knockdown'); // burst + dust + shake: VFX layer
           break;
         case 'slip':
           sfx('slip');
@@ -500,10 +561,10 @@ export class BattleScene extends BaseScene {
           break;
         case 'tag_strike':
           this.floatText(this.bodyPos(e.side), t('battle_tag_strike'), COLORS.accentText, 18);
+          sfx('tag_strike');
           break;
         case 'ko':
-          this.callout(t('battle_ko'), COLORS.bad, 48);
-          this.cameras.main.shake(250, 0.01);
+          this.callout(t('battle_ko'), COLORS.bad, 48); // KO shake: VFX layer (R3 values, §17.2)
           sfx('ko');
           break;
         case 'fighter_enter':
@@ -573,8 +634,7 @@ export class BattleScene extends BaseScene {
   onHit(e, st) {
     const target = e.side === 'player' ? 'enemy' : 'player';
     const fv = this.fighters[target];
-    fv.hitFlash();
-    this.hud.onDamage(target);
+    this.hud.onDamage(target); // hit flash, impact ring and shake are the VFX layer's (hit.<type>, hit.crit)
     const pos = fv.headPos();
     const crit = e.crit;
     // Numbers and type tags share the body row under the name labels; the placer stacks them (BUG-2-10).
@@ -583,17 +643,16 @@ export class BattleScene extends BaseScene {
     if (crit) this.floatText({ x: pos.x, y: bodyY - 30 }, t('battle_crit'), '#ffd84a', 14);
     if (e.typeMult > 1.0001 && e.hitIndex === 0) this.floatText({ x: pos.x, y: bodyY - 30 }, t('battle_weak'), COLORS.good, 16);
     if (e.typeMult < 0.9999 && e.hitIndex === 0) this.floatText({ x: pos.x, y: bodyY - 30 }, t('battle_resist'), COLORS.textDim, 14);
-    this.impact(pos.x, pos.y + 60, cardColor(e.cardType));
     if (target === 'player') haptic(20);
-    if (e.cardType === 'climax' || crit) this.cameras.main.shake(120, 0.006);
-    sfx('hit_' + e.cardType);
+    const card = data.card(e.cardId);
+    sfx('hit_' + e.cardType, { soundKey: card && card.sfx ? card.sfx : undefined });
+    if (e.hitIndex === 0 && e.chainIndex >= 2) sfx('combo_up');
   }
 
   onTriBurstHit(e) {
     const target = e.side === 'player' ? 'enemy' : 'player';
     const pos = this.fighters[target].headPos();
-    this.fighters[target].hitFlash();
-    this.hud.onDamage(target);
+    this.hud.onDamage(target); // flash and ring: VFX tri_burst_hit
     this.floatText({ x: pos.x, y: this.L.arena.floorY - 50 }, String(e.damage), '#ffa53d', 28, true);
   }
 
@@ -626,9 +685,27 @@ export class BattleScene extends BaseScene {
     return { upper: { top: a.top + 2, bottom: nameTop - 2 }, body: { top: nameBottom + 2, bottom: a.floorY - 2 } };
   }
 
-  /** Fixed texts the floating ones must not cover: name labels, combo counters, the tutorial prompt. */
+  /** Reserved rectangles of the 3 combo-counter texts, measured with their longest strings (COMBO x99 / 999 HITS). */
+  measureComboZones() {
+    const zones = [];
+    const probe = (tx, str) => {
+      const old = tx.text;
+      const oldScale = tx.scaleX;
+      tx.setScale(1).setText(str);
+      const b = tx.getBounds();
+      tx.setText(old).setScale(oldScale);
+      return { x: b.x - 2, y: b.y - 2, w: b.width + 4, h: b.height + 4 };
+    };
+    zones.push(probe(this.comboText, t('battle_combo', { n: 99 })));
+    zones.push(probe(this.comboHits, t('battle_hits', { n: 999 })));
+    zones.push(probe(this.enemyCombo, t('battle_combo', { n: 99 })));
+    return zones;
+  }
+
+  /** Fixed texts the floating ones must not cover (ARENA_TEXT_REGISTRY in src/ui/float-placer.js). */
   floatAvoid() {
     const out = [this.fighters.player.nameRect(), this.fighters.enemy.nameRect()];
+    if (!this.disableComboZones) for (const z of this.comboZones || []) out.push(z);
     for (const tx of [this.comboText, this.comboHits, this.enemyCombo]) {
       if (tx && tx.alpha > 0.05 && tx.text) {
         const b = tx.getBounds();
@@ -709,16 +786,6 @@ export class BattleScene extends BaseScene {
 
   floatText(pos, str, color, size, pop) {
     return this.spawnFloat({ x: pos.x, y: pos.y, str, color, size, pop: pop ? 1.35 : 1, rise: 14, bands: ['body'], priority: 2 });
-  }
-
-  impact(x, y, color) {
-    const g = this.add.graphics().setDepth(55);
-    g.fillStyle(color, 0.8);
-    g.fillCircle(0, 0, 14);
-    g.lineStyle(3, 0xffffff, 0.9);
-    g.strokeCircle(0, 0, 18);
-    g.setPosition(x, y);
-    this.tweens.add({ targets: g, scale: 2.2, alpha: 0, duration: 220, onComplete: () => g.destroy() });
   }
 
   callout(str, color, size, side) {
@@ -876,7 +943,15 @@ export class BattleScene extends BaseScene {
     this.cinTitle.setScale(1.8);
     this.tweens.add({ targets: this.cinematic, alpha: 1, duration: 120 });
     this.tweens.add({ targets: this.cinTitle, scale: 1, duration: 260, ease: 'Back.Out' });
-    this.cameras.main.flash(120, 255, 255, 255);
+    // the 120 ms white flash is the VFX layer's (flash limiter, reduce motion, GDD §17.3)
+    if (kind === 'tri_burst') {
+      // GDD §18.2: tri_burst_impact at the cinematic's 2,400 ms impact (§17.2)
+      if (this.burstImpactTimer) this.burstImpactTimer.remove();
+      this.burstImpactTimer = this.time.delayedCall(2400, () => {
+        this.burstImpactTimer = null;
+        if (this.cinematic.visible) sfx('tri_burst_impact');
+      });
+    }
   }
 
   hideCinematic() {
@@ -971,6 +1046,7 @@ export class BattleScene extends BaseScene {
     this.gestures.cancel();
     this.releasePress();
     if (result && result.reason === 'timeout') this.callout(t('result_reason_timeout'), COLORS.accentText, 34);
+    endBattleMusic(); // battle track fades; the Result screen's result_<outcome> stinger then starts the menu track
     const out = data.applyResult(this.stage, result);
     this.time.delayedCall(delayMs, () => this.goTo('Result', { stageId: this.stage.id, result: result, rewards: out.rewards, missions: out.missions }));
   }

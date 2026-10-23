@@ -18,6 +18,10 @@ export class SummonScene extends BaseScene {
     super('Summon');
   }
 
+  musicContext() {
+    return ['summon'];
+  }
+
   create() {
     this.setupView();
     const { W, H } = this;

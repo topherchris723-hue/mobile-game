@@ -1,12 +1,12 @@
-// Playwright test hooks (window.__TEST__) — only in dev (`vite`) or in a build made with VITE_TEST_HOOKS=1
+// Playwright test hooks (window.__TEST__) — only in a build (or dev server) started with VITE_TEST_HOOKS=1
 // (playwright.config.js sets it for its own build). In a normal `npm run build` both checks are compile-time
 // false, so the bundler drops every hook branch and the release bundle contains no "__TEST__" at all
 // (proved by tests/ui/release-bundle.test.js). Never read window.__TEST__ directly: use testHooks().
 
-/** Compile-time constant: true only in dev mode (`vite`) or a test build (MODE, not DEV: DEV is also true when a
- *  build runs with NODE_ENV=test, e.g. from Vitest). Keep the direct import.meta.env.X form: Vite
- *  replaces exactly these expressions at build time, which lets the minifier delete the hook code. */
-export const TEST_HOOKS = !!(import.meta.env.MODE === 'development' || import.meta.env.VITE_TEST_HOOKS === '1');
+/** Compile-time constant: true only in a build made with VITE_TEST_HOOKS=1 (L-ui-005: never on DEV, MODE or a URL
+ *  parameter). Keep the direct import.meta.env.X form: Vite replaces exactly this expression at build time, which
+ *  lets the minifier delete the hook code. `npm run dev` has no hooks unless started with VITE_TEST_HOOKS=1. */
+export const TEST_HOOKS = import.meta.env.VITE_TEST_HOOKS === '1';
 
 /** Create the hook object (main.js, when the URL has ?test). Returns null in release builds. */
 export function installTestHooks() {

@@ -5,6 +5,30 @@
 // place() searches the allowed bands for a free spot near the wanted point; if there is none, it evicts
 // older texts of the same or lower priority that are in the way (the caller fades those out at once).
 
+/**
+ * Registry of every text drawn in the battle arena band (hard rule L-ui-003 / playbook "Layout self-check").
+ * placed  = positioned by FloatPlacer.place() (BattleScene.spawnFloat);
+ * avoid   = fixed text registered as an avoid rectangle while visible (BattleScene.floatAvoid);
+ * reserve = fixed area reserved for the whole battle (sized for its longest string);
+ * placer2 = positioned by placeNameLabels / placeFighters below.
+ * Add every new arena text here and to the scan in tests/e2e (qa-busy / smoke "busy" tests).
+ */
+export const ARENA_TEXT_REGISTRY = [
+  { text: 'damage numbers (hit, tri_burst_hit)', how: 'placed' },
+  { text: 'CRIT! / WEAK! / RESIST', how: 'placed' },
+  { text: 'DODGE / TAG! / TAG STRIKE!', how: 'placed' },
+  { text: 'IMMUNE (hit_discarded, whiff.rush_invulnerable)', how: 'placed' },
+  { text: 'callouts: FIGHT!, PERFECT SLIP!, RIPOSTE!, K.O.!, TRI-BURST blocked/missed, Time up', how: 'placed' },
+  { text: 'fighter shouts (card, tag-in, intro shout lines)', how: 'placed' },
+  { text: 'fighter name labels (both sides)', how: 'placer2 + avoid' },
+  { text: 'combo counter COMBO xN (player)', how: 'reserve' },
+  { text: 'hit counter N HITS (player)', how: 'reserve' },
+  { text: 'enemy combo counter COMBO xN', how: 'reserve' },
+  { text: 'tutorial prompt box', how: 'avoid' },
+  { text: 'intro banner (names, VS, intro shout)', how: 'avoid' },
+  { text: 'cinematic overlay title/sub (Ignition, Climax, Tri-Burst)', how: 'overlay (depth 80, covers the arena on purpose)' },
+];
+
 function hit(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 }

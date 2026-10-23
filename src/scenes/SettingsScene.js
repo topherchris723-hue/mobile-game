@@ -1,0 +1,220 @@
+// Settings (GDD §19, rulings R4-1 / R4-3 / R4-4). From Home (gear) or from the battle Pause menu (the battle stays
+// paused underneath; Back returns to the Pause menu). Every change applies at once and writes the save once.
+import { BaseScene, t } from './BaseScene.js';
+import { COLORS } from '../ui/theme.js';
+import { data } from '../ui/game-data.js';
+import { sfx } from '../ui/feedback.js';
+import { setVolumes } from '../audio/index.js';
+import { VOLUME_KEYS, snapVolume, stepVolume, volumeFromTrack, percent, previewsOnChange } from '../ui/settings-view.js';
+import { TEST_HOOKS, testHooks } from '../ui/test-hooks.js';
+
+const ARM_MS = 250; // a double tap on the opening button never changes a setting (L-ui-002)
+const ROW_H = 64;
+const FIRST_ROW_Y = 176;
+const TRACK_W = 160;
+
+export class SettingsScene extends BaseScene {
+  constructor() {
+    super('Settings');
+  }
+
+  musicContext() {
+    return this.initData && this.initData.from === 'Battle' ? null : ['menu']; // over a paused battle: keep its track
+  }
+
+  create() {
+    this.setupView(COLORS.bg);
+    const { W } = this;
+    this.from = this.initData.from || 'Home';
+    this.writes = 0;
+    this.ui = { values: {}, toggles: {}, sliders: {} };
+    this.armedAt = performance.now() + ARM_MS;
+
+    // Top bar: Back (left) + title
+    const g = this.add.graphics();
+    g.fillStyle(COLORS.bgTop, 1);
+    g.fillRect(0, 0, W, 56);
+    g.lineStyle(1, COLORS.stroke, 0.6);
+    g.lineBetween(0, 56, W, 56);
+    this.button({ id: 'back', x: 4, y: 6, w: 44, h: 44, label: t('back_icon'), kind: 'secondary', fontSize: 18, armMs: ARM_MS, onTap: () => this.back() });
+    this.text(58, 28, t('settings_title'), 20, COLORS.text, { fontStyle: 'bold' }).setOrigin(0, 0.5);
+
+    VOLUME_KEYS.forEach((key, i) => this.volumeRow(key, FIRST_ROW_Y + i * ROW_H));
+    this.toggleRow('muted', FIRST_ROW_Y + 3 * ROW_H);
+    this.toggleRow('reduce_motion', FIRST_ROW_Y + 4 * ROW_H, t('settings_reduce_motion_help'));
+    this.toggleRow('haptics', FIRST_ROW_Y + 5 * ROW_H);
+
+    const T = TEST_HOOKS ? testHooks() : null;
+    if (T) T.settingsScreen = () => ({ from: this.from, writes: this.writes, values: Object.assign({}, this.ui.values), toggles: Object.assign({}, this.ui.toggles) });
+  }
+
+  settings() {
+    return data.save.settings;
+  }
+
+  /** Apply a change: settings in memory, audio at once, VFX reduce motion, one save write. */
+  commit(patch, write) {
+    Object.assign(this.settings(), patch);
+    setVolumes(this.settings()); // within one frame (GDD §18.5); before any preview sound
+    if ('reduce_motion' in patch) {
+      const b = this.scene.get('Battle');
+      if (b && b.vfx && this.from === 'Battle') b.vfx.setReduceMotion(!!patch.reduce_motion);
+    }
+    if (write) {
+      data.persist();
+      this.writes += 1;
+    }
+  }
+
+  // ------------------------------------------------------------------ volume rows
+  volumeRow(key, y) {
+    const { W } = this;
+    this.text(16, y + 10, t('settings_' + key), 14, COLORS.text, { fontStyle: 'bold' }).setOrigin(0, 0.5);
+    const val = this.text(W - 16, y + 10, '', 14, COLORS.accentText, { fontStyle: 'bold' }).setOrigin(1, 0.5);
+    const total = 44 + 8 + TRACK_W + 8 + 44;
+    const x0 = Math.round((W - total) / 2);
+    const cy = y + 20 + 22;
+    const trackX = x0 + 44 + 8;
+    const track = this.add.graphics();
+    const minus = this.button({ id: 'settings_' + key + '_minus', x: x0, y: y + 20, w: 44, h: 44, label: t('settings_minus'), kind: 'secondary', fontSize: 22, armMs: ARM_MS, pressSfx: null, onTap: () => this.step(key, -1) });
+    const plus = this.button({ id: 'settings_' + key + '_plus', x: trackX + TRACK_W + 8, y: y + 20, w: 44, h: 44, label: t('settings_plus'), kind: 'secondary', fontSize: 22, armMs: ARM_MS, pressSfx: null, onTap: () => this.step(key, +1) });
+    const thumb = this.add.graphics();
+    const draw = () => {
+      const v = snapVolume(this.settings()[key]);
+      const muted = !!this.settings().muted;
+      track.clear();
+      track.fillStyle(COLORS.vigorEmpty, 1);
+      track.fillRoundedRect(trackX, cy - 4, TRACK_W, 8, 4);
+      track.fillStyle(muted ? COLORS.disabled : COLORS.accent, 1);
+      track.fillRoundedRect(trackX, cy - 4, Math.max(8, TRACK_W * v), 8, 4);
+      thumb.clear();
+      thumb.fillStyle(0xffffff, 1);
+      thumb.fillCircle(trackX + TRACK_W * v, cy, 11);
+      thumb.lineStyle(2, muted ? 0x555a78 : COLORS.accent, 1);
+      thumb.strokeCircle(trackX + TRACK_W * v, cy, 11);
+      val.setText(t('settings_percent', { n: percent(v) }));
+      this.ui.values[key] = percent(v);
+      minus.setEnabled(v > 0);
+      plus.setEnabled(v < 1);
+    };
+    this.ui.sliders[key] = draw;
+    draw();
+    // Slider: tap or drag anywhere on the track (hit area = the 160 px track × 44; 8 px clear of − and +)
+    const zone = this.add.zone(trackX, y + 20, TRACK_W, 44).setOrigin(0).setInteractive({ useHandCursor: true });
+    this.registerTarget('settings_' + key + '_slider', () => ({ x: trackX, y: y + 20, w: TRACK_W, h: 44 }));
+    const fromPointer = (p) => volumeFromTrack((p.worldX - trackX) / TRACK_W);
+    let dragging = false;
+    zone.on('pointerdown', (p) => {
+      if (performance.now() < this.armedAt) return;
+      dragging = true;
+      sfx('ui_press');
+      this.commit({ [key]: fromPointer(p) }, false);
+      draw();
+    });
+    this.input.on('pointermove', (p) => {
+      if (!dragging || !p.isDown) return;
+      const v = fromPointer(p);
+      if (v !== snapVolume(this.settings()[key])) {
+        this.commit({ [key]: v }, false); // audio follows the drag; the save is written on release only
+        draw();
+      }
+    });
+    const release = () => {
+      if (!dragging) return;
+      dragging = false;
+      const v = snapVolume(this.settings()[key]);
+      this.commit({ [key]: v }, true);
+      draw();
+      if (previewsOnChange(key)) sfx('ui_slider');
+    };
+    zone.on('pointerup', release);
+    this.input.on('pointerup', release);
+    this.input.on('pointerupoutside', release);
+  }
+
+  step(key, dir) {
+    const v = stepVolume(this.settings()[key], dir);
+    if (v === snapVolume(this.settings()[key])) return;
+    this.commit({ [key]: v }, true);
+    this.ui.sliders[key]();
+    if (previewsOnChange(key)) sfx('ui_slider'); // preview at the new volume (setVolumes ran first)
+  }
+
+  // ------------------------------------------------------------------ toggles
+  toggleRow(key, y, help) {
+    const { W } = this;
+    const labelY = help ? y + 18 : y + 30;
+    this.text(16, labelY, t('settings_' + key), 15, COLORS.text, { fontStyle: 'bold' }).setOrigin(0, 0.5);
+    if (help) this.text(16, y + 42, help, 12, COLORS.textDim).setOrigin(0, 0.5);
+    const sw = 64;
+    const sh = 32;
+    const hitW = 120; // switch + its On/Off text: one target ≥ 44×44
+    const hx = W - 16 - hitW;
+    const hy = y + 30 - 22;
+    const c = this.add.container(0, 0);
+    const g = this.add.graphics();
+    const state = this.text(hx + 8, y + 30, '', 14, COLORS.text, { fontStyle: 'bold' }).setOrigin(0, 0.5);
+    c.add([g, state]);
+    const sx = W - 16 - sw;
+    const sy = y + 30 - sh / 2;
+    const draw = () => {
+      const on = !!this.settings()[key];
+      g.clear();
+      g.fillStyle(on ? COLORS.accent : COLORS.disabled, 1);
+      g.fillRoundedRect(sx, sy, sw, sh, sh / 2);
+      g.lineStyle(2, on ? 0xffffff : 0x555a78, 1);
+      g.strokeRoundedRect(sx, sy, sw, sh, sh / 2);
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(on ? sx + sw - sh / 2 : sx + sh / 2, sy + sh / 2, sh / 2 - 4);
+      state.setText(on ? t('settings_on') : t('settings_off')); // not colour alone
+      this.ui.toggles[key] = on;
+    };
+    draw();
+    const zone = this.add.zone(hx, hy, hitW, 44).setOrigin(0).setInteractive({ useHandCursor: true });
+    this.registerTarget('settings_' + key, () => ({ x: hx, y: hy, w: hitW, h: 44 }));
+    let pressed = false;
+    zone.on('pointerdown', () => {
+      if (performance.now() < this.armedAt) return;
+      pressed = true;
+      c.setAlpha(0.7); // press state at once
+    });
+    zone.on('pointerout', () => {
+      pressed = false;
+      c.setAlpha(1);
+    });
+    zone.on('pointerup', () => {
+      if (!pressed) return;
+      pressed = false;
+      c.setAlpha(1);
+      this.toggle(key);
+      draw();
+    });
+  }
+
+  toggle(key) {
+    const on = !this.settings()[key];
+    this.commit({ [key]: on }, true);
+    for (const k of VOLUME_KEYS) this.ui.sliders[k]();
+    // Mute: ui_toggle only when sound turns back on (§19); the other toggles always click.
+    if (key !== 'muted' || !on) sfx('ui_toggle');
+    if (key === 'haptics' && on) {
+      try {
+        if (navigator.vibrate) navigator.vibrate(20); // preview
+      } catch (e) {
+        /* not supported: the value is still stored */
+      }
+    }
+  }
+
+  back() {
+    if (this.leaving) return;
+    if (this.from === 'Battle') {
+      this.leaving = true;
+      sfx('ui_transition');
+      this.scene.stop();
+      this.scene.resume('Battle'); // the Pause menu comes back; the battle stays paused
+      return;
+    }
+    this.goTo('Home');
+  }
+}

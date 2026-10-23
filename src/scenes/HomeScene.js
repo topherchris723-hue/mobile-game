@@ -11,7 +11,7 @@ export class HomeScene extends BaseScene {
   create() {
     this.setupView();
     const { W, H } = this;
-    this.topBar(t('game_title'));
+    this.topBar(t('game_title'), null, null, { gear: () => this.goTo('Settings', { from: 'Home' }) });
 
     // Team preview in the upper half (non-interactive).
     const team = data.team();
@@ -34,6 +34,11 @@ export class HomeScene extends BaseScene {
     if (data.saveDamaged) {
       this.toast(t('save_damaged'), H * 0.48);
       data.saveDamaged = false;
+    } else if (data.repairNotice) {
+      // Short notice for team/summon repairs on load (not for settings_repaired, ruling R4-1).
+      this.toast(t('home_save_repaired'), H * 0.48);
+      this.repairNoticeShown = true;
+      data.repairNotice = false;
     }
 
     // GDD §4: Home has Story, Summon, Team. Primary buttons full width − 32, height 56, lower half.

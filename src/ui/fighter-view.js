@@ -134,13 +134,9 @@ export class FighterView {
     this.nameTag.setPosition(this.x + ox, floorY + this.nameOffset); // x is final after placeNameLabels (BattleScene)
     this.nameTag.setAlpha(st === 'KO' ? 0.6 : 1);
 
-    // Ignition aura glow / hit flash
+    // Round 4: the Ignition aura and the hit flash are drawn by the VFX layer (src/vfx, GDD §17.2 ignition_active /
+    // hit halo), so nothing here plays twice. Only the R3 debug flash path below remains, unused by BattleScene.
     this.glow.clear();
-    if (f.ignition && f.ignition.active) {
-      const pulse = 0.35 + 0.2 * Math.sin(t / 90);
-      this.glow.fillStyle(auraColor(f.aura), pulse);
-      this.glow.fillEllipse(0, -60, 90, 140);
-    }
     if (this.flash > 0) {
       this.glow.fillStyle(0xffffff, this.flash);
       this.glow.fillEllipse(0, -60, 70, 120);

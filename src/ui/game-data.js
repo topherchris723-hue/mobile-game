@@ -44,6 +44,20 @@ function pickStorage() {
   }
 }
 
+/** prefers-reduced-motion: reduce right now (false when unsupported). Used only for a fresh save / settings repair. */
+export function prefersReducedMotion() {
+  try {
+    return typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch (e) {
+    return false;
+  }
+}
+
+/** Which save-repair warning codes get the Home notice (all but settings_repaired). */
+export function repairNoticeFor(code) {
+  return typeof code === 'string' && code !== 'settings_repaired';
+}
+
 export const data = {
   raw: { battle, characters, cards, enemies, stages, economy, story, banners },
   content,
@@ -58,10 +72,22 @@ export const data = {
     addFormats(ajv);
     const validate = ajv.compile(saveSchema);
     this.storage = pickStorage();
-    const res = loadSave(this.storage, { validate, economy, characters: content.characters, nowMs: Date.now() });
+    const res = loadSave(this.storage, { validate, economy, characters: content.characters, nowMs: Date.now(), reduceMotion: prefersReducedMotion() });
     this.save = res.save;
     this.saveDamaged = res.damaged;
-    if (res.repaired && res.warnings && res.warnings.length) console.warn('[save] team repaired on load', res.warnings);
+    const warnings = (res.warnings || []).slice();
+    if (warnings.length) console.warn('[save] repaired on load', warnings);
+    // Home shows a short notice for repairs the player may notice (team, summon counters). settings_repaired is
+    // silent (ruling R4-1: old saves just gain the new settings fields). Never the "damaged" notice.
+    this.repairNotice = !res.damaged && warnings.some((w) => repairNoticeFor(w.code));
+    this.repairWarnings = warnings;
+  },
+
+  /** Change settings fields (GDD §19): applied in memory and written once. Returns the settings object. */
+  updateSettings(patch) {
+    Object.assign(this.save.settings, patch);
+    this.persist();
+    return this.save.settings;
   },
 
   persist() {

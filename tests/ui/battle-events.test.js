@@ -11,8 +11,8 @@ import { ROOT } from '../helpers/load-data.js';
 
 const scene = fs.readFileSync(path.join(ROOT, 'src/scenes/BattleScene.js'), 'utf8');
 // Events the scene deliberately shows nothing for (feedback comes from the snapshot or another event).
-const NO_FEEDBACK = new Set(['interrupt', 'card_cancelled', 'link_open', 'knockdown', 'getup', 'riposte_window_end',
-  'ignition_ready', 'ignition_end', 'burst_ready', 'effect', 'buff_end', 'card_drawn',
+const NO_FEEDBACK = new Set(['interrupt', 'card_cancelled', 'link_open', 'riposte_window_end',
+  'ignition_ready', 'ignition_end', 'burst_ready', 'effect', 'buff_end', 'card_drawn', 'getup',
   'windup_start', 'dash']); // windup ring, dash pose, IGNITE button, gauge and hand come from the snapshot
 
 export function unhandled(types, src, skip) {

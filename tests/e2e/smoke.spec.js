@@ -942,3 +942,330 @@ test('TRI-BURST: charging, ready and locked look different (label + shape), lock
   expect(locked.label).toBe('WAIT');
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// ------------------------------------------------------------------ round 4: Settings (GDD §19), audio + VFX wiring
+const settingsSnap = (page) => page.evaluate(() => window.__TEST__.settingsScreen());
+async function countSaveWrites(page) {
+  await page.evaluate(() => {
+    const T = window.__TEST__;
+    T.saveWrites = 0;
+    if (T.writeSpy) return;
+    T.writeSpy = true;
+    const orig = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (k, v) {
+      if (k === 'game_save') T.saveWrites += 1;
+      return orig.call(this, k, v);
+    };
+  });
+}
+const saveWrites = (page) => page.evaluate(() => window.__TEST__.saveWrites);
+
+test('Settings from Home (AC-19.1–19.4): gear double tap, layout, − ×3 = 3 writes, drag = 1 write, mute gains, reload', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await page.goto('/?test=1&renderer=canvas');
+  await waitScene(page, 'Title');
+  await tap(page, 'start'); // first gesture: audio unlocks (GDD §18.1)
+  await waitScene(page, 'Home');
+  await checkTargets(page, 'Home');
+  await shot(page, testInfo, '50-home-gear');
+  await countSaveWrites(page);
+  const before = await page.evaluate(() => window.__TEST__.save().settings);
+  // double tap on the gear: the 2nd tap must not change any setting (armed 250 ms)
+  const gear = await target(page, 'home_settings');
+  await page.touchscreen.tap(gear.x + gear.w / 2, gear.y + gear.h / 2);
+  await page.waitForTimeout(100);
+  await page.touchscreen.tap(gear.x + gear.w / 2, gear.y + gear.h / 2);
+  await waitScene(page, 'Settings');
+  expect(await page.evaluate(() => window.__TEST__.save().settings)).toEqual(before);
+  // AC-19.2: every control ≥ 44×44, none overlapping or closer than 8 px
+  const all = await checkTargets(page, 'Settings');
+  const close = [];
+  for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
+    const a = all[i].logical;
+    const b = all[j].logical;
+    const gx = Math.max(a.x - (b.x + b.w), b.x - (a.x + a.w));
+    const gy = Math.max(a.y - (b.y + b.h), b.y - (a.y + a.h));
+    if (Math.max(gx, gy) < 8) close.push(`${all[i].id}~${all[j].id} gap ${Math.max(gx, gy).toFixed(1)}`);
+  }
+  expect(close).toEqual([]);
+  for (const tg of all) { expect(tg.logical.w, tg.id).toBeGreaterThanOrEqual(44); expect(tg.logical.h, tg.id).toBeGreaterThanOrEqual(44); }
+  expect(layoutProblems(await sceneTexts(page))).toEqual([]);
+  await shot(page, testInfo, '51-settings');
+  // AC-19.3: Music − three times from 100% → 70%, 3 writes
+  await page.evaluate(() => (window.__TEST__.saveWrites = 0));
+  const start = (await settingsSnap(page)).values.bgm_volume;
+  for (let i = 0; i < 3; i++) {
+    await tap(page, 'settings_bgm_volume_minus');
+    await page.waitForTimeout(120);
+  }
+  expect((await settingsSnap(page)).values.bgm_volume).toBe(start - 30);
+  expect(await saveWrites(page)).toBe(3);
+  expect((await page.evaluate(() => JSON.parse(localStorage.getItem('game_save')).settings.bgm_volume))).toBeCloseTo((start - 30) / 100, 5);
+  // drag the Music slider to 20% → one write, on release
+  await page.evaluate(() => (window.__TEST__.saveWrites = 0));
+  const sl = await target(page, 'settings_bgm_volume_slider');
+  const y = sl.y + sl.h / 2;
+  const x70 = sl.x + sl.w * 0.7;
+  const x20 = sl.x + sl.w * 0.2;
+  await page.evaluate(async ({ x0, x1, y }) => {
+    const c = window.__TEST__.game.canvas;
+    const mk = (x) => new Touch({ identifier: 3, target: c, clientX: x, clientY: y, pageX: x, pageY: y });
+    const fire = (type, tt, list) => c.dispatchEvent(new TouchEvent(type, { touches: list, targetTouches: list, changedTouches: [tt], bubbles: true, cancelable: true }));
+    const a = mk(x0);
+    fire('touchstart', a, [a]);
+    for (let i = 1; i <= 6; i++) {
+      await new Promise((r) => setTimeout(r, 40));
+      const m = mk(x0 + ((x1 - x0) * i) / 6);
+      fire('touchmove', m, [m]);
+    }
+    const e = mk(x1);
+    fire('touchend', e, []);
+  }, { x0: x70, x1: x20, y });
+  await page.waitForTimeout(200);
+  expect((await settingsSnap(page)).values.bgm_volume).toBe(20);
+  expect(await saveWrites(page)).toBe(1);
+  // AC-19.4: Mute all → gains 0 with sliders unchanged; off → back
+  const g0 = await page.evaluate(() => window.__TEST__.audioDebug());
+  expect(g0.sfxBusGain).toBeGreaterThan(0);
+  await tap(page, 'settings_muted');
+  await page.waitForTimeout(150);
+  const g1 = await page.evaluate(() => window.__TEST__.audioDebug());
+  expect([g1.sfxBusGain, g1.bgmBusGain]).toEqual([0, 0]);
+  expect((await settingsSnap(page)).values.bgm_volume).toBe(20);
+  expect((await settingsSnap(page)).toggles.muted).toBe(true);
+  await shot(page, testInfo, '52-settings-muted');
+  await tap(page, 'settings_muted');
+  await page.waitForTimeout(150);
+  const g2 = await page.evaluate(() => window.__TEST__.audioDebug());
+  expect(g2.sfxBusGain).toBeCloseTo(g0.sfxBusGain, 6);
+  expect(g2.bgmBusGain).toBeCloseTo(g0.bgmBusGain, 6);
+  // Reduce motion + Vibration survive a reload
+  await tap(page, 'settings_reduce_motion');
+  await page.waitForTimeout(150);
+  await tap(page, 'settings_haptics');
+  await page.waitForTimeout(150);
+  const want = await page.evaluate(() => window.__TEST__.save().settings);
+  await page.reload();
+  await waitScene(page, 'Title');
+  const got = await page.evaluate(() => window.__TEST__.save().settings);
+  expect(got).toEqual(want);
+  expect(got.bgm_volume).toBeCloseTo(0.2, 5);
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  await tap(page, 'home_settings');
+  await waitScene(page, 'Settings');
+  expect((await settingsSnap(page)).values.bgm_volume).toBe(20);
+  await tap(page, 'back');
+  await waitScene(page, 'Home');
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('Pause → Settings → Back (AC-19.1, R4-4): double tap safe, battle paused throughout, timer unchanged', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 1);
+  await startStage(page, 'stage_002');
+  await tap(page, 'battle_pause');
+  await page.waitForTimeout(350);
+  await checkTargets(page, 'Battle');
+  const ids = (await page.evaluate(() => window.__TEST__.targets())).filter((x) => x.id.startsWith('menu_'));
+  expect(ids.map((x) => x.id)).toEqual(['menu_resume', 'menu_settings', 'menu_retreat']);
+  const pause = await target(page, 'battle_pause');
+  for (const b of ids) expect(b.y > pause.y + pause.h || b.x + b.w < pause.x, b.id + ' covers Pause').toBe(true);
+  await shot(page, testInfo, '53-pause-menu');
+  const t0 = await battleState(page);
+  const before = await page.evaluate(() => window.__TEST__.save().settings);
+  const st = await target(page, 'menu_settings');
+  await page.touchscreen.tap(st.x + st.w / 2, st.y + st.h / 2);
+  await page.waitForTimeout(100);
+  await page.touchscreen.tap(st.x + st.w / 2, st.y + st.h / 2); // lands on Settings: armed, nothing changes
+  await waitScene(page, 'Settings');
+  expect(await page.evaluate(() => window.__TEST__.save().settings)).toEqual(before);
+  expect((await settingsSnap(page)).from).toBe('Battle');
+  await page.waitForTimeout(700);
+  await shot(page, testInfo, '54-settings-from-battle');
+  const t1 = await battleState(page);
+  expect(t1.paused).toBe(true);
+  expect(t1.tick).toBe(t0.tick);
+  await tap(page, 'back');
+  await waitScene(page, 'Battle');
+  await page.waitForTimeout(350);
+  const after = (await page.evaluate(() => window.__TEST__.targets())).map((x) => x.id);
+  expect(after).toContain('menu_resume');
+  const t2 = await battleState(page);
+  expect(t2.paused).toBe(true);
+  expect(t2.timer.ticksLeft).toBe(t0.timer.ticksLeft);
+  await tap(page, 'menu_resume');
+  await page.waitForTimeout(400);
+  expect((await battleState(page)).paused).toBe(false);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('Audio + VFX wiring: music per scene, hit/riposte hooks, battle ducks, VFX stats; reduce motion → 0 shakes/flashes (AC-19.5)', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 1, 's.settings.reduce_motion = false;');
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  const home = await page.evaluate(() => window.__TEST__.audioDebug());
+  expect(home.unlocked).toBe(true);
+  expect(home.desiredTrack).toBeTruthy();
+  await tap(page, 'home_summon');
+  await waitScene(page, 'Summon');
+  const sum = await page.evaluate(() => window.__TEST__.audioDebug());
+  expect(sum.desiredTrack).not.toBe(home.desiredTrack);
+  await tap(page, 'back');
+  await waitScene(page, 'Home');
+  // a battle with lots of hits; HP topped up; a KO at the end for the shake
+  await page.evaluate(() => (window.__TEST__.sfxLog.length = 0));
+  await tap(page, 'home_story');
+  await waitScene(page, 'Story');
+  await tap(page, 'stage_stage_002');
+  await page.waitForFunction(() => ['Dialogue', 'Team'].includes(window.__TEST__.sceneKey), null, { timeout: 10000 });
+  await page.waitForTimeout(300);
+  if ((await page.evaluate(() => window.__TEST__.sceneKey)) === 'Dialogue') { await tap(page, 'dialogue_skip'); await waitScene(page, 'Team'); }
+  await tap(page, 'team_fight');
+  await waitScene(page, 'Battle');
+  const bat = await page.evaluate(() => window.__TEST__.audioDebug());
+  expect(bat.desiredTrack).not.toBe(home.desiredTrack);
+  await page.waitForFunction(() => window.__TEST__.battleState().phase === 'fight', null, { timeout: 15000 });
+  const play = async (ms) => {
+    const end = Date.now() + ms;
+    while (Date.now() < end) {
+      const s = await battleState(page);
+      if (!s || s.result) break;
+      const f = s.teams.player.fighters[s.teams.player.activeSlot];
+      const i = f.hand.findIndex((c) => c && c.playable);
+      if (i >= 0) await tap(page, 'card_' + i);
+      await page.waitForTimeout(120);
+    }
+  };
+  await page.evaluate(() => { const b = window.__TEST__.game.scene.getScene('Battle').battle; for (const s of ['player', 'enemy']) for (const f of b.teams[s].fighters) f.hp = f.def.maxHp = 10 ** 7; b.teams.player.vigor = 6000 * 10; });
+  await play(6000);
+  const v1 = await page.evaluate(() => ({ stats: { played: window.__TEST__.vfx.stats.played, shakes: window.__TEST__.vfx.stats.shakes.length, flashes: window.__TEST__.vfx.stats.flashes.length }, particlesMax: window.__TEST__.vfx.stats.particlesMax, cap: window.__TEST__.vfx.particleCap }));
+  const hooks = await page.evaluate(() => window.__TEST__.sfxLog.map((e) => e.name));
+  console.log(`[${testInfo.project.name}] vfx`, JSON.stringify(v1), 'hooks', [...new Set(hooks)].join(','));
+  expect(v1.stats.played).toBeGreaterThan(0);
+  expect(v1.particlesMax).toBeLessThanOrEqual(v1.cap);
+  expect(hooks.some((h) => h.startsWith('hit_'))).toBe(true);
+  // a KO before reduce motion: the counter must see its shake (proves the 0-shake check below can fail)
+  await page.evaluate(() => { const b = window.__TEST__.game.scene.getScene('Battle').battle; b.teams.enemy.fighters[b.teams.enemy.active].hp = 0; });
+  await page.waitForFunction(() => window.__TEST__.vfx.stats.shakes.length > 0, null, { timeout: 8000 });
+  await page.waitForFunction(() => !window.__TEST__.battleState().freeze, null, { timeout: 10000 });
+  await page.evaluate(() => { const b = window.__TEST__.game.scene.getScene('Battle').battle; for (const f of b.teams.enemy.fighters) if (!f.ko) f.hp = f.def.maxHp = 10 ** 7; });
+  // pause ducks the music (GDD §18.4), resume restores
+  await tap(page, 'battle_pause');
+  await page.waitForTimeout(500);
+  const dk = await page.evaluate(() => window.__TEST__.audioDebug().duck);
+  expect(dk).toBeLessThan(1);
+  await tap(page, 'menu_settings');
+  await waitScene(page, 'Settings');
+  await page.waitForTimeout(300);
+  await tap(page, 'settings_reduce_motion'); // AC-19.5: applies to this battle at once
+  await page.waitForTimeout(150);
+  expect(await page.evaluate(() => window.__TEST__.vfx.reduceMotion)).toBe(true);
+  await tap(page, 'back');
+  await waitScene(page, 'Battle');
+  await page.waitForTimeout(350);
+  await tap(page, 'menu_resume');
+  await page.waitForTimeout(400);
+  const s0 = await page.evaluate(() => ({ shakes: window.__TEST__.vfx.stats.shakes.length, flashes: window.__TEST__.vfx.stats.flashes.length }));
+  await page.evaluate(() => { const b = window.__TEST__.game.scene.getScene('Battle').battle; b.teams.player.burst = 100; });
+  await page.waitForFunction(() => window.__TEST__.battleState().teams.player.burstReady, null, { timeout: 10000 }).catch(() => {});
+  if ((await battleState(page)).teams.player.burstReady) await tap(page, 'tri_burst');
+  await play(6000);
+  await page.evaluate(() => { const b = window.__TEST__.game.scene.getScene('Battle').battle; for (const f of b.teams.enemy.fighters) f.hp = 0; });
+  await waitScene(page, 'Result');
+  const s1 = await page.evaluate(() => ({ shakes: window.__TEST__.vfx.stats.shakes.length, flashes: window.__TEST__.vfx.stats.flashes.length }));
+  expect(s1).toEqual(s0); // reduce motion: no new shake or screen flash, incl. Tri-Burst and KO
+  const res = await page.evaluate(() => window.__TEST__.audioDebug());
+  expect(res.duck).toBeCloseTo(1, 2); // resetDuck on leaving the battle
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('BUG-3-03: callouts never cover the combo / hit counter (reserved zones; busy live frames)', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 2);
+  await startStage(page, 'stage_003');
+  await page.evaluate((brk) => {
+    const T = window.__TEST__;
+    const sc = T.game.scene.getScene('Battle');
+    if (brk) sc.disableComboZones = true; // negative proof: the R3 behaviour (avoid only while visible)
+    const b = sc.battle;
+    for (const s of ['player', 'enemy']) for (const f of b.teams[s].fighters) f.hp = f.def.maxHp = 10 ** 7;
+    // force a long chain counter on screen and RIPOSTE!/PERFECT SLIP! callouts on the player side, over and over
+    T.bug303 = setInterval(() => {
+      if (T.sceneKey !== 'Battle') return;
+      // the real BUG-3-03 order: the callout is placed while no chain shows, then the counter appears
+      for (const o of [sc.comboText, sc.comboHits, sc.enemyCombo]) { sc.tweens.killTweensOf(o); o.setAlpha(0); }
+      sc.callout('RIPOSTE!', '#ffffff', 30, 'player');
+      sc.callout('PERFECT SLIP!', '#ffc23d', 30, 'enemy');
+      sc.comboText.setText('COMBO x99').setAlpha(1);
+      sc.comboHits.setText('999 HITS').setAlpha(1);
+      sc.enemyCombo.setText('COMBO x99').setAlpha(1);
+    }, 300);
+  }, !!process.env.UI_BREAK_COMBO_ZONES);
+  const probs = new Set();
+  let frames = 0;
+  const end = Date.now() + 6000;
+  while (Date.now() < end) {
+    const r = await page.evaluate(() => {
+      const sc = window.__TEST__.activeScene();
+      const box = (o) => { const b = o.getBounds(); return { t: o.text, x: b.x, y: b.y, w: b.width, h: b.height }; };
+      const fixed = [sc.comboText, sc.comboHits, sc.enemyCombo].filter((o) => o.alpha > 0.05 && o.text).map(box);
+      const floats = [];
+      const walk = (list) => { for (const o of list) { if (o.type === 'Text' && o.depth >= 55 && o.depth <= 75 && o.alpha > 0.3 && o.visible && o.text) floats.push(box(o)); if (o.list) walk(o.list); } };
+      walk(sc.children.list);
+      const out = [];
+      for (const a of fixed) for (const b of floats) {
+        const ox = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) - 2;
+        const oy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) - 2;
+        if (ox > 0 && oy > 0) out.push(`"${a.t}" × "${b.t}"`);
+      }
+      return out;
+    });
+    frames++;
+    for (const p of r) probs.add(p);
+    await page.waitForTimeout(60);
+  }
+  await page.evaluate(() => clearInterval(window.__TEST__.bug303));
+  await rawShot(page, testInfo, '55-battle-combo-zone');
+  console.log(`[${testInfo.project.name}] BUG-3-03 frames=${frames} problems=${probs.size} ${[...probs].slice(0, 3).join('; ')}`);
+  expect(frames).toBeGreaterThan(40);
+  expect([...probs]).toEqual([]);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('Home save-repair notice: shown for a team repair, not for settings_repaired, never the damaged text', async ({ page }) => {
+  const errors = watchErrors(page);
+  const homeTexts = () => page.evaluate(() => window.__TEST__.activeScene().children.list.flatMap((o) => (o.list || [o])).filter((o) => o.type === 'Text').map((o) => o.text));
+  const notice = 'Some save data was fixed on load. Your fighters and Jade are safe.';
+  // settings only (an old save without the round-4 fields) → silent repair
+  await bootWithSave(page, 1, 'delete s.settings.master_volume; delete s.settings.muted;');
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  expect(await page.evaluate(() => window.__TEST__.data.repairWarnings.map((w) => w.code))).toContain('settings_repaired');
+  expect(await homeTexts()).not.toContain(notice);
+  // a team id the data does not know → notice
+  await bootWithSave(page, 1, "s.team = ['char_tavi_001', 'char_lark_001', 'char_removed_099'];");
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  const tx = await homeTexts();
+  expect(tx).toContain(notice);
+  expect(tx).not.toContain('Save data was damaged and has been reset.');
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('AC-19.6: Vibration off → navigator.vibrate never called in battle; on → called with §14 durations', async ({ page }) => {
+  const errors = watchErrors(page);
+  for (const haptics of [false, true]) {
+    await bootWithSave(page, 1, `s.settings.haptics = ${haptics};`);
+    await page.evaluate(() => { window.__vib = []; navigator.vibrate = (ms) => { window.__vib.push(ms); return true; }; });
+    await startStage(page, 'stage_002');
+    await page.evaluate(() => { const b = window.__TEST__.game.scene.getScene('Battle').battle; for (const f of b.teams.player.fighters) f.hp = f.def.maxHp = 10 ** 7; });
+    await page.waitForFunction(() => window.__TEST__.eventLog && window.__TEST__.eventLog.some((e) => e.type === 'hit' && e.side === 'enemy'), null, { timeout: 30000 });
+    await page.waitForTimeout(200);
+    const vib = await page.evaluate(() => window.__vib);
+    if (haptics) expect(vib).toContain(20);
+    else expect(vib).toEqual([]);
+  }
+  expect(errors, errors.join('\n')).toEqual([]);
+});

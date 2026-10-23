@@ -10,6 +10,11 @@ export class DialogueScene extends BaseScene {
     super('Dialogue');
   }
 
+  musicContext() {
+    const def = data.scenesById[this.initData.sceneId];
+    return ['story', def && def.bgm ? def.bgm : undefined];
+  }
+
   create() {
     this.setupView(0x111530);
     const { W, H } = this;

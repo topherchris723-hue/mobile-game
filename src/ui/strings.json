@@ -142,6 +142,20 @@
     "summon_event_summon_currency_capped": "Jade is at the maximum: {lost} Jade could not be added.",
     "summon_rates_percent": "{percent}%",
     "battle_hit_immune": "IMMUNE",
-    "battle_tri_burst_whiff_invulnerable": "TRI-BURST BLOCKED!"
+    "battle_tri_burst_whiff_invulnerable": "TRI-BURST BLOCKED!",
+    "settings_title": "Settings",
+    "settings_master_volume": "Master volume",
+    "settings_bgm_volume": "Music",
+    "settings_sfx_volume": "Sound effects",
+    "settings_muted": "Mute all",
+    "settings_reduce_motion": "Reduce motion",
+    "settings_reduce_motion_help": "Less screen shake and flashing.",
+    "settings_haptics": "Vibration",
+    "settings_on": "On",
+    "settings_off": "Off",
+    "settings_percent": "{n}%",
+    "settings_minus": "−",
+    "settings_plus": "+",
+    "home_save_repaired": "Some save data was fixed on load. Your fighters and Jade are safe."
   }
 }
