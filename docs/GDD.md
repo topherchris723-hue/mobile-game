@@ -7,6 +7,10 @@ Status legend: `DRAFT` = still being decided, do not build. `READY` = fully spec
 
 All numbers marked *(data)* live in a data file (see §15). Code must read them and never hardcode them.
 The numbers in this document are the default values for that data.
+**Round 3 ruling (live data vs GDD values):** live `data/*.json` is the source of truth for the game and may be tuned by
+the balance-analyst / economy-designer inside the §6 bands, §7 budgets, §8 limits and §15.3 rules without a GDD edit. GDD
+worked examples and exact-number ACs are pinned to the frozen test fixture **FX-GDD** (§15.4), not to live data, so tuning
+never breaks them. Tables that list per-stage or per-character values (e.g. §9.2) are advisory snapshots.
 
 ---
 
@@ -602,6 +606,24 @@ from fighting, so every battle reaches it.
   If both teams tap TRI-BURST on the same tick, the player's starts (§5.0 order) and the enemy's is rejected with its
   gauge unchanged. Safety net: if a rush ever ends without landing or whiffing, it counts as a whiff (gauge refunded
   `whiff_refund_pct`, not marked used).
+- **Rush invulnerability is absolute (round 3 ruling, rusher KO'd by a projectile in flight).** From step 1 of tick T
+  through step 5 of the resolve tick T + 18, **no hit of any source affects the rushing fighter**: this includes the
+  later hits of a multi-hit card whose first hit already landed before T (it overrides the "first hit decides the whole
+  card" rule for this one case) and projectiles already in flight. Such a hit is discarded: 0 damage, no hitstun, no
+  knockback, no Burst gain for either side, no `on: "hit"` effects, no hitstop, and it is not a dodge (no Perfect Slip,
+  no Riposte window); the engine logs it as `hit_discarded` with reason `rush_invulnerable`. The attacking card is not
+  otherwise changed (its remaining hits after T + 18 resolve as normal against the then-`Idle` or cinematic-frozen
+  fighter). So the rusher **cannot be KO'd during its own rush**, and every rush ends by landing or whiffing on T + 18.
+  What can still end a rush early, and what happens to its spent Burst:
+
+| Event during the rush (T … T+18) | Effect on the rush | Burst gauge (set to 0 at T) |
+|---|---|---|
+| Any hit on the rusher (incl. in-flight / already-landed multi-hit cards) | Discarded, rush continues | stays 0 until resolve |
+| Ignite (either side), opponent's Tri-Burst | Rejected (§5.0 Tri-Burst lock) | unchanged |
+| Rusher's Tag / Slip / card input | Rejected (state `Active`) | unchanged |
+| The target is KO'd before T+18 (e.g. by the rusher's own earlier projectile) | Next enemy enters with 1.5 s invulnerability → rush **whiffs** on T+18 (reason `invulnerable`) | refunded `whiff_refund_pct` (50), not used |
+| The battle ends before T+18 (last enemy KO'd, timeout, Retreat) | Rush is dropped with no event; result as §5.14 | irrelevant (battle over) |
+| Pause / hitstop / KO animation | Freeze: T…T+18 count unfrozen ticks only | unchanged |
 - **After a whiff (round 2):** the attacker is `Idle` on the resolve tick at the x it had when the rush started.
 - **After a landing (round 2):** the attacker is placed at `distance = melee_range` (if farther) and is `Idle` after
   the cinematic. The target's current card (armored or not, Vigor not refunded) and its projectiles in flight are
@@ -626,9 +648,20 @@ from fighting, so every battle reaches it.
   (or at the wall), and cannot be hit for 36 unfrozen ticks.
 - AC-5.10.6: Both teams at 100 Burst tap TRI-BURST on the same tick: only the player's rush starts; the enemy's input is
   rejected (`not_now`) and its gauge stays 100.
-- AC-5.10.7 (BUG-2-08): In 1,000 seeded headless battles with master-tier AI on both sides, every `tri_burst_start`
-  is followed by exactly one `tri_burst` or `tri_burst_whiff` 18 unfrozen ticks later, and 0 `card_cancelled` events
-  with reason `ignition` target a Tri-Burst.
+- AC-5.10.7 (BUG-2-08; round 3 rewrite): In 1,000 seeded headless battles (seeds 1–1,000) with master-tier AI on both
+  sides on **live** stage_004 and stage_005 data, plus seeds 90 and 3,345 on stage_005 (the round-3 failures), every
+  `tri_burst_start` on unfrozen tick T is followed by exactly one `tri_burst` or `tri_burst_whiff` on unfrozen tick T + 18,
+  **unless** the battle ended on a tick in T … T + 17 (then there is none); there are 0 `tri_burst_whiff` events with
+  reason `safety_net`, 0 `ko` events for a fighter whose team has a rush in progress, and 0 `card_cancelled` events with
+  reason `ignition` that target a Tri-Burst.
+- AC-5.10.8 (round 3, unit test): test state where an enemy 2-hit projectile Bolt's first hit landed on the player's
+  armored fighter (no hitstun) on tick T − 2 and its second hit is scheduled for T + 4; the player fighter has 1 HP and
+  starts a Tri-Burst on T. Result: on T + 4 the second hit is `hit_discarded` (`rush_invulnerable`), HP stays 1, both Burst
+  gauges are unchanged by it, and the rush resolves on T + 18. Must-FAIL: an engine that applies the second hit (KO on T + 4,
+  rush ended by the safety net).
+- **BAL-5.10 (round 3, balance target, keeps Tri-Burst "powerful" after the HP change):** with live data, a landed
+  Tri-Burst by a full living starter team against a same-tier stage enemy removes **25–45%** of that enemy's max HP in the
+  median case (balance-analyst sim). Lever: `battle.burst.power_per_member` (data, default 3.0), not the formula shape.
 
 ### 5.11 Damage formula, crits and caps
 **Purpose:** one predictable formula that the balance analyst can simulate.
@@ -714,6 +747,24 @@ Damage numbers show "WEAK!" on ×1.3 hits and "RESIST" on ×0.8 hits.
   360/s), so a ★3 HP of 8,500 falls in about 24 s before Ripostes, Climaxes and Tri-Burst. The intended levers are data:
   HP bands (§6, the balance-analyst may move them), enemy `stat_mult`, and `battle.vigor.regen_per_s`. If the target can
   only be met by changing a formula, report it to the game-designer instead of changing code.
+- **Round 3 decision on battle length: double all HP (§6 bands ×2); the 120–200 s target stays.** Options measured by the
+  balance-analyst (reports/balance/round-3.md), stages 3–5, fixed one-roll AI:
+
+| Option | Timer used (median) | stage_005 win (veteran player proxy) | Verdict |
+|---|---|---|---|
+| Keep data (in-band tuning only) | 64–74 s | ~26% | rejected: ≈ 1.5–2 min with cinematics; Tri-Burst/Ignition barely get used, "big moments" are rare |
+| **HP × 2, power HP coefficient 0.1 → 0.05** | **139–153 s** | ~20% (small retune needed) | **chosen** |
+| HP × 2.5 | ≈ 175 s | 13% | rejected: closest to the timer, more timeouts, ≈ 3.5–4 min feels long on a phone |
+| Vigor regen 0.5/s | 104–117 s | — | rejected: halves the number of attacks, so fights feel slower and less flashy |
+
+  Why: the owner's "fast, flashy and powerful" is about **feel per second** (hitstop, shouts, attack frequency), which
+  HP × 2 does not change: the same number of cards per second, the same damage numbers. Only fight length grows, to
+  about 2.5–3.2 min with cinematics, inside §2's "2 to 4 minutes", which leaves room for every battle to reach Ignition
+  and Tri-Burst (the owner's "big moments"). To keep Tri-Burst powerful against doubled HP, BAL-5.10 (§5.10) applies.
+  Data changes (balance-analyst): every `characters[].base_stats.hp` × 2 (integers), `economy.power_formula.hp` 0.05
+  (team power is unchanged: 17,000 × 0.05 = 8,500 × 0.1 = 850), then a stat-only retune of stage_005 to BAL-5.15.
+  Extra length conditions: stage_001 and stage_002 battles end by timeout in ≤ 5% of sims (raise `timer_s` within
+  60–300 if not), and stage_001's median KO-ended battle is ≤ 100 s (it is the first battle a new player sees).
 
 **Acceptance**
 - AC-5.14.1: With a 180 s timer and no freezes, timeout happens after exactly 10,800 ticks.
@@ -750,6 +801,21 @@ after `reaction_s`. It never reads the player's hand or inputs before they happe
   `perfect_ticks = round(perfect_window_s × 60)` and `iframe_ticks = round(iframes_s × 60)`. If the roll was **not**
   perfect and the earliest possible Slip tick (now, or the planned tick if later) would be ≤ `perfect_ticks` before the
   hit, the AI does **not** slip (a failed perfect roll must never produce a Perfect Slip).
+  **Round 3, one decision per opposing card (exact).** For each opposing card action (identified by the action, not by
+  the tick) the AI makes **exactly one** reactive-dodge decision, on its **decision tick** `D = windup_start_tick +
+  round(reaction_s × 60)` (a Riposte, which has no windup, uses its tap tick as `windup_start_tick`; it can never be
+  reacted to because its first hit comes 6 ticks after the tap, earlier than every tier's reaction). On tick D, in step 2:
+  1. If the card's first hit has already resolved (landed or whiffed) → decided "no slip"; no roll.
+  2. If the AI cannot Slip right now (state does not allow it, or Vigor < `slip.cost`) → decided "no slip"; no roll.
+  3. Otherwise roll once `< slip_chance`. Fail → decided "no slip". Success → roll once `< perfect_slip_chance` and plan
+     the Slip as above.
+  A decided card is **never re-examined** (no second roll on a later tick, even if the AI's state or Vigor changes). So
+  per opposing card there are 0, 1 or 2 seeded rolls, never more. A new card (e.g. the next card of a chain) gets its own
+  decision.
+  **Design intent (round 3):** with every tier's `reaction_s` (12–27 ticks), a Fist at melee range (windup 6–12 ticks)
+  can never be reacted to; a Fist from range can (approach 11 ticks from distance 40 + windup). That is intended: Fists
+  are the reliable poke, and the answers to them are spacing (Dash back), Break Slip and Tag Escape. No tier parameter
+  changes.
 - **Combo:** when its card lands and the link window opens, roll `combo_continue` → play the next affordable card.
 - **Riposte:** after its own Perfect Slip, roll `riposte_chance` → play a Riposte.
 
@@ -781,6 +847,31 @@ after `reaction_s`. It never reads the player's hand or inputs before they happe
 - AC-5.15.5: In the AI slip log over 1,000 seeded battles, every planned perfect-roll Slip starts 6 ticks before the hit
   (or at its decision tick, if that is later), every normal-roll Slip starts 15 ticks before (or later, but never
   ≤ 9 ticks before), and no normal-roll Slip produces a `perfect_slip` event.
+- AC-5.15.7 (round 3, one roll per card): in the AI decision log over 1,000 seeded battles, every opposing card has at
+  most one `slip_chance` roll and at most one `perfect_slip_chance` roll, and no roll happens on a tick other than its D.
+  Unit test: a player Climax with a 45-tick windup against a fighter-tier AI whose `slip_chance` roll fails on D
+  (stubbed roll 0.99): the AI does not Slip on any tick D+1 … first-hit tick (must-FAIL: an AI that rolls again on D+1).
+  Statistical check: over 10,000 seeded player Climax windups (≥ 30 ticks, AI Vigor ≥ 2 and Idle on D), the slipped share
+  is within ±2 percentage points of the tier's `slip_chance` (fighter 25%; round-3 engine gave ≈ 69%).
+- **Balance-only player proxies (round 3; used by sims, never by stages).** The AI tiers model enemies, not players. For
+  balance, the player side is driven by two named profiles, kept in the balance harness (`tests/sim/balance/`, owned by
+  the balance-analyst), not in game data: **`proxy_average`** = the `fighter` tier unchanged; **`proxy_skilled`** = the
+  `veteran` tier with these overrides: `reaction_s` 0.20, `slip_chance` 0.70, `perfect_slip_chance` 0.60,
+  `riposte_chance` 1.00, `combo_continue` 0.90, `break_slip_chance` 0.40, `climax_chance` 1.00, `vigor_reserve` 2, plus
+  one human-like skill: **spacing** — when the opponent's Fist approach begins at distance > 20, it Dashes back with
+  chance 0.5 (one roll per approach). Profiles must obey every fairness rule above (same costs, no hidden information).
+- **BAL-5.15 (round 3, balance targets with the starter team at R0, live data, ≥ 2,500 sims per cell):**
+
+| Stage | `proxy_average` win rate | `proxy_skilled` win rate |
+|---|---|---|
+| stage_001 | ≥ 95% | ≥ 99% |
+| stage_002 | ≥ 85% | ≥ 95% |
+| stage_003 | 60–85% | ≥ 85% |
+| stage_004 | 35–60% | ≥ 70% |
+| stage_005 | 15–40% | 45–75% |
+
+  Win rate must decrease from each stage to the next for both profiles. These are targets for the balance-analyst, not
+  QA blockers. stage_005 at the top of the `proxy_skilled` range means "starters can win it with skill" (§16 decision 2).
 - AC-5.15.6: The AI's first think happens on fight tick f = 0 (an AI-controlled side with an affordable card and
   `aggression` 1.0 and `vigor_reserve` 0 in test data, Vigor 5 and a cost-2 Fist in hand, emits `card_played` on f = 0).
 
@@ -812,9 +903,13 @@ outfit, Ignition look). It must be original and name no franchise or existing ch
 
 | Rarity | HP | ATK | DEF | crit_rate |
 |---|---|---|---|---|
-| ★3 | 8,000–9,000 | 850–950 | 400–480 | 0.05 |
-| ★4 | 9,000–10,000 | 950–1,050 | 450–530 | 0.05–0.08 |
-| ★5 | 10,000–11,000 | 1,050–1,150 | 500–580 | 0.05–0.10 |
+| ★3 | 16,000–18,000 | 850–950 | 400–480 | 0.05 |
+| ★4 | 18,000–20,000 | 950–1,050 | 450–530 | 0.05–0.08 |
+| ★5 | 20,000–22,000 | 1,050–1,150 | 500–580 | 0.05–0.10 |
+
+**Round 3:** HP bands doubled (were 8,000–9,000 / 9,000–10,000 / 10,000–11,000) for the battle-length decision in §5.14.
+The bands are inclusive at both ends and apply to **every** character in `characters.json` (playable or not; bosses get
+their extra strength from enemy `stat_mult`, §8). They and the Ignition guidance below are enforced by §15.3 rules 10–11.
 
 **Roster guidance for the milestone (6–10 fighters, recommended 8):** 3 ★3 (the free starters, one each
 of Blaze/Gale/Stone), 3 ★4, 2 ★5. At least one Radiant and one Void. ★4 and ★5 fighters must have an
@@ -823,7 +918,9 @@ Every fighter is original (§3 banned terms, CLAUDE.md §9). Over-the-top shouts
 
 **Ignition guidance:** stat_mult atk 1.20–1.40, def 1.10–1.30, duration 20–30 s, heal 0.05–0.15,
 vigor_regen_bonus 0–0.3. Triggers: usually `hp_below_pct` 40–60 plus `battle_time_s` 60–100,
-so every fighter can reach it.
+so every fighter can reach it. **Round 3:** the stat_mult, duration, heal and regen ranges are hard limits (errors,
+§15.3 rule 11); the trigger ranges stay guidance (warnings). Every Ignition must have at least one `hp_below_pct` or
+`battle_time_s` trigger (error), so it is reachable in every battle.
 
 - AC-6.1: Adding a new fighter (character entry + its cards) and adding it to a banner pool makes it
   summonable and playable with no code change.
@@ -874,7 +971,9 @@ and a name banner; no other rule changes).
 
 - Enemy stats: `floor(base × stat_mult)`. Enemies have no Resonance.
 - An enemy may use a `playable: false` character (an enemy-only boss).
-- AC-8.1: An enemy with stat_mult.hp 1.2 on a 10,000 HP character has exactly 12,000 HP.
+- AC-8.1 (FX-GDD, §15.4): An enemy with stat_mult.hp 1.2 on a 10,000 HP character has exactly 12,000 HP. The test uses
+  the fixture character `char_fxbase_001` (HP 10,000) and enemy `enemy_fxbase_001` (stat_mult 1.2/1.0/1.0), never a live
+  character. Live-data property check: every live enemy's HP equals `floor(character.base_stats.hp × stat_mult.hp)`.
 
 ---
 
@@ -899,9 +998,13 @@ rules as summons, §11.4).
 - Recommended power is advisory only (shown in green if team power ≥ recommended, else red).
 
 **Team power** (shown on Team Select and the stage list):
-`fighter_power = floor((HP × 0.1 + ATK × 1.0 + DEF × 0.5))` using the stats after Resonance;
-`team_power = Σ` over 3. Example: HP 8,500, ATK 900, DEF 440 → 850 + 900 + 220 = **1,970**.
-The coefficients are in `economy.json` → `power_formula`.
+`fighter_power = floor((HP × 0.05 + ATK × 1.0 + DEF × 0.5))` using the stats after Resonance;
+`team_power = Σ` over 3. Example: HP 17,000, ATK 900, DEF 440 → 850 + 900 + 220 = **1,970**.
+The coefficients are in `economy.json` → `power_formula`. **Round 3:** the HP coefficient goes 0.1 → 0.05 together with
+the HP ×2 change (§5.14, §6), so every fighter's power and every `recommended_power` stay the same. (Before: HP 8,500 ×
+0.1 = 850.) AC-9.1.1: for every live character, power after the round-3 data change equals its power before it
+(balance-analyst runs it once on the old and new data; must-FAIL: HP ×2 with the coefficient left at 0.1 → each power
+rises by `0.1 × old HP`, e.g. +850).
 
 ### 9.2 Milestone stage plan (content-designer fills names, enemies and story)
 
@@ -910,14 +1013,26 @@ The coefficients are in `economy.json` → `power_formula`.
 | stage_001 (tutorial) | 1 | rookie | 0.7/0.7/0.7 | 120 | 300 Jade | 30 |
 | stage_002 | 2 | rookie | 0.8/0.8/0.8 | 150 | 300 Jade | 30 |
 | stage_003 | 3 | fighter | 0.9/0.9/0.9 | 180 | 400 Jade | 40 |
-| stage_004 | 3 | fighter, fighter, veteran | 1.0/1.0/1.0 | 180 | 500 Jade | 50 |
-| stage_005 (boss) | 3 | veteran, veteran, master (boss) | 1.05; boss 1.2/1.1/1.1 | 180 | 600 Jade + 1 ★4 fighter | 60 |
+| stage_004 | 3 | fighter, fighter, veteran | 0.88/0.88/0.88 | 180 | 500 Jade | 50 |
+| stage_005 (boss) | 3 | veteran, veteran, master (boss) | 0.75/0.75/0.75; boss 1.0/0.7/0.8 | 180 | 600 Jade + 1 ★4 fighter | 60 |
+
+**Round 3 ruling — this table is advisory; `data/enemies.json` and `data/stages.json` are the truth.** The values above
+are the round-3 balance-analyst snapshot (stage_004 regulars 0.88; stage_005 regulars 0.75; boss `enemy_corvane_001`
+1.0/0.7/0.8). They were set before the HP ×2 change (§5.14) and multiply the doubled HP the same way. The balance-analyst
+may change any enemy `stat_mult` within the §8 limit (0.3–5.0) and any stage `timer_s` within 60–300 **without** a GDD
+edit, to meet BAL-5.14 and BAL-5.15. The game-designer refreshes this table at the next GDD pass. No test or AC may read
+a value from this table; the AI tiers, enemy counts and rewards columns are binding design (changing them needs a GDD
+edit). Why stage_005 regulars sit below stage_003: stage_005 fields ★4/★5 fighters with Ignition at higher AI tiers
+against ★3 starters, so a lower multiplier is still a harder stage (BAL-5.15 checks that win rate falls stage by stage).
 
 ### 9.3 Missions
 Up to 3 per stage. Each gives its reward once, on the first win in which it is met (they may be met in different clears).
 Types (`type` + `value`): `win` (value ignored), `no_ko` (no player KO), `time_under_s` (timer elapsed < value),
 `use_tri_burst`, `use_ignition`, `perfect_slips_at_least` (value = count), `max_chain_at_least` (value = chain cards).
 Recommended: 50 Jade each.
+- **Round 3 (HP ×2):** every `time_under_s` mission must be met in ≥ 25% of `proxy_average` wins of its stage (§5.15,
+  balance-analyst sim); otherwise the balance-analyst raises its `value` (data). Currently stage_004 has `time_under_s` 150
+  against a median of about 139–147 s, so it must be checked.
 - AC-9.3.1: Winning stage_001 with 0 KOs and 2 Perfect Slips completes `no_ko` and `perfect_slips_at_least: 2` together.
 
 ### 9.4 Tutorial steps (data-driven)
@@ -982,10 +1097,13 @@ Recommended: 50 Jade each.
   and taps a bench portrait (Tag ready): the Tag happens, the prompt closes on that tick, the Riposte-window hold is
   released, and the speed is 1.0× on the next logic tick. Same for the player's active fighter being KO'd during that
   prompt. Must-FAIL: a prompt still shown 1 s after the Tag.
-- AC-9.4.5 (active fighter only): Stage 1, fresh save, with `char_tavi_001` (Ignition trigger `battle_time_s: 60`) tagged
-  out before fight tick 3,599: no `ignition_ready` prompt appears while it is benched (its Ignition unlocks on f = 3,599).
-  When it is tagged back in, the prompt appears on the first frame where it is active and not frozen. Reachable with
-  default data (Tag cooldown 8 s).
+- AC-9.4.5 (P, live data, formula form; round 3): Stage 1, fresh save. Let S = a player-team fighter whose Ignition has a
+  `battle_time_s` trigger with value v (live data; with round-2 data that was `char_tavi_001`, v = 60). With S tagged out
+  before fight tick `round(v × 60) − 1` (its unlock tick) and no `hp_below_pct` trigger met: no `ignition_ready` prompt
+  appears while S is benched. When S is tagged back in, the prompt appears on the first frame where S is active and not
+  frozen. Reachable with live data as long as one starter has a `battle_time_s` trigger (rule 11 makes one of the two
+  trigger types mandatory; if a starter has only `hp_below_pct`, the test drops S's HP to that threshold while benched
+  instead).
 - AC-9.4.6 (event side, unit test on the tutorial controller): with `chain_possible` and `perfect_slip` steps unfired, the
   events `{type: link_open, side: enemy}` and `{type: perfect_slip, side: enemy}` fire **no** step (must-FAIL inputs);
   `{type: link_open, side: player, slot: <active slot>}` fires `chain_possible` (must-PASS); the same event with a benched
@@ -1303,6 +1421,78 @@ renderer shows a labeled placeholder, never a crash.
 9. **Name-only terms (§3):** the whole words `spark` and `sparks` (case-insensitive) in any field named `name`,
    `name_override` or `epithet`, at any depth in any data file, are **errors**. Other fields are not checked for them.
    Negative fixture: a card with name "Spark Kick" must FAIL; a story line "little sparks" must PASS.
+
+**Round 3 — balance limits are validated (rules 10–12, errors unless marked warning).** All ranges are inclusive. Numbers
+are compared with a tolerance of 1e-9 (so 0.55 × 5 = 2.75 passes against 2.75). They apply to `data/` only, not to
+FX-GDD (§15.4), which keeps its frozen values.
+10. **Character bands (§6)**, every character, by `rarity`: `base_stats.hp`, `atk`, `def`, `crit_rate` within the §6 table
+    (★3 HP 16,000–18,000, ATK 850–950, DEF 400–480, crit 0.05; ★4 18,000–20,000, 950–1,050, 450–530, 0.05–0.08; ★5
+    20,000–22,000, 1,050–1,150, 500–580, 0.05–0.10). Negative fixtures (must FAIL): a ★3 with ATK 2,000; a ★3 with HP 8,500
+    (the pre-round-3 band, old value put back); a ★5 with crit_rate 0.12. Must PASS: live data after the HP ×2 change.
+11. **Ignition limits (§6)**, every `ignition` block: `stat_mult.atk` 1.20–1.40, `stat_mult.def` 1.10–1.30, `duration_s`
+    20–30, `heal_pct` 0.05–0.15, `vigor_regen_bonus` 0–0.3; at least one trigger of type `hp_below_pct` or
+    `battle_time_s` (error). **Warnings:** `hp_below_pct` outside 40–60, `battle_time_s` outside 60–100. Negative
+    fixtures: `heal_pct` 0.2 (FAIL); an Ignition with only a `cards_played` trigger (FAIL); `hp_below_pct` 30 (WARNING,
+    exit code still 0). Must PASS: live data, including the proposed Tavi Ignition (atk 1.20, 20 s, heal 0.05, regen 0,
+    hp_below 40).
+12. **Card budgets (§7)**, every card. Let `e` = the number of entries in `effects[]`. By `type`:
+    - `cost`: fist 2; bolt 3; signature 4–6; climax 7–8.
+    - `power` within [lo − 0.3e, hi − 0.3e] with (lo, hi): fist (1.0, 1.3); bolt (1.4, 1.7); signature (0.55 × cost,
+      0.65 × cost); climax (5.0, 6.0), or (6.5, 7.5) for an **Ignition Climax** = a climax card that is in at least one
+      `ignition.deck` and in no base `deck` (a climax in both kinds of deck is an error).
+    - `hits`: fist 1–3; bolt 1–5; signature 1–6; climax 3–10.
+    - `windup_s`: fist 0.10–0.20; bolt projectile 0.20–0.35, bolt beam 0.35–0.50; signature 0.25–0.50; climax 0.60–0.80.
+    - `recovery_s`: fist 0.25–0.35; bolt 0.30–0.40; signature 0.35–0.50; climax 0.50–0.70.
+    - `hitstun_s`: fist 0.55–0.70; bolt 0.50–0.70; signature 0.70–0.90; climax exactly 1.00.
+    - `knockback`: fist 2–6; bolt 6–12; signature 6–15; climax 20–30.
+    - all types: `hit_interval_s` 0.05–0.25; `projectile_speed` (if present) 120–200; climax `cinematic_s` 1.5–3.0.
+    Negative fixtures (must FAIL): a fist with power 9.9; a cost-5 signature with 1 effect and power 3.0 (limit 2.95); a beam
+    bolt with windup 0.30; an Ignition Climax with power 6.0; a climax with hitstun 0.9. Must PASS: live data, and a cost-5
+    signature with 1 effect and power 2.95 (boundary).
+    The error text names the file, the record id, the field, the value and the allowed range, e.g.
+    `cards.json card_x_y: power 3.0 outside [2.45, 2.95] (signature cost 5, 1 effect)`.
+- Rules 10–12 replace nothing in the schemas (schemas keep their wider technical limits, e.g. HP 1,000–50,000). The
+  balance harness check `tests/sim/balance/bands.mjs` can be retired once `npm run validate-data` implements rules 10–12.
+
+### 15.4 Test fixture FX-GDD and which ACs use it (round 3 ruling)
+**Why:** exact-number ACs that read live data break whenever the balance-analyst tunes a value (round 3: Tavi's
+Ignition and HP were pinned by AC-5.9.x, and AC-8.1's test used a live 8,200 HP). Live data must be tunable; worked
+examples must stay exact.
+
+**FX-GDD** = a frozen copy of every data file in `tests/fixtures/gdd/` (owned by gameplay-programmer):
+- `battle.json`, `characters.json`, `cards.json`, `enemies.json`, `stages.json`, `story.json`, `banners.json`,
+  `economy.json` copied **from the round-2 commit** (the last commit before round 3; `git show <round-2 commit>:data/<file>`),
+  i.e. the values the GDD examples were written with (Tavi: HP 8,200, Ignition `hp_below_pct` 50 + `battle_time_s` 60,
+  ATK ×1.30, DEF ×1.20, 25 s, heal 0.10, regen +0.2; banner and economy as in §11's default-data block; battle.json = the
+  §5 values).
+- Plus two fixture records: character `char_fxbase_001` (★4, Blaze, HP 10,000, ATK 1,000, DEF 500, crit 0.05, no
+  Ignition, deck = 8 cards owned by `common` that satisfy §15.3 rule 3; if the snapshot has too few `common` cards, add
+  fixture cards `card_common_fx<slug>` with §7-budget values) and enemy `enemy_fxbase_001`
+  (`character_id` `char_fxbase_001`, `ai_tier` rookie, `stat_mult` 1.2/1.0/1.0, `ignition_enabled` false, `boss` false).
+- FX-GDD must pass the schemas and §15.3 rules 1–9 (`npm run validate-data -- --dir tests/fixtures/gdd`); rules 10–12 are
+  not run on it. A test stores a SHA-256 of each fixture file and FAILS if a file changes without the hash being updated
+  in the same commit; changing FX-GDD needs a GDD change that names the AC it serves.
+- Must-FAIL checks: the fixture validation run on a copy with `char_fxbase_001` removed FAILS (rule 2, enemy reference);
+  editing one number in a fixture file without updating its hash FAILS the hash test.
+
+**AC classes.** Every AC is one of:
+- **W — worked example, runs on FX-GDD only** (never reads `data/`).
+- **X — pure function with inline inputs** (no data file at all).
+- **P — property or formula-form, runs on live `data/`** (expected values are computed from the live values, or the AC
+  is an invariant).
+
+| Class | ACs |
+|---|---|
+| W | §5.9 example; AC-5.1.1, 5.1.2, 5.1.4, 5.1.5 (test-copy part); 5.3.1; 5.4.1, 5.4.3; 5.6.1–5.6.3, 5.6.4, 5.6.5–5.6.7; 5.7.1–5.7.3; 5.8.0–5.8.5; 5.9.1, 5.9.3, 5.9.5, 5.9.6, 5.9.7; 5.10.1, 5.10.3–5.10.6, 5.10.8; 5.14.1; 5.15.3, 5.15.5, 5.15.6; 8.1; 11.2, 11.3, 11.3b, 11.3c, 11.4, 11.6, 11.7, 11.8, 11.11 |
+| X | AC-5.10.2, 5.11.1, 5.11.2, 5.11.3, 11.1 |
+| P | AC-1.1; 4.1, 4.2; 5.0.1; 5.1.3, 5.1.5 (1,000-battle part); 5.2.1–5.2.3; 5.3.2, 5.3.3; 5.4.2; 5.5.1–5.5.6; 5.9.2, 5.9.4; 5.10.7; 5.11.4; 5.12.1; 5.13.1; 5.14.2, 5.14.3; 5.15.1, 5.15.2, 5.15.4, 5.15.7; 6.1, 6.2; 7.1; 8.1 (live property part); 9.1.1; 9.3.1; 9.4.1–9.4.7; 10.1; 11.5, 11.9, 11.10, 11.12–11.14; 12.1; 13.1–13.3; 14.1, 14.2 |
+
+- In-browser (Playwright) tests of P-class ACs run on live data and must compute their expectations from it (e.g. AC-9.4.5
+  reads the starter's `battle_time_s` value v and expects the unlock on fight tick `round(v × 60) − 1`).
+- Every new AC from now on states its class in its first line, e.g. "AC-x.y (W)". An AC with no class and a live
+  character, card, enemy, stage or banner number in it is a GDD defect: report it to the game-designer.
+- The game-designer keeps the GDD reference numbers (§5 defaults, §5.9 example, §11 default block) equal to FX-GDD; live
+  data may drift from them.
 
 ---
 

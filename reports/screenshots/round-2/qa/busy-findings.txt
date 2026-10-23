@@ -1,6 +1,3 @@
-430x932: frames=63 maxTexts=11 overlaps=1
-390x844: frames=78 maxTexts=10 overlaps=1
-360x640: frames=87 maxTexts=11 overlaps=1
-360x640 tick 366: "Tavi"(a1) × "Umbral Rook"(a1) 1x16 [reports/screenshots/round-2/qa/360x640-busy-overlap-1.png]
-390x844 tick 397: "Tavi"(a1) × "Umbral Rook"(a1) 1x16 [reports/screenshots/round-2/qa/390x844-busy-overlap-1.png]
-430x932 tick 151: "Tavi"(a1) × "Umbral Rook"(a1) 1x16 [reports/screenshots/round-2/qa/430x932-busy-overlap-1.png]
+430x932: frames=60 maxTexts=11 overlaps=0
+390x844: frames=67 maxTexts=12 overlaps=0
+360x640: frames=81 maxTexts=11 overlaps=0
