@@ -200,7 +200,8 @@ test('default renderer (WebGL) boots to battle with no console errors', async ({
   const errors = watchErrors(page);
   await goToBattle(page, testInfo, false, '');
   expect(await page.evaluate(() => window.__TEST__.game.renderer.type)).toBe(2); // Phaser.WEBGL
-  await page.waitForFunction(() => window.__TEST__.battleState().phase === 'fight', null, { timeout: 15000 });
+  // software WebGL at dpr 3 runs at a few fps in headless Chromium: allow 30 s for the 2 s intro
+  await page.waitForFunction(() => window.__TEST__.battleState().phase === 'fight', null, { timeout: 30000 });
   await shot(page, testInfo, '19-battle-webgl');
   await checkTargets(page, 'Battle');
   expect(errors, errors.join('\n')).toEqual([]);
