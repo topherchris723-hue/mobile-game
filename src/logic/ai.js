@@ -52,11 +52,14 @@ export class AiController {
     this.reactiveDodge(tier);
     const me = b.activeFighter(this.side);
     if (me.ko) return [];
+    // BUG-3-02: while a Slip is planned (decided on D, its tick not reached yet) the AI starts no card of its own
+    // (Riposte, combo, decision-loop rules 5–6), because a card would make the planned Slip impossible.
+    const committed = this.slipCommitted();
 
     // Riposte after our own Perfect Slip.
     if (this.pendingRiposte) {
       this.pendingRiposte = false;
-      if (this.rng.next() < tier.riposteChance) {
+      if (!committed && this.rng.next() < tier.riposteChance) {
         const slot = this.pickCard(true, false, 0);
         if (slot >= 0) return [{ type: 'card', slot: slot }];
       }
@@ -64,7 +67,7 @@ export class AiController {
     // Combo: our card landed and the link window is open.
     if (this.pendingCombo) {
       this.pendingCombo = false;
-      if (me.linkWindow && this.rng.next() < tier.comboContinue) {
+      if (!committed && me.linkWindow && this.rng.next() < tier.comboContinue) {
         const slot = this.pickCard(false, true, 0);
         if (slot >= 0) return [{ type: 'card', slot: slot }];
       }
@@ -174,6 +177,15 @@ export class AiController {
     }
   }
 
+  /**
+   * Is a reactive-dodge Slip planned and not yet due? While true the AI starts no card (BUG-3-02). Ignite, Tri-Burst,
+   * Tag and Dash stay allowed: none of them stops a Slip from being possible or needed (Dashing allows a Slip;
+   * Ignite cancels the opposing card; the rush and a tag-in are invulnerable).
+   */
+  slipCommitted() {
+    return this.plannedSlipAt >= 0 && this.watched !== null;
+  }
+
   /** Is `w` a projectile card still flying after its thrower was hit (in the opponent team's inFlight list)? */
   watchingDetached(w, oppSide) {
     return w.detached === true && this.battle.teams[oppSide].inFlight.indexOf(w) >= 0 && w.nextHit < w.hitTicks.length;
@@ -235,8 +247,10 @@ export class AiController {
         if (m.ok && !m.escape) return [{ type: 'tag', slot: best }];
       }
     }
+    // Rules 5 and 6 are skipped (no roll) while a planned Slip is pending (BUG-3-02, GDD §5.15 reactive dodge).
+    const committed = this.slipCommitted();
     // 5. Climax
-    for (let i = 0; i < me.deck.hand.length; i++) {
+    for (let i = 0; i < me.deck.hand.length && !committed; i++) {
       const id = me.deck.hand[i];
       if (id && b.card(id).type === 'climax' && b.cardPlayMode(this.side, i).ok) {
         if (this.rng.next() < tier.climaxChance) return [{ type: 'card', slot: i }];
@@ -244,7 +258,7 @@ export class AiController {
       }
     }
     // 6. A normal card, keeping the Vigor reserve
-    const slot = this.pickCard(false, false, tier.vigorReserve);
+    const slot = committed ? -1 : this.pickCard(false, false, tier.vigorReserve);
     if (slot >= 0 && this.rng.next() < tier.aggression) return [{ type: 'card', slot: slot }];
     // 7. Move
     const dist = b.distance();
