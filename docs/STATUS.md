@@ -54,6 +54,10 @@ lesson and a hard rule at the next `/retro`.
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
   currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 4: keep system fonts (no font files); OFL fonts are not on the CREDITS.md allowed list
+  and a font swap would change the approved feel. Revisit only with owner approval.
+- Round 4: VFX code lives in `src/vfx/` and audio in `src/audio/` (agents' playbook lanes), not
+  `src/ui/vfx|audio` as GDD §17/§18 consumer notes say; ui-developer wires them in. GDD to align.
 - Round 4: economy review passed fairness with no data change. Adopted its proposal to make
   stage_001 a worse Jade farm than later stages (repeat-clear Jade stage_001 30 → 10, stage_002
   30 → 20; first-time budget unchanged) — content-designer, wave 2. Its displayed-vs-real rate
