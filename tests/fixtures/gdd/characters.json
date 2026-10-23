@@ -1,0 +1,754 @@
+{
+  "version": 1,
+  "characters": [
+    {
+      "id": "char_tavi_001",
+      "family": "tavi",
+      "name": "Tavi",
+      "epithet": "The Ember Kid",
+      "rarity": 3,
+      "aura": "blaze",
+      "role": "striker",
+      "art_brief": "Wiry teen with one long copper braid, an oversized crimson work jacket tied at the waist, white tank top, taped knuckles, mismatched high-tops and a small chin scar. Warm reds and oranges. Ignition: the braid catches fire and the jacket edges glow white-hot.",
+      "playable": true,
+      "base_stats": {
+        "hp": 8200,
+        "atk": 950,
+        "def": 400,
+        "crit_rate": 0.05
+      },
+      "deck": [
+        {
+          "card_id": "card_tavi_spark_jab",
+          "count": 2
+        },
+        {
+          "card_id": "card_tavi_redline_hook",
+          "count": 1
+        },
+        {
+          "card_id": "card_tavi_flare_toss",
+          "count": 2
+        },
+        {
+          "card_id": "card_tavi_furnace_rush",
+          "count": 2
+        },
+        {
+          "card_id": "card_tavi_wildfire_crash",
+          "count": 1
+        }
+      ],
+      "ignition": {
+        "name": "Overheat Form",
+        "triggers": [
+          {
+            "type": "hp_below_pct",
+            "value": 50
+          },
+          {
+            "type": "battle_time_s",
+            "value": 60
+          }
+        ],
+        "duration_s": 25,
+        "stat_mult": {
+          "atk": 1.3,
+          "def": 1.1
+        },
+        "vigor_regen_bonus": 0.2,
+        "heal_pct": 0.1,
+        "deck": [
+          {
+            "card_id": "card_tavi_spark_jab",
+            "count": 2
+          },
+          {
+            "card_id": "card_tavi_redline_hook",
+            "count": 1
+          },
+          {
+            "card_id": "card_tavi_flare_toss",
+            "count": 2
+          },
+          {
+            "card_id": "card_tavi_overheat_barrage",
+            "count": 2
+          },
+          {
+            "card_id": "card_tavi_meltdown_meteor",
+            "count": 1
+          }
+        ],
+        "art": {
+          "sprite": "spr_tavi_ignition",
+          "portrait": "por_tavi_ignition",
+          "vfx": "vfx_tavi_ignition"
+        },
+        "shout": "REDLINE! OVERHEAT FORM!"
+      },
+      "art": {
+        "portrait": "por_tavi_base",
+        "sprite": "spr_tavi_base",
+        "summon_art": "art_tavi_summon"
+      },
+      "shouts": {
+        "intro": "Ready or not, I'm ON FIRE!",
+        "tag_in": "My turn! Heat coming through!",
+        "ko": "Not... burned out... yet...",
+        "victory": "Told you! Nobody outburns me!",
+        "tri_burst": "EVERYBODY, FULL HEAT!"
+      },
+      "bio": "Loud, fearless and always grinning. A mountain-town mechanic who fixes engines by day and starts fights by night."
+    },
+    {
+      "id": "char_lark_001",
+      "family": "lark",
+      "name": "Lark",
+      "epithet": "Twin-Kite Courier",
+      "rarity": 3,
+      "aura": "gale",
+      "role": "blaster",
+      "art_brief": "Slim courier girl with a short teal bob and one white streak, a messenger bag across her chest, fingerless gloves and two kite-shaped wind fins on her back that unfold like wings. Teal, white and sky-blue palette. Light, fast, always mid-stride.",
+      "playable": true,
+      "base_stats": {
+        "hp": 8400,
+        "atk": 900,
+        "def": 430,
+        "crit_rate": 0.05
+      },
+      "deck": [
+        {
+          "card_id": "card_lark_tailwind_kick",
+          "count": 2
+        },
+        {
+          "card_id": "card_lark_slipstream_jab",
+          "count": 1
+        },
+        {
+          "card_id": "card_lark_kite_cutter",
+          "count": 2
+        },
+        {
+          "card_id": "card_lark_crosswind_lance",
+          "count": 2
+        },
+        {
+          "card_id": "card_lark_skyrail_tempest",
+          "count": 1
+        }
+      ],
+      "art": {
+        "portrait": "por_lark_base",
+        "sprite": "spr_lark_base",
+        "summon_art": "art_lark_summon"
+      },
+      "shouts": {
+        "intro": "Package for you: one beating!",
+        "tag_in": "Making a delivery!",
+        "ko": "Return... to sender...",
+        "victory": "Delivered! Sign here!",
+        "tri_burst": "RUSH ORDER, TEAM!"
+      },
+      "bio": "Fast-talking and always late, but never misses a target. Delivers parcels across the peaks on wind-kite fins."
+    },
+    {
+      "id": "char_dunmore_001",
+      "family": "dunmore",
+      "name": "Dunmore",
+      "epithet": "The Walking Wall",
+      "rarity": 3,
+      "aura": "stone",
+      "role": "guardian",
+      "art_brief": "Huge, broad gentle giant with a braided beard and tiny round spectacles, a moss-green work apron over a rough shirt, and gauntlets made of stacked river stones. Earthy browns, greys and moss green. A wide, square silhouette.",
+      "playable": true,
+      "base_stats": {
+        "hp": 9000,
+        "atk": 850,
+        "def": 480,
+        "crit_rate": 0.05
+      },
+      "deck": [
+        {
+          "card_id": "card_dunmore_riverstone_jab",
+          "count": 2
+        },
+        {
+          "card_id": "card_dunmore_bulwark_palm",
+          "count": 1
+        },
+        {
+          "card_id": "card_dunmore_skipping_stone",
+          "count": 2
+        },
+        {
+          "card_id": "card_dunmore_quarry_quake",
+          "count": 2
+        },
+        {
+          "card_id": "card_dunmore_mountain_drop",
+          "count": 1
+        }
+      ],
+      "art": {
+        "portrait": "por_dunmore_base",
+        "sprite": "spr_dunmore_base",
+        "summon_art": "art_dunmore_summon"
+      },
+      "shouts": {
+        "intro": "I'm sorry in advance. Truly.",
+        "tag_in": "I'll take the hits.",
+        "ko": "Oof. Good... one...",
+        "victory": "Is everyone all right? Good.",
+        "tri_burst": "FRIENDS, GET BEHIND ME!"
+      },
+      "bio": "A gentle giant who apologizes before every punch. Former quarry worker; he carries river stones as gauntlets."
+    },
+    {
+      "id": "char_pell_001",
+      "family": "pell",
+      "name": "Pell",
+      "epithet": "Lantern Monk",
+      "rarity": 4,
+      "aura": "radiant",
+      "role": "guardian",
+      "art_brief": "Young monk with long silver hair in a low ponytail, layered white-and-gold robes with small bells on the sleeves, and a paper-lantern staff. Calm half-smile. Ignition: a halo of floating paper lanterns and robes glowing gold.",
+      "playable": true,
+      "base_stats": {
+        "hp": 9800,
+        "atk": 950,
+        "def": 500,
+        "crit_rate": 0.05
+      },
+      "deck": [
+        {
+          "card_id": "card_pell_bell_strike",
+          "count": 2
+        },
+        {
+          "card_id": "card_pell_lantern_sweep",
+          "count": 1
+        },
+        {
+          "card_id": "card_pell_wisp_volley",
+          "count": 2
+        },
+        {
+          "card_id": "card_pell_dawn_chant",
+          "count": 2
+        },
+        {
+          "card_id": "card_pell_hundred_lanterns",
+          "count": 1
+        }
+      ],
+      "ignition": {
+        "name": "Thousand Lantern Form",
+        "triggers": [
+          {
+            "type": "hp_below_pct",
+            "value": 60
+          },
+          {
+            "type": "battle_time_s",
+            "value": 80
+          }
+        ],
+        "duration_s": 30,
+        "stat_mult": {
+          "atk": 1.2,
+          "def": 1.3
+        },
+        "vigor_regen_bonus": 0.3,
+        "heal_pct": 0.15,
+        "deck": [
+          {
+            "card_id": "card_pell_bell_strike",
+            "count": 2
+          },
+          {
+            "card_id": "card_pell_lantern_sweep",
+            "count": 1
+          },
+          {
+            "card_id": "card_pell_wisp_volley",
+            "count": 2
+          },
+          {
+            "card_id": "card_pell_sunbell_mantra",
+            "count": 2
+          },
+          {
+            "card_id": "card_pell_thousand_dawns",
+            "count": 1
+          }
+        ],
+        "art": {
+          "sprite": "spr_pell_ignition",
+          "portrait": "por_pell_ignition",
+          "vfx": "vfx_pell_ignition"
+        },
+        "shout": "A THOUSAND LANTERNS, BURN!"
+      },
+      "art": {
+        "portrait": "por_pell_base",
+        "sprite": "spr_pell_base",
+        "summon_art": "art_pell_summon"
+      },
+      "shouts": {
+        "intro": "Peace first. Then, if needed, fists.",
+        "tag_in": "The lantern is lit.",
+        "ko": "The flame... flickers...",
+        "victory": "Calm returns. I win the bet.",
+        "tri_burst": "LANTERNS, LIGHT THE WAY!"
+      },
+      "bio": "Serene on the outside, wildly competitive inside. Will heal anyone, then bet them he wins the rematch."
+    },
+    {
+      "id": "char_thessa_001",
+      "family": "thessa",
+      "name": "Thessa",
+      "epithet": "The Quiet Eclipse",
+      "rarity": 4,
+      "aura": "void",
+      "role": "trickster",
+      "art_brief": "Tall woman in an ink-black long coat with a lining flecked with silver stars, a cracked porcelain half-mask over the left eye, and ink dripping from her fingertips. Black, violet and silver palette. Ignition: the mask falls away and her eyes go fully dark.",
+      "playable": true,
+      "base_stats": {
+        "hp": 9300,
+        "atk": 1000,
+        "def": 470,
+        "crit_rate": 0.07
+      },
+      "deck": [
+        {
+          "card_id": "card_thessa_ink_needle",
+          "count": 2
+        },
+        {
+          "card_id": "card_thessa_cracked_mask",
+          "count": 1
+        },
+        {
+          "card_id": "card_thessa_night_thread",
+          "count": 2
+        },
+        {
+          "card_id": "card_thessa_eclipse_veil",
+          "count": 2
+        },
+        {
+          "card_id": "card_thessa_black_sun_requiem",
+          "count": 1
+        }
+      ],
+      "ignition": {
+        "name": "Eclipse Unmasked",
+        "triggers": [
+          {
+            "type": "hp_below_pct",
+            "value": 50
+          },
+          {
+            "type": "battle_time_s",
+            "value": 90
+          }
+        ],
+        "duration_s": 25,
+        "stat_mult": {
+          "atk": 1.35,
+          "def": 1.1
+        },
+        "vigor_regen_bonus": 0.2,
+        "heal_pct": 0.05,
+        "deck": [
+          {
+            "card_id": "card_thessa_ink_needle",
+            "count": 2
+          },
+          {
+            "card_id": "card_thessa_cracked_mask",
+            "count": 1
+          },
+          {
+            "card_id": "card_thessa_night_thread",
+            "count": 2
+          },
+          {
+            "card_id": "card_thessa_umbra_bloom",
+            "count": 2
+          },
+          {
+            "card_id": "card_thessa_new_moon_ending",
+            "count": 1
+          }
+        ],
+        "art": {
+          "sprite": "spr_thessa_ignition",
+          "portrait": "por_thessa_ignition",
+          "vfx": "vfx_thessa_ignition"
+        },
+        "shout": "THE MASK COMES OFF!"
+      },
+      "art": {
+        "portrait": "por_thessa_base",
+        "sprite": "spr_thessa_base",
+        "summon_art": "art_thessa_summon"
+      },
+      "shouts": {
+        "intro": "Few words. Many bruises.",
+        "tag_in": "Out of the dark.",
+        "ko": "So... this is the light...",
+        "victory": "Done. Next.",
+        "tri_burst": "SWALLOW THEM, NIGHT!"
+      },
+      "bio": "Dry, quiet and always watching. Corvane's herald, though she has started to doubt her king."
+    },
+    {
+      "id": "char_rook_001",
+      "family": "rook",
+      "name": "Rook",
+      "epithet": "Thousand-Step Rook",
+      "rarity": 4,
+      "aura": "gale",
+      "role": "striker",
+      "art_brief": "Lanky young man in a black-and-white checkered hoodie with sleeves pushed up, windswept dark hair with one shaved stripe, and sneakers with spring-steel soles. Black, white and pale green palette. Cocky stance, one hand raised counting on his fingers.",
+      "playable": true,
+      "base_stats": {
+        "hp": 9000,
+        "atk": 1050,
+        "def": 450,
+        "crit_rate": 0.08
+      },
+      "deck": [
+        {
+          "card_id": "card_rook_one_two_count",
+          "count": 2
+        },
+        {
+          "card_id": "card_rook_three_step_kick",
+          "count": 1
+        },
+        {
+          "card_id": "card_rook_razor_draft",
+          "count": 2
+        },
+        {
+          "card_id": "card_rook_gambit_cyclone",
+          "count": 2
+        },
+        {
+          "card_id": "card_rook_endgame_storm",
+          "count": 1
+        }
+      ],
+      "ignition": {
+        "name": "Checkmate Gale",
+        "triggers": [
+          {
+            "type": "hp_below_pct",
+            "value": 40
+          },
+          {
+            "type": "battle_time_s",
+            "value": 70
+          }
+        ],
+        "duration_s": 20,
+        "stat_mult": {
+          "atk": 1.4,
+          "def": 1.1
+        },
+        "vigor_regen_bonus": 0.3,
+        "heal_pct": 0.05,
+        "deck": [
+          {
+            "card_id": "card_rook_one_two_count",
+            "count": 2
+          },
+          {
+            "card_id": "card_rook_three_step_kick",
+            "count": 1
+          },
+          {
+            "card_id": "card_rook_razor_draft",
+            "count": 2
+          },
+          {
+            "card_id": "card_rook_castling_blitz",
+            "count": 2
+          },
+          {
+            "card_id": "card_rook_checkmate_typhoon",
+            "count": 1
+          }
+        ],
+        "art": {
+          "sprite": "spr_rook_ignition",
+          "portrait": "por_rook_ignition",
+          "vfx": "vfx_rook_ignition"
+        },
+        "shout": "NO MORE MOVES FOR YOU!"
+      },
+      "art": {
+        "portrait": "por_rook_base",
+        "sprite": "spr_rook_base",
+        "summon_art": "art_rook_summon"
+      },
+      "shouts": {
+        "intro": "I already counted your losses.",
+        "tag_in": "Your move. Wrong move.",
+        "ko": "Didn't... see that one...",
+        "victory": "Checkmate. Obviously.",
+        "tri_burst": "ALL PIECES, ADVANCE!"
+      },
+      "bio": "A cocky street champion who counts every hit out loud. Calls fights like chess games and hates to lose."
+    },
+    {
+      "id": "char_solenne_001",
+      "family": "solenne",
+      "name": "Solenne",
+      "epithet": "Dawnbreaker Champion",
+      "rarity": 5,
+      "aura": "blaze",
+      "role": "blaster",
+      "art_brief": "Tall woman with short ash-blonde hair, golden-red bracers shaped like sun rays, a white tournament sash with nine notches and a burn scar on one forearm. Gold, white and red palette. Ignition: a blazing sun disc rises behind her shoulders.",
+      "playable": true,
+      "base_stats": {
+        "hp": 10500,
+        "atk": 1120,
+        "def": 540,
+        "crit_rate": 0.08
+      },
+      "deck": [
+        {
+          "card_id": "card_solenne_sunray_jab",
+          "count": 2
+        },
+        {
+          "card_id": "card_solenne_crown_knee",
+          "count": 1
+        },
+        {
+          "card_id": "card_solenne_corona_lance",
+          "count": 2
+        },
+        {
+          "card_id": "card_solenne_noonday_halo",
+          "count": 2
+        },
+        {
+          "card_id": "card_solenne_nine_peaks_dawn",
+          "count": 1
+        }
+      ],
+      "ignition": {
+        "name": "Noon Sovereign",
+        "triggers": [
+          {
+            "type": "hp_below_pct",
+            "value": 50
+          },
+          {
+            "type": "battle_time_s",
+            "value": 60
+          }
+        ],
+        "duration_s": 25,
+        "stat_mult": {
+          "atk": 1.35,
+          "def": 1.25
+        },
+        "vigor_regen_bonus": 0.2,
+        "heal_pct": 0.1,
+        "deck": [
+          {
+            "card_id": "card_solenne_sunray_jab",
+            "count": 2
+          },
+          {
+            "card_id": "card_solenne_crown_knee",
+            "count": 1
+          },
+          {
+            "card_id": "card_solenne_corona_lance",
+            "count": 2
+          },
+          {
+            "card_id": "card_solenne_zenith_crown",
+            "count": 2
+          },
+          {
+            "card_id": "card_solenne_sovereign_sunfall",
+            "count": 1
+          }
+        ],
+        "art": {
+          "sprite": "spr_solenne_ignition",
+          "portrait": "por_solenne_ignition",
+          "vfx": "vfx_solenne_ignition"
+        },
+        "shout": "HIGH NOON! THE SUN IS MINE!"
+      },
+      "art": {
+        "portrait": "por_solenne_base",
+        "sprite": "spr_solenne_base",
+        "summon_art": "art_solenne_summon"
+      },
+      "shouts": {
+        "intro": "Show me you deserve this ring.",
+        "tag_in": "The champion steps in.",
+        "ko": "Well fought... truly...",
+        "victory": "Rise again. Come back stronger.",
+        "tri_burst": "TOGETHER, LIKE A SUNRISE!"
+      },
+      "bio": "Proud, warm and impossible to impress. Nine-time champion of the Highcliff Open who tests every new fighter herself."
+    },
+    {
+      "id": "char_corvane_001",
+      "family": "corvane",
+      "name": "Corvane",
+      "epithet": "The Starless King",
+      "rarity": 5,
+      "aura": "void",
+      "role": "trickster",
+      "art_brief": "Towering, gaunt king in robes made of drifting black ribbons, with a crown of floating obsidian shards, violet eyes and hands like cracked glass lit violet from inside. Black and violet palette. Ignition: the shard crown grows into a throne-like halo.",
+      "playable": true,
+      "base_stats": {
+        "hp": 11000,
+        "atk": 1100,
+        "def": 580,
+        "crit_rate": 0.06
+      },
+      "deck": [
+        {
+          "card_id": "card_corvane_shard_backhand",
+          "count": 2
+        },
+        {
+          "card_id": "card_corvane_ribbon_lash",
+          "count": 1
+        },
+        {
+          "card_id": "card_corvane_obsidian_rain",
+          "count": 2
+        },
+        {
+          "card_id": "card_corvane_aura_thief",
+          "count": 2
+        },
+        {
+          "card_id": "card_corvane_starless_night",
+          "count": 1
+        }
+      ],
+      "ignition": {
+        "name": "Starless Throne",
+        "triggers": [
+          {
+            "type": "hp_below_pct",
+            "value": 60
+          },
+          {
+            "type": "battle_time_s",
+            "value": 100
+          }
+        ],
+        "duration_s": 30,
+        "stat_mult": {
+          "atk": 1.4,
+          "def": 1.3
+        },
+        "vigor_regen_bonus": 0.1,
+        "heal_pct": 0.15,
+        "deck": [
+          {
+            "card_id": "card_corvane_shard_backhand",
+            "count": 2
+          },
+          {
+            "card_id": "card_corvane_ribbon_lash",
+            "count": 1
+          },
+          {
+            "card_id": "card_corvane_obsidian_rain",
+            "count": 2
+          },
+          {
+            "card_id": "card_corvane_crown_of_nothing",
+            "count": 2
+          },
+          {
+            "card_id": "card_corvane_last_star_falls",
+            "count": 1
+          }
+        ],
+        "art": {
+          "sprite": "spr_corvane_ignition",
+          "portrait": "por_corvane_ignition",
+          "vfx": "vfx_corvane_ignition"
+        },
+        "shout": "BEHOLD THE STARLESS THRONE!"
+      },
+      "art": {
+        "portrait": "por_corvane_base",
+        "sprite": "spr_corvane_base",
+        "summon_art": "art_corvane_summon"
+      },
+      "shouts": {
+        "intro": "Your aura will look lovely on me.",
+        "tag_in": "Step aside. The king arrives.",
+        "ko": "Impossible... my crown...",
+        "victory": "Another trophy for the collection.",
+        "tri_burst": "SERVANTS, DEVOUR THEM!"
+      },
+      "bio": "Polite, theatrical and hungry. A tyrant who steals fighters' auras and wears them as a crown of shards."
+    },
+    {
+      "id": "char_fxbase_001",
+      "family": "fxbase",
+      "name": "Fixture Base",
+      "epithet": "Test fixture fighter",
+      "rarity": 4,
+      "aura": "blaze",
+      "playable": true,
+      "base_stats": {
+        "hp": 10000,
+        "atk": 1000,
+        "def": 500,
+        "crit_rate": 0.05
+      },
+      "deck": [
+        {
+          "card_id": "card_common_fxjab",
+          "count": 3
+        },
+        {
+          "card_id": "card_common_fxbolt",
+          "count": 2
+        },
+        {
+          "card_id": "card_common_fxsig",
+          "count": 2
+        },
+        {
+          "card_id": "card_common_fxclimax",
+          "count": 1
+        }
+      ],
+      "art": {
+        "portrait": "por_fxbase_base",
+        "sprite": "spr_fxbase_base"
+      },
+      "shouts": {
+        "intro": "Fixture ready.",
+        "tag_in": "Fixture in.",
+        "ko": "Fixture down.",
+        "victory": "Fixture wins.",
+        "tri_burst": "Fixture burst!"
+      },
+      "bio": "Test fixture fighter with round numbers for GDD worked examples (§15.4). Never shown in the game."
+    }
+  ]
+}

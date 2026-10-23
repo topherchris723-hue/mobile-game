@@ -11,11 +11,23 @@ export function readJson(rel) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 }
 
-/** All data files keyed by file name, e.g. { 'cards.json': {...} }. Fresh copy every call. */
-export function loadAllData() {
+/** GDD §15.4 FX-GDD: the frozen data copy that W-class (worked example) tests run on. Never `data/`. */
+export const FX_GDD_DIR = 'tests/fixtures/gdd';
+
+/**
+ * All data files keyed by file name, e.g. { 'cards.json': {...} }. Fresh copy every call.
+ * dir: repo-relative data directory, default the live `data` (P-class tests); pass FX_GDD_DIR for W-class.
+ */
+export function loadAllData(dir) {
+  const base = dir || 'data';
   const out = {};
-  for (const d of DATA_FILES) out[d.file] = readJson('data/' + d.file);
+  for (const d of DATA_FILES) out[d.file] = readJson(base + '/' + d.file);
   return out;
+}
+
+/** Read one FX-GDD fixture file, e.g. readGddJson('economy.json'). */
+export function readGddJson(file) {
+  return readJson(FX_GDD_DIR + '/' + file);
 }
 
 /** All schemas keyed by schema file name. */
@@ -30,9 +42,9 @@ export function loadGdd() {
   return fs.readFileSync(path.join(ROOT, 'docs', 'GDD.md'), 'utf8');
 }
 
-/** The content bundle the battle engine expects (see src/logic/README.md). */
-export function loadBundle() {
-  const d = loadAllData();
+/** The content bundle the battle engine expects (see src/logic/README.md). dir as in loadAllData. */
+export function loadBundle(dir) {
+  const d = loadAllData(dir);
   return {
     battle: d['battle.json'],
     characters: d['characters.json'],
@@ -41,4 +53,11 @@ export function loadBundle() {
     stages: d['stages.json'],
     banners: d['banners.json'],
   };
+}
+
+/** The FX-GDD content bundle (GDD §15.4), economy included. For W-class tests only. */
+export function loadGddBundle() {
+  const b = loadBundle(FX_GDD_DIR);
+  b.economy = readGddJson('economy.json');
+  return b;
 }

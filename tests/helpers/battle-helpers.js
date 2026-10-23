@@ -1,14 +1,24 @@
 // Helpers for scripted battle tests. Both sides are 'human' (scripted) unless stated.
 import { createBattle, createContent } from '../../src/logic/index.js';
 import { vigorUnits } from '../../src/logic/rules.js';
-import { loadBundle, readJson } from './load-data.js';
+import { loadBundle, loadGddBundle, readJson } from './load-data.js';
 
 export const TEST_FIST_ID = 'card_tavi_test_fist';
 
-/** Data bundle plus a 1-hit test Fist with power 1.2 (GDD AC-5.6.4 / AC-5.7.1 numbers). */
-export function testBundle(mutateBattle) {
-  const bundle = loadBundle();
-  bundle.economy = readJson('data/economy.json');
+/**
+ * Data bundle plus a 1-hit test Fist with power 1.2 (GDD AC-5.6.4 / AC-5.7.1 numbers).
+ * source: 'gdd' (default) = FX-GDD (GDD §15.4, W-class worked examples); 'live' = data/ (P-class ACs).
+ */
+export function testBundle(mutateBattle, source) {
+  let bundle;
+  if (source === 'live') {
+    bundle = loadBundle();
+    bundle.economy = readJson('data/economy.json');
+  } else if (source === undefined || source === 'gdd') {
+    bundle = loadGddBundle();
+  } else {
+    throw new Error('testBundle: unknown source ' + source);
+  }
   bundle.cards.cards.push({
     id: TEST_FIST_ID, name: 'Test Fist', type: 'fist', owner: 'char_tavi_001', cost: 2, power: 1.2, hits: 1,
     delivery: 'melee', windup_s: 0.12, hit_interval_s: 0.1, recovery_s: 0.3, hitstun_s: 0.6, knockback: 0,
@@ -18,10 +28,13 @@ export function testBundle(mutateBattle) {
   return bundle;
 }
 
-/** A scripted battle: starter team vs the given enemies, fight already started. */
+/**
+ * A scripted battle: starter team vs the given enemies, fight already started.
+ * Runs on FX-GDD unless opts.live is true (P-class ACs) or opts.bundle is given.
+ */
 export function scriptedBattle(opts) {
   const o = opts || {};
-  const bundle = o.bundle || testBundle(o.mutateBattle);
+  const bundle = o.bundle || testBundle(o.mutateBattle, o.live ? 'live' : 'gdd');
   const b = createBattle({
     content: createContent(bundle),
     enemyTeam: o.enemyTeam || ['enemy_rook_003', 'enemy_pell_002', 'enemy_thessa_001'],

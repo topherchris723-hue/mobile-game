@@ -47,7 +47,7 @@ describe('§5.9 Ignition', () => {
     expect(b.getState().freeze.ticksLeft).toBe(90);
   });
   it('AC-5.9.2: after use, IGNITE never appears again for that fighter in that battle', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     const f = b.activeFighter('player');
     f.hp = 1000;
     step(b);
@@ -91,7 +91,7 @@ describe('§5.9 Ignition', () => {
     expect(f.deck.draw.length + f.deck.hand.length).toBe(ignIds.length);
   });
   it('AC-5.9.4: igniting in hitstun ends hitstun and pushes the enemy 20 units', () => {
-    const b = scriptedBattle(); setClose(b);
+    const b = scriptedBattle({ live: true }); setClose(b);
     const f = b.activeFighter('player');
     f.hp = 1000;
     giveCard(b, 'enemy', 0, ENEMY_JAB);
@@ -244,7 +244,7 @@ describe('§5.10 Tri-Burst', () => {
 
 describe('§5.13 card effects', () => {
   it('AC-5.13.1: atk_up 0.2 applied twice gives 1.2, not 1.4, and the second application refreshes the duration', () => {
-    const b = scriptedBattle({ playerTeam: ['char_pell_001', 'char_lark_001', 'char_dunmore_001'] });
+    const b = scriptedBattle({ live: true, playerTeam: ['char_pell_001', 'char_lark_001', 'char_dunmore_001'] });
     b.teams.enemy.x = 100; b.teams.player.x = 0;
     const f = b.activeFighter('player');
     const CHANT = 'card_pell_dawn_chant';
@@ -268,7 +268,7 @@ describe('§5.13 card effects', () => {
     expect(b.atkEff(f)).toBeCloseTo(f.def.atk * 0.9, 9);
   });
   it('AC-5.11.4 (engine): extreme buffs are clamped to [0.5, 1.5]', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     const f = b.activeFighter('player');
     f.buffs = { atk_up: { value: 0.9, ticksLeft: 9 }, def_up: { value: 0.9, ticksLeft: 9 } };
     expect(b.atkEff(f)).toBeCloseTo(f.def.atk * 1.5, 9);

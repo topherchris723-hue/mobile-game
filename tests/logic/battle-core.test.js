@@ -72,7 +72,7 @@ describe('§5.3 Vigor', () => {
     expect(vigor(b, 'player')).toBe(10);
   });
   it('AC-5.3.2: a card or Slip costing more than current Vigor does nothing and spends nothing', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     giveCard(b, 'player', 0, JAB);
     setVigor(b, 'player', 1.98);
     const evs = step(b, [{ type: 'card', slot: 0 }]);
@@ -105,7 +105,7 @@ describe('§5.3 Vigor', () => {
     expect(vigor(b, 'player')).toBeCloseTo(5, 9);
   });
   it('AC-5.3.3: Vigor does not change during a Climax cinematic', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     setClose(b);
     giveCard(b, 'player', 0, CLIMAX);
     setVigor(b, 'player', 10);
@@ -186,9 +186,9 @@ describe('§5.4 cards and the hand', () => {
 });
 
 describe('§5.5 attacks, hits and hitstun', () => {
-  /** Run a fresh scenario and return the tick of the player's first Flare Toss hit. */
+  /** Run a fresh scenario and return the tick of the player's first Flare Toss hit (live data: AC-5.5.1 is P-class). */
   function flareFirstHitTick() {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     giveCard(b, 'player', 0, FLARE);
     step(b, [{ type: 'card', slot: 0 }]);
     const r = stepUntil(b, (evs) => ofType(evs, 'hit', 'player').length > 0);
@@ -204,7 +204,7 @@ describe('§5.5 attacks, hits and hitstun', () => {
   });
   it('AC-5.5.1: a 3-hit card whose first hit is dodged deals 0 damage on all 3 hits (even hits after the i-frames)', () => {
     const th = flareFirstHitTick();
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     giveCard(b, 'player', 0, FLARE);
     const hp = b.activeFighter('enemy').hp;
     step(b, [{ type: 'card', slot: 0 }]);
@@ -218,7 +218,7 @@ describe('§5.5 attacks, hits and hitstun', () => {
     expect(b.activeFighter('enemy').hp).toBe(hp);
   });
   it('AC-5.5.2: a non-armor Signature hit during its windup is cancelled and its Vigor is not refunded', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     setClose(b);
     giveCard(b, 'enemy', 0, FURNACE);
     giveCard(b, 'player', 0, JAB);
@@ -235,7 +235,7 @@ describe('§5.5 attacks, hits and hitstun', () => {
     expect(ofType(later, 'hit', 'enemy')).toHaveLength(0);
   });
   it('AC-5.5.3: a Climax hit during its windup is not cancelled (it takes the damage and keeps going)', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     setClose(b);
     giveCard(b, 'enemy', 0, 'card_rook_endgame_storm');
     giveCard(b, 'player', 0, JAB);
@@ -252,7 +252,7 @@ describe('§5.5 attacks, hits and hitstun', () => {
     expect(ofType(r2.events, 'hit', 'enemy').length).toBe(b.card('card_rook_endgame_storm').hits);
   });
   it('AC-5.5.4: two attacks landing on the same tick both deal damage and both fighters enter hitstun', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     setClose(b);
     giveCard(b, 'player', 0, JAB);
     giveCard(b, 'enemy', 0, 'card_rook_one_two_count');

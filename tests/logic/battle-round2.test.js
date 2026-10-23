@@ -239,7 +239,7 @@ describe('§5.10 landed Tri-Burst (round 2)', () => {
 
 describe('§5.0 inputs during freezes', () => {
   it('AC-5.0.1: a Slip made during a hitstop is applied on the first unfrozen tick after it', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     setClose(b);
     giveCard(b, 'player', 0, TEST_FIST_ID); // 1 hit, so the player is in its link window right after
     step(b, [{ type: 'card', slot: 0 }]);
@@ -256,7 +256,7 @@ describe('§5.0 inputs during freezes', () => {
     expect(slip[0].tick).toBe(hitTick + 1);
   });
   it('AC-5.0.1: a card tap made during an Ignition cinematic plays no card, before or after it', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     const f = b.activeFighter('player');
     f.hp = 1000;
     step(b);
@@ -307,7 +307,7 @@ describe('§5.1 approach (round 2)', () => {
 describe('§5.5 hits (round 2)', () => {
   it('AC-5.5.3 (rewritten): a Climax hit during its windup stays in Windup, its x does not move, and its first hit lands on the originally scheduled tick', () => {
     const run = (playerHits) => {
-      const b = scriptedBattle();
+      const b = scriptedBattle({ live: true });
       setClose(b);
       giveCard(b, 'enemy', 0, ENDGAME);
       giveCard(b, 'player', 0, JAB);
@@ -337,7 +337,7 @@ describe('§5.5 hits (round 2)', () => {
   });
   it('AC-5.5.5: a projectile Bolt whose thrower is hit after the windup ends but before the first hit lands: every hit resolves on its scheduled tick', () => {
     const run = (enemyAttacks) => {
-      const b = scriptedBattle({ enemyTeam: ['enemy_thessa_001'] });
+      const b = scriptedBattle({ live: true, enemyTeam: ['enemy_thessa_001'] });
       giveCard(b, 'player', 0, FLARE);
       giveCard(b, 'enemy', 0, NIGHT_THREAD);
       const all = [];
@@ -360,7 +360,7 @@ describe('§5.5 hits (round 2)', () => {
     expect(ofType(all, 'hit', 'player').map((h) => h.tick)).toEqual(base);
   });
   it('AC-5.5.5: a 2-hit melee Fist whose attacker is hit by a projectile in flight between its hits deals only the first hit', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     setClose(b);
     giveCard(b, 'player', 0, JAB);
     giveCard(b, 'enemy', 0, RAZOR);
@@ -383,7 +383,7 @@ describe('§5.5 hits (round 2)', () => {
     expect(e0 - b.activeFighter('enemy').hp).toBe(ph[0].damage);
   });
   it('AC-5.5.6: a Climax first hit applies the sum of all its hits on that tick, HP does not change during the cinematic, Hitstun lasts 60 unfrozen ticks', () => {
-    const b = scriptedBattle();
+    const b = scriptedBattle({ live: true });
     setClose(b);
     giveCard(b, 'player', 0, WILDFIRE);
     setVigor(b, 'player', 10);
