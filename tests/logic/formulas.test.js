@@ -8,47 +8,49 @@ import { createContent, enemyFighterDef } from '../../src/logic/content.js';
 
 const battleJson = readJson('data/battle.json');
 const R = buildRules(battleJson);
-// GDD §15.4: the §5 default numbers (W-class) are checked on FX-GDD, never on live data.
+// GDD §15.4: the §5 default numbers are checked on FX-GDD, never on live data: W-class examples and the X-class formula
+// ACs (5.10.2, 5.11.1–5.11.3), whose rule constants (power_per_member 3.0, def_constant, caps…) must be the GDD values.
+// Only AC-5.12.1 (P) and the live tick-conversion test use the live rules R.
 const gddBattleJson = readGddJson('battle.json');
 const RG = buildRules(gddBattleJson);
 
 describe('GDD §5.11 damage formula', () => {
   it('AC-5.11.1: ATK 1000, 2-hit Fist power 1.2, Blaze vs Gale, chain 2, no crit, DEF 500 → 546 per hit, 1,092 total', () => {
     const p = { atk: 1000, power: 1.2, hits: 2, typeMult: 1.3, critMult: 1, comboMult: 1.05, riposteMult: 1, def: 500 };
-    const hit = F.hitDamage(p, R.damage);
+    const hit = F.hitDamage(p, RG.damage);
     expect(hit).toBe(546);
     expect(hit * 2).toBe(1092);
   });
   it('AC-5.11.2 (rewritten): ATK 300, power 0.01, 1 hit, all mults 1.0, DEF 3,000 → raw 0.75 → floor 0 → clamped to 1, never 0', () => {
     const p = { atk: 300, power: 0.01, hits: 1, typeMult: 1.0, critMult: 1, comboMult: 1, riposteMult: 1, def: 3000 };
-    expect(F.defFactor(3000, R.damage.defConstant)).toBe(0.25);
-    expect(F.hitDamage(p, R.damage)).toBe(1);
+    expect(F.defFactor(3000, RG.damage.defConstant)).toBe(0.25);
+    expect(F.hitDamage(p, RG.damage)).toBe(1);
     // At ATK 1,000 the same inputs give 2.5 → 2 (does not test the minimum).
-    expect(F.hitDamage({ ...p, atk: 1000 }, R.damage)).toBe(2);
+    expect(F.hitDamage({ ...p, atk: 1000 }, RG.damage)).toBe(2);
     // Even ATK 1 against DEF 3,000 never deals 0.
-    expect(F.hitDamage({ atk: 1, power: 0.01, hits: 10, typeMult: 0.8, critMult: 1, comboMult: 1, riposteMult: 1, def: 3000 }, R.damage)).toBe(1);
+    expect(F.hitDamage({ atk: 1, power: 0.01, hits: 10, typeMult: 0.8, critMult: 1, comboMult: 1, riposteMult: 1, def: 3000 }, RG.damage)).toBe(1);
   });
   it('caps a hit at max_hit 99,999', () => {
     const p = { atk: 1e9, power: 10, hits: 1, typeMult: 1.3, critMult: 1.5, comboMult: 1.2, riposteMult: 1.25, def: 0 };
-    expect(F.hitDamage(p, R.damage)).toBe(99999);
+    expect(F.hitDamage(p, RG.damage)).toBe(99999);
   });
   it('AC-5.11.3: over 100,000 seeded card uses at crit_rate 0.05, crit frequency is 0.05 ± 0.003', () => {
     const rng = new SeededRng(12345);
     let crits = 0;
-    const rate = Math.min(0.05, R.damage.critCap);
+    const rate = Math.min(0.05, RG.damage.critCap);
     for (let i = 0; i < 100000; i++) if (rng.next() < rate) crits++;
     expect(Math.abs(crits / 100000 - 0.05)).toBeLessThanOrEqual(0.003);
   });
   it('crit chance is capped at crit_cap 0.50', () => {
-    expect(Math.min(0.9, R.damage.critCap)).toBe(0.5);
+    expect(Math.min(0.9, RG.damage.critCap)).toBe(0.5);
   });
   it('AC-5.11.4: buff factor stays inside [0.5, 1.5] for any stacked buffs', () => {
-    expect(F.buffFactor(0.9, 0, R.damage.buffMin, R.damage.buffMax)).toBe(1.5);
-    expect(F.buffFactor(0, 0.9, R.damage.buffMin, R.damage.buffMax)).toBe(0.5);
-    expect(F.buffFactor(0.2, 0.3, R.damage.buffMin, R.damage.buffMax)).toBeCloseTo(0.9, 10); // §5.13 example
+    expect(F.buffFactor(0.9, 0, RG.damage.buffMin, RG.damage.buffMax)).toBe(1.5);
+    expect(F.buffFactor(0, 0.9, RG.damage.buffMin, RG.damage.buffMax)).toBe(0.5);
+    expect(F.buffFactor(0.2, 0.3, RG.damage.buffMin, RG.damage.buffMax)).toBeCloseTo(0.9, 10); // §5.13 example
     for (let up = 0; up <= 2; up += 0.25) {
       for (let down = 0; down <= 2; down += 0.25) {
-        const v = F.buffFactor(up, down, R.damage.buffMin, R.damage.buffMax);
+        const v = F.buffFactor(up, down, RG.damage.buffMin, RG.damage.buffMax);
         expect(v).toBeGreaterThanOrEqual(0.5);
         expect(v).toBeLessThanOrEqual(1.5);
       }
@@ -63,7 +65,7 @@ describe('GDD §5.11 damage formula', () => {
 
 describe('GDD §5.7 combo multiplier', () => {
   it('1.00, 1.05, 1.10, 1.15, 1.20 and capped after', () => {
-    const m = [1, 2, 3, 4, 5, 6, 9].map((c) => F.comboMult(c, R.combo.bonusPerCard, R.combo.bonusMaxSteps));
+    const m = [1, 2, 3, 4, 5, 6, 9].map((c) => F.comboMult(c, RG.combo.bonusPerCard, RG.combo.bonusMaxSteps));
     const want = [1.0, 1.05, 1.1, 1.15, 1.2, 1.2, 1.2];
     m.forEach((v, i) => expect(v).toBeCloseTo(want[i], 10));
   });
@@ -90,24 +92,24 @@ describe('GDD §5.12 aura types', () => {
 
 describe('GDD §5.10 Burst and Tri-Burst formulas', () => {
   it('AC-5.10.1: 2,500 damage to a 10,000 HP enemy → +10 gauge', () => {
-    expect(F.burstGainDealt(2500, 10000, R.burst.gainDealtFactor)).toBe(10);
+    expect(F.burstGainDealt(2500, 10000, RG.burst.gainDealtFactor)).toBe(10);
   });
   it('GDD examples: 1,000 dealt → +4, 1,000 taken on 10,000 HP → +2.5', () => {
-    expect(F.burstGainDealt(1000, 10000, R.burst.gainDealtFactor)).toBe(4);
-    expect(F.burstGainTaken(1000, 10000, R.burst.gainTakenFactor)).toBe(2.5);
+    expect(F.burstGainDealt(1000, 10000, RG.burst.gainDealtFactor)).toBe(4);
+    expect(F.burstGainTaken(1000, 10000, RG.burst.gainTakenFactor)).toBe(2.5);
   });
   it('AC-5.10.2: ATK 1000 Blaze / 1100 Stone / 900 Void vs Gale DEF 500 → 2,600 + 2,200 + 1,800 = 6,600', () => {
-    const tm = (a) => F.typeMult(R.typeChart, a, 'gale');
+    const tm = (a) => F.typeMult(RG.typeChart, a, 'gale');
     const hits = [
-      F.triBurstHit(1000, tm('blaze'), 500, R.burst.powerPerMember, R.damage),
-      F.triBurstHit(1100, tm('stone'), 500, R.burst.powerPerMember, R.damage),
-      F.triBurstHit(900, tm('void'), 500, R.burst.powerPerMember, R.damage),
+      F.triBurstHit(1000, tm('blaze'), 500, RG.burst.powerPerMember, RG.damage),
+      F.triBurstHit(1100, tm('stone'), 500, RG.burst.powerPerMember, RG.damage),
+      F.triBurstHit(900, tm('void'), 500, RG.burst.powerPerMember, RG.damage),
     ];
     expect(hits).toEqual([2600, 2200, 1800]);
     expect(hits[0] + hits[1] + hits[2]).toBe(6600);
   });
   it('Tri-Burst never uses a type disadvantage (max(1, type))', () => {
-    expect(F.triBurstHit(1000, 0.8, 0, 3, R.damage)).toBe(3000);
+    expect(F.triBurstHit(1000, 0.8, 0, 3, RG.damage)).toBe(3000);
   });
 });
 
