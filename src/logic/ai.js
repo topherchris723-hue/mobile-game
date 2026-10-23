@@ -104,8 +104,10 @@ export class AiController {
       this.reactAt = -1;
       const firstHit = this.predictFirstHit(w);
       const slip = b.slipMode(this.side);
-      if (!slip.ok || slip.isBreak) { this.watched = null; return null; }
-      if (this.rng.next() >= tier.slipChance) { this.watched = null; return null; }
+      // One decision per windup (GDD §5.15, BUG-3-01): `watched` stays set on every exit below, so the same
+      // windup is never picked up again and re-rolled; it is cleared only when the action ends or lands.
+      if (!slip.ok || slip.isBreak) return null;
+      if (this.rng.next() >= tier.slipChance) return null;
       const perfect = this.rng.next() < tier.perfectSlipChance;
       const SL = b.rules.slip;
       // GDD: perfect → start 6 ticks before the hit, else 15. Derived from data: 2/3 of the
@@ -114,7 +116,6 @@ export class AiController {
       const at = firstHit - offset;
       if (!perfect && firstHit - Math.max(at, now) <= SL.perfectTicks) {
         // Too late for a normal dodge; slipping now would be a Perfect Slip this roll did not earn.
-        this.watched = null;
         return null;
       }
       this.plannedSlipAt = Math.max(at, now);
@@ -129,7 +130,6 @@ export class AiController {
         this.plan.firstHit = firstHit;
         this.plan.planTick = now;
         if (!this.plan.perfectRoll && firstHit - Math.max(at, now) <= SL.perfectTicks) {
-          this.watched = null;
           this.plannedSlipAt = -1;
           return null;
         }
@@ -139,7 +139,7 @@ export class AiController {
     if (this.plannedSlipAt >= 0 && now >= this.plannedSlipAt) {
       this.plannedSlipAt = -1;
       const windupStart = w.windupStart;
-      this.watched = null;
+      // Keep `watched` = w: this windup has had its one roll, whether or not the Slip can start now.
       if (b.slipMode(this.side).ok && !b.slipMode(this.side).isBreak) {
         const plan = this.plan || {};
         this.slipLog.push({
