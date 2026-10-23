@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/vfx.schema.json",
+  "title": "Visual effects (data/vfx.json)",
+  "description": "Event -> effect definitions, safety limits and colors. GDD §17. Cross-file and flash-safety checks: GDD §15.3 rules 13-15. VFX never changes logic timing (§17.1).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "limits", "colors", "effects", "events", "summon_timing"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_screen_flashes_per_s", "max_flash_alpha", "sprite_flash_min_interval_ms", "max_shake_intensity",
+        "max_shake_ms", "max_particles_high", "max_particles_low", "max_emitters", "low_quality_frame_ms",
+        "low_quality_window_frames"
+      ],
+      "properties": {
+        "max_screen_flashes_per_s": { "description": "Default 3. Photosensitivity limit (WCAG 2.3.1); never above 3.", "type": "integer", "minimum": 0, "maximum": 3 },
+        "max_flash_alpha": { "description": "Default 0.9.", "type": "number", "minimum": 0, "maximum": 0.9 },
+        "sprite_flash_min_interval_ms": { "description": "Default 334 (= at most 3 onsets per second).", "type": "integer", "minimum": 334, "maximum": 2000 },
+        "max_shake_intensity": { "description": "Default 0.012 (Phaser camera shake intensity).", "type": "number", "minimum": 0, "maximum": 0.012 },
+        "max_shake_ms": { "description": "Default 300.", "type": "integer", "minimum": 0, "maximum": 300 },
+        "max_particles_high": { "description": "Default 150.", "type": "integer", "minimum": 0, "maximum": 300 },
+        "max_particles_low": { "description": "Default 60.", "type": "integer", "minimum": 0, "maximum": 150 },
+        "max_emitters": { "description": "Default 8.", "type": "integer", "minimum": 1, "maximum": 16 },
+        "low_quality_frame_ms": { "description": "Default 22.2. Median frame time over the window above which the scene switches to low quality.", "type": "number", "minimum": 16.7, "maximum": 50 },
+        "low_quality_window_frames": { "description": "Default 120.", "type": "integer", "minimum": 30, "maximum": 600 }
+      }
+    },
+    "colors": {
+      "description": "Tokens 'aura', 'card_type', 'rarity' resolve through these maps. Defaults = round-3 theme (GDD §17.2).",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aura", "card_type", "rarity", "white"],
+      "properties": {
+        "aura": {
+          "type": "object", "additionalProperties": false,
+          "required": ["blaze", "gale", "stone", "radiant", "void"],
+          "properties": {
+            "blaze": { "$ref": "#/$defs/hex" }, "gale": { "$ref": "#/$defs/hex" }, "stone": { "$ref": "#/$defs/hex" },
+            "radiant": { "$ref": "#/$defs/hex" }, "void": { "$ref": "#/$defs/hex" }
+          }
+        },
+        "card_type": {
+          "type": "object", "additionalProperties": false,
+          "required": ["fist", "bolt", "signature", "climax"],
+          "properties": {
+            "fist": { "$ref": "#/$defs/hex" }, "bolt": { "$ref": "#/$defs/hex" },
+            "signature": { "$ref": "#/$defs/hex" }, "climax": { "$ref": "#/$defs/hex" }
+          }
+        },
+        "rarity": {
+          "type": "object", "additionalProperties": false,
+          "required": ["3", "4", "5"],
+          "properties": { "3": { "$ref": "#/$defs/hex" }, "4": { "$ref": "#/$defs/hex" }, "5": { "$ref": "#/$defs/hex" } }
+        },
+        "white": { "$ref": "#/$defs/hex" }
+      }
+    },
+    "effects": {
+      "description": "effect id -> definition. Card art.vfx and ignition.art.vfx keys (vfx_*) may name effects here.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/$defs/effect" }
+    },
+    "events": {
+      "description": "event key (VFX_EVENT_KEYS, e.g. 'hit.fist', 'summon_reveal.5') -> effect ids played together. Empty list = nothing new.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9_]+)?$" },
+      "additionalProperties": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" }
+      }
+    },
+    "summon_timing": {
+      "description": "Round-3 values: charge 260/420/700 ms, hold 850/1150/1900 ms.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["charge_ms", "hold_ms"],
+      "properties": {
+        "charge_ms": { "$ref": "#/$defs/byRarityMs" },
+        "hold_ms": { "$ref": "#/$defs/byRarityMs" }
+      }
+    }
+  },
+  "$defs": {
+    "hex": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "colorRef": {
+      "oneOf": [
+        { "$ref": "#/$defs/hex" },
+        { "enum": ["aura", "card_type", "rarity", "white", "member_aura", "target_aura"] }
+      ]
+    },
+    "byRarityMs": {
+      "type": "object", "additionalProperties": false,
+      "required": ["3", "4", "5"],
+      "properties": {
+        "3": { "type": "integer", "minimum": 0, "maximum": 5000 },
+        "4": { "type": "integer", "minimum": 0, "maximum": 5000 },
+        "5": { "type": "integer", "minimum": 0, "maximum": 5000 }
+      }
+    },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["duration_ms", "priority", "layers"],
+      "properties": {
+        "duration_ms": { "description": "Total length. Cinematic-bound effects must fit the cinematic (§15.3 rule 14).", "type": "integer", "minimum": 0, "maximum": 6000 },
+        "priority": { "description": "0 = cosmetic … 3 = big moment (§17.4 budget).", "type": "integer", "minimum": 0, "maximum": 3 },
+        "loop": { "description": "Optional, default false. Loops until the matching end event (e.g. ignition_active until ignition_end).", "type": "boolean", "default": false },
+        "reduce_motion": {
+          "description": "Optional, default 'keep'. 'drop', 'keep' or another effect id to play instead when reduce motion is on (§17.3). Shake and screen_flash layers are always dropped under reduce motion.",
+          "type": "string", "pattern": "^(keep|drop|[a-z][a-z0-9_]*)$", "default": "keep"
+        },
+        "layers": { "type": "array", "minItems": 1, "maxItems": 12, "items": { "$ref": "#/$defs/layer" } }
+      }
+    },
+    "layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "start_ms", "duration_ms"],
+      "properties": {
+        "kind": { "enum": ["particles", "ring", "screen_flash", "sprite_flash", "shake", "afterimage", "beam", "streak", "text_pop", "tint", "overlay", "sprite_swap", "portrait_slide"] },
+        "start_ms": { "type": "integer", "minimum": 0, "maximum": 6000 },
+        "duration_ms": { "type": "integer", "minimum": 0, "maximum": 6000 },
+        "anchor": { "description": "Optional, default 'target'.", "enum": ["target", "attacker", "screen", "between", "feet"], "default": "target" },
+        "color": { "$ref": "#/$defs/colorRef" },
+        "alpha": { "type": "number", "minimum": 0, "maximum": 1 },
+        "count": { "description": "particles / afterimage / portrait_slide count.", "type": "integer", "minimum": 1, "maximum": 100 },
+        "size_px": { "type": "number", "minimum": 1, "maximum": 400 },
+        "size_max_px": { "type": "number", "minimum": 1, "maximum": 400 },
+        "life_ms": { "type": "integer", "minimum": 16, "maximum": 3000 },
+        "speed": { "description": "px/s", "type": "number", "minimum": 0, "maximum": 2000 },
+        "spread_deg": { "type": "number", "minimum": 0, "maximum": 360 },
+        "direction": { "enum": ["out", "in", "up", "attack"] },
+        "emit_interval_ms": { "description": "For loops: one emit per interval.", "type": "integer", "minimum": 16, "maximum": 2000 },
+        "max_alive": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "intensity": { "description": "shake only; ≤ limits.max_shake_intensity (§15.3 rule 14).", "type": "number", "minimum": 0, "maximum": 0.012 },
+        "scale_from": { "type": "number", "minimum": 0, "maximum": 3 },
+        "scale_to": { "type": "number", "minimum": 0, "maximum": 3 },
+        "texture": { "description": "Optional asset key; must be licensed (§15.3 rule 13). Generated shapes if absent.", "type": "string", "pattern": "^(vfx|spr|ico|art)_[a-z0-9_]+$" },
+        "sprite_key": { "description": "sprite_swap only: 'ignition' = the fighter's ignition.art.sprite, or an asset key.", "type": "string", "pattern": "^(ignition|spr_[a-z0-9_]+)$" }
+      },
+      "allOf": [
+        { "if": { "properties": { "kind": { "const": "shake" } } }, "then": { "required": ["intensity"], "properties": { "duration_ms": { "maximum": 300 } } } },
+        { "if": { "properties": { "kind": { "const": "screen_flash" } } }, "then": { "required": ["alpha", "color"], "properties": { "alpha": { "maximum": 0.9 } } } },
+        { "if": { "properties": { "kind": { "const": "particles" } } }, "then": { "required": ["count", "life_ms"] } }
+      ]
+    }
+  }
+}

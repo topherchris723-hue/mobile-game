@@ -81,7 +81,10 @@
       "properties": {
         "bgm_volume": { "description": "Fresh-save default 1.0 (GDD §13).", "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
         "sfx_volume": { "description": "Fresh-save default 1.0 (GDD §13).", "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
-        "haptics": { "description": "Fresh-save default true (GDD §13, §14).", "type": "boolean", "default": true }
+        "haptics": { "description": "Fresh-save default true (GDD §13, §14).", "type": "boolean", "default": true },
+        "master_volume": { "description": "Optional (round 4, ruling R4-1). Fresh-save default 1.0; missing/invalid is repaired to 1.0 before validation (GDD §13).", "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
+        "muted": { "description": "Optional (round 4, ruling R4-1). Fresh-save default false; repaired if missing/invalid.", "type": "boolean", "default": false },
+        "reduce_motion": { "description": "Optional (round 4, ruling R4-1). Fresh-save default = prefers-reduced-motion media query (false if unsupported); repaired if missing/invalid. GDD §17.3.", "type": "boolean", "default": false }
       }
     },
     "tutorial": {

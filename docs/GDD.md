@@ -32,6 +32,13 @@ never breaks them. Tables that list per-stage or per-character values (e.g. §9.
 14. Mobile UX and layout — READY
 15. Data files, schemas, ID conventions — READY
 16. Open questions for the owner — READY (all decided round 3; the owner delegated them to the Producer)
+17. Visual effects (VFX) — READY (round 4)
+18. Audio — READY (round 4)
+19. Settings screen — READY (round 4)
+
+Round-4 rulings to sections already built (L-shared-015): R4-1 §13 settings fields, R4-2 §14 top-of-screen exception,
+R4-3 §4 screen flow, R4-4 §5.14 pause menu, R4-5 §15.1 rows and owners, R4-6 §15.3 rules 13–15. Each is marked
+"(ruling R4-n)" where it applies.
 
 ---
 
@@ -148,6 +155,8 @@ Title ─► Home ─┬─► Story (stage list) ─► Pre-story ─► Team S
                └─► Team (view roster, set team)
 ```
 - Home has 3 buttons: Story, Summon, Team. Jade balance is always visible in the top bar.
+- **(ruling R4-3)** Settings (§19) is reached from a gear button (44×44) in the Home top bar and from the battle Pause
+  menu. `Home ─► Settings ─► Home` and `Battle (paused) ─► Settings ─► Pause menu`.
 - Every scene has a back button (≥44×44 px), except Battle, which has Pause → Retreat.
 - Story scenes can be skipped (a "Skip" button, ≥44×44 px).
 
@@ -753,6 +762,9 @@ Damage numbers show "WEAK!" on ×1.3 hits and "RESIST" on ×0.8 hits.
 - A Draw counts as not cleared (no rewards, no missions). The result screen offers Retry.
 - **Pause:** the pause button (top-right, 44×44) freezes everything. The menu has Resume and Retreat
   (Retreat = loss, confirmed with a dialog). The app going to the background pauses the battle automatically.
+  **(ruling R4-4)** The Pause menu has three buttons, top to bottom: Resume, Settings, Retreat. Settings opens §19 with
+  the battle still paused; Back returns to the Pause menu. Retreat stays the bottom button. No button of the menu may
+  cover the screen position of the Pause button (L-ui-002), and the menu ignores input for its first 250 ms.
 - Expected length: Stage 3+ battles 120–200 s of timer plus about 20–40 s of cinematics, which is 2.5–4 min.
 - **Battle length target, measurable (round 3).** BAL-5.14: in the balance-analyst's seeded headless sims of
   stage_003–stage_005 (its reference player bot vs the stage AI), the **median `elapsed_ticks / 60` of battles that end
@@ -1361,6 +1373,26 @@ currencies, roster and team from `economy.json` → `starting` (§12).
 - AC-13.1: Win stage_001, close the app, reopen: stage_001 shows cleared and Jade includes the reward.
 - AC-13.2: Writing garbage to `game_save` leads to a fresh save plus a backup key, with no crash.
 - AC-13.3: A fresh save has `settings` exactly { bgm_volume 1.0, sfx_volume 1.0, haptics true } and `tutorial.completed` false.
+  **Superseded by ruling R4-1 / AC-13.4 for `settings`** (the `tutorial.completed` part stays).
+
+**Ruling R4-1 (round 4): settings fields, defaults and repair.**
+- `settings` = { `master_volume`, `bgm_volume`, `sfx_volume` (numbers 0.0–1.0, stored rounded to 1 decimal),
+  `muted` (bool), `haptics` (bool), `reduce_motion` (bool) }.
+- Fresh-save defaults: `master_volume` 1.0, `bgm_volume` 1.0, `sfx_volume` 1.0, `muted` false, `haptics` true,
+  `reduce_motion` = the device's `prefers-reduced-motion: reduce` media query at the moment the fresh save is created
+  (false when the query is unsupported). The value is stored; later OS changes do not overwrite the player's choice.
+- **Repair before schema validation (not "damaged"):** on load, each `settings` field that is missing, of the wrong type
+  or out of range is replaced by its fresh-save default (for `reduce_motion`: the media query now), unknown extra keys in
+  `settings` are removed, the repaired save is written back, and the load returns the warning code `settings_repaired`
+  (added to the exported warning list). A save is never treated as damaged because of `settings`. Old saves without the
+  new fields get them this way; no `version` bump is needed.
+- AC-13.4 (P, live code; unit test on the loader): (a) a fresh save in an environment without reduced-motion preference
+  has `settings` exactly { master_volume 1.0, bgm_volume 1.0, sfx_volume 1.0, muted false, haptics true,
+  reduce_motion false }; with the media query stubbed to match, `reduce_motion` is true. (b) Must-FAIL inputs that must
+  be **repaired**, not reset: a round-3 save with only { bgm_volume 0.4, sfx_volume 0.7, haptics false } → loads with
+  those 3 values kept, master 1.0, muted false, reduce_motion per query, warning `settings_repaired`, roster and Jade
+  unchanged, no `game_save_corrupt_*` key; `master_volume` 2 → 1.0; `muted` "yes" → false; `sfx_volume` 0.45 → kept as
+  0.5 (rounded); `settings` missing entirely → all defaults. A loader that resets the whole save for any of these FAILS.
 
 ---
 
@@ -1370,6 +1402,7 @@ currencies, roster and team from `economy.json` → `starting` (§12).
   height goes to the arena. Respect the safe-area insets.
 - **Touch targets ≥44×44 px** (logical), with at least 8 px between targets.
 - **One-handed:** every frequent control is in the lower 60% of the screen. Only Pause (rare) is at the top.
+  **(ruling R4-2)** The Home gear button (Settings, rare) and each screen's Back button are also allowed at the top.
 - Min text size 12 px; numbers on cards 16 px. Never use color alone (types and card types have shapes).
 - 60 fps target, 30 fps minimum on mid-range Android. The logic is fixed at 60 Hz whatever the fps.
 - Haptics (setting, default on): 20 ms on taking a hit, 40 ms on Perfect Slip, 80 ms on Ignition/Tri-Burst.
@@ -1399,15 +1432,21 @@ Every data file is a JSON object with an integer `version` (≥1) at the top lev
 
 | Data file | Schema | Top-level collections | Owner of content |
 |---|---|---|---|
-| `data/characters.json` | `data/schemas/characters.schema.json` | `characters[]` | content-designer |
-| `data/cards.json` | `data/schemas/cards.schema.json` | `cards[]` | content-designer |
-| `data/enemies.json` | `data/schemas/enemies.schema.json` | `enemies[]` | content-designer |
+| `data/characters.json` | `data/schemas/characters.schema.json` | `characters[]` | content-designer; from Growth the balance-analyst tunes numeric fields (`base_stats`, `ignition` numbers/triggers) |
+| `data/cards.json` | `data/schemas/cards.schema.json` | `cards[]` | content-designer; from Growth the balance-analyst tunes numeric fields (cost, power, timings, knockback, effect values) |
+| `data/enemies.json` | `data/schemas/enemies.schema.json` | `enemies[]` | content-designer; from Growth the balance-analyst tunes numeric fields (`stat_mult`, `ai_tier`) |
 | `data/stages.json` | `data/schemas/stages.schema.json` | `chapters[]`, `stages[]` | content-designer |
 | `data/story.json` | `data/schemas/story.schema.json` | `scenes[]` | content-designer |
 | `data/banners.json` | `data/schemas/banners.schema.json` | `banners[]` | content-designer (economy-designer tunes later) |
 | `data/economy.json` | `data/schemas/economy.schema.json` | `currencies[]`, `starting`, `duplicates`, `power_formula` | content-designer (economy-designer tunes later) |
 | `data/battle.json` | `data/schemas/battle.schema.json` | rule constants, `type_chart`, `ai_tiers` | content-designer copies the defaults from §5 (balance-analyst tunes later) |
+| `data/vfx.json` | `data/schemas/vfx.schema.json` | `limits`, `colors`, `effects`, `events`, `summon_timing` | vfx-developer (round 4, §17) |
+| `data/audio.json` | `data/schemas/audio.schema.json` | `mix`, `music`, `sounds`, `hooks` | audio-designer (round 4, §18) |
 | (runtime) local storage `game_save` | `data/schemas/save.schema.json` | — | gameplay code |
+
+(ruling R4-5) "Tunes numeric fields" covers numbers only; names, text, art keys, deck lists and IDs stay with the
+content-designer. Names and text the balance-analyst would need changed go to the
+content-designer through the Producer.
 
 There is no `items` file in this milestone (no items in scope). It will be added when items are designed.
 
@@ -1484,6 +1523,35 @@ FX-GDD (§15.4), which keeps its frozen values.
 - Rules 10–12 replace nothing in the schemas (schemas keep their wider technical limits, e.g. HP 1,000–50,000). The
   balance harness check `tests/sim/balance/bands.mjs` can be retired once `npm run validate-data` implements rules 10–12.
 
+**Round 4 (ruling R4-6) — VFX and audio data (rules 13–15).**
+13. **Audio licensing (§18.6), errors.** Every `audio.json` → `sounds` entry with `source: "file"` has `license` ∈
+    {`CC0`, `self-made`} (CC-BY is **not** allowed for audio in this milestone, although CREDITS.md permits it elsewhere),
+    a `path` under `assets/audio/` that exists on disk, and a row in `assets/CREDITS.md` whose File cell equals `path` and
+    whose License cell equals `license`. If any entry has `source: "procedural"`, CREDITS.md has a row whose File cell is
+    `data/audio.json` and whose License cell is `self-made`. The same applies to `vfx.json` → `effects[*].layers[*].texture`
+    keys that map to files (`assets/vfx/`). Negative fixtures (must FAIL): a file sound with `license: "CC-BY"`; a file
+    sound whose path has no CREDITS.md row; a procedural sound with no `data/audio.json` row in CREDITS.md. Must PASS: an
+    all-procedural `audio.json` with that one CREDITS.md row. Also an error: a procedural `pattern` track whose `notes`
+    length ≠ `steps` (negative fixture: `steps` 16 with 15 notes), and a `music` context or `hooks` value naming a key
+    that is not in `sounds`.
+14. **Flash safety and cinematic fit (§17.3, §17.4), errors.** In `vfx.json`: every `screen_flash` layer has `alpha` ≤
+    `limits.max_flash_alpha` and a color that is not saturated red (a `#rrggbb` with r ≥ 200 and g ≤ 80 and b ≤ 80 is an
+    error; `aura`/`rarity`/`card_type` color tokens are resolved through `colors` first); every `shake` layer has
+    `intensity` ≤ `limits.max_shake_intensity` and `duration_ms` ≤ `limits.max_shake_ms`; any single effect has at most
+    `limits.max_screen_flashes_per_s` (3) `screen_flash` layers whose start times fall in any 1,000 ms window; an effect
+    bound to `ignition`, `tri_burst`, `ko` or `climax_cinematic` has `duration_ms` ≤ the matching duration in ms
+    (`battle.ignition.cinematic_s`, `battle.burst.cinematic_s`, `battle.ko.anim_s`, and for Climax the smallest
+    `cinematic_s` of any climax card, or the card's own `cinematic_s` for an effect named by that card's `art.vfx`; an
+    effect named by a character's `ignition.art.vfx` uses `battle.ignition.cinematic_s`).
+    Negative fixtures: a screen flash `#ff2020`; a shake intensity 0.02; 4 screen flashes at 0/200/400/600 ms; an
+    `ignition` effect of 1,600 ms with `ignition.cinematic_s` 1.5. Must PASS: the default `vfx.json`.
+15. **Key coverage (warnings, exit code 0).** Every stage/story `bgm` key and every card `sfx` key that is not in
+    `audio.json` → `sounds`, and every card `art.vfx` or character `ignition.art.vfx` key that is not in `vfx.json` →
+    `effects`, is reported as a
+    warning (the game falls back silently, §17.2 / §18.2). Every `hooks` key not in the UI's exported `SFX_HOOKS` list, and
+    every `events` key not in the exported `VFX_EVENT_KEYS`, is a warning. (The reverse direction — every exported hook /
+    event key has a mapping — is an **error**, checked by the P-class tests AC-17.1 and AC-18.1.)
+
 ### 15.4 Test fixture FX-GDD and which ACs use it (round 3 ruling)
 **Why:** exact-number ACs that read live data break whenever the balance-analyst tunes a value (round 3: Tavi's
 Ignition and HP were pinned by AC-5.9.x, and AC-8.1's test used a live 8,200 HP). Live data must be tunable; worked
@@ -1537,3 +1605,236 @@ Round 3: the owner wrote "and you decide all that", delegating these to the Prod
 4. **Left-handed mode:** not in this milestone.
 
 No open questions remain.
+
+---
+
+## 17. Visual effects (VFX) — READY (round 4)
+
+`data/vfx.json` (schema `vfx.schema.json`). Owner: vfx-developer (data and `src/ui/vfx/`). Every effect is data:
+adding a new effect or re-mapping an event needs JSON only.
+
+**Purpose:** the brief asks for fights that feel "fast, flashy and powerful" and for transformations as big moments.
+Effects make every hit readable and every big moment loud, **on top of** the round-3 feel the owner approved
+(L-shared-014). They never change what happens or when.
+
+### 17.1 Hard rules
+1. **VFX never changes logic or timing.** The VFX layer only reads logic events and state snapshots. It never calls
+   `step()`, never sends inputs and is never awaited by the logic. Hitstop, Climax, Ignition, Tri-Burst and KO durations
+   come only from `battle.json` and card data (`hitstop_s`, card `cinematic_s`, `ignition.cinematic_s` 1.5,
+   `burst.cinematic_s` 4.0, `ko.anim_s` 1.5). A cinematic effect ends at the logic's `freeze_end` for that cinematic,
+   whatever is still playing (fade-out ≤ 160 ms, as in round 3). The summon result is saved before any reveal effect
+   (§11.3), so reveal effects cannot affect it.
+2. **The approved round-3 feedback is the baseline and is kept** (values in §17.2 marked "R3"): target hit-flash, impact
+   ring in card-type color, damage numbers, callouts, the Climax/crit shake 120 ms × 0.006, the KO shake 250 ms × 0.01,
+   the cinematic overlay with a 120 ms white flash, and the summon orb/flash/shake timings. New layers are **additive**:
+   they may not hide damage numbers, callouts or the HUD (they draw below the float-text layer and never inside the HUD
+   zones y ≥ 330 of §14, except the summon screen).
+3. **Fallbacks:** an event with no mapping, or a card `art.vfx` key with no effect, plays nothing extra (the R3 baseline
+   still plays). A missing texture draws the effect with generated shapes. Never a crash.
+
+### 17.2 Event → effect table (defaults in `vfx.json`)
+Event keys are logic event types, optionally with a qualifier after a dot. The vfx-developer exports the full list as
+`VFX_EVENT_KEYS` from `src/ui/vfx/` (L-shared-009). Colors: `aura` = attacker's aura color, `card_type`, `rarity` and
+`white` are tokens resolved through `vfx.json` → `colors` (defaults = the round-3 theme: aura blaze #ff6a3d, gale
+#3ddc97, stone #c9a36b, radiant #ffd84a, void #9b6bff; card fist #d9483b, bolt #3a7fd9, signature #9a52d9, climax
+#e8a21f; rarity 3 #5aa9ff, 4 #b06bff, 5 #ffc23d).
+
+| Event key (trigger) | Default effect (all times from the event, real ms) | Priority |
+|---|---|---|
+| `hit.fist` / `hit.bolt` / `hit.signature` / `hit.climax` (`hit`, by `cardType`) | R3 target hit-flash + R3 impact ring (card_type); **new** sparks in `aura`: 6 / 8 / 12 / 20 particles, 3–6 px, life 250–400 ms. `hit.climax` also R3 shake 120 ms × 0.006 | 0 (climax 1) |
+| `hit.crit` (`hit` with `crit`, hit index 0) | **new** gold (#ffd84a) starburst, 10 particles, 300 ms; R3 shake 120 ms × 0.006 | 1 |
+| `combo.2` … `combo.5` (`hit` with hit index 0 and `chainIndex` n) | **new** hit-counter pop (scale 1.3 → 1.0 over 150 ms); n = 3: + ring 32 px; n = 4: + ring 40 px | 0 |
+| `knockdown` | **new** 24-particle burst in `aura` + dust 10 particles at the feet + shake 150 ms × 0.006 | 1 |
+| `slip` | **new** 1 afterimage, α 0.35, 150 ms | 0 |
+| `perfect_slip` | **new** 2 afterimages #9fd8ff α 0.5, 200 ms + ring 48 px | 1 |
+| `riposte` | **new** slash streak (white → gold) from attacker to target, 180 ms | 1 |
+| `tag` / `fighter_enter` | **new** white sprite-flash on the incoming fighter + 8 particles in its `aura` | 0 |
+| `tag_strike` | **new** ring 32 px in `aura` | 0 |
+| `ko` (≤ `ko.anim_s` = 1,500 ms) | R3 shake 250 ms × 0.01; **new** target desaturates over 600 ms + 16 particles | 2 |
+| `ignition` (≤ `ignition.cinematic_s` = 1,500 ms) — **the big moment** | R3 overlay + R3 white flash 120 ms at 0 ms; **new** aura column, 40 particles rising, 0–1,200 ms; sprite swaps to `ignition.art.sprite` at 600 ms with a 96 px shockwave ring and shake 200 ms × 0.008. If the fighter's `ignition.art.vfx` names an effect in `vfx.json`, that effect replaces this default (same 1,500 ms limit) | 3 |
+| `ignition_active` (loop from the ignition `freeze_end` until `ignition_end`) | **new** aura loop around the fighter, 1 particle / 100 ms, ≤ 12 alive (≤ 6 on low quality) | 0 |
+| `tri_burst_start` (rush, 300 ms) | **new** 3 afterimages trailing the rusher | 2 |
+| `tri_burst` (≤ `burst.cinematic_s` = 4,000 ms) | R3 overlay + R3 white flash at 0 ms; **new** living members' portraits slide in at 0 / 400 / 800 ms; one beam per member in its `aura`, 1,800–2,400 ms; at 2,400 ms: white flash 120 ms α 0.9, shake 300 ms × 0.012, 40 particles | 3 |
+| `tri_burst_hit` | **new** ring 40 px + 16 particles in the member's `aura` | 2 |
+| `climax_cinematic` (≤ the card's `cinematic_s`) | R3 overlay + R3 white flash at 0 ms; the card's `art.vfx` effect if `vfx.json` has it, else `climax_default`: a beam in `aura` + 30 particles at 600 ms, `duration_ms` 1,500 (= the shortest Climax `cinematic_s` 1.5) | 3 |
+| `hit_discarded`, `whiff.rush_invulnerable`, `dodge`, `fight_start` | nothing new (R3 text only) | — |
+| `summon_orb.3` / `.4` / `.5` | R3 orb charge 260 / 420 / 700 ms (★4+: R3 wobble); ★5 **new** 20 particles drawn inward | 1 / 1 / 3 |
+| `summon_reveal.3` / `.4` / `.5` | R3 screen flash: ★3/★4 rarity color α 0.45 220 ms, ★5 white α 0.9 420 ms + R3 shake 260 ms × 0.012 (+ haptic 80 ms, §14); **new** ★4 ring 80 px, ★5 40 gold particles | 1 / 2 / 3 |
+
+Summon timing (data `summon_timing`, R3 values): orb charge 260 / 420 / 700 ms and hold per pull 850 / 1,150 /
+1,900 ms for ★3 / ★4 / ★5. A tap skips to the results grid with no further effects.
+
+### 17.3 Flash, shake and motion safety (photosensitivity)
+Applies always, whatever the settings (these are the WCAG 2.3.1 "three flashes" limit, made exact):
+- A **screen flash** is any `screen_flash` layer, or any layer that covers ≥ 25% of the screen area and changes its
+  brightness by more than 10% within 100 ms. **At most `limits.max_screen_flashes_per_s` = 3 screen flashes start in any
+  rolling 1,000 ms window** (real time). A 4th request in the window is **dropped** (not delayed). Screen flash alpha ≤
+  `limits.max_flash_alpha` = 0.9; no saturated red full-screen flash (§15.3 rule 14).
+- **Sprite flashes** (hit-flash tint of a fighter): a new flash may start on a sprite at most once per
+  `limits.sprite_flash_min_interval_ms` = 334 ms. A hit inside that interval keeps the tint lit (it refreshes the fade)
+  instead of toggling it, so a 10-hit Climax shows one steady glow, not a 20 Hz flicker.
+- **Shake:** intensity ≤ `limits.max_shake_intensity` = 0.012 (Phaser camera intensity), duration ≤
+  `limits.max_shake_ms` = 300 ms; one shake at a time; a new shake replaces the current one only if its intensity is
+  higher.
+- **Reduce motion** (setting, §19; default from the OS preference, ruling R4-1). When on: every `shake` layer is
+  dropped; every `screen_flash` layer is dropped (the summon ★5 flash is replaced by a 120 px gold ring, the cinematic
+  overlay still fades in over 120 ms); particle counts and afterimages are halved (rounded down, min 1); sprite swap,
+  beams, rings and text stay. Ignition still reads as a big moment through the overlay, form name, sprite swap and ring.
+  Haptics are controlled only by the haptics setting.
+- Each effect may declare `reduce_motion`: `"keep"` (default for rings/text), `"drop"`, or another effect id to play
+  instead.
+
+### 17.4 Performance budget
+- Target 60 fps (16.7 ms per frame); minimum 30 fps (33.3 ms) on a low-end Android phone (§14).
+- Live particles ≤ `limits.max_particles_high` = 150 (≤ `max_particles_low` = 60 on low quality); active emitters ≤
+  `limits.max_emitters` = 8. When the budget is full, a new request of priority ≤ 1 is skipped; a request of priority
+  ≥ 2 removes the oldest priority-0 particles first.
+- Quality starts `high` in every scene. If the median frame time over the last `limits.low_quality_window_frames` = 120
+  frames exceeds `limits.low_quality_frame_ms` = 22.2 ms, the scene switches to `low` until it ends (never back, to avoid
+  flicker).
+- Textures: generated shapes preferred; any VFX texture is in one atlas ≤ 1,024 × 1,024 px and is licensed (rule 13).
+
+### 17.5 Acceptance
+- AC-17.1 (P, live data): every key in `VFX_EVENT_KEYS` has an entry in `vfx.json` → `events` (an empty list is
+  allowed and means "nothing new"), and every effect id named in `events` exists in `effects`. Must-FAIL: delete
+  `events["ignition"]` → test FAILS.
+- AC-17.2 (P, live data, headless): for seeds 1–200 on stages 1–5, the battle event log (hash of every event) is
+  identical with the VFX layer attached vs detached, and with `reduce_motion` true vs false. Must-FAIL: a VFX hook that
+  calls `step()` once more changes the hash.
+- AC-17.3 (X): the flash limiter, fed screen-flash requests at 0, 100, 200, 300, 1,050 ms, shows 0, 100, 200, drops 300
+  (4th in the window 0–999), shows 1,050 (window 51–1,050 holds 100, 200, 1,050 → 3). Must-FAIL: a limiter that shows
+  300.
+- AC-17.4 (X): sprite flash with hits at 0, 50, 100 … 450 ms (10 hits): flash onsets at 0 and 350 ms only (2 onsets);
+  the tint stays lit from 0 ms until the fade after the last hit.
+- AC-17.5 (P, Playwright): a scripted stage_005 battle with a Climax, an Ignition and a Tri-Burst: during the Ignition
+  and Tri-Burst cinematics no more than 3 screen flashes start in any 1 s window (counted by a test hook); with
+  `reduce_motion` on, 0 screen flashes and 0 shakes are recorded for the whole battle, and the Ignition cinematic still
+  shows the overlay, the form name and the sprite swap.
+- AC-17.6 (P, Playwright): over that battle the live-particle counter never exceeds 150 (high) and, with quality forced
+  to `low`, never exceeds 60.
+- AC-17.7 (P, Playwright perf): on CI Chrome at 360×640 with 4× CPU throttling, the same battle runs with p95 frame time
+  ≤ 33.3 ms; unthrottled the median frame time ≤ 16.7 ms. Must-FAIL proof: with `max_particles_high` set to 5,000 and a
+  stress emitter, the throttled p95 exceeds 33.3 ms (shows the measurement can fail).
+- AC-17.8 (P, live data): each cinematic overlay is hidden within 160 ms after its `freeze_end` event, for Ignition
+  (`freeze_end` after round(1.5 × 60) = 90 frozen ticks), Tri-Burst (240 frozen ticks) and each Climax (round(card
+  `cinematic_s` × 60) frozen ticks); no VFX layer of that cinematic is drawn after that. The number of frozen ticks is
+  the same with VFX on and off (must-FAIL: an overlay that holds the freeze until its animation ends).
+- AC-17.9 (P): §15.3 rule 14 negative fixtures FAIL and the default `vfx.json` PASSES (validator run shown).
+
+---
+
+## 18. Audio — READY (round 4)
+
+`data/audio.json` (schema `audio.schema.json`). Owner: audio-designer (data, `src/ui/audio/`). The UI already calls
+`sfx(<hook>)` (`src/ui/feedback.js`); the audio layer fills that hook. Every sound and track is data.
+
+**Purpose:** sound sells impact ("powerful") and announces the big moments. It must never be a reason to mute the game.
+
+### 18.1 Hard rules
+1. Audio never changes logic or timing (same as §17.1 rule 1); AC-17.2 also runs with audio attached.
+2. **First sound only after a user gesture.** The `AudioContext` is created (or resumed) on the first `pointerup` /
+   `touchend` / `keydown` anywhere. Before that, `sfx()` calls are dropped (not queued) and no music plays. Music starts
+   on that gesture with the current scene's track (fade-in 500 ms).
+3. **Licensing:** only CC0 or self-made sounds. Procedural Web Audio synthesis (oscillators, noise, envelopes, filters
+   defined in `audio.json`) is preferred and counts as self-made. Every file sound and the procedural set are logged in
+   `assets/CREDITS.md` (§15.3 rule 13). No CC-BY, no paid or "free for personal use" packs.
+4. The app going to the background suspends the `AudioContext`; it resumes when visible again (battle stays paused).
+
+### 18.2 Hooks (SFX per event)
+The ui-developer exports the full list `SFX_HOOKS` from `src/ui/feedback.js`. `audio.json` → `hooks` maps each hook
+to a sound key in `sounds` (or `null` = silent on purpose). Hooks emitted today (round 3):
+`ui_press`, `ui_open`, `ui_denied`, `ui_advance`, `ui_transition`, `denied`, `swipe_up`, `swipe_down`, `swipe_left`,
+`swipe_right`, `fight`, `card_fist`, `card_bolt`, `card_signature`, `card_climax`, `hit_fist`, `hit_bolt`,
+`hit_signature`, `hit_climax`, `hit_immune`, `slip`, `perfect_slip`, `tag`, `ko`, `ignition`, `tri_burst_start`,
+`climax`, `tutorial_prompt`, `summon_confirm`, `summon_orb_3`, `summon_orb_4`, `summon_orb_5`, `summon_reveal_3`,
+`summon_reveal_4`, `summon_reveal_5`, `summon_results`, `result_win`, `result_lose`, `result_draw`.
+**New hooks (round 4, ui-developer emits them):** `riposte` (on the `riposte` event), `tag_strike`, `knockdown`,
+`combo_up` (hit index 0 with `chainIndex` ≥ 2), `tri_burst_impact` (fired by the Tri-Burst cinematic at its 2,400 ms
+impact, §17.2), `ui_toggle`, `ui_slider` (settings).
+- **Per-card override:** if a card's `sfx` key exists in `sounds`, its hits play that sound instead of `hit_<type>`.
+  Missing keys fall back to the hook (warning, rule 15).
+- **Voices:** at most `mix.max_voices` = 12 sounds at once; a 13th of priority ≤ the lowest playing is skipped, else the
+  oldest lowest-priority voice stops. The same sound key started again within `mix.same_sound_min_interval_ms` = 40 ms
+  is skipped (a 10-hit Climax at 50 ms intervals still plays every hit).
+
+### 18.3 Music
+- `audio.json` → `music` maps contexts to track keys: `menu` (Title, Home, Story list, Team, Settings, story scenes
+  without their own `bgm`), `summon` (Summon and reveal), `battle_default` (used when a stage's `bgm` key has no track).
+  Battle uses the stage's `bgm` key; a story scene with `bgm` uses its own.
+- Changing context crossfades over `mix.crossfade_s` = 0.6 s. The same track across scenes keeps playing (no restart).
+- Battle end: the battle track fades out over 0.5 s, the `result_<outcome>` stinger plays, then the `menu` track starts.
+- Tracks loop seamlessly (`loop: true`); procedural tracks are pattern loops (`tempo_bpm`, `steps`, layers of notes).
+
+### 18.4 Mixing and ducking
+- Effective gains (`v` = stored slider value 0.0–1.0, perceptual curve `v²`):
+  `sfx_gain = muted ? 0 : master² × sfx² × sound.gain`; `bgm_gain = muted ? 0 : master² × bgm² × track.gain × duck`.
+  Example: master 0.5, sfx 0.8, sound gain 1.0 → 0.25 × 0.64 = **0.16**.
+- **Ducking:** during the Ignition, Climax and Tri-Burst cinematics, `duck` goes from 1.0 to `mix.duck_gain` = 0.35
+  over `mix.duck_attack_s` = 0.08 s, starting on the cinematic's start event (`ignition`, `climax_cinematic`,
+  `tri_burst`), and back to 1.0 over `mix.duck_release_s` = 0.30 s starting on its `freeze_end`. SFX are not ducked.
+  Overlapping cinematics keep the duck until the last one ends.
+- **Pause menu:** `duck` = `mix.pause_gain` = 0.5 while paused (same attack/release).
+
+### 18.5 Settings
+`master_volume`, `bgm_volume`, `sfx_volume`, `muted` (ruling R4-1, §19). Changes apply within one frame. Muting keeps
+the slider values; un-muting restores them.
+
+### 18.6 Acceptance
+- AC-18.1 (P, live data): every hook in `SFX_HOOKS` has a key in `audio.json` → `hooks` (value may be `null`), and every
+  non-null value exists in `sounds`. Must-FAIL: remove `hooks.ko`.
+- AC-18.2 (P, Playwright): before any input the page has created no running `AudioContext` and 0 sounds were started
+  (test hook counter); after one tap on the Title screen the context state is `running` and the `menu` track is playing.
+  Must-FAIL: an implementation that starts music on load.
+- AC-18.3 (X): gain math: (master 0.5, sfx 0.8, gain 1.0) → 0.16; (1.0, 1.0, 0.7) → 0.7; muted → 0 for every input;
+  bgm with duck 0.35, master 1.0, bgm 1.0, track gain 0.8 → 0.28.
+- AC-18.4 (P, Playwright): on the `ignition` event the BGM gain reaches 0.35 × base within 0.08 s (± one frame) and
+  returns to base within 0.30 s (± one frame) after `freeze_end`; SFX gain is unchanged throughout.
+- AC-18.5 (X): voice limiter: 13 requests of priority 0 at the same time → 12 play; the same key twice 30 ms apart →
+  1 plays; 50 ms apart → 2 play.
+- AC-18.6 (P, validator): §15.3 rule 13 negative fixtures FAIL; the default `audio.json` + CREDITS.md PASS.
+- AC-18.7 (P, Playwright): backgrounding the page during a battle suspends the context (`suspended`) and the battle
+  pauses (AC-5.14.3); returning resumes audio and keeps the battle paused.
+
+---
+
+## 19. Settings screen — READY (round 4)
+
+**Purpose:** let players control sound, motion and vibration in a few taps, with one thumb.
+
+**Entry points:** Home gear button (top bar, right, 44×44) and the battle Pause menu (ruling R4-4). Back (top left,
+44×44) returns to where the player came from; from battle, the battle stays paused.
+
+**Layout (360×640 logical, y from the top; taller screens add space below the last row):**
+
+| y | Row | Controls |
+|---|---|---|
+| 0–56 | Top bar | Back 44×44 (left), title "Settings" |
+| 176–240 | Master volume | label + value "100%"; − button 44×44, slider track 160 px (thumb hit area 44×44), + button 44×44 |
+| 240–304 | Music | same |
+| 304–368 | Sound effects | same |
+| 368–432 | Mute all | toggle, hit area ≥ 44×44, text "On"/"Off" next to it (not color alone) |
+| 432–496 | Reduce motion | toggle + text; help line below in 12 px: "Less screen shake and flashing." |
+| 496–560 | Vibration | toggle + text (the `haptics` setting) |
+
+**Rules**
+- Volumes move in steps of 0.1 (shown 0–100% in steps of 10). − / + change one step; dragging snaps to the nearest step.
+- Every change applies at once (audio within one frame; reduce motion on the next effect). The save is written once per
+  change: on slider release, on each − / + tap, on each toggle tap (§13 "a settings change"); not on every drag frame.
+- Releasing the Sound effects or Master slider, or tapping their − / +, plays `ui_slider` at the new volume (preview).
+  Toggling Mute plays `ui_toggle` only when turning sound **on**.
+- Vibration on plays a 20 ms vibration as preview (if supported). If `navigator.vibrate` is missing, the toggle still
+  works and stores the value (it has no effect on that device).
+- Strings come from `src/ui/strings.json` (new keys `settings_*`). All controls are ≥ 44×44 with ≥ 8 px between them.
+
+**Acceptance**
+- AC-19.1 (P, Playwright): Home gear opens Settings; Back returns to Home. Pause → Settings → Back returns to the Pause
+  menu with the battle timer unchanged (paused throughout).
+- AC-19.2 (P, Playwright): at 360×640 every control's bounding box is ≥ 44×44 and no two overlap or are closer than 8 px.
+  Must-FAIL: a 40 px − button.
+- AC-19.3 (P): tap Music − three times from 100% → shows 70% and the save has `bgm_volume` 0.7 after each tap is written
+  (3 writes); reload → 70%. Dragging the Music slider from 70% to 20% writes the save once (on release).
+- AC-19.4 (P): Mute all on → effective gains 0 (AC-18.3) with the sliders unchanged; off → previous gains return.
+- AC-19.5 (P): Reduce motion on → the next battle records 0 shakes and 0 screen flashes (AC-17.5); the setting survives
+  a reload.
+- AC-19.6 (P): Vibration off → `navigator.vibrate` is not called during a battle (spy); on → called with 20 / 40 / 80 ms
+  as in §14.
