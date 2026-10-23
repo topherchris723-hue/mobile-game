@@ -37,6 +37,9 @@ lesson and a hard rule at the next `/retro`.
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
   currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 3: game-designer doubled all HP (battle target 120–200 s kept; "fast" = feel per
+  second, not short fights). balance-analyst may edit `data/economy.json` power_formula this
+  round (economy-designer not active yet).
 - Round 3 (delegated by owner): kept the round-1 defaults — stage_005 boss at the hardest AI
   tier (balance-analyst tunes stats so starters can win with skill); a timeout tie / double KO
   stays a Draw; no left-handed layout in this milestone.
