@@ -1,0 +1,20 @@
+{
+  "name": "rule10-star5-crit-012",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        6,
+        "base_stats",
+        "crit_rate"
+      ],
+      "value": 0.12
+    }
+  ],
+  "expect": {
+    "errorRule": "10-character-bands",
+    "errorContains": "crit_rate 0.12 outside [0.05, 0.1]"
+  }
+}

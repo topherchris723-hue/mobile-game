@@ -1,0 +1,22 @@
+{
+  "name": "rule12-climax-in-base-and-ignition-deck",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "deck",
+        4,
+        "card_id"
+      ],
+      "value": "card_tavi_wildfire_crash"
+    }
+  ],
+  "expect": {
+    "errorRule": "12-card-budgets",
+    "errorContains": "in both a base deck and an ignition deck"
+  }
+}

@@ -3,10 +3,14 @@ import { describe, it, expect } from 'vitest';
 import * as F from '../../src/logic/formulas.js';
 import { buildRules } from '../../src/logic/rules.js';
 import { SeededRng } from '../../src/logic/rng.js';
-import { readJson } from '../helpers/load-data.js';
+import { readJson, readGddJson, loadGddBundle, loadBundle } from '../helpers/load-data.js';
+import { createContent, enemyFighterDef } from '../../src/logic/content.js';
 
 const battleJson = readJson('data/battle.json');
 const R = buildRules(battleJson);
+// GDD §15.4: the §5 default numbers (W-class) are checked on FX-GDD, never on live data.
+const gddBattleJson = readGddJson('battle.json');
+const RG = buildRules(gddBattleJson);
 
 describe('GDD §5.11 damage formula', () => {
   it('AC-5.11.1: ATK 1000, 2-hit Fist power 1.2, Blaze vs Gale, chain 2, no crit, DEF 500 → 546 per hit, 1,092 total', () => {
@@ -111,8 +115,24 @@ describe('GDD §8 / §9.1 / §5.14', () => {
   it('AC-8.1: enemy stat_mult.hp 1.2 on a 10,000 HP character → exactly 12,000 HP', () => {
     expect(F.enemyStat(10000, 1.2)).toBe(12000);
   });
-  it('§9.1 fighter power example: HP 8,500, ATK 900, DEF 440 → 1,970', () => {
-    expect(F.fighterPower(8500, 900, 440, readJson('data/economy.json').power_formula)).toBe(1970);
+  it('AC-8.1 (W, FX-GDD): enemy_fxbase_001 (stat_mult 1.2 on char_fxbase_001, HP 10,000) has exactly 12,000 HP', () => {
+    const content = createContent(loadGddBundle());
+    const d = enemyFighterDef(content, 'enemy_fxbase_001');
+    expect(content.characters.char_fxbase_001.base_stats.hp).toBe(10000);
+    expect(d.maxHp).toBe(12000);
+    expect(d.atk).toBe(1000);
+    expect(d.def).toBe(500);
+  });
+  it('AC-8.1 (P, live property): every live enemy has max HP = floor(character HP × stat_mult.hp)', () => {
+    const content = createContent(loadBundle());
+    for (const e of readJson('data/enemies.json').enemies) {
+      const ch = content.characters[e.character_id];
+      expect(enemyFighterDef(content, e.id).maxHp).toBe(F.enemyStat(ch.base_stats.hp, e.stat_mult.hp));
+    }
+  });
+  it('§9.1 fighter power example (X, inline coefficients): HP 17,000 × 0.05 + 900 + 440 × 0.5 → 1,970; round-2 form HP 8,500 × 0.1 → 1,970', () => {
+    expect(F.fighterPower(17000, 900, 440, { hp: 0.05, atk: 1.0, def: 0.5 })).toBe(1970);
+    expect(F.fighterPower(8500, 900, 440, { hp: 0.1, atk: 1.0, def: 0.5 })).toBe(1970);
   });
   it('AC-5.14.2: timeout 0.40 vs 0.35 → Win; 0.35 vs 0.35 → Draw', () => {
     expect(F.timeoutResult(0.4, 0.35)).toBe('win');
@@ -124,17 +144,22 @@ describe('GDD §8 / §9.1 / §5.14', () => {
 });
 
 describe('GDD §5.0 tick conversion', () => {
-  it('converts seconds with round(s × 60) and reads every number from battle.json', () => {
-    expect(R.slip.iframeTicks).toBe(21);
-    expect(R.slip.perfectTicks).toBe(9);
-    expect(R.hand.refillTicks).toBe(90);
-    expect(R.tag.cooldownTicks).toBe(480);
-    expect(R.tag.initialCooldownTicks).toBe(300);
-    expect(R.riposte.windowTicks).toBe(48);
-    expect(R.combo.getupTicks).toBe(36);
+  it('converts seconds with round(s × 60) and reads every number from battle.json (FX-GDD §5 defaults)', () => {
+    expect(RG.slip.iframeTicks).toBe(21);
+    expect(RG.slip.perfectTicks).toBe(9);
+    expect(RG.hand.refillTicks).toBe(90);
+    expect(RG.tag.cooldownTicks).toBe(480);
+    expect(RG.tag.initialCooldownTicks).toBe(300);
+    expect(RG.riposte.windowTicks).toBe(48);
+    expect(RG.combo.getupTicks).toBe(36);
+  });
+  it('live battle.json converts with round(s × 60) too (P)', () => {
+    expect(R.slip.iframeTicks).toBe(Math.round(battleJson.slip.iframes_s * 60));
+    expect(R.hand.refillTicks).toBe(Math.round(battleJson.hand.refill_delay_s * 60));
+    expect(R.tag.cooldownTicks).toBe(Math.round(battleJson.tag.cooldown_s * 60));
   });
   it('initial_cooldown_s defaults to 5 when absent', () => {
-    const copy = JSON.parse(JSON.stringify(battleJson));
+    const copy = JSON.parse(JSON.stringify(gddBattleJson));
     delete copy.tag.initial_cooldown_s;
     expect(buildRules(copy).tag.initialCooldownTicks).toBe(300);
   });

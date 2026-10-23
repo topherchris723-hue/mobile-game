@@ -1,8 +1,9 @@
 // GDD §11 "Default data used in the examples" pinned as test data, so the AC vectors (which fix exact
 // numbers) stay valid while the balance/economy agents change the live data/*.json.
-// Built from the live data files, with only the §11 example fields overwritten.
+// Built from FX-GDD (tests/fixtures/gdd, GDD §15.4; W-class ACs never read data/). The §11 example fields are
+// (re)written below as well, so the vectors stay explicit even if a later FX-GDD revision moves them.
 import { createContent } from '../../src/logic/index.js';
-import { loadBundle, readJson } from './load-data.js';
+import { loadGddBundle, readGddJson } from './load-data.js';
 
 export const GDD_BANNER_ID = 'banner_starter_001';
 
@@ -15,9 +16,9 @@ export const GDD_RARITY = {
 
 /** The data bundle with GDD §11 default banner, economy and rarities. */
 export function gddSummonBundle() {
-  const bundle = loadBundle();
-  const economy = readJson('data/economy.json');
-  const banners = readJson('data/banners.json');
+  const bundle = loadGddBundle();
+  const economy = readGddJson('economy.json');
+  const banners = readGddJson('banners.json');
   let banner = banners.banners.find((b) => b.id === GDD_BANNER_ID);
   if (!banner) {
     banner = JSON.parse(JSON.stringify(banners.banners[0]));

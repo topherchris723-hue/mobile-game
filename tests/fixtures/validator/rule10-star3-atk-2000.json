@@ -1,0 +1,20 @@
+{
+  "name": "rule10-star3-atk-2000",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "base_stats",
+        "atk"
+      ],
+      "value": 2000
+    }
+  ],
+  "expect": {
+    "errorRule": "10-character-bands",
+    "errorContains": "atk 2000 outside [850, 950]"
+  }
+}

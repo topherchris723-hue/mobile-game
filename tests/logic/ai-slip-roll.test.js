@@ -6,7 +6,7 @@
 // AiController.reactiveDodge() is recorded against the opponent action object being watched at that time.
 // Inside reactiveDodge the only rng calls are the slip roll and, after a successful slip roll, the perfect roll.
 import { describe, it, expect } from 'vitest';
-import { createBattle, createContent } from '../../src/logic/index.js';
+import { createBattle, createContent, DODGE_DECISION_OUTCOMES } from '../../src/logic/index.js';
 import { loadBundle, readJson } from '../helpers/load-data.js';
 
 const content = createContent(loadBundle());
@@ -33,10 +33,12 @@ function instrument(b, side) {
     const v = realNext();
     if (inDodge) {
       let rec = perWindup.get(key);
-      if (!rec) { rec = { rolls: 0, slips: 0, perfects: 0, pendingPerfect: false }; perWindup.set(key, rec); }
+      if (!rec) { rec = { rolls: 0, slips: 0, perfects: 0, offTick: 0 }; perWindup.set(key, rec); }
       const tier = ai.tier();
       if (callsThisDodge === 0) {
         rec.rolls++;
+        // AC-5.15.7: the roll happens on the decision tick D = windup start + round(reaction_s × 60), never later.
+        if (b.tick !== key.windupStart + tier.reactionTicks) rec.offTick++;
         if (v < tier.slipChance) rec.slips++;
       } else if (callsThisDodge === 1) {
         if (v < tier.perfectSlipChance) rec.perfects++;
@@ -57,7 +59,7 @@ function instrument(b, side) {
 describe('BUG-3-01 §5.15 reactive dodge: one slip roll per windup (1,000 seeded battles per tier, stage_003)', () => {
   const stats = {};
   for (const tier of TIERS) {
-    const s = { windups: 0, multiRoll: 0, maxRolls: 0, slips: 0, perfects: 0, playerWindups: 0, playerSlips: 0, playerPerfects: 0 };
+    const s = { logDecisions: 0, logDuplicate: 0, logOffTick: 0, logBadOutcome: 0, logBadRoll: 0, windups: 0, multiRoll: 0, maxRolls: 0, slips: 0, perfects: 0, offTick: 0, playerWindups: 0, playerSlips: 0, playerPerfects: 0 };
     for (let seed = 1; seed <= N; seed++) {
       const b = createBattle({
         content, stageId: 'stage_003', playerTeam: TEAM,
@@ -66,14 +68,30 @@ describe('BUG-3-01 §5.15 reactive dodge: one slip roll per windup (1,000 seeded
       const enemyW = instrument(b, 'enemy');
       const playerW = instrument(b, 'player');
       while (!b.getResult()) b.step();
+      // AC-5.15.7 decision log: per AI, per opposing card id: one decision, ≤ 1 slip roll, ≤ 1 perfect roll, on D.
+      for (const side of ['player', 'enemy']) {
+        const seen = {};
+        for (const r of b.controllers[side].dodgeLog) {
+          s.logDecisions++;
+          if (Object.prototype.hasOwnProperty.call(seen, r.actionId)) s.logDuplicate++;
+          seen[r.actionId] = true;
+          if (r.tick !== r.decisionTick) s.logOffTick++;
+          if (DODGE_DECISION_OUTCOMES.indexOf(r.outcome) < 0) s.logBadOutcome++;
+          if ((r.outcome === 'resolved' || r.outcome === 'cannot_slip') && (r.slipRoll !== null || r.perfectRoll !== null)) s.logBadRoll++;
+          if (r.outcome === 'no_slip' && (r.slipRoll === null || r.perfectRoll !== null)) s.logBadRoll++;
+          if ((r.outcome === 'planned' || r.outcome === 'too_late') && (r.slipRoll === null || r.perfectRoll === null)) s.logBadRoll++;
+        }
+      }
       for (const rec of enemyW.values()) {
         s.windups++;
+        s.offTick += rec.offTick;
         if (rec.rolls > 1) s.multiRoll++;
         if (rec.rolls > s.maxRolls) s.maxRolls = rec.rolls;
         if (rec.slips > 0) s.slips++;
         if (rec.perfects > 0) s.perfects++;
       }
       for (const rec of playerW.values()) {
+        s.offTick += rec.offTick;
         if (rec.rolls > 1) s.multiRoll++;
         if (rec.rolls > s.maxRolls) s.maxRolls = rec.rolls;
         s.playerWindups++;
@@ -103,6 +121,21 @@ describe('BUG-3-01 §5.15 reactive dodge: one slip roll per windup (1,000 seeded
       expect({ tier, multiRoll: stats[tier].multiRoll, maxRolls: stats[tier].maxRolls })
         .toEqual({ tier, multiRoll: 0, maxRolls: 1 });
     }
+  });
+
+  it('AC-5.15.7 (decision log): every opposing card has one decision, at most one slip_chance and one perfect_slip_chance roll, made on its tick D', () => {
+    for (const tier of TIERS) {
+      const s = stats[tier];
+      expect(s.logDecisions).toBeGreaterThan(1000);
+      expect({ tier, dup: s.logDuplicate, off: s.logOffTick, bad: s.logBadOutcome, roll: s.logBadRoll })
+        .toEqual({ tier, dup: 0, off: 0, bad: 0, roll: 0 });
+    }
+  });
+
+  it('AC-5.15.7 (black-box): every slip roll happens on its decision tick D = windup start + round(reaction_s × 60)', () => {
+    const off = {};
+    for (const tier of TIERS) off[tier] = stats[tier].offTick;
+    expect(off).toEqual({ rookie: 0, fighter: 0, veteran: 0, master: 0 });
   });
 
   for (const tier of TIERS) {

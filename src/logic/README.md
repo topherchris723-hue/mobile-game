@@ -88,6 +88,7 @@ Fighter = { slot, characterId, enemyId, name, aura, boss, hp, maxHp, atk, def, s
 | `card_buffered` | side, slot | tap stored during Windup/Active (§5.7) |
 | `windup_start` | side, cardId, cardType, windupEnd | wind-up animation; tutorial `enemy_windup` |
 | `hit` | side (attacker), cardId, cardType, targetSlot, damage, crit, typeMult, chainIndex, comboHits, hitIndex, hits, riposte, hpAfter | damage number, "WEAK!" (typeMult 1.3) / "RESIST" (0.8), combo counter |
+| `hit_discarded` | side (attacker), cardId, cardType, targetSlot, hitIndex, reason (`rush_invulnerable`) | a hit on a fighter in its Tri-Burst rush (GDD §5.10 round 3): no damage, no hitstop, no Burst, not a dodge. Show nothing or a small "immune" spark; never a damage number or "DODGE" |
 | `whiff` | side, cardId, reason | |
 | `interrupt` | side, cardId | the card was cancelled by a hit |
 | `card_cancelled` | side, cardId, reason | cancelled by an enemy Ignition |
@@ -105,13 +106,25 @@ Fighter = { slot, characterId, enemyId, name, aura, boss, hp, maxHp, atk, def, s
 | `ignition_ready` | side, slot | IGNITE button appears |
 | `ignition` / `ignition_end` | side, slot, name, shout / reason | |
 | `burst_ready` | side | TRI-BURST pulses |
-| `tri_burst_start`, `tri_burst`, `tri_burst_hit`, `tri_burst_whiff` | side, members, damages / memberSlot, damage / burst | |
+| `tri_burst_start`, `tri_burst`, `tri_burst_hit`, `tri_burst_whiff` | side, members, damages / memberSlot, damage / burst, reason (`invulnerable`, `safety_net`) | |
 | `climax_cinematic` | side, cardId | |
 | `effect`, `buff_end` | side, slot, effect, value | |
 | `card_drawn` | side, slot (fighter), handSlot, cardId | refill |
 | `input_rejected` | side, input, reason (`vigor`, `state`, `cooldown`, `gauge`, `target`, `empty_slot`, `unavailable`, `not_now`) | shake the card or portrait, "not enough Vigor" flash |
 | `freeze_end` | kind, side | |
 | `battle_end` | outcome, reason | go to Result |
+
+All event types are exported as `BATTLE_EVENT_TYPES`; `HIT_DISCARD_REASONS` and `TRI_BURST_WHIFF_REASONS` list the
+reason values (from `src/logic/index.js`).
+
+**Round 3 rush rule (GDD §5.10).** The rushing fighter cannot be hit at all from T through T + 18: every hit on it
+(projectiles already in flight, later hits of a card whose first hit landed before T) becomes `hit_discarded`.
+A rush therefore always ends with `tri_burst` or `tri_burst_whiff` on T + 18, unless the battle ends first (then
+there is no rush event; go to Result as usual).
+
+**AI decision log (GDD §5.15 round 3).** `battle.controllers[side].dodgeLog` has one entry per opposing card:
+`{ actionId, cardId, oppSide, windupStart, decisionTick, tick, outcome, slipRoll, perfectRoll }`, `outcome` in
+`DODGE_DECISION_OUTCOMES` (`resolved`, `cannot_slip`, `no_slip`, `too_late`, `planned`). Test/sim use only.
 
 ## After the battle
 
@@ -216,6 +229,9 @@ is left as is and means "next pull is ★5". `grantCharacter` now also returns `
 | `content.banners` (pass `banners` to `createContent`) | — | `src/ui/game-data.js` (ui-developer) |
 | `rules.tutorialPromptMaxS`, `rules.tutorialNoneS` | — | `src/ui/tutorial.js` (ui-developer) |
 | Result fields are snake_case (`character_id`, `resonance_after`, `jade_added`) per GDD §11.3 | — | ui-developer, qa-tester |
+| Round 3: battle event `hit_discarded` (reason `rush_invulnerable`) | `BATTLE_EVENT_TYPES`, `HIT_DISCARD_REASONS` | Battle scene event switch / hit FX / damage numbers / SFX (ui-developer, vfx-developer, audio-designer): must not show a damage number, "DODGE" or play a hit sound for it |
+| Round 3: `tri_burst_whiff.reason` list | `TRI_BURST_WHIFF_REASONS` | Any whiff text keyed by reason (ui-developer); `safety_net` should never happen now |
+| Round 3: AI `dodgeLog` entries, `outcome` list | `DODGE_DECISION_OUTCOMES` | Balance harness / QA sims only (balance-analyst, qa-tester); not for the UI |
 
 ## Headless runs
 

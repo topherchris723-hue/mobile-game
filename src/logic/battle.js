@@ -24,6 +24,21 @@ export const STATES = {
   Cinematic: 'Cinematic', KO: 'KO', Benched: 'Benched',
 };
 
+/** Every event type step() can emit (README "Events"). Consumers map each one (L-shared-009). */
+export const BATTLE_EVENT_TYPES = [
+  'fight_start', 'card_played', 'card_buffered', 'windup_start', 'hit', 'hit_discarded', 'whiff', 'interrupt',
+  'card_cancelled', 'link_open', 'chain_end', 'knockdown', 'getup', 'dash', 'slip', 'perfect_slip', 'dodge', 'riposte',
+  'riposte_window_end', 'tag', 'tag_strike', 'ko', 'fighter_enter', 'ignition_ready', 'ignition', 'ignition_end',
+  'burst_ready', 'tri_burst_start', 'tri_burst', 'tri_burst_hit', 'tri_burst_whiff', 'climax_cinematic', 'effect',
+  'buff_end', 'card_drawn', 'input_rejected', 'freeze_end', 'battle_end',
+];
+
+/** `hit_discarded.reason` values (GDD §5.10 round 3: a hit on a rushing fighter is discarded). */
+export const HIT_DISCARD_REASONS = ['rush_invulnerable'];
+
+/** `tri_burst_whiff.reason` values (GDD §5.10). */
+export const TRI_BURST_WHIFF_REASONS = ['invulnerable', 'safety_net'];
+
 const S = STATES;
 const BUFF_TYPES = ['atk_up', 'def_up', 'atk_down', 'def_down'];
 
@@ -87,6 +102,7 @@ export class Battle {
     this.events = [];
     this.aiFeed = [];            // events since the AIs last looked (they react on the next unfrozen tick)
     this.result = null;
+    this.actionSeq = 0;          // id source for card actions (the AI identifies an opposing card by its id, §5.15)
 
     this.teams = {
       player: this.makeTeam('player', playerDefs, R.arena.startXPlayer),
@@ -190,6 +206,15 @@ export class Battle {
     if (!a || !a.armor) return false;
     if (a.kind === 'tri_burst') return true;
     return a.phase === 'approach' || a.phase === 'windup' || a.phase === 'active';
+  }
+
+  /**
+   * Is this fighter rushing right now? (GDD §5.10 round 3: from step 1 of T through step 5 of T + 18 no hit of
+   * any source affects it — in-flight projectiles and later hits of earlier cards included.)
+   */
+  isRushing(f) {
+    const t = this.teams[f.side];
+    return !f.ko && t.rush !== null && f.action === t.rush && t.fighters[t.active] === f;
   }
 
   /** Tri-Burst lock (GDD §5.0 round 2, BUG-2-08): true while either side's Tri-Burst rush is in progress. */
@@ -444,7 +469,9 @@ export class Battle {
     f.dash = null;
     f.slip = null;
     f.linkWindow = false;
+    this.actionSeq += 1;
     const action = {
+      id: this.actionSeq,
       kind: 'card',
       owner: f,
       cardId: cardId,
@@ -549,8 +576,9 @@ export class Battle {
       knockback: R.tag.strikeKnockback, armor: false, effects: [], cinematic_s: 0,
     };
     this.snapToMelee(side);
+    this.actionSeq += 1;
     f.action = {
-      kind: 'card', owner: f, cardId: 'tag_strike', card: card, isRiposte: false, phase: 'active',
+      id: this.actionSeq, kind: 'card', owner: f, cardId: 'tag_strike', card: card, isRiposte: false, phase: 'active',
       startTick: this.tick, windupStart: -1, windupEnd: this.tick,
       hitTicks: [this.tick + R.tag.strikeFirstHitTicks], nextHit: 0, landed: null, targetSlot: -1,
       chainIndex: 1, critMult: 1, comboMult: 1, recoveryEnd: 0, armor: false, isTagStrike: true,
@@ -638,7 +666,8 @@ export class Battle {
 
   /**
    * Safety net (GDD §5.10 round 2): a rush that ended without landing or whiffing counts as a whiff.
-   * Nothing in today's rules can do that; this guards future rule changes.
+   * Since the round-3 ruling (absolute rush invulnerability, `hit_discarded`) nothing in today's rules can do that;
+   * this guards future rule changes. AC-5.10.7 asserts it never fires.
    */
   checkRushSafetyNet() {
     for (const side of SIDES) {
@@ -964,6 +993,8 @@ export class Battle {
     const hitIndex = a.nextHit;
     const p = { kind: 'card', side: side, f: f, d: d, a: a, hitIndex: hitIndex, damages: [], landed: false, perfect: false };
     if (hitIndex > 0 && a.landed && (d.slot !== a.targetSlot || d.ko)) return p; // target left (KO / tag)
+    // GDD §5.10 round 3: a rushing fighter is untouchable; this overrides "the first hit decides the whole card".
+    if (this.isRushing(d)) { p.discarded = true; return p; }
     if (hitIndex === 0) {
       if (this.isInvulnerable(d)) {
         p.landed = false;
@@ -1039,6 +1070,19 @@ export class Battle {
     const at = this.teams[side];
     const dt = this.teams[dSide];
     const d = p.d;
+    if (p.discarded) {
+      // GDD §5.10 round 3: 0 damage, no hitstun/knockback, no Burst, no on-hit effects, no hitstop, not a dodge.
+      // A discarded first hit leaves the card unlanded (its later hits follow the first-hit rule); a discarded Climax
+      // first hit consumes all its hits, as they are applied together (§5.5).
+      const card = p.a.card;
+      if (p.hitIndex === 0) p.a.landed = false;
+      p.a.nextHit += card.type === 'climax' && p.hitIndex === 0 ? card.hits : 1;
+      this.emit({
+        type: 'hit_discarded', side: side, cardId: p.a.cardId, cardType: card.type, targetSlot: d.slot,
+        hitIndex: p.hitIndex, reason: 'rush_invulnerable',
+      });
+      return 0;
+    }
     if (!p.landed) {
       if (p.kind === 'tri_burst') {
         this.whiffTriBurst(side, 'invulnerable');

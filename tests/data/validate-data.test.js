@@ -66,11 +66,54 @@ describe('validate-data: current data passes', () => {
   });
 });
 
+describe('validate-data: §15.3 rules 10–12 (balance limits, round 3)', () => {
+  const BAL = ['10-character-bands', '11-ignition', '12-card-budgets'];
+  it('rules 10–12 are not applied with { balance: false } (FX-GDD mode)', () => {
+    const data = loadAllData();
+    data['cards.json'].cards[0].power = 9.9;
+    data['characters.json'].characters[0].base_stats.atk = 2000;
+    const r = validateDataset(data, schemas, banned, [], { balance: false });
+    expect(r.errors.filter((e) => BAL.indexOf(e.rule) >= 0)).toEqual([]);
+    const on = validateDataset(data, schemas, banned, []);
+    expect(on.errors.filter((e) => BAL.indexOf(e.rule) >= 0).length).toBeGreaterThanOrEqual(2);
+  });
+  it('must PASS: live data after the round-3 HP ×2 change (applied in memory while live is still pre-change)', () => {
+    const data = loadAllData();
+    const chars = data['characters.json'].characters;
+    const preChange = chars.some((c) => c.rarity === 3 && c.base_stats.hp < 16000);
+    if (preChange) for (const c of chars) c.base_stats.hp *= 2;
+    const r = validateDataset(data, schemas, banned, []);
+    expect(r.errors.filter((e) => BAL.indexOf(e.rule) >= 0)).toEqual([]);
+    expect(r.warnings.filter((w) => BAL.indexOf(w.rule) >= 0)).toEqual([]);
+  });
+  it('error text names the file, record id, field, value and allowed range (GDD §15.3 example)', () => {
+    const data = loadAllData();
+    const c = data['cards.json'].cards.find((x) => x.type === 'signature');
+    c.cost = 5; c.effects = [{ type: 'vigor_gain', target: 'self', value: 1, on: 'hit' }]; c.power = 3.0;
+    const r = validateDataset(data, schemas, banned, []);
+    const msgs = r.errors.filter((e) => e.rule === '12-card-budgets').map((e) => e.message);
+    expect(msgs).toContain('cards.json ' + c.id + ': power 3 outside [2.45, 2.95] (signature cost 5, 1 effect)');
+  });
+  it('tolerance 1e-9: 0.55 × 5 − 0.3 = 2.45 passes as the lower bound', () => {
+    const data = loadAllData();
+    const c = data['cards.json'].cards.find((x) => x.type === 'signature');
+    c.cost = 5; c.effects = [{ type: 'vigor_gain', target: 'self', value: 1, on: 'hit' }]; c.power = 2.45;
+    const r = validateDataset(data, schemas, banned, []);
+    expect(r.errors.filter((e) => e.rule === '12-card-budgets' && e.message.indexOf(c.id + ':') >= 0)).toEqual([]);
+  });
+});
+
 describe('validate-data: negative fixtures (each must FAIL its rule)', () => {
   const files = fs.readdirSync(FIXTURE_DIR).filter((f) => f.endsWith('.json')).sort();
-  it('has at least one fixture per rule 1–9 plus schema', () => {
+  // Errors the live data already has (normally none). A fixture is judged only on the errors it ADDS, so a
+  // live-data problem (round 3: rule 10 HP band until the HP ×2 change lands) cannot make a must-FAIL fixture pass
+  // by accident or a must-PASS fixture fail; "current data passes" above still demands 0 live errors.
+  const key = (e) => e.rule + '|' + e.file + '|' + e.path + '|' + e.message;
+  const baseline = {};
+  for (const e of validateDataset(loadAllData(), schemas, banned, []).errors) baseline[key(e)] = true;
+  it('has at least one fixture per rule 1–12 plus schema', () => {
     const all = files.map((f) => JSON.parse(fs.readFileSync(path.join(FIXTURE_DIR, f), 'utf8')).name).join(' ');
-    for (const tag of ['schema', 'rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6', 'rule7', 'rule8', 'rule9']) {
+    for (const tag of ['schema', 'rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6', 'rule7', 'rule8', 'rule9', 'rule10', 'rule11', 'rule12']) {
       expect(all).toContain(tag);
     }
   });
@@ -80,12 +123,22 @@ describe('validate-data: negative fixtures (each must FAIL its rule)', () => {
       const data = loadAllData();
       applyOps(data[fx.file], fx.ops);
       const r = validateDataset(data, schemas, banned, []);
+      const added = r.errors.filter((e) => !baseline[key(e)]);
       if (fx.expect.errorRule) {
-        expect(r.errors.map((e) => e.rule)).toContain(fx.expect.errorRule);
+        expect(added.map((e) => e.rule)).toContain(fx.expect.errorRule);
+        if (fx.expect.errorContains) {
+          const msgs = added.filter((e) => e.rule === fx.expect.errorRule).map((e) => e.message);
+          expect(msgs.some((m) => m.indexOf(fx.expect.errorContains) >= 0), JSON.stringify(msgs)).toBe(true);
+        }
       } else {
-        expect(r.errors).toEqual([]);
+        expect(added).toEqual([]);
       }
-      if (fx.expect.warningRule) expect(r.warnings.map((w) => w.rule)).toContain(fx.expect.warningRule);
+      if (fx.expect.warningRule) {
+        expect(r.warnings.map((w) => w.rule)).toContain(fx.expect.warningRule);
+        if (fx.expect.warningContains) {
+          expect(r.warnings.some((w) => w.message.indexOf(fx.expect.warningContains) >= 0), JSON.stringify(r.warnings)).toBe(true);
+        }
+      }
       if (fx.expect.warningRule === null) expect(r.warnings).toEqual([]);
     });
   }
@@ -121,6 +174,20 @@ describe('validate-data CLI exit codes', () => {
     expect(r.status).toBe(1);
     expect(r.stdout).toContain('7-banned-terms');
     expect(r.stdout).toContain('2-references');
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+  it('--skip-balance skips rules 10–12 and says so; without it a ★3 with ATK 2000 exits 1 on rule 10', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vd-'));
+    const data = loadAllData();
+    for (const c of data['characters.json'].characters) if (c.base_stats.hp < 16000 && c.rarity === 3) c.base_stats.hp *= 2;
+    data['characters.json'].characters[0].base_stats.atk = 2000;
+    for (const k of Object.keys(data)) fs.writeFileSync(path.join(dir, k), JSON.stringify(data[k]));
+    const on = runCli(dir);
+    expect(on.status).toBe(1);
+    expect(on.stdout).toContain('ERROR [10-character-bands]');
+    const off = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'validate-data.js'), '--dir', dir, '--skip-balance'], { encoding: 'utf8' });
+    expect(off.stdout).not.toContain('[10-character-bands]');
+    expect(off.stdout).toContain('rules 10–12 skipped');
     fs.rmSync(dir, { recursive: true, force: true });
   });
   it('exits 1 on invalid JSON', () => {

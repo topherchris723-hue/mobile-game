@@ -590,41 +590,27 @@ describe('§5.15 AI (round 2)', () => {
   });
 });
 
-describe('§5.10 / §5.15 / §5.1 headless runs (1,000 seeded master-vs-master battles, stage_005)', () => {
-  const content = createContent(testBundle());
+// AC-5.10.7 was rewritten in round 3 (live stage_004 + stage_005, extra seeds, 0 safety-net whiffs, 0 KOs during a
+// rush): see tests/logic/battle-rush-invuln.test.js. This loop keeps the round-2 AC-5.15.2 lock check (P, live data).
+describe('§5.15 headless runs (1,000 seeded master-vs-master battles, live stage_005)', () => {
+  const content = createContent(testBundle(undefined, 'live'));
   const N = 1000;
   let starts = 0;
-  let resolvedOk = 0;
-  let badResolve = 0;
-  let igniteCancels = 0;
   let rejected = 0;
   for (let seed = 1; seed <= N; seed++) {
     const b = createBattle({
       content, stageId: 'stage_005', playerTeam: ['char_tavi_001', 'char_lark_001', 'char_dunmore_001'],
       playerController: { aiTier: 'master' }, enemyController: { aiTier: 'master' }, skipIntro: true,
     }, seed);
-    const open = { player: -1, enemy: -1 };
     while (!b.getResult()) {
       for (const e of b.step()) {
-        if (e.type === 'tri_burst_start') { starts++; if (open[e.side] >= 0) badResolve++; open[e.side] = e.tick; }
-        if (e.type === 'tri_burst' || e.type === 'tri_burst_whiff') {
-          if (open[e.side] >= 0 && e.tick - open[e.side] === 18) resolvedOk++;
-          else badResolve++;
-          open[e.side] = -1;
-        }
-        if (e.type === 'card_cancelled' && e.reason === 'ignition' && e.cardId === 'tri_burst') igniteCancels++;
+        if (e.type === 'tri_burst_start') starts++;
         if (e.type === 'input_rejected') rejected++;
       }
     }
-    if (open.player >= 0 || open.enemy >= 0) badResolve++; // a rush still open when the battle ended
   }
-  it('AC-5.10.7: every tri_burst_start is followed by exactly one tri_burst or tri_burst_whiff 18 unfrozen ticks later; 0 Ignition cancels of a rush', () => {
-    expect(starts).toBeGreaterThan(100);
-    expect(badResolve).toBe(0);
-    expect(igniteCancels).toBe(0);
-    expect(resolvedOk).toBeGreaterThan(0);
-  });
   it('AC-5.15.2 (round 2): the AI never tries an Ignite or Tri-Burst during the lock (0 rejected AI inputs)', () => {
+    expect(starts).toBeGreaterThan(100);
     expect(rejected).toBe(0);
   });
 });

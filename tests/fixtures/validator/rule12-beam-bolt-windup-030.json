@@ -1,0 +1,19 @@
+{
+  "name": "rule12-beam-bolt-windup-030",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        26,
+        "windup_s"
+      ],
+      "value": 0.3
+    }
+  ],
+  "expect": {
+    "errorRule": "12-card-budgets",
+    "errorContains": "windup_s 0.3 outside [0.35, 0.5] (bolt beam)"
+  }
+}

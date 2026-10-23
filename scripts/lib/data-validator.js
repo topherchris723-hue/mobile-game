@@ -126,15 +126,171 @@ function walkStrings(value, path, fn) {
   }
 }
 
+// ---------------------------------------------------------------- GDD §15.3 rules 10–12 (round 3)
+// Balance limits. Ranges are inclusive and compared with tolerance 1e-9. They apply to data/ only, never to
+// FX-GDD (GDD §15.4), which keeps its frozen round-2 values.
+
+export const BALANCE_TOLERANCE = 1e-9;
+
+// Rule 10: GDD §6 character bands by rarity.
+export const CHARACTER_BANDS = {
+  3: { hp: [16000, 18000], atk: [850, 950], def: [400, 480], crit_rate: [0.05, 0.05] },
+  4: { hp: [18000, 20000], atk: [950, 1050], def: [450, 530], crit_rate: [0.05, 0.08] },
+  5: { hp: [20000, 22000], atk: [1050, 1150], def: [500, 580], crit_rate: [0.05, 0.10] },
+};
+
+// Rule 11: GDD §6 Ignition limits (errors), plus warning bands for the two time/HP triggers.
+export const IGNITION_LIMITS = {
+  stat_mult_atk: [1.2, 1.4], stat_mult_def: [1.1, 1.3], duration_s: [20, 30], heal_pct: [0.05, 0.15],
+  vigor_regen_bonus: [0, 0.3],
+};
+export const IGNITION_TRIGGER_WARN = { hp_below_pct: [40, 60], battle_time_s: [60, 100] };
+
+// Rule 12: GDD §7 card budgets by type. power: [lo, hi] before the −0.3 per effect; signature uses × cost.
+export const CARD_BUDGETS = {
+  fist: { cost: [2, 2], power: [1.0, 1.3], hits: [1, 3], windup_s: [0.10, 0.20], recovery_s: [0.25, 0.35], hitstun_s: [0.55, 0.70], knockback: [2, 6] },
+  bolt: { cost: [3, 3], power: [1.4, 1.7], hits: [1, 5], windup_s: [0.20, 0.35], windup_beam_s: [0.35, 0.50], recovery_s: [0.30, 0.40], hitstun_s: [0.50, 0.70], knockback: [6, 12] },
+  signature: { cost: [4, 6], power_per_cost: [0.55, 0.65], hits: [1, 6], windup_s: [0.25, 0.50], recovery_s: [0.35, 0.50], hitstun_s: [0.70, 0.90], knockback: [6, 15] },
+  climax: { cost: [7, 8], power: [5.0, 6.0], power_ignition: [6.5, 7.5], hits: [3, 10], windup_s: [0.60, 0.80], recovery_s: [0.50, 0.70], hitstun_s: [1.0, 1.0], knockback: [20, 30], cinematic_s: [1.5, 3.0] },
+};
+export const CARD_COMMON_LIMITS = { hit_interval_s: [0.05, 0.25], projectile_speed: [120, 200] };
+export const EFFECT_POWER_STEP = 0.3;
+
+/** Round a computed bound for display (2.4500000000000002 → 2.45). */
+function shownNum(x) {
+  return Math.round(x * 1e6) / 1e6;
+}
+
+/** True when v is a number inside [lo, hi] with the §15.3 tolerance. */
+function inRange(v, lo, hi) {
+  return typeof v === 'number' && v >= lo - BALANCE_TOLERANCE && v <= hi + BALANCE_TOLERANCE;
+}
+
+/**
+ * GDD §15.3 rules 10–12 on the parsed data. err(rule, file, path, message) / warn(...) receive each finding.
+ * Messages start with "<file> <record id>: <field> <value> outside [lo, hi]" (GDD §15.3 error text).
+ */
+export function validateBalance(data, err, warn) {
+  const list = (file, key) => (data[file] && Array.isArray(data[file][key]) ? data[file][key] : []);
+  const characters = list('characters.json', 'characters');
+  const cards = list('cards.json', 'cards');
+
+  // ---- Rule 10: character bands ----
+  characters.forEach((ch, i) => {
+    if (!ch || !ch.base_stats) return;
+    const p = 'characters[' + i + '](' + ch.id + ')';
+    const band = Object.prototype.hasOwnProperty.call(CHARACTER_BANDS, ch.rarity) ? CHARACTER_BANDS[ch.rarity] : null;
+    if (!band) { err('10-character-bands', 'characters.json', p + '.rarity', 'characters.json ' + ch.id + ': rarity ' + ch.rarity + ' has no §6 band'); return; }
+    for (const field of ['hp', 'atk', 'def', 'crit_rate']) {
+      const v = ch.base_stats[field];
+      const r = band[field];
+      if (!inRange(v, r[0], r[1])) {
+        err('10-character-bands', 'characters.json', p + '.base_stats.' + field,
+          'characters.json ' + ch.id + ': ' + field + ' ' + v + ' outside [' + r[0] + ', ' + r[1] + '] (★' + ch.rarity + ')');
+      }
+    }
+  });
+
+  // ---- Rule 11: Ignition limits ----
+  characters.forEach((ch, i) => {
+    if (!ch || !ch.ignition) return;
+    const ig = ch.ignition;
+    const p = 'characters[' + i + '](' + ch.id + ').ignition';
+    const L = IGNITION_LIMITS;
+    const check = (field, v, r) => {
+      if (!inRange(v, r[0], r[1])) {
+        err('11-ignition', 'characters.json', p + '.' + field, 'characters.json ' + ch.id + ': ignition.' + field + ' ' + v + ' outside [' + r[0] + ', ' + r[1] + ']');
+      }
+    };
+    const sm = ig.stat_mult || {};
+    check('stat_mult.atk', sm.atk, L.stat_mult_atk);
+    check('stat_mult.def', sm.def, L.stat_mult_def);
+    check('duration_s', ig.duration_s, L.duration_s);
+    check('heal_pct', ig.heal_pct, L.heal_pct);
+    check('vigor_regen_bonus', ig.vigor_regen_bonus, L.vigor_regen_bonus);
+    const triggers = Array.isArray(ig.triggers) ? ig.triggers : [];
+    let hasTimeOrHp = false;
+    triggers.forEach((t, j) => {
+      if (!t) return;
+      if (!Object.prototype.hasOwnProperty.call(IGNITION_TRIGGER_WARN, t.type)) return;
+      hasTimeOrHp = true;
+      const r = IGNITION_TRIGGER_WARN[t.type];
+      if (!inRange(t.value, r[0], r[1])) {
+        warn('11-ignition', 'characters.json', p + '.triggers[' + j + ']',
+          'characters.json ' + ch.id + ': ignition trigger ' + t.type + ' ' + t.value + ' outside [' + r[0] + ', ' + r[1] + '] (warning)');
+      }
+    });
+    if (!hasTimeOrHp) {
+      err('11-ignition', 'characters.json', p + '.triggers', 'characters.json ' + ch.id + ': ignition needs a hp_below_pct or battle_time_s trigger');
+    }
+  });
+
+  // ---- Rule 12: card budgets ----
+  // Which climaxes are Ignition Climaxes: in at least one ignition.deck and in no base deck.
+  const inBase = {};
+  const inIgnition = {};
+  for (const ch of characters) {
+    if (!ch) continue;
+    for (const e of Array.isArray(ch.deck) ? ch.deck : []) if (e) inBase[e.card_id] = true;
+    if (ch.ignition && Array.isArray(ch.ignition.deck)) for (const e of ch.ignition.deck) if (e) inIgnition[e.card_id] = true;
+  }
+  const has = (map, id) => Object.prototype.hasOwnProperty.call(map, id);
+  cards.forEach((c, i) => {
+    if (!c) return;
+    const p = 'cards[' + i + '](' + c.id + ')';
+    const B = Object.prototype.hasOwnProperty.call(CARD_BUDGETS, c.type) ? CARD_BUDGETS[c.type] : null;
+    if (!B) return; // unknown type is a schema error
+    const fail = (field, v, lo, hi, ctx) => {
+      err('12-card-budgets', 'cards.json', p + '.' + field,
+        'cards.json ' + c.id + ': ' + field + ' ' + v + ' outside [' + shownNum(lo) + ', ' + shownNum(hi) + '] (' + ctx + ')');
+    };
+    const range = (field, r, ctx) => {
+      if (!inRange(c[field], r[0], r[1])) fail(field, c[field], r[0], r[1], ctx || c.type);
+    };
+    const e = Array.isArray(c.effects) ? c.effects.length : 0;
+    const effText = e + (e === 1 ? ' effect' : ' effects');
+    range('cost', B.cost);
+    let lo;
+    let hi;
+    let ctx;
+    if (c.type === 'signature') {
+      lo = B.power_per_cost[0] * c.cost; hi = B.power_per_cost[1] * c.cost; ctx = 'signature cost ' + c.cost + ', ' + effText;
+    } else if (c.type === 'climax') {
+      const ignitionClimax = has(inIgnition, c.id) && !has(inBase, c.id);
+      if (has(inIgnition, c.id) && has(inBase, c.id)) {
+        err('12-card-budgets', 'cards.json', p, 'cards.json ' + c.id + ': climax is in both a base deck and an ignition deck');
+      }
+      const r = ignitionClimax ? B.power_ignition : B.power;
+      lo = r[0]; hi = r[1]; ctx = (ignitionClimax ? 'Ignition Climax' : 'climax') + ', ' + effText;
+    } else {
+      lo = B.power[0]; hi = B.power[1]; ctx = c.type + ', ' + effText;
+    }
+    lo -= EFFECT_POWER_STEP * e;
+    hi -= EFFECT_POWER_STEP * e;
+    if (!inRange(c.power, lo, hi)) fail('power', c.power, lo, hi, ctx);
+    range('hits', B.hits);
+    if (c.type === 'bolt' && c.delivery === 'beam') range('windup_s', B.windup_beam_s, 'bolt beam');
+    else range('windup_s', B.windup_s, c.type === 'bolt' ? 'bolt ' + c.delivery : c.type);
+    range('recovery_s', B.recovery_s);
+    range('hitstun_s', B.hitstun_s);
+    range('knockback', B.knockback);
+    range('hit_interval_s', CARD_COMMON_LIMITS.hit_interval_s, 'all types');
+    if (c.projectile_speed !== undefined) range('projectile_speed', CARD_COMMON_LIMITS.projectile_speed, 'all types');
+    if (c.type === 'climax') range('cinematic_s', B.cinematic_s);
+  });
+}
+
 /**
  * Validate the whole data set.
  * @param data    { 'cards.json': object, ... } parsed data files (missing file = error)
  * @param schemas { 'cards.schema.json': object, ... }
  * @param banned  result of parseBannedTerms
  * @param extraFiles names of data/*.json files not listed in GDD §15.1 (reported as errors)
+ * @param options { balance: true } — false skips §15.3 rules 10–12 (FX-GDD, GDD §15.4)
  * @returns { errors: [{rule, file, path, message}], warnings: [...] }
  */
-export function validateDataset(data, schemas, banned, extraFiles) {
+export function validateDataset(data, schemas, banned, extraFiles, options) {
+  const balance = !(options && options.balance === false);
   const errors = [];
   const warnings = [];
   const err = (rule, file, path, message) => errors.push({ rule: rule, file: file, path: path, message: message });
@@ -383,6 +539,9 @@ export function validateDataset(data, schemas, banned, extraFiles) {
       });
     }
   }
+
+  // ---- Rules 10–12: balance limits (data/ only; GDD §15.3 round 3) ----
+  if (balance) validateBalance(data, err, warn);
 
   return { errors: errors, warnings: warnings, schemaOk: schemaOk };
 }

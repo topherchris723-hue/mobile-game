@@ -3,6 +3,9 @@
 // It reads only public state: positions, HP, gauges, the opponent's visible windup, and its own hand.
 
 const PREF_CLOSE = ['fist', 'signature', 'bolt'];
+
+/** Outcomes of one reactive-dodge decision (GDD §5.15 round 3), as logged in AiController.dodgeLog. */
+export const DODGE_DECISION_OUTCOMES = ['resolved', 'cannot_slip', 'no_slip', 'too_late', 'planned'];
 const PREF_FAR = ['bolt', 'signature', 'fist'];
 
 export class AiController {
@@ -16,13 +19,17 @@ export class AiController {
     this.rng = rng;
     this.fixedTier = fixedTier;
     this.nextThink = 0;
-    this.watched = null;       // opponent action being watched for a reactive dodge
-    this.reactAt = -1;
+    this.watched = null;       // opponent card action being watched for a reactive dodge
+    this.decisionTick = -1;    // its decision tick D (GDD §5.15 round 3)
+    this.decided = false;      // true once the one decision for `watched` has been made
     this.plannedSlipAt = -1;
     this.pendingCombo = false;
     this.pendingRiposte = false;
     this.lastEventCount = 0;
     this.slipLog = [];         // [{ slipTick, windupStart, perfectRoll, firstHit, decisionTick }] for AC-5.15.4/5.15.5
+    // One entry per opposing card decision (AC-5.15.7): { actionId, cardId, oppSide, windupStart, decisionTick, tick,
+    // outcome: one of DODGE_DECISION_OUTCOMES, slipRoll: number|null, perfectRoll: number|null }.
+    this.dodgeLog = [];
     this.plan = null;          // the current planned slip (roll result and predicted hit tick)
   }
 
@@ -40,6 +47,9 @@ export class AiController {
     const now = b.tick;
     const tier = this.tier();
     this.readLastEvents();
+    // The reactive-dodge decision runs first on every tick, so it is made exactly on its decision tick D
+    // (GDD §5.15 round 3), whatever else the AI does this tick (Riposte, combo, KO'd fighter).
+    this.reactiveDodge(tier);
     const me = b.activeFighter(this.side);
     if (me.ko) return [];
 
@@ -60,7 +70,7 @@ export class AiController {
       }
     }
 
-    const dodge = this.reactiveDodge(tier);
+    const dodge = this.plannedSlip(tier);
     if (dodge) return [dodge];
 
     if (now < this.nextThink) return [];
@@ -82,74 +92,97 @@ export class AiController {
     }
   }
 
-  /** Reactive dodge (GDD §5.15): react to the opponent's windup only after reaction_s. */
+  /**
+   * Reactive dodge decision (GDD §5.15, round 3 "one decision per opposing card"). For each opposing card action
+   * the AI decides exactly once, on its decision tick D = windup start + round(reaction_s × 60):
+   *   1. first hit already resolved (landed or whiffed) → "no slip", no roll ('resolved');
+   *   2. the AI cannot Slip now (state, Vigor < slip.cost) → "no slip", no roll ('cannot_slip');
+   *   3. one roll < slip_chance: fail → 'no_slip'; success → one roll < perfect_slip_chance and plan the Slip
+   *      ('planned'), or 'too_late' if a normal roll could only produce a Perfect Slip.
+   * A decided card is never re-examined. Every decision is appended to `dodgeLog` (AC-5.15.7).
+   * Uses the AI's seeded rng for the 0, 1 or 2 rolls; returns nothing (the Slip itself comes from plannedSlip()).
+   */
   reactiveDodge(tier) {
     const b = this.battle;
     const now = b.tick;
-    const opp = b.activeFighter(this.side === 'player' ? 'enemy' : 'player');
+    const oppSide = this.side === 'player' ? 'enemy' : 'player';
+    const opp = b.activeFighter(oppSide);
     const a = opp.action;
     if (a && a.kind === 'card' && a.windupStart >= 0 && a !== this.watched) {
       this.watched = a;
-      this.reactAt = a.windupStart + tier.reactionTicks;
+      this.decisionTick = a.windupStart + tier.reactionTicks;
+      this.decided = false;
       this.plannedSlipAt = -1;
+      this.plan = null;
     }
-    if (!this.watched) return null;
+    if (!this.watched) return;
     const w = this.watched;
-    if (opp.action !== w || w.landed !== null) {
+    if (opp.action !== w) { // the card ended, was interrupted or cancelled, or its owner left
       this.watched = null;
       this.plannedSlipAt = -1;
-      return null;
+      return;
     }
-    if (this.reactAt >= 0 && now >= this.reactAt) {
-      this.reactAt = -1;
-      const firstHit = this.predictFirstHit(w);
+    const SL = b.rules.slip;
+    if (!this.decided && now >= this.decisionTick) {
+      this.decided = true;
+      const rec = {
+        actionId: w.id, cardId: w.cardId, oppSide: oppSide, windupStart: w.windupStart, decisionTick: this.decisionTick,
+        tick: now, outcome: '', slipRoll: null, perfectRoll: null,
+      };
+      this.dodgeLog.push(rec);
+      if (w.landed !== null) { rec.outcome = 'resolved'; return; }
       const slip = b.slipMode(this.side);
-      // One decision per windup (GDD §5.15, BUG-3-01): `watched` stays set on every exit below, so the same
-      // windup is never picked up again and re-rolled; it is cleared only when the action ends or lands.
-      if (!slip.ok || slip.isBreak) return null;
-      if (this.rng.next() >= tier.slipChance) return null;
-      const perfect = this.rng.next() < tier.perfectSlipChance;
-      const SL = b.rules.slip;
+      if (!slip.ok || slip.isBreak) { rec.outcome = 'cannot_slip'; return; }
+      rec.slipRoll = this.rng.next();
+      if (rec.slipRoll >= tier.slipChance) { rec.outcome = 'no_slip'; return; }
+      rec.perfectRoll = this.rng.next();
+      const perfect = rec.perfectRoll < tier.perfectSlipChance;
+      const firstHit = this.predictFirstHit(w);
       // GDD: perfect → start 6 ticks before the hit, else 15. Derived from data: 2/3 of the
       // perfect window, and the middle of the normal-dodge band.
       const offset = perfect ? Math.floor((SL.perfectTicks * 2) / 3) : Math.floor((SL.perfectTicks + SL.iframeTicks) / 2);
       const at = firstHit - offset;
       if (!perfect && firstHit - Math.max(at, now) <= SL.perfectTicks) {
         // Too late for a normal dodge; slipping now would be a Perfect Slip this roll did not earn.
-        return null;
+        rec.outcome = 'too_late';
+        return;
       }
+      rec.outcome = 'planned';
       this.plannedSlipAt = Math.max(at, now);
       this.plan = { perfectRoll: perfect, firstHit: firstHit, decisionTick: now, planTick: now, offset: offset };
-    } else if (this.plannedSlipAt >= 0 && this.plan) {
-      // Re-plan if the predicted hit tick moved (e.g. our own dash changed a projectile's travel time),
-      // so the slip still starts `offset` ticks before the hit and a normal roll never becomes Perfect.
-      const firstHit = this.predictFirstHit(w);
-      if (firstHit !== this.plan.firstHit) {
-        const SL = b.rules.slip;
-        const at = firstHit - this.plan.offset;
-        this.plan.firstHit = firstHit;
-        this.plan.planTick = now;
-        if (!this.plan.perfectRoll && firstHit - Math.max(at, now) <= SL.perfectTicks) {
-          this.plannedSlipAt = -1;
-          return null;
-        }
-        this.plannedSlipAt = Math.max(at, now);
-      }
+      return;
     }
-    if (this.plannedSlipAt >= 0 && now >= this.plannedSlipAt) {
-      this.plannedSlipAt = -1;
-      const windupStart = w.windupStart;
-      // Keep `watched` = w: this windup has had its one roll, whether or not the Slip can start now.
-      if (b.slipMode(this.side).ok && !b.slipMode(this.side).isBreak) {
-        const plan = this.plan || {};
-        this.slipLog.push({
-          slipTick: now, windupStart: windupStart, reactionTicks: tier.reactionTicks,
-          perfectRoll: plan.perfectRoll, firstHit: plan.firstHit, decisionTick: plan.decisionTick, planTick: plan.planTick, offset: plan.offset,
-        });
-        return { type: 'slip' };
+    if (this.plannedSlipAt < 0 || !this.plan) return;
+    if (w.landed !== null) { this.plannedSlipAt = -1; return; } // the first hit resolved first: nothing to dodge
+    // Re-plan if the predicted hit tick moved (e.g. our own dash changed a projectile's travel time),
+    // so the slip still starts `offset` ticks before the hit and a normal roll never becomes Perfect.
+    const firstHit = this.predictFirstHit(w);
+    if (firstHit !== this.plan.firstHit) {
+      const at = firstHit - this.plan.offset;
+      this.plan.firstHit = firstHit;
+      this.plan.planTick = now;
+      if (!this.plan.perfectRoll && firstHit - Math.max(at, now) <= SL.perfectTicks) {
+        this.plannedSlipAt = -1;
+        return;
       }
+      this.plannedSlipAt = Math.max(at, now);
     }
-    return null;
+  }
+
+  /** The planned Slip input, on its tick, if the AI can still Slip (GDD §5.15). Returns an input or null. */
+  plannedSlip(tier) {
+    const b = this.battle;
+    const now = b.tick;
+    if (this.plannedSlipAt < 0 || now < this.plannedSlipAt || !this.watched) return null;
+    this.plannedSlipAt = -1;
+    const m = b.slipMode(this.side);
+    if (!m.ok || m.isBreak) return null;
+    const plan = this.plan || {};
+    this.slipLog.push({
+      slipTick: now, windupStart: this.watched.windupStart, reactionTicks: tier.reactionTicks,
+      perfectRoll: plan.perfectRoll, firstHit: plan.firstHit, decisionTick: plan.decisionTick, planTick: plan.planTick, offset: plan.offset,
+    });
+    return { type: 'slip' };
   }
 
   /** Predicted tick of the first hit of an opponent action in windup (public info: windup + projectile). */

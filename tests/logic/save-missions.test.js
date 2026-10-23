@@ -6,7 +6,7 @@ import { missionsMet } from '../../src/logic/missions.js';
 import {
   SAVE_KEY, createFreshSave, loadSave, migrateSave, writeSave, applyBattleResult, grantCharacter, addCurrency,
 } from '../../src/state/save.js';
-import { readJson } from '../helpers/load-data.js';
+import { readJson, readGddJson } from '../helpers/load-data.js';
 
 const economy = readJson('data/economy.json');
 const stages = readJson('data/stages.json').stages;
@@ -120,13 +120,16 @@ describe('§12 / §13 save data', () => {
     expect(save.currencies.cur_jade).toBe(1000);
     expect(save.stages.stage_001).toBeUndefined();
   });
-  it('§11.4 duplicates: Resonance +1 up to 4, then ★-based Jade; Jade capped at 999,999', () => {
-    const save = createFreshSave(economy, NOW_ISO);
-    const tavi = characters.char_tavi_001;
-    for (let i = 1; i <= 4; i++) expect(grantCharacter(save, economy, tavi, NOW_ISO)).toEqual({ kind: 'resonance', resonance: i });
-    expect(grantCharacter(save, economy, tavi, NOW_ISO)).toEqual({ kind: 'currency', amount: 10, credited: 10 });
-    expect(grantCharacter(save, economy, characters.char_solenne_001, NOW_ISO)).toEqual({ kind: 'new' });
-    expect(addCurrency(save, economy, 'cur_jade', 5000000)).toBe(999999 - 1010);
+  it('§11.4 duplicates (W, FX-GDD): Resonance +1 up to 4, then ★-based Jade; Jade capped at 999,999', () => {
+    const gEconomy = readGddJson('economy.json');
+    const gChars = {};
+    for (const c of readGddJson('characters.json').characters) gChars[c.id] = c;
+    const save = createFreshSave(gEconomy, NOW_ISO);
+    const tavi = gChars.char_tavi_001;
+    for (let i = 1; i <= 4; i++) expect(grantCharacter(save, gEconomy, tavi, NOW_ISO)).toEqual({ kind: 'resonance', resonance: i });
+    expect(grantCharacter(save, gEconomy, tavi, NOW_ISO)).toEqual({ kind: 'currency', amount: 10, credited: 10 });
+    expect(grantCharacter(save, gEconomy, gChars.char_solenne_001, NOW_ISO)).toEqual({ kind: 'new' });
+    expect(addCurrency(save, gEconomy, 'cur_jade', 5000000)).toBe(999999 - 1010);
     expect(save.currencies.cur_jade).toBe(999999);
   });
 });

@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // `npm run validate-data` — validates data/*.json against data/schemas (Ajv, JSON Schema 2020-12),
-// the GDD §15.3 cross-file rules 1–9 and the GDD §3 banned-term lists (read from docs/GDD.md).
-// Usage: node scripts/validate-data.js [--data-dir <dir>] [--gdd <path>]
+// the GDD §15.3 cross-file rules 1–9, the §15.3 balance limits 10–12 and the GDD §3 banned-term lists
+// (read from docs/GDD.md).
+// Usage: node scripts/validate-data.js [--dir <dir> | --data-dir <dir>] [--schema-dir <dir>] [--gdd <path>] [--skip-balance]
+//   --dir tests/fixtures/gdd validates the FX-GDD fixture (GDD §15.4): rules 10–12 are skipped automatically for it.
+//   --skip-balance skips rules 10–12 for any directory.
 // Exit code 0 = no errors (warnings allowed), 1 = errors found, 2 = could not run.
 
 import fs from 'node:fs';
@@ -16,7 +19,10 @@ function argValue(name, fallback) {
   return i >= 0 && process.argv[i + 1] ? path.resolve(process.argv[i + 1]) : fallback;
 }
 
-const dataDir = argValue('--data-dir', path.join(root, 'data'));
+const dataDir = argValue('--dir', argValue('--data-dir', path.join(root, 'data')));
+const FX_GDD_DIR = path.join(root, 'tests', 'fixtures', 'gdd');
+const isFxGdd = path.resolve(dataDir) === FX_GDD_DIR;
+const skipBalance = process.argv.indexOf('--skip-balance') >= 0 || isFxGdd;
 const schemaDir = argValue('--schema-dir', path.join(root, 'data', 'schemas'));
 const gddPath = argValue('--gdd', path.join(root, 'docs', 'GDD.md'));
 
@@ -48,12 +54,14 @@ function main() {
     return 2;
   }
 
-  const result = validateDataset(data, schemas, banned, extra);
+  const result = validateDataset(data, schemas, banned, extra, { balance: !skipBalance });
   const errors = parseErrors.concat(result.errors);
 
   console.log('Banned terms from GDD §3: ' + banned.errorTerms.length + ' error terms, ' +
     banned.warningTerms.length + ' warning terms (' + banned.warningTerms.join(', ') + '), name-only terms (' +
     banned.nameOnlyTerms.join(', ') + ')');
+  console.log('Data directory: ' + dataDir);
+  if (skipBalance) console.log('§15.3 rules 10–12 skipped (' + (isFxGdd ? 'FX-GDD, GDD §15.4' : '--skip-balance') + ')');
   for (const w of result.warnings) console.log('WARN  [' + w.rule + '] ' + w.file + ' ' + w.path + ': ' + w.message);
   for (const e of errors) console.log('ERROR [' + e.rule + '] ' + e.file + ' ' + e.path + ': ' + e.message);
   console.log('');
