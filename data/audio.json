@@ -1,0 +1,2579 @@
+{
+  "version": 1,
+  "mix": {
+    "max_voices": 12,
+    "same_sound_min_interval_ms": 40,
+    "duck_gain": 0.35,
+    "duck_attack_s": 0.08,
+    "duck_release_s": 0.3,
+    "pause_gain": 0.5,
+    "crossfade_s": 0.6,
+    "music_fade_in_s": 0.5
+  },
+  "music": {
+    "menu": "bgm_menu_01",
+    "summon": "bgm_summon_01",
+    "battle_default": "bgm_battle_01"
+  },
+  "sounds": {
+    "sfx_ui_press": {
+      "source": "procedural",
+      "gain": 0.55,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "triangle",
+            "freq_start_hz": 880,
+            "freq_end_hz": 620,
+            "duration_s": 0.06,
+            "attack_s": 0.003,
+            "decay_s": 0.06,
+            "gain": 1
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1760,
+            "freq_end_hz": 1500,
+            "duration_s": 0.03,
+            "attack_s": 0.003,
+            "decay_s": 0.03,
+            "gain": 0.3
+          }
+        ]
+      }
+    },
+    "sfx_ui_open": {
+      "source": "procedural",
+      "gain": 0.5,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 520,
+            "freq_end_hz": 1040,
+            "duration_s": 0.12,
+            "attack_s": 0.005,
+            "decay_s": 0.12,
+            "gain": 1
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 1040,
+            "freq_end_hz": 1560,
+            "start_s": 0.04,
+            "duration_s": 0.1,
+            "attack_s": 0.003,
+            "decay_s": 0.1,
+            "gain": 0.5
+          }
+        ]
+      }
+    },
+    "sfx_ui_denied": {
+      "source": "procedural",
+      "gain": 0.45,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "square",
+            "freq_start_hz": 220,
+            "freq_end_hz": 190,
+            "duration_s": 0.08,
+            "attack_s": 0.003,
+            "decay_s": 0.08,
+            "gain": 0.6,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1200
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 200,
+            "freq_end_hz": 170,
+            "start_s": 0.1,
+            "duration_s": 0.09,
+            "attack_s": 0.003,
+            "decay_s": 0.09,
+            "gain": 0.6,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1200
+            }
+          }
+        ]
+      }
+    },
+    "sfx_ui_advance": {
+      "source": "procedural",
+      "gain": 0.4,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "triangle",
+            "freq_start_hz": 1250,
+            "freq_end_hz": 1000,
+            "duration_s": 0.045,
+            "attack_s": 0.003,
+            "decay_s": 0.045,
+            "gain": 1
+          }
+        ]
+      }
+    },
+    "sfx_ui_transition": {
+      "source": "procedural",
+      "gain": 0.35,
+      "priority": 1,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 400,
+            "freq_end_hz": 3200,
+            "duration_s": 0.28,
+            "attack_s": 0.06,
+            "decay_s": 0.22,
+            "gain": 0.7,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 400,
+              "q": 2
+            }
+          }
+        ]
+      }
+    },
+    "sfx_ui_toggle": {
+      "source": "procedural",
+      "gain": 0.5,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "square",
+            "freq_start_hz": 660,
+            "freq_end_hz": 660,
+            "duration_s": 0.03,
+            "attack_s": 0.003,
+            "decay_s": 0.03,
+            "gain": 0.35,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2500
+            }
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 990,
+            "freq_end_hz": 990,
+            "start_s": 0.035,
+            "duration_s": 0.05,
+            "attack_s": 0.003,
+            "decay_s": 0.05,
+            "gain": 1
+          }
+        ]
+      }
+    },
+    "sfx_ui_slider": {
+      "source": "procedural",
+      "gain": 0.5,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 1000,
+            "freq_end_hz": 1000,
+            "duration_s": 0.06,
+            "attack_s": 0.003,
+            "decay_s": 0.06,
+            "gain": 1
+          }
+        ]
+      }
+    },
+    "sfx_denied": {
+      "source": "procedural",
+      "gain": 0.5,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 160,
+            "freq_end_hz": 110,
+            "duration_s": 0.14,
+            "attack_s": 0.003,
+            "decay_s": 0.14,
+            "gain": 0.6,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 900
+            }
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.05,
+            "attack_s": 0.003,
+            "decay_s": 0.05,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1500
+            }
+          }
+        ]
+      }
+    },
+    "sfx_tutorial_prompt": {
+      "source": "procedural",
+      "gain": 0.45,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 659.255,
+            "duration_s": 0.25,
+            "attack_s": 0.003,
+            "decay_s": 0.25,
+            "gain": 1
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 880,
+            "start_s": 0.1,
+            "duration_s": 0.35,
+            "attack_s": 0.003,
+            "decay_s": 0.35,
+            "gain": 1
+          }
+        ]
+      }
+    },
+    "sfx_swipe_up": {
+      "source": "procedural",
+      "gain": 0.45,
+      "priority": 0,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 700,
+            "freq_end_hz": 3200,
+            "duration_s": 0.16,
+            "attack_s": 0.048,
+            "decay_s": 0.112,
+            "gain": 0.9,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 700,
+              "q": 1.4
+            }
+          }
+        ]
+      }
+    },
+    "sfx_swipe_down": {
+      "source": "procedural",
+      "gain": 0.45,
+      "priority": 0,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 3000,
+            "freq_end_hz": 600,
+            "duration_s": 0.16,
+            "attack_s": 0.048,
+            "decay_s": 0.112,
+            "gain": 0.9,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 3000,
+              "q": 1.4
+            }
+          }
+        ]
+      }
+    },
+    "sfx_swipe_left": {
+      "source": "procedural",
+      "gain": 0.4,
+      "priority": 0,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 1800,
+            "freq_end_hz": 1100,
+            "duration_s": 0.12,
+            "attack_s": 0.036,
+            "decay_s": 0.084,
+            "gain": 0.9,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 1800,
+              "q": 1.4
+            }
+          }
+        ]
+      }
+    },
+    "sfx_swipe_right": {
+      "source": "procedural",
+      "gain": 0.4,
+      "priority": 0,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 1100,
+            "freq_end_hz": 1800,
+            "duration_s": 0.12,
+            "attack_s": 0.036,
+            "decay_s": 0.084,
+            "gain": 0.9,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 1100,
+              "q": 1.4
+            }
+          }
+        ]
+      }
+    },
+    "sfx_slip": {
+      "source": "procedural",
+      "gain": 0.55,
+      "priority": 1,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 4000,
+            "freq_end_hz": 900,
+            "duration_s": 0.14,
+            "attack_s": 0.01,
+            "decay_s": 0.13,
+            "gain": 1,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 4000,
+              "q": 1.5
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 900,
+            "freq_end_hz": 500,
+            "duration_s": 0.08,
+            "attack_s": 0.003,
+            "decay_s": 0.08,
+            "gain": 0.25
+          }
+        ]
+      }
+    },
+    "sfx_perfect_slip": {
+      "source": "procedural",
+      "gain": 0.7,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 5000,
+            "freq_end_hz": 1200,
+            "duration_s": 0.16,
+            "attack_s": 0.005,
+            "decay_s": 0.15,
+            "gain": 0.7,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 5000,
+              "q": 2
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1567.982,
+            "start_s": 0.03,
+            "duration_s": 0.4,
+            "attack_s": 0.003,
+            "decay_s": 0.4,
+            "gain": 0.5
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 2093.005,
+            "start_s": 0.08,
+            "duration_s": 0.45,
+            "attack_s": 0.003,
+            "decay_s": 0.45,
+            "gain": 0.45
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 3135.963,
+            "start_s": 0.12,
+            "duration_s": 0.3,
+            "attack_s": 0.003,
+            "decay_s": 0.3,
+            "gain": 0.2
+          }
+        ]
+      }
+    },
+    "sfx_tag": {
+      "source": "procedural",
+      "gain": 0.6,
+      "priority": 1,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 900,
+            "freq_end_hz": 3500,
+            "duration_s": 0.2,
+            "attack_s": 0.05,
+            "decay_s": 0.15,
+            "gain": 0.7,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 900,
+              "q": 1.5
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 440,
+            "freq_end_hz": 880,
+            "start_s": 0.08,
+            "duration_s": 0.12,
+            "attack_s": 0.003,
+            "decay_s": 0.12,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2500
+            }
+          }
+        ]
+      }
+    },
+    "sfx_fight": {
+      "source": "procedural",
+      "gain": 0.85,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 110,
+            "freq_end_hz": 40,
+            "duration_s": 0.9,
+            "attack_s": 0.002,
+            "decay_s": 0.85,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.5,
+            "attack_s": 0.002,
+            "decay_s": 0.45,
+            "gain": 0.6,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3500
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 220,
+            "duration_s": 0.6,
+            "attack_s": 0.01,
+            "decay_s": 0.6,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1800
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 329.628,
+            "duration_s": 0.6,
+            "attack_s": 0.01,
+            "decay_s": 0.6,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1800
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 440,
+            "duration_s": 0.5,
+            "attack_s": 0.01,
+            "decay_s": 0.5,
+            "gain": 0.15,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2500
+            }
+          }
+        ]
+      }
+    },
+    "sfx_card_fist": {
+      "source": "procedural",
+      "gain": 0.45,
+      "priority": 1,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 1500,
+            "freq_end_hz": 4500,
+            "duration_s": 0.09,
+            "attack_s": 0.02,
+            "decay_s": 0.07,
+            "gain": 0.8,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 1500,
+              "q": 1.5
+            }
+          }
+        ]
+      }
+    },
+    "sfx_card_bolt": {
+      "source": "procedural",
+      "gain": 0.5,
+      "priority": 1,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 300,
+            "freq_end_hz": 1300,
+            "duration_s": 0.16,
+            "attack_s": 0.01,
+            "decay_s": 0.15,
+            "gain": 0.6
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 600,
+            "freq_end_hz": 2600,
+            "duration_s": 0.14,
+            "attack_s": 0.003,
+            "decay_s": 0.14,
+            "gain": 0.15,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 4000
+            }
+          }
+        ]
+      }
+    },
+    "sfx_card_signature": {
+      "source": "procedural",
+      "gain": 0.6,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 160,
+            "freq_end_hz": 720,
+            "duration_s": 0.38,
+            "attack_s": 0.05,
+            "decay_s": 0.33,
+            "gain": 0.5,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2600,
+              "q": 3
+            }
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 600,
+            "freq_end_hz": 5000,
+            "duration_s": 0.38,
+            "attack_s": 0.2,
+            "decay_s": 0.18,
+            "gain": 0.45,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 600,
+              "q": 1
+            }
+          }
+        ]
+      }
+    },
+    "sfx_card_climax": {
+      "source": "procedural",
+      "gain": 0.7,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 90,
+            "freq_end_hz": 900,
+            "duration_s": 0.6,
+            "attack_s": 0.1,
+            "decay_s": 0.5,
+            "gain": 0.5,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000,
+              "q": 4
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 135,
+            "freq_end_hz": 1350,
+            "duration_s": 0.6,
+            "attack_s": 0.1,
+            "decay_s": 0.5,
+            "gain": 0.35,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000,
+              "q": 4
+            }
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 400,
+            "freq_end_hz": 6000,
+            "duration_s": 0.6,
+            "attack_s": 0.35,
+            "decay_s": 0.25,
+            "gain": 0.5,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 400,
+              "q": 1
+            }
+          }
+        ]
+      }
+    },
+    "sfx_hit_fist": {
+      "source": "procedural",
+      "gain": 0.8,
+      "priority": 1,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 170,
+            "freq_end_hz": 50,
+            "duration_s": 0.13,
+            "attack_s": 0.001,
+            "decay_s": 0.12,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.05,
+            "attack_s": 0.001,
+            "decay_s": 0.045,
+            "gain": 0.7,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2600
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 300,
+            "freq_end_hz": 120,
+            "duration_s": 0.03,
+            "attack_s": 0.001,
+            "decay_s": 0.03,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1500
+            }
+          }
+        ]
+      }
+    },
+    "sfx_hit_bolt": {
+      "source": "procedural",
+      "gain": 0.75,
+      "priority": 1,
+      "synth": {
+        "voices": [
+          {
+            "wave": "square",
+            "freq_start_hz": 1100,
+            "freq_end_hz": 180,
+            "duration_s": 0.12,
+            "attack_s": 0.001,
+            "decay_s": 0.11,
+            "gain": 0.35,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 5000
+            }
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.09,
+            "attack_s": 0.001,
+            "decay_s": 0.08,
+            "gain": 0.7,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 3200,
+              "q": 1
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 140,
+            "freq_end_hz": 60,
+            "duration_s": 0.1,
+            "attack_s": 0.001,
+            "decay_s": 0.1,
+            "gain": 0.7
+          }
+        ]
+      }
+    },
+    "sfx_hit_signature": {
+      "source": "procedural",
+      "gain": 0.85,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 130,
+            "freq_end_hz": 38,
+            "duration_s": 0.24,
+            "attack_s": 0.001,
+            "decay_s": 0.23,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.14,
+            "attack_s": 0.001,
+            "decay_s": 0.13,
+            "gain": 0.8,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3800
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 240,
+            "freq_end_hz": 70,
+            "duration_s": 0.12,
+            "attack_s": 0.001,
+            "decay_s": 0.11,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1800
+            }
+          }
+        ]
+      }
+    },
+    "sfx_hit_climax": {
+      "source": "procedural",
+      "gain": 0.95,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 110,
+            "freq_end_hz": 30,
+            "duration_s": 0.42,
+            "attack_s": 0.001,
+            "decay_s": 0.4,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.3,
+            "attack_s": 0.001,
+            "decay_s": 0.28,
+            "gain": 0.85,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 5000
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 220,
+            "freq_end_hz": 55,
+            "duration_s": 0.25,
+            "attack_s": 0.001,
+            "decay_s": 0.24,
+            "gain": 0.35,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2200
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 70,
+            "freq_end_hz": 35,
+            "duration_s": 0.3,
+            "attack_s": 0.001,
+            "decay_s": 0.3,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 600
+            }
+          }
+        ]
+      }
+    },
+    "sfx_hit_immune": {
+      "source": "procedural",
+      "gain": 0.5,
+      "priority": 1,
+      "synth": {
+        "voices": [
+          {
+            "wave": "triangle",
+            "freq_start_hz": 1900,
+            "freq_end_hz": 1700,
+            "duration_s": 0.12,
+            "attack_s": 0.003,
+            "decay_s": 0.12,
+            "gain": 0.6
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 2600,
+            "freq_end_hz": 2400,
+            "duration_s": 0.06,
+            "attack_s": 0.003,
+            "decay_s": 0.06,
+            "gain": 0.15,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 2600,
+              "q": 4
+            }
+          }
+        ]
+      }
+    },
+    "sfx_riposte": {
+      "source": "procedural",
+      "gain": 0.8,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "triangle",
+            "freq_start_hz": 2400,
+            "freq_end_hz": 1800,
+            "duration_s": 0.18,
+            "attack_s": 0.003,
+            "decay_s": 0.18,
+            "gain": 0.5
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 6000,
+            "freq_end_hz": 2000,
+            "duration_s": 0.08,
+            "attack_s": 0.003,
+            "decay_s": 0.08,
+            "gain": 0.6,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 6000,
+              "q": 2
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 180,
+            "freq_end_hz": 50,
+            "start_s": 0.04,
+            "duration_s": 0.16,
+            "attack_s": 0.003,
+            "decay_s": 0.15,
+            "gain": 1
+          }
+        ]
+      }
+    },
+    "sfx_tag_strike": {
+      "source": "procedural",
+      "gain": 0.8,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "freq_start_hz": 800,
+            "freq_end_hz": 4000,
+            "duration_s": 0.12,
+            "attack_s": 0.03,
+            "decay_s": 0.09,
+            "gain": 0.6,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 800,
+              "q": 1.5
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 160,
+            "freq_end_hz": 45,
+            "start_s": 0.1,
+            "duration_s": 0.2,
+            "attack_s": 0.001,
+            "decay_s": 0.19,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "start_s": 0.1,
+            "duration_s": 0.08,
+            "attack_s": 0.003,
+            "decay_s": 0.08,
+            "gain": 0.6,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          }
+        ]
+      }
+    },
+    "sfx_knockdown": {
+      "source": "procedural",
+      "gain": 0.8,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 90,
+            "freq_end_hz": 30,
+            "duration_s": 0.45,
+            "attack_s": 0.001,
+            "decay_s": 0.43,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.3,
+            "attack_s": 0.002,
+            "decay_s": 0.28,
+            "gain": 0.6,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 900
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 70,
+            "freq_end_hz": 35,
+            "start_s": 0.18,
+            "duration_s": 0.2,
+            "attack_s": 0.003,
+            "decay_s": 0.2,
+            "gain": 0.5
+          }
+        ]
+      }
+    },
+    "sfx_combo_up": {
+      "source": "procedural",
+      "gain": 0.6,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "square",
+            "freq_start_hz": 659.255,
+            "freq_end_hz": 1318.51,
+            "duration_s": 0.12,
+            "attack_s": 0.003,
+            "decay_s": 0.12,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 4000
+            }
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 987.767,
+            "start_s": 0.06,
+            "duration_s": 0.16,
+            "attack_s": 0.003,
+            "decay_s": 0.16,
+            "gain": 0.4
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 1318.51,
+            "start_s": 0.11,
+            "duration_s": 0.2,
+            "attack_s": 0.003,
+            "decay_s": 0.2,
+            "gain": 0.4
+          }
+        ]
+      }
+    },
+    "sfx_ko": {
+      "source": "procedural",
+      "gain": 1,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 95,
+            "freq_end_hz": 25,
+            "duration_s": 1,
+            "attack_s": 0.002,
+            "decay_s": 0.95,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 5000,
+            "freq_end_hz": 200,
+            "duration_s": 0.8,
+            "attack_s": 0.002,
+            "decay_s": 0.75,
+            "gain": 0.8,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 5000
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 164.814,
+            "freq_end_hz": 82.407,
+            "duration_s": 0.8,
+            "attack_s": 0.005,
+            "decay_s": 0.8,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1500
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 123.471,
+            "freq_end_hz": 61.735,
+            "duration_s": 0.8,
+            "attack_s": 0.005,
+            "decay_s": 0.8,
+            "gain": 0.15,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 900
+            }
+          }
+        ]
+      }
+    },
+    "sfx_ignition": {
+      "source": "procedural",
+      "gain": 1,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 110,
+            "freq_end_hz": 880,
+            "duration_s": 0.95,
+            "attack_s": 0.75,
+            "decay_s": 0.2,
+            "gain": 0.45,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3500,
+              "q": 6
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 165,
+            "freq_end_hz": 1320,
+            "duration_s": 0.95,
+            "attack_s": 0.75,
+            "decay_s": 0.2,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3500,
+              "q": 6
+            }
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 300,
+            "freq_end_hz": 8000,
+            "duration_s": 0.95,
+            "attack_s": 0.8,
+            "decay_s": 0.15,
+            "gain": 0.5,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 300,
+              "q": 1
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 60,
+            "freq_end_hz": 30,
+            "start_s": 0.9,
+            "duration_s": 0.6,
+            "attack_s": 0.002,
+            "decay_s": 0.58,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "start_s": 0.9,
+            "duration_s": 0.5,
+            "attack_s": 0.002,
+            "decay_s": 0.48,
+            "gain": 0.7,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 6000
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1760,
+            "start_s": 0.95,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.25
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 2637.02,
+            "start_s": 1,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.2
+          }
+        ]
+      }
+    },
+    "sfx_tri_burst_start": {
+      "source": "procedural",
+      "gain": 0.9,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 110,
+            "freq_end_hz": 440,
+            "duration_s": 1,
+            "attack_s": 0.7,
+            "decay_s": 0.3,
+            "gain": 0.35,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000,
+              "q": 5
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 164.814,
+            "freq_end_hz": 659.255,
+            "duration_s": 1,
+            "attack_s": 0.7,
+            "decay_s": 0.3,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000,
+              "q": 5
+            }
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 400,
+            "freq_end_hz": 7000,
+            "duration_s": 1,
+            "attack_s": 0.8,
+            "decay_s": 0.2,
+            "gain": 0.5,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 400,
+              "q": 1
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 440,
+            "duration_s": 0.12,
+            "attack_s": 0.003,
+            "decay_s": 0.12,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 554.365,
+            "start_s": 0.15,
+            "duration_s": 0.12,
+            "attack_s": 0.003,
+            "decay_s": 0.12,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 659.255,
+            "start_s": 0.3,
+            "duration_s": 0.12,
+            "attack_s": 0.003,
+            "decay_s": 0.12,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          }
+        ]
+      }
+    },
+    "sfx_tri_burst_impact": {
+      "source": "procedural",
+      "gain": 1,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 80,
+            "freq_end_hz": 22,
+            "duration_s": 1.4,
+            "attack_s": 0.001,
+            "decay_s": 1.35,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "duration_s": 1,
+            "attack_s": 0.001,
+            "decay_s": 0.95,
+            "gain": 0.9,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 7000
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 200,
+            "freq_end_hz": 40,
+            "duration_s": 0.8,
+            "attack_s": 0.001,
+            "decay_s": 0.75,
+            "gain": 0.35,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2000
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 55,
+            "freq_end_hz": 28,
+            "duration_s": 1,
+            "attack_s": 0.001,
+            "decay_s": 1,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 500
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1760,
+            "start_s": 0.05,
+            "duration_s": 0.8,
+            "attack_s": 0.003,
+            "decay_s": 0.8,
+            "gain": 0.2
+          }
+        ]
+      }
+    },
+    "sfx_climax": {
+      "source": "procedural",
+      "gain": 0.95,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 146.832,
+            "duration_s": 0.7,
+            "attack_s": 0.005,
+            "decay_s": 0.7,
+            "gain": 0.35,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2400,
+              "q": 2
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 220,
+            "duration_s": 0.7,
+            "attack_s": 0.005,
+            "decay_s": 0.7,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 2400,
+              "q": 2
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 293.665,
+            "duration_s": 0.6,
+            "attack_s": 0.005,
+            "decay_s": 0.6,
+            "gain": 0.15,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 70,
+            "freq_end_hz": 30,
+            "duration_s": 0.6,
+            "attack_s": 0.001,
+            "decay_s": 0.58,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 8000,
+            "freq_end_hz": 500,
+            "duration_s": 0.6,
+            "attack_s": 0.002,
+            "decay_s": 0.58,
+            "gain": 0.5,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 8000,
+              "q": 1
+            }
+          }
+        ]
+      }
+    },
+    "sfx_summon_confirm": {
+      "source": "procedural",
+      "gain": 0.7,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 300,
+            "freq_end_hz": 1200,
+            "duration_s": 0.5,
+            "attack_s": 0.05,
+            "decay_s": 0.45,
+            "gain": 0.5
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 800,
+            "freq_end_hz": 6000,
+            "duration_s": 0.5,
+            "attack_s": 0.3,
+            "decay_s": 0.2,
+            "gain": 0.4,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 800,
+              "q": 2
+            }
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 1174.659,
+            "start_s": 0.4,
+            "duration_s": 0.3,
+            "attack_s": 0.003,
+            "decay_s": 0.3,
+            "gain": 0.35
+          }
+        ]
+      }
+    },
+    "sfx_summon_orb_3": {
+      "source": "procedural",
+      "gain": 0.55,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 880,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1318.51,
+            "start_s": 0.07,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          }
+        ]
+      }
+    },
+    "sfx_summon_orb_4": {
+      "source": "procedural",
+      "gain": 0.65,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 880,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1108.731,
+            "start_s": 0.07,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1318.51,
+            "start_s": 0.14,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 1760,
+            "start_s": 0.2,
+            "duration_s": 0.4,
+            "attack_s": 0.003,
+            "decay_s": 0.4,
+            "gain": 0.25
+          }
+        ]
+      }
+    },
+    "sfx_summon_orb_5": {
+      "source": "procedural",
+      "gain": 0.8,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 880,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1108.731,
+            "start_s": 0.07,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1318.51,
+            "start_s": 0.14,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1760,
+            "start_s": 0.21,
+            "duration_s": 0.5,
+            "attack_s": 0.003,
+            "decay_s": 0.5,
+            "gain": 0.45
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 70,
+            "freq_end_hz": 35,
+            "duration_s": 0.6,
+            "attack_s": 0.002,
+            "decay_s": 0.58,
+            "gain": 0.8
+          },
+          {
+            "wave": "noise",
+            "freq_start_hz": 2000,
+            "freq_end_hz": 9000,
+            "duration_s": 0.5,
+            "attack_s": 0.05,
+            "decay_s": 0.45,
+            "gain": 0.3,
+            "filter": {
+              "type": "bandpass",
+              "freq_hz": 2000,
+              "q": 2
+            }
+          }
+        ]
+      }
+    },
+    "sfx_summon_reveal_3": {
+      "source": "procedural",
+      "gain": 0.6,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "triangle",
+            "freq_start_hz": 659.255,
+            "duration_s": 0.3,
+            "attack_s": 0.003,
+            "decay_s": 0.3,
+            "gain": 0.5
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 880,
+            "start_s": 0.08,
+            "duration_s": 0.4,
+            "attack_s": 0.003,
+            "decay_s": 0.4,
+            "gain": 0.5
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.12,
+            "attack_s": 0.003,
+            "decay_s": 0.12,
+            "gain": 0.3,
+            "filter": {
+              "type": "highpass",
+              "freq_hz": 5000
+            }
+          }
+        ]
+      }
+    },
+    "sfx_summon_reveal_4": {
+      "source": "procedural",
+      "gain": 0.75,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "square",
+            "freq_start_hz": 440,
+            "duration_s": 0.15,
+            "attack_s": 0.003,
+            "decay_s": 0.15,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 554.365,
+            "start_s": 0.08,
+            "duration_s": 0.15,
+            "attack_s": 0.003,
+            "decay_s": 0.15,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 659.255,
+            "start_s": 0.16,
+            "duration_s": 0.15,
+            "attack_s": 0.003,
+            "decay_s": 0.15,
+            "gain": 0.2,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 880,
+            "start_s": 0.24,
+            "duration_s": 0.6,
+            "attack_s": 0.003,
+            "decay_s": 0.6,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3500
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1318.51,
+            "start_s": 0.24,
+            "duration_s": 0.6,
+            "attack_s": 0.003,
+            "decay_s": 0.6,
+            "gain": 0.3
+          },
+          {
+            "wave": "noise",
+            "start_s": 0.24,
+            "duration_s": 0.3,
+            "attack_s": 0.003,
+            "decay_s": 0.3,
+            "gain": 0.3,
+            "filter": {
+              "type": "highpass",
+              "freq_hz": 4000
+            }
+          }
+        ]
+      }
+    },
+    "sfx_summon_reveal_5": {
+      "source": "procedural",
+      "gain": 1,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sine",
+            "freq_start_hz": 65,
+            "freq_end_hz": 28,
+            "duration_s": 1,
+            "attack_s": 0.001,
+            "decay_s": 0.95,
+            "gain": 1
+          },
+          {
+            "wave": "noise",
+            "duration_s": 0.7,
+            "attack_s": 0.001,
+            "decay_s": 0.65,
+            "gain": 0.6,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 7000
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 293.665,
+            "start_s": 0.05,
+            "duration_s": 1.2,
+            "attack_s": 0.01,
+            "decay_s": 1.2,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 369.994,
+            "start_s": 0.05,
+            "duration_s": 1.2,
+            "attack_s": 0.01,
+            "decay_s": 1.2,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 440,
+            "start_s": 0.05,
+            "duration_s": 1.2,
+            "attack_s": 0.01,
+            "decay_s": 1.2,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 587.33,
+            "start_s": 0.05,
+            "duration_s": 1,
+            "attack_s": 0.003,
+            "decay_s": 1,
+            "gain": 0.15,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 4000
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 1760,
+            "start_s": 0.25,
+            "duration_s": 0.8,
+            "attack_s": 0.003,
+            "decay_s": 0.8,
+            "gain": 0.25
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 2349.318,
+            "start_s": 0.35,
+            "duration_s": 0.8,
+            "attack_s": 0.003,
+            "decay_s": 0.8,
+            "gain": 0.2
+          }
+        ]
+      }
+    },
+    "sfx_summon_results": {
+      "source": "procedural",
+      "gain": 0.55,
+      "priority": 2,
+      "synth": {
+        "voices": [
+          {
+            "wave": "triangle",
+            "freq_start_hz": 587.33,
+            "duration_s": 0.25,
+            "attack_s": 0.003,
+            "decay_s": 0.25,
+            "gain": 0.5
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 880,
+            "start_s": 0.1,
+            "duration_s": 0.35,
+            "attack_s": 0.003,
+            "decay_s": 0.35,
+            "gain": 0.5
+          }
+        ]
+      }
+    },
+    "sfx_result_win": {
+      "source": "procedural",
+      "gain": 0.85,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "square",
+            "freq_start_hz": 523.251,
+            "duration_s": 0.14,
+            "attack_s": 0.003,
+            "decay_s": 0.14,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3500
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 659.255,
+            "start_s": 0.14,
+            "duration_s": 0.14,
+            "attack_s": 0.003,
+            "decay_s": 0.14,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3500
+            }
+          },
+          {
+            "wave": "square",
+            "freq_start_hz": 783.991,
+            "start_s": 0.28,
+            "duration_s": 0.14,
+            "attack_s": 0.003,
+            "decay_s": 0.14,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3500
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 1046.502,
+            "start_s": 0.42,
+            "duration_s": 1,
+            "attack_s": 0.003,
+            "decay_s": 1,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3500
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 783.991,
+            "start_s": 0.42,
+            "duration_s": 1,
+            "attack_s": 0.003,
+            "decay_s": 1,
+            "gain": 0.25,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 3000
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 130.813,
+            "start_s": 0.42,
+            "duration_s": 1,
+            "attack_s": 0.003,
+            "decay_s": 1,
+            "gain": 0.6
+          },
+          {
+            "wave": "noise",
+            "start_s": 0.42,
+            "duration_s": 0.4,
+            "attack_s": 0.003,
+            "decay_s": 0.4,
+            "gain": 0.3,
+            "filter": {
+              "type": "highpass",
+              "freq_hz": 4000
+            }
+          }
+        ]
+      }
+    },
+    "sfx_result_lose": {
+      "source": "procedural",
+      "gain": 0.7,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 329.628,
+            "duration_s": 0.35,
+            "attack_s": 0.003,
+            "decay_s": 0.35,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1800
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 293.665,
+            "start_s": 0.35,
+            "duration_s": 0.35,
+            "attack_s": 0.003,
+            "decay_s": 0.35,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1600
+            }
+          },
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 261.626,
+            "freq_end_hz": 246.942,
+            "start_s": 0.7,
+            "duration_s": 0.8,
+            "attack_s": 0.003,
+            "decay_s": 0.8,
+            "gain": 0.3,
+            "filter": {
+              "type": "lowpass",
+              "freq_hz": 1400
+            }
+          },
+          {
+            "wave": "sine",
+            "freq_start_hz": 110,
+            "start_s": 0.7,
+            "duration_s": 0.8,
+            "attack_s": 0.003,
+            "decay_s": 0.8,
+            "gain": 0.5
+          }
+        ]
+      }
+    },
+    "sfx_result_draw": {
+      "source": "procedural",
+      "gain": 0.7,
+      "priority": 3,
+      "synth": {
+        "voices": [
+          {
+            "wave": "triangle",
+            "freq_start_hz": 587.33,
+            "duration_s": 0.3,
+            "attack_s": 0.003,
+            "decay_s": 0.3,
+            "gain": 0.45
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 440,
+            "start_s": 0.25,
+            "duration_s": 0.3,
+            "attack_s": 0.003,
+            "decay_s": 0.3,
+            "gain": 0.45
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 587.33,
+            "start_s": 0.5,
+            "duration_s": 0.8,
+            "attack_s": 0.003,
+            "decay_s": 0.8,
+            "gain": 0.45
+          },
+          {
+            "wave": "triangle",
+            "freq_start_hz": 783.991,
+            "start_s": 0.5,
+            "duration_s": 0.8,
+            "attack_s": 0.003,
+            "decay_s": 0.8,
+            "gain": 0.35
+          }
+        ]
+      }
+    },
+    "bgm_menu_01": {
+      "source": "procedural",
+      "gain": 0.5,
+      "loop": true,
+      "priority": 0,
+      "pattern": {
+        "tempo_bpm": 124,
+        "steps_per_beat": 4,
+        "steps": 64,
+        "tracks": [
+          {
+            "voice": {
+              "wave": "sine",
+              "freq_start_hz": 150,
+              "freq_end_hz": 42,
+              "duration_s": 0.24,
+              "attack_s": 0.001,
+              "decay_s": 0.22,
+              "gain": 1
+            },
+            "notes": [100, null, null, null, null, null, null, null, 100, null, null, 80, null, null, null, null, 100, null, null, null, null, null, null, null, 100, null, null, 80, null, null, null, null, 100, null, null, null, null, null, null, null, 100, null, null, 80, null, null, null, null, 100, null, null, null, null, null, null, null, 100, null, null, 80, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.14,
+              "attack_s": 0.002,
+              "decay_s": 0.12,
+              "gain": 0.45,
+              "filter": {
+                "type": "bandpass",
+                "freq_hz": 1400,
+                "q": 1.2
+              }
+            },
+            "notes": [null, null, null, null, 90, null, null, null, null, null, null, null, 90, null, null, null, null, null, null, null, 90, null, null, null, null, null, null, null, 90, null, null, null, null, null, null, null, 90, null, null, null, null, null, null, null, 90, null, null, null, null, null, null, null, 90, null, null, null, null, null, null, null, 90, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.05,
+              "attack_s": 0.001,
+              "decay_s": 0.04,
+              "gain": 0.22,
+              "filter": {
+                "type": "highpass",
+                "freq_hz": 7500
+              }
+            },
+            "notes": [null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null, null, null, 70, null]
+          },
+          {
+            "voice": {
+              "wave": "triangle",
+              "duration_s": 0.3,
+              "attack_s": 0.01,
+              "decay_s": 0.28,
+              "gain": 0.6
+            },
+            "notes": [41, null, null, 41, null, null, 53, null, 41, null, null, 41, null, 48, 53, null, 43, null, null, 43, null, null, 55, null, 43, null, null, 43, null, 50, 55, null, 40, null, null, 40, null, null, 52, null, 40, null, null, 40, null, 47, 52, null, 45, null, null, 45, null, null, 57, null, 45, null, null, 45, null, 52, 57, null]
+          },
+          {
+            "voice": {
+              "wave": "triangle",
+              "duration_s": 0.12,
+              "attack_s": 0.003,
+              "decay_s": 0.11,
+              "gain": 0.22
+            },
+            "notes": [65, 72, 77, 81, 72, 77, 81, 84, 77, 81, 84, 89, 84, 81, 77, 72, 67, 74, 79, 83, 74, 79, 83, 86, 79, 83, 86, 91, 86, 83, 79, 74, 64, 71, 76, 79, 71, 76, 79, 83, 76, 79, 83, 88, 83, 79, 76, 71, 69, 76, 81, 84, 76, 81, 84, 88, 81, 84, 88, 93, 88, 84, 81, 76]
+          },
+          {
+            "voice": {
+              "wave": "sine",
+              "duration_s": 0.45,
+              "attack_s": 0.003,
+              "decay_s": 0.45,
+              "gain": 0.32
+            },
+            "notes": [81, null, null, null, 84, null, null, null, 79, null, null, null, null, null, 76, null, 74, null, null, null, 79, null, null, null, 83, null, null, null, 81, null, 79, null, 79, null, null, null, 83, null, null, null, 76, null, null, null, 79, null, null, null, 81, null, null, null, null, null, 76, null, 84, null, null, null, 83, null, null, null]
+          }
+        ]
+      }
+    },
+    "bgm_summon_01": {
+      "source": "procedural",
+      "gain": 0.5,
+      "loop": true,
+      "priority": 0,
+      "pattern": {
+        "tempo_bpm": 104,
+        "steps_per_beat": 4,
+        "steps": 64,
+        "tracks": [
+          {
+            "voice": {
+              "wave": "sine",
+              "freq_start_hz": 150,
+              "freq_end_hz": 42,
+              "duration_s": 0.24,
+              "attack_s": 0.001,
+              "decay_s": 0.22,
+              "gain": 1
+            },
+            "notes": [100, null, null, 70, null, null, null, null, null, null, null, null, null, null, null, null, 100, null, null, 70, null, null, null, null, null, null, null, null, null, null, null, null, 100, null, null, 70, null, null, null, null, null, null, null, null, null, null, null, null, 100, null, null, 70, null, null, null, null, null, null, null, null, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.08,
+              "attack_s": 0.02,
+              "decay_s": 0.06,
+              "gain": 0.14,
+              "filter": {
+                "type": "highpass",
+                "freq_hz": 6000
+              }
+            },
+            "notes": [null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, null, null, 40, null, 40, 50, 60, 70, 50, 60, 70, 80, 60, 70, 80, 90, 80, 90, 100, 120]
+          },
+          {
+            "voice": {
+              "wave": "triangle",
+              "duration_s": 0.3,
+              "attack_s": 0.01,
+              "decay_s": 0.28,
+              "gain": 0.6
+            },
+            "notes": [38, null, null, null, null, null, 38, null, null, null, 38, null, null, null, null, null, 34, null, null, null, null, null, 34, null, null, null, 34, null, null, null, null, null, 31, null, null, null, null, null, 31, null, null, null, 31, null, null, null, null, null, 33, null, null, null, null, null, 33, null, null, null, 33, null, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "triangle",
+              "duration_s": 1.2,
+              "attack_s": 0.25,
+              "decay_s": 1,
+              "gain": 0.3
+            },
+            "notes": [62, null, null, null, null, null, null, null, 62, null, null, null, null, null, null, null, 58, null, null, null, null, null, null, null, 58, null, null, null, null, null, null, null, 55, null, null, null, null, null, null, null, 55, null, null, null, null, null, null, null, 57, null, null, null, null, null, null, null, 57, null, null, null, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "triangle",
+              "duration_s": 1.2,
+              "attack_s": 0.25,
+              "decay_s": 1,
+              "gain": 0.3
+            },
+            "notes": [65, null, null, null, null, null, null, null, 65, null, null, null, null, null, null, null, 62, null, null, null, null, null, null, null, 62, null, null, null, null, null, null, null, 58, null, null, null, null, null, null, null, 58, null, null, null, null, null, null, null, 61, null, null, null, null, null, null, null, 61, null, null, null, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "sine",
+              "duration_s": 0.2,
+              "attack_s": 0.002,
+              "decay_s": 0.2,
+              "gain": 0.16
+            },
+            "notes": [86, null, 81, null, 89, null, 81, null, 86, null, 81, null, 88, null, 81, null, 86, null, 82, null, 89, null, 82, null, 86, null, 82, null, 89, null, 82, null, 86, null, 82, null, 91, null, 82, null, 86, null, 82, null, 91, null, 82, null, 85, null, 81, null, 88, null, 81, null, 91, null, 88, null, 93, null, 85, null]
+          }
+        ]
+      }
+    },
+    "bgm_battle_01": {
+      "source": "procedural",
+      "gain": 0.55,
+      "loop": true,
+      "priority": 0,
+      "pattern": {
+        "tempo_bpm": 150,
+        "steps_per_beat": 4,
+        "steps": 128,
+        "tracks": [
+          {
+            "voice": {
+              "wave": "sine",
+              "freq_start_hz": 150,
+              "freq_end_hz": 42,
+              "duration_s": 0.24,
+              "attack_s": 0.001,
+              "decay_s": 0.22,
+              "gain": 1
+            },
+            "notes": [110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, 90, null, 110, null, 110, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, null, null, 110, null, 90, null, 110, null, 110, null]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.18,
+              "attack_s": 0.001,
+              "decay_s": 0.15,
+              "gain": 0.55,
+              "filter": {
+                "type": "bandpass",
+                "freq_hz": 1900,
+                "q": 0.7
+              }
+            },
+            "notes": [null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, 90, null, 100, null, 110, 90, 100, 127]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.05,
+              "attack_s": 0.001,
+              "decay_s": 0.04,
+              "gain": 0.22,
+              "filter": {
+                "type": "highpass",
+                "freq_hz": 7500
+              }
+            },
+            "notes": [60, null, 110, null, 60, null, 110, null, 60, null, 110, null, 60, null, 110, 60, 60, null, 110, null, 60, null, 110, null, 60, null, 110, null, 60, null, 110, 60, 60, null, 110, null, 60, null, 110, null, 60, null, 110, null, 60, null, 110, 60, 60, null, 110, null, 60, null, 110, null, 60, null, 110, null, 60, null, 110, 60, 60, null, 110, null, 60, null, 110, null, 60, null, 110, null, 60, null, 110, 60, 60, null, 110, null, 60, null, 110, null, 60, null, 110, null, 60, null, 110, 60, 60, null, 110, null, 60, null, 110, null, 60, null, 110, null, 60, null, 110, 60, 60, null, 110, null, 60, null, 110, null, 60, null, 110, null, 60, null, 110, 60]
+          },
+          {
+            "voice": {
+              "wave": "sawtooth",
+              "duration_s": 0.2,
+              "attack_s": 0.004,
+              "decay_s": 0.18,
+              "gain": 0.5,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 650,
+                "q": 5
+              }
+            },
+            "notes": [45, null, 45, null, 57, null, 45, null, 45, null, 45, null, 57, null, 45, 52, 45, null, 45, null, 57, null, 45, null, 45, null, 45, null, 57, null, 45, 52, 41, null, 41, null, 53, null, 41, null, 41, null, 41, null, 53, null, 41, 48, 43, null, 43, null, 55, null, 43, null, 43, null, 43, null, 55, null, 43, 50, 45, null, 45, null, 57, null, 45, null, 45, null, 45, null, 57, null, 45, 52, 45, null, 45, null, 57, null, 45, null, 45, null, 45, null, 57, null, 45, 52, 41, null, 41, null, 53, null, 41, null, 41, null, 41, null, 53, null, 41, 48, 40, null, 40, null, 52, null, 40, null, 40, null, 40, null, 52, null, 40, 47]
+          },
+          {
+            "voice": {
+              "wave": "sawtooth",
+              "duration_s": 0.16,
+              "attack_s": 0.003,
+              "decay_s": 0.15,
+              "gain": 0.26,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 2200,
+                "q": 1.5
+              }
+            },
+            "notes": [57, null, null, 57, null, null, 57, null, null, null, null, null, null, null, null, null, 57, null, null, 57, null, null, 57, null, null, null, null, null, null, null, null, null, 53, null, null, 53, null, null, 53, null, null, null, null, null, null, null, null, null, 55, null, null, 55, null, null, 55, null, null, null, null, null, null, null, null, null, 57, null, null, 57, null, null, 57, null, null, null, null, null, null, null, null, null, 57, null, null, 57, null, null, 57, null, null, null, null, null, null, null, null, null, 53, null, null, 53, null, null, 53, null, null, null, null, null, null, null, null, null, 52, null, null, 52, null, null, 52, null, null, null, null, null, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "sawtooth",
+              "duration_s": 0.16,
+              "attack_s": 0.003,
+              "decay_s": 0.15,
+              "gain": 0.26,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 2200,
+                "q": 1.5
+              }
+            },
+            "notes": [64, null, null, 64, null, null, 64, null, null, null, null, null, null, null, null, null, 64, null, null, 64, null, null, 64, null, null, null, null, null, null, null, null, null, 60, null, null, 60, null, null, 60, null, null, null, null, null, null, null, null, null, 62, null, null, 62, null, null, 62, null, null, null, null, null, null, null, null, null, 64, null, null, 64, null, null, 64, null, null, null, null, null, null, null, null, null, 64, null, null, 64, null, null, 64, null, null, null, null, null, null, null, null, null, 60, null, null, 60, null, null, 60, null, null, null, null, null, null, null, null, null, 59, null, null, 59, null, null, 59, null, null, null, null, null, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "square",
+              "duration_s": 0.24,
+              "attack_s": 0.006,
+              "decay_s": 0.3,
+              "gain": 0.2,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 3200,
+                "q": 1
+              }
+            },
+            "notes": [76, null, null, 81, null, null, 79, null, 76, null, 74, null, 76, null, null, null, 72, null, 74, null, 76, null, null, null, 69, null, 72, null, 74, null, null, null, 77, null, null, 76, null, null, 72, null, 69, null, 72, null, 77, null, 76, null, 74, null, null, null, 71, null, 74, null, 79, null, null, null, 77, null, 74, null, 76, null, null, 81, null, null, 83, null, 84, null, null, null, 83, null, 81, null, 79, null, 76, null, null, null, 74, null, 76, null, 79, null, 81, null, null, null, 81, null, null, 79, null, null, 77, null, 76, null, 77, null, 81, null, 84, null, 83, null, null, null, 80, null, null, null, 76, null, null, null, 71, null, 80, null]
+          }
+        ]
+      }
+    },
+    "bgm_battle_02": {
+      "source": "procedural",
+      "gain": 0.55,
+      "loop": true,
+      "priority": 0,
+      "pattern": {
+        "tempo_bpm": 160,
+        "steps_per_beat": 4,
+        "steps": 128,
+        "tracks": [
+          {
+            "voice": {
+              "wave": "sine",
+              "freq_start_hz": 150,
+              "freq_end_hz": 42,
+              "duration_s": 0.24,
+              "attack_s": 0.001,
+              "decay_s": 0.22,
+              "gain": 1
+            },
+            "notes": [115, null, null, null, 100, null, null, 90, 115, null, null, null, 100, null, 90, null, 115, null, null, null, 100, null, null, 90, 115, null, null, null, 100, null, 90, null, 115, null, null, null, 100, null, null, 90, 115, null, null, null, 100, null, 90, null, 115, null, null, null, 100, null, null, 90, 115, null, null, null, 100, null, 90, null, 115, null, null, null, 100, null, null, 90, 115, null, null, null, 100, null, 90, null, 115, null, null, null, 100, null, null, 90, 115, null, null, null, 100, null, 90, null, 115, null, null, null, 100, null, null, 90, 115, null, null, null, 100, null, 90, null, 115, null, null, null, 100, null, null, 90, 115, null, null, null, 100, null, 90, null]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.14,
+              "attack_s": 0.002,
+              "decay_s": 0.12,
+              "gain": 0.45,
+              "filter": {
+                "type": "bandpass",
+                "freq_hz": 1400,
+                "q": 1.2
+              }
+            },
+            "notes": [null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, null, null, null, null, 110, null, null, null, 100, null, 100, null, 110, 110, 120, 127]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.05,
+              "attack_s": 0.001,
+              "decay_s": 0.04,
+              "gain": 0.22,
+              "filter": {
+                "type": "highpass",
+                "freq_hz": 7500
+              }
+            },
+            "notes": [90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 90, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 90, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 90, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 90, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 90, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 90, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 90, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 50, 90, 50, 70, 90]
+          },
+          {
+            "voice": {
+              "wave": "sawtooth",
+              "duration_s": 0.12,
+              "attack_s": 0.003,
+              "decay_s": 0.11,
+              "gain": 0.5,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 700,
+                "q": 6
+              }
+            },
+            "notes": [38, null, 38, 38, 50, null, 38, 38, 38, null, 38, 38, 50, null, 38, 38, 34, null, 34, 34, 46, null, 34, 34, 34, null, 34, 34, 46, null, 34, 34, 36, null, 36, 36, 48, null, 36, 36, 36, null, 36, 36, 48, null, 36, 36, 33, null, 33, 33, 45, null, 33, 33, 33, null, 33, 33, 45, null, 33, 33, 31, null, 31, 31, 43, null, 31, 31, 31, null, 31, 31, 43, null, 31, 31, 34, null, 34, 34, 46, null, 34, 34, 34, null, 34, 34, 46, null, 34, 34, 33, null, 33, 33, 45, null, 33, 33, 33, null, 33, 33, 45, null, 33, 33, 33, null, 33, 33, 45, null, 33, 33, 33, null, 33, 33, 45, null, 33, 33]
+          },
+          {
+            "voice": {
+              "wave": "triangle",
+              "duration_s": 0.12,
+              "attack_s": 0.003,
+              "decay_s": 0.11,
+              "gain": 0.22
+            },
+            "notes": [62, 65, 69, 74, 69, 65, 69, 74, 77, 74, 69, 65, 62, 65, 69, 74, 58, 62, 65, 70, 65, 62, 65, 70, 74, 70, 65, 62, 58, 62, 65, 70, 60, 64, 67, 72, 67, 64, 67, 72, 76, 72, 67, 64, 60, 64, 67, 72, 57, 61, 64, 69, 64, 61, 64, 69, 73, 69, 64, 61, 57, 61, 64, 69, 55, 58, 62, 67, 62, 58, 62, 67, 70, 67, 62, 58, 55, 58, 62, 67, 58, 62, 65, 70, 65, 62, 65, 70, 74, 70, 65, 62, 58, 62, 65, 70, 57, 61, 64, 69, 64, 61, 64, 69, 73, 69, 64, 61, 57, 61, 64, 69, 57, 61, 64, 69, 64, 61, 64, 69, 73, 69, 64, 61, 57, 61, 64, 69]
+          },
+          {
+            "voice": {
+              "wave": "sawtooth",
+              "duration_s": 0.24,
+              "attack_s": 0.008,
+              "decay_s": 0.3,
+              "gain": 0.2,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 2800,
+                "q": 2
+              }
+            },
+            "notes": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 76, null, 77, 79, 81, null, null, null, 79, null, 77, null, 74, null, null, null, 77, null, 79, null, 77, null, null, null, 74, null, null, null, 70, null, 74, null, 77, null, null, null, 76, null, null, null, 73, null, 76, null, 81, null, null, null, 79, null, 76, null, 73, null, null, null, 76, null, null, null, 81, null, null, null, null, null, null, null]
+          }
+        ]
+      }
+    },
+    "bgm_boss_01": {
+      "source": "procedural",
+      "gain": 0.55,
+      "loop": true,
+      "priority": 0,
+      "pattern": {
+        "tempo_bpm": 172,
+        "steps_per_beat": 4,
+        "steps": 128,
+        "tracks": [
+          {
+            "voice": {
+              "wave": "sine",
+              "freq_start_hz": 180,
+              "freq_end_hz": 38,
+              "duration_s": 0.28,
+              "attack_s": 0.001,
+              "decay_s": 0.26,
+              "gain": 1
+            },
+            "notes": [120, null, 100, null, null, null, 120, null, 120, null, 100, null, null, null, 120, 100, 120, null, 100, null, null, null, 120, null, 120, null, 100, null, null, null, 120, 100, 120, null, 100, null, null, null, 120, null, 120, null, 100, null, null, null, 120, 100, 120, null, 100, null, null, null, 120, null, 120, null, 100, null, null, null, 120, 100, 120, null, 100, null, null, null, 120, null, 120, null, 100, null, null, null, 120, 100, 120, null, 100, null, null, null, 120, null, 120, null, 100, null, null, null, 120, 100, 120, null, 100, null, null, null, 120, null, 120, null, 100, null, null, null, 120, 100, 120, null, 100, null, null, null, 120, null, 120, null, 100, null, null, null, 120, 100]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.18,
+              "attack_s": 0.001,
+              "decay_s": 0.15,
+              "gain": 0.55,
+              "filter": {
+                "type": "bandpass",
+                "freq_hz": 1900,
+                "q": 0.7
+              }
+            },
+            "notes": [null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, 100, 100, 110, 110, 120, 120, 127, 127, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, null, null, null, null, 120, null, null, null, 120, null, 110, null, 120, null, 110, null, 120, 110, 120, 110, 127, 120, 127, 127]
+          },
+          {
+            "voice": {
+              "wave": "noise",
+              "duration_s": 0.05,
+              "attack_s": 0.001,
+              "decay_s": 0.04,
+              "gain": 0.22,
+              "filter": {
+                "type": "highpass",
+                "freq_hz": 7500
+              }
+            },
+            "notes": [100, null, 70, null, 100, null, 70, null, 100, null, 70, null, 100, 70, 100, 70, 100, null, 70, null, 100, null, 70, null, 100, null, 70, null, 100, 70, 100, 70, 100, null, 70, null, 100, null, 70, null, 100, null, 70, null, 100, 70, 100, 70, 100, null, 70, null, 100, null, 70, null, 100, null, 70, null, 100, 70, 100, 70, 100, null, 70, null, 100, null, 70, null, 100, null, 70, null, 100, 70, 100, 70, 100, null, 70, null, 100, null, 70, null, 100, null, 70, null, 100, 70, 100, 70, 100, null, 70, null, 100, null, 70, null, 100, null, 70, null, 100, 70, 100, 70, 100, null, 70, null, 100, null, 70, null, 100, null, 70, null, 100, 70, 100, 70]
+          },
+          {
+            "voice": {
+              "wave": "sawtooth",
+              "duration_s": 0.12,
+              "attack_s": 0.003,
+              "decay_s": 0.11,
+              "gain": 0.5,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 700,
+                "q": 6
+              }
+            },
+            "notes": [40, 40, 52, 40, 40, 52, 40, 40, 40, 40, 52, 40, 41, 40, 52, 40, 40, 40, 52, 40, 40, 52, 40, 40, 40, 40, 52, 40, 41, 40, 52, 40, 41, 41, 53, 41, 41, 53, 41, 41, 41, 41, 53, 41, 42, 41, 53, 41, 40, 40, 52, 40, 40, 52, 40, 40, 40, 40, 52, 40, 41, 40, 52, 40, 40, 40, 52, 40, 40, 52, 40, 40, 40, 40, 52, 40, 41, 40, 52, 40, 40, 40, 52, 40, 40, 52, 40, 40, 40, 40, 52, 40, 41, 40, 52, 40, 38, 38, 50, 38, 38, 50, 38, 38, 38, 38, 50, 38, 39, 38, 50, 38, 41, 41, 53, 41, 41, 53, 41, 41, 41, 41, 53, 41, 42, 41, 53, 41]
+          },
+          {
+            "voice": {
+              "wave": "sawtooth",
+              "duration_s": 0.16,
+              "attack_s": 0.003,
+              "decay_s": 0.15,
+              "gain": 0.26,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 2200,
+                "q": 1.5
+              }
+            },
+            "notes": [52, null, null, null, null, null, 52, null, null, null, 52, null, null, null, null, null, 52, null, null, null, null, null, 52, null, null, null, 52, null, null, null, null, null, 53, null, null, null, null, null, 53, null, null, null, 53, null, null, null, null, null, 52, null, null, null, null, null, 52, null, null, null, 52, null, null, null, null, null, 52, null, null, null, null, null, 52, null, null, null, 52, null, null, null, null, null, 52, null, null, null, null, null, 52, null, null, null, 52, null, null, null, null, null, 50, null, null, null, null, null, 50, null, null, null, 50, null, null, null, null, null, 53, null, null, null, null, null, 53, null, null, null, 53, null, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "sawtooth",
+              "duration_s": 0.16,
+              "attack_s": 0.003,
+              "decay_s": 0.15,
+              "gain": 0.26,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 2200,
+                "q": 1.5
+              }
+            },
+            "notes": [59, null, null, null, null, null, 59, null, null, null, 59, null, null, null, null, null, 59, null, null, null, null, null, 59, null, null, null, 59, null, null, null, null, null, 60, null, null, null, null, null, 60, null, null, null, 60, null, null, null, null, null, 59, null, null, null, null, null, 59, null, null, null, 59, null, null, null, null, null, 59, null, null, null, null, null, 59, null, null, null, 59, null, null, null, null, null, 59, null, null, null, null, null, 59, null, null, null, 59, null, null, null, null, null, 57, null, null, null, null, null, 57, null, null, null, 57, null, null, null, null, null, 60, null, null, null, null, null, 60, null, null, null, 60, null, null, null, null, null]
+          },
+          {
+            "voice": {
+              "wave": "square",
+              "duration_s": 0.24,
+              "attack_s": 0.006,
+              "decay_s": 0.3,
+              "gain": 0.2,
+              "filter": {
+                "type": "lowpass",
+                "freq_hz": 3200,
+                "q": 1
+              }
+            },
+            "notes": [76, null, null, null, null, null, 77, null, null, null, 76, null, null, null, null, null, 71, null, null, null, 72, null, null, null, 71, null, null, null, 67, null, null, null, 77, null, null, null, null, null, 79, null, null, null, 77, null, null, null, 76, null, 74, null, null, null, 76, null, null, null, null, null, null, null, null, null, null, null, 88, null, null, null, 86, null, 84, null, 83, null, null, null, 84, null, 83, null, 79, null, null, null, 81, null, 83, null, null, null, null, null, 79, null, null, null, 81, null, null, null, 79, null, 77, null, 74, null, null, null, 77, null, 81, null, 84, null, null, null, 83, null, 81, null, 79, null, 77, null, 76, null, null, null]
+          }
+        ]
+      }
+    }
+  },
+  "hooks": {
+    "ui_press": "sfx_ui_press",
+    "ui_open": "sfx_ui_open",
+    "ui_denied": "sfx_ui_denied",
+    "ui_advance": "sfx_ui_advance",
+    "ui_transition": "sfx_ui_transition",
+    "denied": "sfx_denied",
+    "swipe_up": "sfx_swipe_up",
+    "swipe_down": "sfx_swipe_down",
+    "swipe_left": "sfx_swipe_left",
+    "swipe_right": "sfx_swipe_right",
+    "fight": "sfx_fight",
+    "card_fist": "sfx_card_fist",
+    "card_bolt": "sfx_card_bolt",
+    "card_signature": "sfx_card_signature",
+    "card_climax": "sfx_card_climax",
+    "hit_fist": "sfx_hit_fist",
+    "hit_bolt": "sfx_hit_bolt",
+    "hit_signature": "sfx_hit_signature",
+    "hit_climax": "sfx_hit_climax",
+    "hit_immune": "sfx_hit_immune",
+    "slip": "sfx_slip",
+    "perfect_slip": "sfx_perfect_slip",
+    "tag": "sfx_tag",
+    "ko": "sfx_ko",
+    "ignition": "sfx_ignition",
+    "tri_burst_start": "sfx_tri_burst_start",
+    "climax": "sfx_climax",
+    "tutorial_prompt": "sfx_tutorial_prompt",
+    "summon_confirm": "sfx_summon_confirm",
+    "summon_orb_3": "sfx_summon_orb_3",
+    "summon_orb_4": "sfx_summon_orb_4",
+    "summon_orb_5": "sfx_summon_orb_5",
+    "summon_reveal_3": "sfx_summon_reveal_3",
+    "summon_reveal_4": "sfx_summon_reveal_4",
+    "summon_reveal_5": "sfx_summon_reveal_5",
+    "summon_results": "sfx_summon_results",
+    "result_win": "sfx_result_win",
+    "result_lose": "sfx_result_lose",
+    "result_draw": "sfx_result_draw",
+    "riposte": "sfx_riposte",
+    "tag_strike": "sfx_tag_strike",
+    "knockdown": "sfx_knockdown",
+    "combo_up": "sfx_combo_up",
+    "tri_burst_impact": "sfx_tri_burst_impact",
+    "ui_toggle": "sfx_ui_toggle",
+    "ui_slider": "sfx_ui_slider"
+  }
+}
