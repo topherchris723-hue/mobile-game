@@ -150,6 +150,13 @@ playable, owned fighters of distinct families:
 
 `repairTeam(save, charactersById, economy)` → `{ team, warnings, ok }` is the same check without side effects.
 
+**Settings (GDD §13 ruling R4-1, round 4).** `settings` = { `master_volume`, `bgm_volume`, `sfx_volume` (0.0–1.0, 1 decimal),
+`muted`, `haptics`, `reduce_motion` }. Logic is DOM-free, so the caller reads `matchMedia('(prefers-reduced-motion: reduce)')`
+and passes it: `createFreshSave(economy, nowIso, { reduceMotion })` and `loadSave(storage, { ..., reduceMotion })`.
+On load every bad/missing field is repaired to its default (`reduce_motion`: the value passed now), unknown keys are removed,
+the save is written back and `warnings` gets `{ code: 'settings_repaired', key: <field> }` — never `damaged`.
+`repairSettings(save, reduceMotionNow)`, `DEFAULT_SETTINGS`, `SETTINGS_FIELDS` are exported from `src/state/save.js`.
+
 `isStageUnlocked(save, stageId, stagesById)` → bool (GDD §9.1): a stage with no `unlock_requires` is always
 unlocked; any other unlocks when that stage's record has `cleared: true`. `stagesById` is `content.stages`
 from `createContent`. Unknown stage id → `false`.

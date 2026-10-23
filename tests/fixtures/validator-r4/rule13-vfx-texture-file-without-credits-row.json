@@ -1,0 +1,24 @@
+{
+  "name": "rule13-vfx-texture-file-without-credits-row",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "effects",
+        "hit_spark",
+        "layers",
+        0,
+        "texture"
+      ],
+      "value": "vfx_spark_atlas"
+    }
+  ],
+  "files": [
+    "assets/vfx/vfx_spark_atlas.png"
+  ],
+  "expect": {
+    "errorRule": "13-licensing",
+    "errorContains": "assets/vfx/vfx_spark_atlas.png"
+  }
+}

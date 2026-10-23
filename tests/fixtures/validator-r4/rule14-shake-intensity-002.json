@@ -1,0 +1,21 @@
+{
+  "name": "rule14-shake-intensity-002",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "effects",
+        "ko_default",
+        "layers",
+        0,
+        "intensity"
+      ],
+      "value": 0.02
+    }
+  ],
+  "expect": {
+    "errorRule": "14-flash-safety",
+    "errorContains": "shake intensity 0.02 > max_shake_intensity 0.012"
+  }
+}

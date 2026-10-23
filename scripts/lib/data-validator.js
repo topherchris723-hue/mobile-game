@@ -15,6 +15,9 @@ export const DATA_FILES = [
   { file: 'banners.json', schema: 'banners.schema.json' },
   { file: 'economy.json', schema: 'economy.schema.json' },
   { file: 'battle.json', schema: 'battle.schema.json' },
+  // Round 4 (GDD §17, §18): optional until the vfx-developer / audio-designer add them; absent → a notice, not an error.
+  { file: 'vfx.json', schema: 'vfx.schema.json', optional: true },
+  { file: 'audio.json', schema: 'audio.schema.json', optional: true },
 ];
 
 export const AURAS = ['blaze', 'gale', 'stone', 'radiant', 'void'];
@@ -280,14 +283,241 @@ export function validateBalance(data, err, warn) {
   });
 }
 
+// ---------------------------------------------------------------- GDD §15.3 rules 13–15 (round 4, ruling R4-6)
+
+export const AUDIO_LICENSES = ['CC0', 'self-made'];
+export const CINEMATIC_EVENTS = ['ignition', 'tri_burst', 'ko', 'climax_cinematic'];
+
+/**
+ * Parse the asset table(s) of assets/CREDITS.md: every table whose header has "File" and "License" columns.
+ * Returns [{ file, license }] with backticks and spaces stripped; header, separator and "—" placeholder rows skipped.
+ */
+export function parseCreditsRows(text) {
+  const rows = [];
+  let fileCol = -1;
+  let licCol = -1;
+  for (const raw of String(text || '').split('\n')) {
+    const line = raw.trim();
+    if (line.indexOf('|') !== 0) { fileCol = -1; licCol = -1; continue; }
+    const cells = line.replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim().replace(/`/g, '').trim());
+    if (fileCol < 0) {
+      const f = cells.indexOf('File');
+      const l = cells.indexOf('License');
+      if (f >= 0 && l >= 0) { fileCol = f; licCol = l; }
+      continue;
+    }
+    if (cells.every((c) => /^:?-{3,}:?$/.test(c))) continue;
+    const file = cells[fileCol] || '';
+    if (file === '' || file === '—' || file === '-') continue;
+    rows.push({ file: file, license: cells[licCol] || '' });
+  }
+  return rows;
+}
+
+/**
+ * Read `export const NAME = [ 'a', "b", ... ]` from JS source text (no import, so no DOM/Phaser side effects).
+ * Returns the string list, or null if the export is not a literal string array.
+ */
+export function parseExportedStringList(src, name) {
+  const re = new RegExp('export\\s+const\\s+' + name + '\\s*=\\s*(?:Object\\.freeze\\()?\\[([\\s\\S]*?)\\]');
+  const m = String(src || '').match(re);
+  if (!m) return null;
+  const body = m[1].replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+  const out = [];
+  const lit = /'([^'\\]*)'|"([^"\\]*)"/g;
+  let x;
+  while ((x = lit.exec(body)) !== null) out.push(x[1] !== undefined ? x[1] : x[2]);
+  const rest = body.replace(lit, '').replace(/[\s,]/g, '');
+  return rest === '' ? out : null;
+}
+
+/** '#rrggbb' → { r, g, b } or null. */
+function hexRgb(h) {
+  const m = /^#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/.exec(String(h));
+  return m ? { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) } : null;
+}
+
+/** §15.3 rule 14: saturated red = r ≥ 200, g ≤ 80, b ≤ 80. */
+export function isSaturatedRed(h) {
+  const c = hexRgb(h);
+  return !!c && c.r >= 200 && c.g <= 80 && c.b <= 80;
+}
+
+/** Resolve a vfx color ref to [{ hex, label }] through vfx.json → colors (tokens may stand for several colors). */
+function resolveColors(ref, colors) {
+  const c = colors || {};
+  const map = (obj, label) => Object.keys(obj || {}).map((k) => ({ hex: obj[k], label: label + '.' + k }));
+  if (typeof ref !== 'string') return [];
+  if (ref.charAt(0) === '#') return [{ hex: ref, label: ref }];
+  if (ref === 'aura' || ref === 'member_aura' || ref === 'target_aura') return map(c.aura, 'aura');
+  if (ref === 'card_type') return map(c.card_type, 'card_type');
+  if (ref === 'rarity') return map(c.rarity, 'rarity');
+  if (ref === 'white') return [{ hex: c.white, label: 'white' }];
+  return [];
+}
+
+/**
+ * Rules 13–15 on data['audio.json'] / data['vfx.json'] (each skipped when absent).
+ * opts: credits (CREDITS.md text), fileExists(repoPath) → bool, listVfxFiles() → ['assets/vfx/…'],
+ * sfxHooks / vfxEventKeys (the UI's exported lists, or null to skip those coverage warnings).
+ */
+export function validateMedia(data, err, warn, notice, opts) {
+  const audio = data['audio.json'];
+  const vfx = data['vfx.json'];
+  if (!audio && !vfx) return;
+  const R13 = '13-licensing';
+  const R14 = '14-flash-safety';
+  const R15 = '15-key-coverage';
+  const own = (o, k) => !!o && typeof o === 'object' && Object.prototype.hasOwnProperty.call(o, k);
+  const credits = parseCreditsRows(opts.credits);
+  const hasRow = (file, lics) => credits.some((r) => r.file === file && lics.indexOf(r.license) >= 0);
+  const exists = typeof opts.fileExists === 'function' ? opts.fileExists : () => false;
+  const list = (file, key) => (data[file] && Array.isArray(data[file][key]) ? data[file][key] : []);
+  const cards = list('cards.json', 'cards');
+  const characters = list('characters.json', 'characters');
+
+  // ---- audio.json ----
+  if (audio && audio.sounds && typeof audio.sounds === 'object') {
+    const sounds = audio.sounds;
+    let procedural = false;
+    for (const k of Object.keys(sounds)) {
+      const snd = sounds[k] || {};
+      const p = '.sounds.' + k;
+      if (snd.source === 'procedural') procedural = true;
+      if (snd.source === 'file') {
+        if (AUDIO_LICENSES.indexOf(snd.license) < 0) err(R13, 'audio.json', p + '.license', 'audio.json ' + k + ': license "' + snd.license + '" not allowed (CC0 or self-made only)');
+        if (typeof snd.path !== 'string' || !exists(snd.path)) err(R13, 'audio.json', p + '.path', 'audio.json ' + k + ': path "' + snd.path + '" does not exist');
+        if (!hasRow(snd.path, [snd.license])) err(R13, 'audio.json', p, 'audio.json ' + k + ': no assets/CREDITS.md row with File "' + snd.path + '" and License "' + snd.license + '"');
+      }
+      if (snd.pattern && Array.isArray(snd.pattern.tracks)) {
+        snd.pattern.tracks.forEach((t, i) => {
+          const n = t && Array.isArray(t.notes) ? t.notes.length : -1;
+          if (n !== snd.pattern.steps) err(R13, 'audio.json', p + '.pattern.tracks[' + i + '].notes', 'audio.json ' + k + ': pattern track ' + i + ' notes has ' + n + ' entries, steps is ' + snd.pattern.steps);
+        });
+      }
+    }
+    if (procedural && !hasRow('data/audio.json', ['self-made'])) {
+      err(R13, 'audio.json', '.sounds', 'audio.json: procedural sounds need an assets/CREDITS.md row with File "data/audio.json" and License "self-made"');
+    }
+    for (const ctx of Object.keys(audio.music || {})) {
+      const v = audio.music[ctx];
+      if (!own(sounds, v)) err(R13, 'audio.json', '.music.' + ctx, 'audio.json: music.' + ctx + ' names "' + v + '", which is not in sounds');
+    }
+    for (const h of Object.keys(audio.hooks || {})) {
+      const v = audio.hooks[h];
+      if (v !== null && !own(sounds, v)) err(R13, 'audio.json', '.hooks.' + h, 'audio.json: hooks.' + h + ' names "' + v + '", which is not in sounds');
+    }
+    // ---- rule 15 (audio side) ----
+    list('stages.json', 'stages').forEach((st) => {
+      if (st && st.bgm && !own(sounds, st.bgm)) warn(R15, 'stages.json', '.stages(' + st.id + ').bgm', 'stages.json ' + st.id + ': bgm "' + st.bgm + '" not in audio.json sounds (falls back to music.battle_default)');
+    });
+    list('story.json', 'scenes').forEach((sc) => {
+      if (sc && sc.bgm && !own(sounds, sc.bgm)) warn(R15, 'story.json', '.scenes(' + sc.id + ').bgm', 'story.json ' + sc.id + ': bgm "' + sc.bgm + '" not in audio.json sounds');
+    });
+    cards.forEach((c) => {
+      if (c && c.sfx && !own(sounds, c.sfx)) warn(R15, 'cards.json', '.cards(' + c.id + ').sfx', 'cards.json ' + c.id + ': sfx "' + c.sfx + '" not in audio.json sounds (falls back to the hook)');
+    });
+    if (Array.isArray(opts.sfxHooks)) {
+      for (const h of Object.keys(audio.hooks || {})) {
+        if (opts.sfxHooks.indexOf(h) < 0) warn(R15, 'audio.json', '.hooks.' + h, 'audio.json: hooks key "' + h + '" is not in SFX_HOOKS');
+      }
+    } else {
+      notice('SFX_HOOKS list not found (src/ui/feedback.js): audio hook-key coverage warnings skipped');
+    }
+  }
+
+  // ---- vfx.json ----
+  if (vfx && vfx.effects && typeof vfx.effects === 'object') {
+    const L = vfx.limits || {};
+    const effects = vfx.effects;
+    const vfxFiles = typeof opts.listVfxFiles === 'function' ? opts.listVfxFiles() : [];
+    const battle = data['battle.json'] || {};
+    const sec = (o, k) => (o && typeof o[k] === 'number' ? Math.round(o[k] * 1000) : null);
+    // Cinematic limits per effect id: from the event mapping, card art.vfx (climax) and ignition.art.vfx.
+    const limits = {};
+    const addLimit = (id, ms, label) => {
+      if (ms === null || !own(effects, id)) return;
+      if (!own(limits, id) || ms < limits[id].ms) limits[id] = { ms: ms, label: label };
+    };
+    let minClimax = null;
+    for (const c of cards) if (c && c.type === 'climax' && typeof c.cinematic_s === 'number') minClimax = minClimax === null ? Math.round(c.cinematic_s * 1000) : Math.min(minClimax, Math.round(c.cinematic_s * 1000));
+    const eventLimit = {
+      ignition: sec(battle.ignition, 'cinematic_s'), tri_burst: sec(battle.burst, 'cinematic_s'),
+      ko: sec(battle.ko, 'anim_s'), climax_cinematic: minClimax,
+    };
+    for (const ev of Object.keys(vfx.events || {})) {
+      const base = ev.split('.')[0];
+      if (CINEMATIC_EVENTS.indexOf(base) < 0) continue;
+      for (const id of vfx.events[ev] || []) addLimit(id, eventLimit[base], base + ' cinematic');
+    }
+    for (const c of cards) if (c && c.type === 'climax' && c.art && c.art.vfx) addLimit(c.art.vfx, sec(c, 'cinematic_s'), c.id + ' cinematic');
+    for (const ch of characters) if (ch && ch.ignition && ch.ignition.art && ch.ignition.art.vfx) addLimit(ch.ignition.art.vfx, eventLimit.ignition, 'ignition cinematic');
+
+    for (const id of Object.keys(effects)) {
+      const ef = effects[id] || {};
+      const p = '.effects.' + id;
+      const layers = Array.isArray(ef.layers) ? ef.layers : [];
+      const flashStarts = [];
+      layers.forEach((ly, i) => {
+        if (!ly) return;
+        const lp = p + '.layers[' + i + ']';
+        if (ly.kind === 'screen_flash') {
+          flashStarts.push(ly.start_ms);
+          if (typeof L.max_flash_alpha === 'number' && ly.alpha > L.max_flash_alpha) err(R14, 'vfx.json', lp + '.alpha', 'vfx.json ' + id + ': screen_flash alpha ' + ly.alpha + ' > max_flash_alpha ' + L.max_flash_alpha);
+          for (const c of resolveColors(ly.color, vfx.colors)) {
+            if (isSaturatedRed(c.hex)) err(R14, 'vfx.json', lp + '.color', 'vfx.json ' + id + ': screen_flash color is saturated red ' + c.hex + (c.label !== c.hex ? ' (' + c.label + ')' : ''));
+          }
+        }
+        if (ly.kind === 'shake') {
+          if (typeof L.max_shake_intensity === 'number' && ly.intensity > L.max_shake_intensity) err(R14, 'vfx.json', lp + '.intensity', 'vfx.json ' + id + ': shake intensity ' + ly.intensity + ' > max_shake_intensity ' + L.max_shake_intensity);
+          if (typeof L.max_shake_ms === 'number' && ly.duration_ms > L.max_shake_ms) err(R14, 'vfx.json', lp + '.duration_ms', 'vfx.json ' + id + ': shake duration_ms ' + ly.duration_ms + ' > max_shake_ms ' + L.max_shake_ms);
+        }
+        if (ly.texture) {
+          const file = vfxFiles.find((f) => f.replace(/^.*\//, '').replace(/\.[a-z0-9]+$/i, '') === ly.texture);
+          if (file && !hasRow(file, AUDIO_LICENSES)) err(R13, 'vfx.json', lp + '.texture', 'vfx.json ' + id + ': texture "' + ly.texture + '" maps to ' + file + ', which has no assets/CREDITS.md row with License CC0 or self-made');
+        }
+      });
+      const maxF = typeof L.max_screen_flashes_per_s === 'number' ? L.max_screen_flashes_per_s : 3;
+      flashStarts.sort((a, b) => a - b);
+      for (let i = 0; i < flashStarts.length; i++) {
+        let n = 0;
+        for (let j = i; j < flashStarts.length && flashStarts[j] < flashStarts[i] + 1000; j++) n += 1;
+        if (n > maxF) {
+          err(R14, 'vfx.json', p + '.layers', 'vfx.json ' + id + ': ' + n + ' screen_flash layers start within 1000 ms (from ' + flashStarts[i] + ' ms; max ' + maxF + ')');
+          break;
+        }
+      }
+      if (own(limits, id) && typeof ef.duration_ms === 'number' && ef.duration_ms > limits[id].ms) {
+        err(R14, 'vfx.json', p + '.duration_ms', 'vfx.json ' + id + ': duration_ms ' + ef.duration_ms + ' > ' + limits[id].ms + ' (' + limits[id].label + ')');
+      }
+    }
+    // ---- rule 15 (vfx side) ----
+    cards.forEach((c) => {
+      if (c && c.art && c.art.vfx && !own(effects, c.art.vfx)) warn(R15, 'cards.json', '.cards(' + c.id + ').art.vfx', 'cards.json ' + c.id + ': art.vfx "' + c.art.vfx + '" not in vfx.json effects (default effect plays)');
+    });
+    characters.forEach((ch) => {
+      const k = ch && ch.ignition && ch.ignition.art ? ch.ignition.art.vfx : null;
+      if (k && !own(effects, k)) warn(R15, 'characters.json', '.characters(' + ch.id + ').ignition.art.vfx', 'characters.json ' + ch.id + ': ignition.art.vfx "' + k + '" not in vfx.json effects (default effect plays)');
+    });
+    if (Array.isArray(opts.vfxEventKeys)) {
+      for (const ev of Object.keys(vfx.events || {})) {
+        if (opts.vfxEventKeys.indexOf(ev) < 0) warn(R15, 'vfx.json', '.events.' + ev, 'vfx.json: events key "' + ev + '" is not in VFX_EVENT_KEYS');
+      }
+    } else {
+      notice('VFX_EVENT_KEYS list not found (src/ui/vfx/): vfx event-key coverage warnings skipped');
+    }
+  }
+}
+
 /**
  * Validate the whole data set.
  * @param data    { 'cards.json': object, ... } parsed data files (missing file = error)
  * @param schemas { 'cards.schema.json': object, ... }
  * @param banned  result of parseBannedTerms
  * @param extraFiles names of data/*.json files not listed in GDD §15.1 (reported as errors)
- * @param options { balance: true } — false skips §15.3 rules 10–12 (FX-GDD, GDD §15.4)
- * @returns { errors: [{rule, file, path, message}], warnings: [...] }
+ * @param options { balance: true } — false skips §15.3 rules 10–12 (FX-GDD, GDD §15.4); plus the rule 13–15 inputs
+ *                (see validateMedia): credits, fileExists, listVfxFiles, sfxHooks, vfxEventKeys
+ * @returns { errors: [{rule, file, path, message}], warnings: [...], notices: [string] }
  */
 export function validateDataset(data, schemas, banned, extraFiles, options) {
   const balance = !(options && options.balance === false);
@@ -295,6 +525,7 @@ export function validateDataset(data, schemas, banned, extraFiles, options) {
   const warnings = [];
   const err = (rule, file, path, message) => errors.push({ rule: rule, file: file, path: path, message: message });
   const warn = (rule, file, path, message) => warnings.push({ rule: rule, file: file, path: path, message: message });
+  const notices = [];
 
   for (const f of extraFiles || []) err('files', f, '', 'data file not listed in GDD §15.1');
 
@@ -305,6 +536,7 @@ export function validateDataset(data, schemas, banned, extraFiles, options) {
   for (const entry of DATA_FILES) {
     const schema = schemas[entry.schema];
     const doc = data[entry.file];
+    if (doc === undefined && entry.optional) { notices.push(entry.file + ' not present (optional until it is created); its checks are skipped'); continue; }
     if (!schema) { err('schema', entry.schema, '', 'schema file missing'); schemaOk = false; continue; }
     if (doc === undefined) { err('schema', entry.file, '', 'data file missing'); schemaOk = false; continue; }
     let validate;
@@ -543,5 +775,8 @@ export function validateDataset(data, schemas, banned, extraFiles, options) {
   // ---- Rules 10–12: balance limits (data/ only; GDD §15.3 round 3) ----
   if (balance) validateBalance(data, err, warn);
 
-  return { errors: errors, warnings: warnings, schemaOk: schemaOk };
+  // ---- Rules 13–15: audio / VFX data (GDD §15.3 ruling R4-6) ----
+  validateMedia(data, err, warn, (n) => notices.push(n), options || {});
+
+  return { errors: errors, warnings: warnings, notices: notices, schemaOk: schemaOk };
 }

@@ -21,7 +21,11 @@ export const FX_GDD_DIR = 'tests/fixtures/gdd';
 export function loadAllData(dir) {
   const base = dir || 'data';
   const out = {};
-  for (const d of DATA_FILES) out[d.file] = readJson(base + '/' + d.file);
+  for (const d of DATA_FILES) {
+    // Round-4 optional files (vfx.json, audio.json) are skipped while they do not exist (FX-GDD never has them).
+    if (d.optional && !fs.existsSync(path.join(ROOT, base, d.file))) continue;
+    out[d.file] = readJson(base + '/' + d.file);
+  }
   return out;
 }
 
@@ -60,4 +64,20 @@ export function loadGddBundle() {
   const b = loadBundle(FX_GDD_DIR);
   b.economy = readGddJson('economy.json');
   return b;
+}
+
+/**
+ * The §15.3 rule 13–15 inputs for the live repo (what `npm run validate-data` passes): assets/CREDITS.md text, files on
+ * disk (repo-relative), the assets/vfx/ listing. sfxHooks / vfxEventKeys are left null (the CLI reads them from src/ui).
+ */
+export function liveMediaOptions() {
+  const credits = path.join(ROOT, 'assets', 'CREDITS.md');
+  const vfxDir = path.join(ROOT, 'assets', 'vfx');
+  return {
+    credits: fs.existsSync(credits) ? fs.readFileSync(credits, 'utf8') : '',
+    fileExists: (p) => fs.existsSync(path.join(ROOT, p)),
+    listVfxFiles: () => (fs.existsSync(vfxDir) ? fs.readdirSync(vfxDir).map((f) => 'assets/vfx/' + f) : []),
+    sfxHooks: null,
+    vfxEventKeys: null,
+  };
 }

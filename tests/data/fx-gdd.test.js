@@ -58,8 +58,9 @@ function copyFixture() {
 }
 
 describe('GDD §15.4 FX-GDD fixture', () => {
-  it('pins every §15.1 data file and nothing else', () => {
-    expect(Object.keys(FX_GDD_SHA256).sort()).toEqual(DATA_FILES.map((d) => d.file).sort());
+  it('pins every round-3 §15.1 data file (the 8 FX-GDD files) and nothing else', () => {
+    // vfx.json / audio.json (round 4) are not part of FX-GDD: no W-class AC uses them (GDD §15.4 lists the 8 files).
+    expect(Object.keys(FX_GDD_SHA256).sort()).toEqual(DATA_FILES.filter((d) => !d.optional).map((d) => d.file).sort());
   });
   it('every fixture file matches its pinned SHA-256', () => {
     expect(fixtureHashMismatches(DIR)).toEqual([]);

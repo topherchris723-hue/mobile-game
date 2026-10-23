@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "mix": {
+    "max_voices": 12,
+    "same_sound_min_interval_ms": 40,
+    "duck_gain": 0.35,
+    "duck_attack_s": 0.08,
+    "duck_release_s": 0.3,
+    "pause_gain": 0.5,
+    "crossfade_s": 0.6,
+    "music_fade_in_s": 0.5
+  },
+  "music": {
+    "menu": "bgm_menu",
+    "summon": "bgm_menu",
+    "battle_default": "bgm_battle_01"
+  },
+  "sounds": {
+    "bgm_menu": {
+      "source": "procedural",
+      "gain": 0.6,
+      "loop": true,
+      "pattern": {
+        "tempo_bpm": 120,
+        "steps_per_beat": 4,
+        "steps": 16,
+        "tracks": [
+          {
+            "voice": {
+              "wave": "square",
+              "freq_start_hz": 440,
+              "duration_s": 0.1
+            },
+            "notes": [
+              60,
+              null,
+              64,
+              null,
+              67,
+              null,
+              64,
+              null,
+              60,
+              null,
+              64,
+              null,
+              67,
+              null,
+              72,
+              null
+            ]
+          }
+        ]
+      }
+    },
+    "bgm_battle_01": {
+      "source": "procedural",
+      "gain": 0.6,
+      "loop": true,
+      "pattern": {
+        "tempo_bpm": 140,
+        "steps_per_beat": 4,
+        "steps": 16,
+        "tracks": [
+          {
+            "voice": {
+              "wave": "square",
+              "freq_start_hz": 440,
+              "duration_s": 0.1
+            },
+            "notes": [
+              60,
+              null,
+              64,
+              null,
+              67,
+              null,
+              64,
+              null,
+              60,
+              null,
+              64,
+              null,
+              67,
+              null,
+              72,
+              null
+            ]
+          }
+        ]
+      }
+    },
+    "sfx_hit_fist": {
+      "source": "procedural",
+      "gain": 0.8,
+      "synth": {
+        "voices": [
+          {
+            "wave": "noise",
+            "duration_s": 0.08
+          }
+        ]
+      }
+    },
+    "sfx_ko": {
+      "source": "procedural",
+      "gain": 0.9,
+      "synth": {
+        "voices": [
+          {
+            "wave": "sawtooth",
+            "freq_start_hz": 300,
+            "freq_end_hz": 60,
+            "duration_s": 0.4
+          }
+        ]
+      }
+    }
+  },
+  "hooks": {
+    "hit_fist": "sfx_hit_fist",
+    "ko": "sfx_ko",
+    "ui_press": null
+  }
+}

@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { parseBannedTerms, validateDataset } from '../../scripts/lib/data-validator.js';
-import { ROOT, loadAllData, loadAllSchemas, loadGdd } from '../helpers/load-data.js';
+import { ROOT, loadAllData, loadAllSchemas, loadGdd, liveMediaOptions } from '../helpers/load-data.js';
 
 const FIXTURE_DIR = path.join(ROOT, 'tests', 'fixtures', 'validator');
 const banned = parseBannedTerms(loadGdd());
@@ -61,7 +61,7 @@ describe('validate-data: banned terms come from GDD §3', () => {
 
 describe('validate-data: current data passes', () => {
   it('has 0 errors', () => {
-    const r = validateDataset(loadAllData(), schemas, banned, []);
+    const r = validateDataset(loadAllData(), schemas, banned, [], liveMediaOptions());
     expect(r.errors).toEqual([]);
   });
 });
