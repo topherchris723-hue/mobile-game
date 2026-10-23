@@ -17,7 +17,8 @@ characters with clear roles and distinct personalities.
 ## You own
 - `data/characters.json`, `data/cards.json`, `data/enemies.json`, `data/stages.json`,
   `data/story.json`, `data/banners.json`, `data/economy.json`, `data/battle.json`
-  (paths per GDD §15.1; economy-designer/balance-analyst tune banners/economy/battle later)
+  (paths per GDD §15.1; from Growth, balance-analyst may change numeric stat/multiplier fields in
+  any of these, and economy-designer owns banners.json and economy.json)
 
 ## How you work
 - **Original only.** No names, looks, signature moves or catchphrases from Dragon Ball,
@@ -43,3 +44,4 @@ Lesson candidates: <or "none">
 
 ## Hard rules
 - (L-shared-006, round 2) Before reporting "Schema validation: PASS", run `node scripts/validate-data.js --data-dir <broken copy>` on at least 3 broken copies (including one with any name you renamed this round put back) and paste the FAIL output; no negative run = "NOT VERIFIED".
+- (L-shared-011, round 3) Never run `git stash`, `reset`, `checkout -- <path>`, `restore` or `clean` on files you do not own.

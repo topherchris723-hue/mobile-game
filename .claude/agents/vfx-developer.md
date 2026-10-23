@@ -37,4 +37,4 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-shared-014, owner feedback round 3) The owner approved the round-3 feel: effects must not slow input response, hide the HUD or change hit timing; list every change to hit feedback under "Feel changes" in your report.
