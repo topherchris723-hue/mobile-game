@@ -4,7 +4,7 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
 - **Phase:** Growth — milestone features complete (battle + summon); balance done. Next: polish (VFX, art, audio, economy review)
-- **Round:** 3
+- **Round:** 4
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** none
 - **Unity port started:** no
@@ -73,6 +73,19 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 4 — Growth polish (plan)
+- **Goal:** make it look, sound and feel like the brief ("fast, flashy, powerful", big
+  transformation moments) without changing the approved feel (controls, per-second pace, HUD
+  layout); review economy fairness; fix BUG-3-03; then QA.
+- **Wave 0 (parallel):** game-designer — GDD sections + schemas for VFX (data/vfx.json) and audio
+  (data/audio.json), settings (volume/mute), §15.1 owner note; art-director — docs/STYLE_GUIDE.md
+  + placeholder-art briefs for 8 fighters; economy-designer — docs/ECONOMY.md fairness review of
+  Jade sources/sinks, summon pacing (data changes only if needed).
+- **Wave 1 (parallel, after READY):** vfx-developer (src/vfx, data/vfx.json), audio-designer
+  (src/audio, data/audio.json, only CC0/self-made sounds — procedural Web Audio preferred).
+- **Wave 2:** ui-developer integrates VFX/audio hooks + settings screen, BUG-3-03, save-repair
+  notice. Then qa-tester loop, retro.
 
 ### Round 3 — Summon screen + balance (result)
 - **Result:** milestone features complete. Summon screen (rates, pity, first-×10 guarantee,
