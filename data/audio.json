@@ -470,7 +470,7 @@
     },
     "sfx_fight": {
       "source": "procedural",
-      "gain": 0.85,
+      "gain": 0.567,
       "priority": 3,
       "synth": {
         "voices": [
@@ -677,7 +677,7 @@
     },
     "sfx_hit_fist": {
       "source": "procedural",
-      "gain": 0.8,
+      "gain": 0.577,
       "priority": 1,
       "synth": {
         "voices": [
@@ -762,7 +762,7 @@
     },
     "sfx_hit_signature": {
       "source": "procedural",
-      "gain": 0.85,
+      "gain": 0.481,
       "priority": 2,
       "synth": {
         "voices": [
@@ -804,7 +804,7 @@
     },
     "sfx_hit_climax": {
       "source": "procedural",
-      "gain": 0.95,
+      "gain": 0.435,
       "priority": 2,
       "synth": {
         "voices": [
@@ -1057,7 +1057,7 @@
     },
     "sfx_ko": {
       "source": "procedural",
-      "gain": 1,
+      "gain": 0.512,
       "priority": 3,
       "synth": {
         "voices": [
@@ -1114,7 +1114,7 @@
     },
     "sfx_ignition": {
       "source": "procedural",
-      "gain": 1,
+      "gain": 0.578,
       "priority": 3,
       "synth": {
         "voices": [
@@ -1294,7 +1294,7 @@
     },
     "sfx_tri_burst_impact": {
       "source": "procedural",
-      "gain": 1,
+      "gain": 0.453,
       "priority": 3,
       "synth": {
         "voices": [
@@ -1358,7 +1358,7 @@
     },
     "sfx_climax": {
       "source": "procedural",
-      "gain": 0.95,
+      "gain": 0.657,
       "priority": 3,
       "synth": {
         "voices": [
@@ -1724,7 +1724,7 @@
     },
     "sfx_summon_reveal_5": {
       "source": "procedural",
-      "gain": 1,
+      "gain": 0.605,
       "priority": 3,
       "synth": {
         "voices": [
@@ -2044,7 +2044,7 @@
     },
     "bgm_menu_01": {
       "source": "procedural",
-      "gain": 0.5,
+      "gain": 0.45,
       "loop": true,
       "priority": 0,
       "pattern": {
@@ -2128,7 +2128,7 @@
     },
     "bgm_summon_01": {
       "source": "procedural",
-      "gain": 0.5,
+      "gain": 0.45,
       "loop": true,
       "priority": 0,
       "pattern": {
@@ -2207,7 +2207,7 @@
     },
     "bgm_battle_01": {
       "source": "procedural",
-      "gain": 0.55,
+      "gain": 0.42,
       "loop": true,
       "priority": 0,
       "pattern": {
@@ -2321,7 +2321,7 @@
     },
     "bgm_battle_02": {
       "source": "procedural",
-      "gain": 0.55,
+      "gain": 0.4,
       "loop": true,
       "priority": 0,
       "pattern": {
@@ -2415,7 +2415,7 @@
     },
     "bgm_boss_01": {
       "source": "procedural",
-      "gain": 0.55,
+      "gain": 0.34,
       "loop": true,
       "priority": 0,
       "pattern": {

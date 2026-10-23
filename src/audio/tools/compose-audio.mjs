@@ -404,6 +404,20 @@ S('bgm_battle_01', battle01());
 S('bgm_battle_02', battle02());
 S('bgm_boss_01', boss01());
 
+// Peak trim (round 4): pre-bus peaks measured by rendering every sound in Chromium's OfflineAudioContext.
+// Layered hits summed above 1.0 (hit_climax 2.08, tri_burst_impact 2.10); scale each to a ~0.95 peak so 12 stacked
+// voices lean on the master limiter less. Music sits under the hits (battle loop RMS ≈ 0.07 vs hit RMS ≈ 0.08).
+const MEASURED_PEAK = {
+  sfx_fight: 1.423, sfx_hit_fist: 1.317, sfx_hit_signature: 1.678, sfx_hit_climax: 2.077, sfx_ko: 1.857,
+  sfx_ignition: 1.643, sfx_tri_burst_impact: 2.098, sfx_climax: 1.374, sfx_summon_reveal_5: 1.571,
+};
+for (const [k, peak] of Object.entries(MEASURED_PEAK)) sounds[k].gain = r3((sounds[k].gain * 0.95) / peak);
+sounds.bgm_battle_01.gain = 0.42;
+sounds.bgm_battle_02.gain = 0.4;
+sounds.bgm_boss_01.gain = 0.34;
+sounds.bgm_menu_01.gain = 0.45;
+sounds.bgm_summon_01.gain = 0.45;
+
 // ------------------------------------------------------------ hooks (GDD §18.2: 39 round-3 + 7 round-4)
 const hooks = {
   ui_press: 'sfx_ui_press', ui_open: 'sfx_ui_open', ui_denied: 'sfx_ui_denied', ui_advance: 'sfx_ui_advance',
