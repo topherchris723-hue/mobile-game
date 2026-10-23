@@ -134,19 +134,24 @@ async function cards() {
 async function selftest() {
   // L-shared-006: the harness must move when the data moves. Three deliberate breaks, each must shift the metric.
   const n = 400;
-  const base = { cfg: { stageId: 'stage_003', team: STARTERS, playerTier: 'fighter' }, seed0: 777, count: n };
+  const base = { cfg: { stageId: 'stage_003', team: STARTERS, playerTier: 'proxy_average' }, seed0: 777, count: n };
   const cases = [
     ['baseline', []],
     ['enemy ATK ×3 (enemy_umbral_rook_001..thessa_001)', ['enemy_umbral_rook_001', 'enemy_umbral_pell_001', 'enemy_thessa_001'].map((id) => ({ file: 'enemies', id, path: 'stat_mult.atk', value: 2.7 }))],
     ['player Tavi HP 100', [{ file: 'characters', id: 'char_tavi_001', path: 'base_stats.hp', value: 100 }]],
-    ['vigor regen 0.25/s', [{ file: 'battle', path: 'vigor.regen_per_s', value: 0.25 }]],
+    ['vigor regen 0.25/s (stage_002)', [{ file: 'battle', path: 'vigor.regen_per_s', value: 0.25 }]],
   ];
-  const res = await runJobs(cases.map(([, p]) => ({ ...base, patches: p })));
+  // The regen break is measured on stage_002, whose battles are short enough not to hit the timer (stage_003 lasts
+  // ~140 s since the HP x2 change, so a slower game would only be capped at 180 s).
+  const short = { cfg: { stageId: 'stage_002', team: STARTERS, playerTier: 'proxy_average' }, seed0: 777, count: n };
+  const res = await runJobs(cases.map(([, p], i) => ({ ...(i === 3 ? short : base), patches: p })).concat([{ ...short, patches: [] }]));
+  res[3].baseTimer = res[4].timerS;
   let ok = true;
   cases.forEach(([name], i) => console.log(name.padEnd(55) + ' win ' + pct(res[i].winRate) + '  avg timer ' + res[i].timerS.toFixed(1) + ' s'));
   if (!(res[1].winRate < res[0].winRate - 0.3)) { ok = false; console.log('FAIL: enemy ATK break did not lower the win rate'); }
   if (!(res[2].winRate < res[0].winRate)) { ok = false; console.log('FAIL: Tavi HP break did not lower the win rate'); }
-  if (!(res[3].timerS > res[0].timerS * 1.3)) { ok = false; console.log('FAIL: vigor regen break did not lengthen battles'); }
+  console.log('stage_002 baseline avg timer ' + res[4].timerS.toFixed(1) + ' s vs regen 0.25/s ' + res[3].timerS.toFixed(1) + ' s');
+  if (!(res[3].timerS > res[4].timerS * 1.3)) { ok = false; console.log('FAIL: vigor regen break did not lengthen battles'); }
   let threw = false;
   try { (await import('./lib.mjs')).applyPatches(data, [{ file: 'cards', id: 'card_does_not_exist', path: 'power', value: 1 }]); } catch (e) { threw = true; console.log('bad patch id rejected: ' + e.message); }
   if (!threw) { ok = false; console.log('FAIL: unknown patch id was accepted silently'); }

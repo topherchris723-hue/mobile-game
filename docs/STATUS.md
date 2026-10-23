@@ -33,6 +33,8 @@ lesson and a hard rule at the next `/retro`.
   (schedules the next `/round` when a round ends; resumes after usage-limit resets). Stop and
   ask the owner only for the things in CLAUDE.md §8 (keystore, Play Console, paid assets,
   playtest) or a blocker the rules forbid deciding.
+- Round 3 (owner, after first phone playtest of the private web build): "Bro im linking it its
+  good" — the owner likes the current build. Keep the core feel; changes should build on it.
 
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade

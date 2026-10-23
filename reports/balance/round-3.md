@@ -63,3 +63,72 @@ Flagged risks checked: Aura Thief's 0.4 swing barely matters (halving its self-b
 4. **AI tiers do not model player skill:** as the player side, master ≈ veteran ≈ fighter on stage_003 (84 / 81 / 84). No tier can ever slip a Fist (windup 6–12 ticks is shorter than every reaction_s). The "good play" proxy is weak.
 5. **Tri-Burst rush when the rusher is KO'd (GDD gap and engine, MINOR):** a rusher KO'd mid-rush by a projectile already in flight ends the rush through the safety net 9–10 ticks in. With the new data, AC-5.10.7 (tests/logic/battle-round2.test.js, stage_005 master vs master, seed 90) now fails 1 of 315 tests; seed 3345 also hits it. The old data never reached it on seeds 1–6000.
 6. **Validator gap:** `npm run validate-data` does not check §6 bands or §7 budgets (Fist power 9.9 and ★3 ATK 2000 both PASS). `tests/sim/balance/bands.mjs` covers this now; consider adding it to the validator.
+
+---
+
+# Pass 2 (round 3, after HP ×2, AI fix BUG-3-01, rush invulnerability, AC-5.10.9, AC-5.15.8)
+
+Engine: the committed HEAD 3b2d663 (logic identical to 602ae23), snapshotted in the scratchpad so parallel edits could not affect the runs.
+- Harness additions: `proxy_average` and `proxy_skilled` (GDD §5.15), added to `ai_tiers` **in memory only**. `proxy_skilled` spacing is `installSpacing()` in lib.mjs: one roll per enemy Fist approach that starts beyond distance 20, using its own seeded RNG and public state only. The dash is used only on a tick where the AI chose no input. On stage_004 over 200 battles: 4,173 approaches, 1,318 rolls, 549 dashes.
+- New metrics: KO-ended median timer and timeout share (BAL-5.14); full-team Tri-Burst damage / target max HP (BAL-5.10); mission share of wins via the engine's `missionMet` (§9.3).
+- Selftest PASS. Its Vigor-regen break moved to stage_002, because stage_003 now lasts about 140 s and the break was capped by the 180 s timer.
+- `bands.mjs` is retired. `npm run validate-data` rules 10–12 plus the schema FAIL all four of its must-FAIL inputs (Fist power 9.9 → rule 12; ★3 ATK 2000 → rule 10; Ignition heal 0.2 → rule 11; stat_mult.hp 0.2 → schema).
+- AC-9.1.1: all 8 fighter powers are unchanged after HP ×2 with coefficient 0.05 (1870 / 2005 / 2090 / 2180 / 2205 / 2225 / 2440 / 2490). Must-FAIL: coefficient left at 0.1 raises each power by 0.1 × old HP (Tavi 1870 → 2690).
+- Tavi's proposed Ignition nerf is **not applied**: after HP ×2 Tavi measures 52.2% (average) / 57.1% (skilled).
+
+## Before (pass-1 data) → after (pass-2 data), same engine, 2,500 battles per cell
+| Stage | Proxy | Win | KO-ended median s | Timeouts | Tri-Burst % max HP | time_under_s share |
+|---|---|---|---|---|---|---|
+| stage_001 | average | 100 → 100 | 13 → 28 | 0 → 0 | – | – |
+| stage_001 | skilled | 100 → 100 | 14 → 29 | 0 → 0 | – | – |
+| stage_002 | average | 100 → 100 | 32 → 63 | 0 → 0 | 78.5 → 44.0 | – |
+| stage_002 | skilled | 100 → 100 | 33 → 63 | 0 → 0 | 75.1 → **48.1** | – |
+| stage_003 | average | 85.6 → 76.0 | 64 → 140 | 0 → 0.1 | 66.4 → 36.7 | – |
+| stage_003 | skilled | 96.2 → 94.4 | 62 → 141 | 0 → 3.8 | 66.5 → 36.0 | – |
+| stage_004 | average | 53.5 → 50.1 | 64 → 137 | 0 → 0 | 66.4 → 37.6 | 100 → 85.6 (<150) |
+| stage_004 | skilled | 81.7 → 85.1 | 65 → 141 | 0 → 2.1 | 66.8 → 35.2 | 100 → 71.5 |
+| stage_005 | average | 26.4 → 20.8 | 69 → 143 | 0 → 2.6 | 70.7 → 25.7 | – |
+| stage_005 | skilled | 58.3 → 66.5 | 75 → 157 | 0 → 16.8 | 70.7 → 27.3 | – |
+
+Target check:
+- BAL-5.14 met: stages 3–5 medians are 137–157 s and timeouts at most 16.8%; stages 1–2 have 0% timeouts; stage_001 median is 28 s.
+- BAL-5.15 met for both proxies, and win rate falls stage by stage. Stage_002's "decrease" shows as 100% at both stages, so hardness is shown by player HP left instead (89% → 72%).
+- BAL-5.10 met on stages 3–5 (25.7–37.6%). Stage_002 for `proxy_skilled` is 48.1% (over 45%); see Needs designer.
+
+## Mirror win rate (1v1 equal rarity, 2,000 per ordered pair)
+| | Tavi | Lark | Dunmore | Pell | Thessa | Rook | Solenne | Corvane |
+|---|---|---|---|---|---|---|---|---|
+| Pass-1 data, average | 57.3 | 45.1 | 47.6 | 58.2 | 47.9 | 44.0 | 42.0 | 58.0 |
+| Pass-1 data, skilled | **62.8** | 42.1 | 45.1 | 50.6 | 42.3 | 57.1 | 41.4 | 58.6 |
+| HP ×2 only, average | 52.1 | 47.5 | 50.4 | **70.8** | **33.1** | 46.1 | 40.0 | 60.0 |
+| HP ×2 only, skilled | 57.1 | 45.4 | 47.5 | 59.9 | **34.0** | 56.1 | 40.6 | 59.4 |
+| **Final, average** | 52.2 | 47.5 | 50.4 | 51.0 | 49.7 | 49.3 | 46.4 | 53.6 |
+| **Final, skilled** | 57.1 | 45.4 | 47.5 | 48.6 | 44.2 | 57.3 | 42.9 | 57.1 |
+
+## Missions (share of wins in which the mission is met; average / skilled)
+- stage_001: no_ko 100 / 100; perfect_slips ≥ 2: 0 / 18.1.
+- stage_002: max_chain ≥ 3: 24.2 / 37.0; use_ignition 99.7 / 96.5.
+- stage_003: use_tri_burst 99.9 / 100; no_ko 61.5 / 87.4.
+- stage_004: time_under_s 150: 85.6 / 71.5 (≥ 25% rule met, value unchanged); perfect_slips ≥ 3: 0.8 / 95.5.
+- stage_005: max_chain ≥ 4: 3.1 / 4.3; use_tri_burst 100 / 99.7.
+All missions are reachable.
+
+## Pass-2 number changes
+| File | ID.field | Old → New | Why |
+|---|---|---|---|
+| characters | all 8 base_stats.hp | ×2: 8200→16400, 8400→16800, 9000→18000, 9800→19600, 9700→19400, 9500→19000, 10500→21000, 11000→22000 | §5.14 decision |
+| economy | power_formula.hp | 0.1 → 0.05 | AC-9.1.1 |
+| characters | char_pell_001.base_stats.hp | 19600 → 18400 | Pell 70.8% after HP ×2 |
+| characters | char_pell_001.ignition.stat_mult.def | 1.3 → 1.1 | same |
+| characters | char_thessa_001.base_stats.atk | 1000 → 1050 | Thessa 33% |
+| characters | char_thessa_001.base_stats.def | 470 → 530 | same |
+| characters | char_solenne_001.base_stats.hp | 21000 → 22000 | Solenne 38.8% / Corvane 61.2% (★5 pair) |
+| enemies | enemy_umbral_rook_001 / enemy_umbral_pell_001 / enemy_thessa_001 .stat_mult | 0.9 → 0.92 | stage_003 average 86.4% (band 60–85) |
+| enemies | enemy_thessa_002 / enemy_umbral_solenne_001 .stat_mult | 0.75 → 0.72 | stage_005 average 14.4% (band 15–40) |
+| battle | burst.power_per_member | 3.0 → 3.3 | BAL-5.10: stage_005 Tri-Burst 23–25% (band 25–45) |
+No timer_s changed: stage_005 at 210 s cut skilled timeouts from 19.6% to 1%, but 180 s already meets the ≤ 25% target.
+
+## Needs designer / owners (pass 2)
+1. **Test defect, gameplay-programmer:** `tests/logic/formulas.test.js` AC-5.10.2 is class X (inline inputs) but passes the live `R.burst.powerPerMember` and expects 2,600/2,200/1,800. With the BAL-5.10 lever at 3.3 it fails (1 of 375 tests). Fix: pass the GDD value `3.0` inline (or use FX-GDD rules). This is the only failing test.
+2. **BAL-5.10 wording, game-designer:** "same-tier stage enemy" is undefined. Measured on every stage's enemies, no single `power_per_member` value meets 25–45% on stages 2–5 for both proxies with any margin (it would need 3.21–3.23). With 3.3, stages 3–5 are in band and stage_002 (0.8× rookie enemies) is 44–48%. Suggest defining it as stages 3–5.
+3. §9.2 table refresh: stage_003 0.92, stage_005 regulars 0.72.
