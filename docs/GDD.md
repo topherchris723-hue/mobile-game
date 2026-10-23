@@ -672,9 +672,12 @@ from fighting, so every battle reaches it.
   (`rush_invulnerable`) and a `whiff` (`rush_invulnerable`) for the card; on T + 16 and T + 22 nothing resolves (no damage,
   no event); the player's HP is unchanged on every tick T … T + 22; the enemy gets no link window. Must-FAIL: an engine
   that applies the T + 22 hit (damage after the rush). Contrast AC-5.10.8 (first hit before T → its hits after T + 18 land).
-- **BAL-5.10 (round 3, balance target, keeps Tri-Burst "powerful" after the HP change):** with live data, a landed
-  Tri-Burst by a full living starter team against a same-tier stage enemy removes **25–45%** of that enemy's max HP in the
-  median case (balance-analyst sim). Lever: `battle.burst.power_per_member` (data, default 3.0), not the formula shape.
+- **BAL-5.10 (round 3, balance target, keeps Tri-Burst "powerful" after the HP change; defined exactly in balance pass
+  2):** with live data and the R0 starter team, take every **landed** Tri-Burst by the player side in the BAL-5.15 sims of
+  **stage_003, stage_004 and stage_005** (each stage's own enemies, whichever enemy is the target), for each proxy
+  (`proxy_average`, `proxy_skilled`) separately. Per landed Tri-Burst, `pct = total Tri-Burst damage / target max HP ×
+  100` (damage before the KO clamp). Target: for each stage × proxy cell, the **median pct is 25–45**. stage_001 and
+  stage_002 are excluded (weaker tutorial enemies: there a Tri-Burst may remove more, e.g. 44–48% measured). Lever: `battle.burst.power_per_member` (data, default 3.0), not the formula shape.
 
 ### 5.11 Damage formula, crits and caps
 **Purpose:** one predictable formula that the balance analyst can simulate.
@@ -1038,13 +1041,14 @@ rises by `0.1 × old HP`, e.g. +850).
 |---|---|---|---|---|---|---|
 | stage_001 (tutorial) | 1 | rookie | 0.7/0.7/0.7 | 120 | 300 Jade | 30 |
 | stage_002 | 2 | rookie | 0.8/0.8/0.8 | 150 | 300 Jade | 30 |
-| stage_003 | 3 | fighter | 0.9/0.9/0.9 | 180 | 400 Jade | 40 |
+| stage_003 | 3 | fighter | 0.92/0.92/0.92 | 180 | 400 Jade | 40 |
 | stage_004 | 3 | fighter, fighter, veteran | 0.88/0.88/0.88 | 180 | 500 Jade | 50 |
-| stage_005 (boss) | 3 | veteran, veteran, master (boss) | 0.75/0.75/0.75; boss 1.0/0.7/0.8 | 180 | 600 Jade + 1 ★4 fighter | 60 |
+| stage_005 (boss) | 3 | veteran, veteran, master (boss) | 0.72/0.72/0.72; boss 1.0/0.7/0.8 | 180 | 600 Jade + 1 ★4 fighter | 60 |
 
 **Round 3 ruling — this table is advisory; `data/enemies.json` and `data/stages.json` are the truth.** The values above
-are the round-3 balance-analyst snapshot (stage_004 regulars 0.88; stage_005 regulars 0.75; boss `enemy_corvane_001`
-1.0/0.7/0.8). They were set before the HP ×2 change (§5.14) and multiply the doubled HP the same way. The balance-analyst
+are the round-3 balance-analyst snapshot after balance pass 2 (stage_003 regulars 0.92; stage_004 regulars 0.88;
+stage_005 regulars 0.72; boss `enemy_corvane_001` 1.0/0.7/0.8; live `battle.burst.power_per_member` 3.3 — the GDD
+reference value in §5.10 and FX-GDD stays 3.0). They were set before the HP ×2 change (§5.14) and multiply the doubled HP the same way. The balance-analyst
 may change any enemy `stat_mult` within the §8 limit (0.3–5.0) and any stage `timer_s` within 60–300 **without** a GDD
 edit, to meet BAL-5.14 and BAL-5.15. The game-designer refreshes this table at the next GDD pass. No test or AC may read
 a value from this table; the AI tiers, enemy counts and rewards columns are binding design (changing them needs a GDD
