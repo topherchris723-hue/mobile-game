@@ -132,3 +132,25 @@ No timer_s changed: stage_005 at 210 s cut skilled timeouts from 19.6% to 1%, bu
 1. **Test defect, gameplay-programmer:** `tests/logic/formulas.test.js` AC-5.10.2 is class X (inline inputs) but passes the live `R.burst.powerPerMember` and expects 2,600/2,200/1,800. With the BAL-5.10 lever at 3.3 it fails (1 of 375 tests). Fix: pass the GDD value `3.0` inline (or use FX-GDD rules). This is the only failing test.
 2. **BAL-5.10 wording, game-designer:** "same-tier stage enemy" is undefined. Measured on every stage's enemies, no single `power_per_member` value meets 25–45% on stages 2–5 for both proxies with any margin (it would need 3.21–3.23). With 3.3, stages 3–5 are in band and stage_002 (0.8× rookie enemies) is 44–48%. Suggest defining it as stages 3–5.
 3. §9.2 table refresh: stage_003 0.92, stage_005 regulars 0.72.
+
+---
+
+# Re-check after BUG-3-02 (engine HEAD cc3e627, ai.js changed; data unchanged)
+BAL-5.10 is now measured exactly as GDD §5.10 defines it: every landed player Tri-Burst, damage before the KO clamp, stages 3–5. 2,500 battles per stage cell; mirrors 2,000 per ordered pair.
+
+| Stage | Proxy | Win % (pass-2 engine → BUG-3-02 engine) | KO-ended median s | Timeouts % | Tri-Burst median % |
+|---|---|---|---|---|---|
+| stage_001 | average / skilled | 100/100 → 100/100 | 28/29 → 28/29 | 0 → 0 | – |
+| stage_002 | average / skilled | 100/100 → 100/100 | 63/63 → 63/63 | 0 → 0 | (excluded) 44.0/48.1 |
+| stage_003 | average / skilled | 76.0/94.4 → 74.2/95.7 | 140/141 → 141/139 | 0.1/3.8 → 0.3/3.8 | 36.7/36.0 → 36.7/36.7 |
+| stage_004 | average / skilled | 50.1/85.1 → 48.8/88.4 | 137/141 → 137/140 | 0/2.1 → 0.1/2.0 | 37.6/35.2 → 32.5/35.2 |
+| stage_005 | average / skilled | 20.8/66.5 → 17.6/68.8 | 143/157 → 143/157 | 2.6/16.8 → 2.7/17.2 | 25.7/27.3 → 25.7/27.3 |
+
+Mirrors (average / skilled):
+- Before → after: Tavi 52.2/57.1 → 52.3/57.7, Lark 47.5/45.4 → 47.3/45.9, Dunmore 50.4/47.5 → 50.4/46.5, Pell 51.0/48.6 → 51.2/47.6.
+- Before → after: Thessa 49.7/44.2 → 49.5/43.6, Rook 49.3/57.3 → 49.3/58.8, Solenne 46.4/42.9 → 47.3/43.4, Corvane 53.6/57.1 → 52.6/56.6.
+
+Missions: all reachable. stage_004 `time_under_s` 150 is met in 84.2% of `proxy_average` wins.
+
+Result: every target (BAL-5.10, BAL-5.14, BAL-5.15, mirrors, missions) is still met, so **no numbers were changed**. The closest margin is stage_005 `proxy_average` at 17.6% (floor 15%).
+`npm run validate-data` PASS; `npm test` 381/381.

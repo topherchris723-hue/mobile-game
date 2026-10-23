@@ -130,7 +130,7 @@ export function runOne(content, cfg, seed) {
     triBurst: { player: 0, enemy: 0 }, ignitions: { player: 0, enemy: 0 },
     perfectSlips: { player: 0, enemy: 0 }, kos: { player: 0, enemy: 0 },
   };
-  const tb = [];                             // BAL-5.10: full-team player Tri-Burst damage / target max HP
+  const tb = [];                             // BAL-5.10: landed player Tri-Burst damage (before KO clamp) / target max HP
   let realTicks = 0;
   const maxTicks = 60 * 60 * 30;
   while (!b.getResult() && realTicks < maxTicks) {
@@ -149,7 +149,7 @@ export function runOne(content, cfg, seed) {
         m.cardPlays[e.cardId] = (m.cardPlays[e.cardId] || 0) + 1;
       } else if (e.type === 'tri_burst') {
         m.triBurst[e.side] += 1;
-        if (e.side === 'player' && e.members.length === 3) {
+        if (e.side === 'player') { // BAL-5.10 (GDD round 3 pass 2): every landed player Tri-Burst, pre-clamp damage
           const tgt = b.activeFighter('enemy');
           tb.push(e.damages.reduce((x, y) => x + y, 0) / tgt.def.maxHp);
         }

@@ -47,7 +47,7 @@ async function stages() {
   }
   const res = await runJobs(jobs);
   console.log('Starter team ' + STARTERS.join(',') + ' — ' + N + ' battles per cell');
-  console.log('| Stage | Player | Win | KO-ended median s | Timeouts | Tri-Burst median (% target max HP, full team) | time_under_s mission share of wins | Avg real s |');
+  console.log('| Stage | Player | Win | KO-ended median s | Timeouts | Tri-Burst median (% target max HP, BAL-5.10) | time_under_s mission share of wins | Avg real s |');
   console.log('|---|---|---|---|---|---|---|---|');
   const out = [];
   let k = 0;
