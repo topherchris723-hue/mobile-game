@@ -36,6 +36,9 @@ export const BATTLE_EVENT_TYPES = [
 /** `hit_discarded.reason` values (GDD §5.10 round 3: a hit on a rushing fighter is discarded). */
 export const HIT_DISCARD_REASONS = ['rush_invulnerable'];
 
+/** `whiff.reason` values: approach timeout (§5.1), invulnerable defender (§5.6), opponent's Tri-Burst rush (§5.10). */
+export const WHIFF_REASONS = ['approach_timeout', 'invulnerable', 'rush_invulnerable'];
+
 /** `tri_burst_whiff.reason` values (GDD §5.10). */
 export const TRI_BURST_WHIFF_REASONS = ['invulnerable', 'safety_net'];
 
@@ -993,7 +996,9 @@ export class Battle {
     const hitIndex = a.nextHit;
     const p = { kind: 'card', side: side, f: f, d: d, a: a, hitIndex: hitIndex, damages: [], landed: false, perfect: false };
     if (hitIndex > 0 && a.landed && (d.slot !== a.targetSlot || d.ko)) return p; // target left (KO / tag)
-    // GDD §5.10 round 3: a rushing fighter is untouchable; this overrides "the first hit decides the whole card".
+    if (hitIndex > 0 && !a.landed) return p; // the first hit decided the whole card: a whiff (silent later hits)
+    // GDD §5.10 round 3: a rushing fighter is untouchable. A landed card's later hits are discarded (overrides the
+    // first-hit rule for this case); a first hit on the rush is discarded and makes the whole card a whiff.
     if (this.isRushing(d)) { p.discarded = true; return p; }
     if (hitIndex === 0) {
       if (this.isInvulnerable(d)) {
@@ -1072,15 +1077,18 @@ export class Battle {
     const d = p.d;
     if (p.discarded) {
       // GDD §5.10 round 3: 0 damage, no hitstun/knockback, no Burst, no on-hit effects, no hitstop, not a dodge.
-      // A discarded first hit leaves the card unlanded (its later hits follow the first-hit rule); a discarded Climax
-      // first hit consumes all its hits, as they are applied together (§5.5).
+      // A discarded Climax first hit consumes all its hits, as they are applied together (§5.5).
       const card = p.a.card;
-      if (p.hitIndex === 0) p.a.landed = false;
       p.a.nextHit += card.type === 'climax' && p.hitIndex === 0 ? card.hits : 1;
       this.emit({
         type: 'hit_discarded', side: side, cardId: p.a.cardId, cardType: card.type, targetSlot: d.slot,
         hitIndex: p.hitIndex, reason: 'rush_invulnerable',
       });
+      if (p.hitIndex === 0) {
+        // First hit on the rush: the whole card whiffs (no later hits, no effects, after-whiff Recovery, no refund).
+        p.a.landed = false;
+        this.emit({ type: 'whiff', side: side, cardId: p.a.cardId, reason: 'rush_invulnerable' });
+      }
       return 0;
     }
     if (!p.landed) {

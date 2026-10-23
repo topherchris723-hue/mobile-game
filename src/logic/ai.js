@@ -99,7 +99,8 @@ export class AiController {
    *   2. the AI cannot Slip now (state, Vigor < slip.cost) → "no slip", no roll ('cannot_slip');
    *   3. one roll < slip_chance: fail → 'no_slip'; success → one roll < perfect_slip_chance and plan the Slip
    *      ('planned'), or 'too_late' if a normal roll could only produce a Perfect Slip.
-   * A decided card is never re-examined. Every decision is appended to `dodgeLog` (AC-5.15.7).
+   * A decided card is never re-examined. Every decision is appended to `dodgeLog` (AC-5.15.7). A projectile card whose
+   * thrower was hit after the windup (detached, still flying) is decided the same way (AC-5.15.8).
    * Uses the AI's seeded rng for the 0, 1 or 2 rolls; returns nothing (the Slip itself comes from plannedSlip()).
    */
   reactiveDodge(tier) {
@@ -108,7 +109,11 @@ export class AiController {
     const oppSide = this.side === 'player' ? 'enemy' : 'player';
     const opp = b.activeFighter(oppSide);
     const a = opp.action;
-    if (a && a.kind === 'card' && a.windupStart >= 0 && a !== this.watched) {
+    // A detached projectile card (thrower hit after its windup, §5.5) keeps its decision until it is decided and
+    // any planned Slip is done, even if the thrower already plays a new card (GDD §5.15 round 3).
+    const keepDetached = this.watched !== null && this.watchingDetached(this.watched, oppSide) &&
+      (!this.decided || this.plannedSlipAt >= 0);
+    if (!keepDetached && a && a.kind === 'card' && a.windupStart >= 0 && a !== this.watched) {
       this.watched = a;
       this.decisionTick = a.windupStart + tier.reactionTicks;
       this.decided = false;
@@ -117,7 +122,7 @@ export class AiController {
     }
     if (!this.watched) return;
     const w = this.watched;
-    if (opp.action !== w) { // the card ended, was interrupted or cancelled, or its owner left
+    if (opp.action !== w && !this.watchingDetached(w, oppSide)) { // the card ended, was interrupted or cancelled
       this.watched = null;
       this.plannedSlipAt = -1;
       return;
@@ -167,6 +172,11 @@ export class AiController {
       }
       this.plannedSlipAt = Math.max(at, now);
     }
+  }
+
+  /** Is `w` a projectile card still flying after its thrower was hit (in the opponent team's inFlight list)? */
+  watchingDetached(w, oppSide) {
+    return w.detached === true && this.battle.teams[oppSide].inFlight.indexOf(w) >= 0 && w.nextHit < w.hitTicks.length;
   }
 
   /** The planned Slip input, on its tick, if the AI can still Slip (GDD §5.15). Returns an input or null. */

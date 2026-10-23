@@ -4,7 +4,9 @@
 // no Burst gain, no on-hit effects, no hitstop, not a dodge. Plus the event table: target KO'd during the rush →
 // whiff on T + 18 (`invulnerable`, 50% refund); battle over during the rush → the rush is dropped with no event.
 import { describe, it, expect } from 'vitest';
-import { createBattle, createContent, BATTLE_EVENT_TYPES, HIT_DISCARD_REASONS, TRI_BURST_WHIFF_REASONS } from '../../src/logic/index.js';
+import {
+  createBattle, createContent, BATTLE_EVENT_TYPES, HIT_DISCARD_REASONS, TRI_BURST_WHIFF_REASONS, WHIFF_REASONS,
+} from '../../src/logic/index.js';
 import { loadBundle } from '../helpers/load-data.js';
 import {
   scriptedBattle, giveCard, setVigor, step, stepUntil, ofType,
@@ -84,7 +86,7 @@ describe('§5.10 round 3: rush invulnerability is absolute', () => {
     expect(ofType(all, 'ko', 'player')).toHaveLength(0);
   });
 
-  it('a projectile in flight whose FIRST hit arrives during the rush is discarded too (no whiff, no dodge, no Perfect Slip, no Riposte window)', () => {
+  it('a projectile in flight whose FIRST hit arrives during the rush is discarded and the card whiffs (rush_invulnerable; GDD round-3 ruling) — no dodge, no Perfect Slip, no Riposte window, its 2nd hit silent', () => {
     const b = scriptedBattle();
     b.teams.player.x = 0; b.teams.enemy.x = 100; // 100 units at 160/s → 38 ticks of flight
     giveCard(b, 'enemy', 0, FX_BOLT);
@@ -97,10 +99,11 @@ describe('§5.10 round 3: rush invulnerability is absolute', () => {
     b.teams.player.burst = 100;
     const all = [];
     for (const e of step(b, [{ type: 'tri_burst' }])) all.push(e);
-    stepTo(b, first + 1, all);
+    stepTo(b, first + 7, all);
     const disc = ofType(all, 'hit_discarded', 'enemy');
     expect(disc.map((e) => [e.tick, e.hitIndex, e.reason])).toEqual([[first, 0, 'rush_invulnerable']]);
-    expect(ofType(all, 'whiff', 'enemy')).toHaveLength(0);
+    expect(ofType(all, 'whiff', 'enemy').map((e) => [e.tick, e.reason])).toEqual([[first, 'rush_invulnerable']]);
+    expect(ofType(all, 'hit', 'enemy')).toHaveLength(0);
     expect(ofType(all, 'dodge')).toHaveLength(0);
     expect(ofType(all, 'perfect_slip')).toHaveLength(0);
     expect(b.teams.player.riposteTicks).toBe(0);
@@ -181,10 +184,51 @@ describe('§5.10 round 3: rush invulnerability is absolute', () => {
     for (let i = 0; i < 30; i++) expect(step(b)).toEqual([]);
   });
 
-  it('the new event and its reason are in the exported enum lists (L-shared-009)', () => {
+  it('AC-5.10.9 (W): a 3-hit projectile Bolt whose FIRST hit falls on T + 10 of the rush whiffs as a whole: hit_discarded + whiff (rush_invulnerable) on T + 10, nothing on T + 16 / T + 22, no damage T … T + 22, no link window', () => {
+    const b = scriptedBattle();
+    b.teams.player.x = 30; b.teams.enemy.x = 70; // distance 40 → 15 ticks of flight at 160/s
+    const card = b.card(FLARE);
+    expect([card.hits, card.delivery, card.projectile_speed, Math.round(card.hit_interval_s * 60)]).toEqual([3, 'projectile', 160, 6]);
+    const windupTicks = Math.round(card.windup_s * 60);
+    const T = b.tick + windupTicks + 5 + 1; // the enemy taps on T − 5 − windup, so its windup ends on T − 5
+    stepTo(b, T - 5 - windupTicks);
+    giveCard(b, 'enemy', 0, FLARE);
+    setVigor(b, 'enemy', 10);
+    step(b, [], [{ type: 'card', slot: 0 }]);
+    stepTo(b, T);
+    const bolt = b.activeFighter('enemy').action;
+    expect(bolt.hitTicks).toEqual([T + 10, T + 16, T + 22]);
+    const p = b.activeFighter('player');
+    const hp = p.hp;
+    b.teams.player.burst = 100;
+    const all = [];
+    for (const e of step(b, [{ type: 'tri_burst' }])) all.push(e);
+    expect(ofType(all, 'tri_burst_start', 'player')).toHaveLength(1);
+    const byTick = {};
+    while (b.tick <= T + 22) {
+      if (b.tick === T + 17) b.activeFighter('enemy').invulnUntil = T + 19; // test state: the rush whiffs on T + 18
+      const t = b.tick;
+      const evs = step(b);
+      for (const e of evs) all.push(e);
+      if (b.tick > t) byTick[t] = evs;
+      expect(p.hp).toBe(hp);
+    }
+    expect(ofType(byTick[T + 10], 'hit_discarded', 'enemy').map((e) => [e.hitIndex, e.reason])).toEqual([[0, 'rush_invulnerable']]);
+    expect(ofType(byTick[T + 10], 'whiff', 'enemy').map((e) => [e.cardId, e.reason])).toEqual([[FLARE, 'rush_invulnerable']]);
+    for (const t of [T + 16, T + 22]) {
+      expect(byTick[t].filter((e) => e.side === 'enemy' && ['hit', 'hit_discarded', 'whiff'].indexOf(e.type) >= 0)).toEqual([]);
+    }
+    expect(ofType(all, 'tri_burst_whiff', 'player').map((e) => e.tick)).toEqual([T + 18]);
+    expect(ofType(all, 'hit', 'enemy')).toHaveLength(0);
+    expect(ofType(all, 'link_open', 'enemy')).toHaveLength(0);
+    expect(b.activeFighter('enemy').linkWindow).toBe(false);
+  });
+
+  it('the new event and its reasons are in the exported enum lists (L-shared-009)', () => {
     expect(BATTLE_EVENT_TYPES).toContain('hit_discarded');
     expect(HIT_DISCARD_REASONS).toEqual(['rush_invulnerable']);
     expect(TRI_BURST_WHIFF_REASONS).toEqual(['invulnerable', 'safety_net']);
+    expect(WHIFF_REASONS).toEqual(['approach_timeout', 'invulnerable', 'rush_invulnerable']);
   });
 });
 

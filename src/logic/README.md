@@ -89,7 +89,7 @@ Fighter = { slot, characterId, enemyId, name, aura, boss, hp, maxHp, atk, def, s
 | `windup_start` | side, cardId, cardType, windupEnd | wind-up animation; tutorial `enemy_windup` |
 | `hit` | side (attacker), cardId, cardType, targetSlot, damage, crit, typeMult, chainIndex, comboHits, hitIndex, hits, riposte, hpAfter | damage number, "WEAK!" (typeMult 1.3) / "RESIST" (0.8), combo counter |
 | `hit_discarded` | side (attacker), cardId, cardType, targetSlot, hitIndex, reason (`rush_invulnerable`) | a hit on a fighter in its Tri-Burst rush (GDD §5.10 round 3): no damage, no hitstop, no Burst, not a dodge. Show nothing or a small "immune" spark; never a damage number or "DODGE" |
-| `whiff` | side, cardId, reason | |
+| `whiff` | side, cardId, reason (`approach_timeout`, `invulnerable`, `rush_invulnerable`) | `rush_invulnerable`: the card's first hit fell on the opponent's Tri-Burst rush; the whole card whiffs |
 | `interrupt` | side, cardId | the card was cancelled by a hit |
 | `card_cancelled` | side, cardId, reason | cancelled by an enemy Ignition |
 | `link_open` | side | combo window; tutorial `chain_possible` |
@@ -114,11 +114,14 @@ Fighter = { slot, characterId, enemyId, name, aura, boss, hp, maxHp, atk, def, s
 | `freeze_end` | kind, side | |
 | `battle_end` | outcome, reason | go to Result |
 
-All event types are exported as `BATTLE_EVENT_TYPES`; `HIT_DISCARD_REASONS` and `TRI_BURST_WHIFF_REASONS` list the
-reason values (from `src/logic/index.js`).
+All event types are exported as `BATTLE_EVENT_TYPES`; `WHIFF_REASONS`, `HIT_DISCARD_REASONS` and
+`TRI_BURST_WHIFF_REASONS` list the reason values (from `src/logic/index.js`).
 
 **Round 3 rush rule (GDD §5.10).** The rushing fighter cannot be hit at all from T through T + 18: every hit on it
 (projectiles already in flight, later hits of a card whose first hit landed before T) becomes `hit_discarded`.
+If a card's **first** hit falls on the rush, a `whiff` (reason `rush_invulnerable`) follows the `hit_discarded` on the same
+tick and none of that card's later hits ever resolve (no events). A card whose first hit landed before T keeps landing
+after T + 18.
 A rush therefore always ends with `tri_burst` or `tri_burst_whiff` on T + 18, unless the battle ends first (then
 there is no rush event; go to Result as usual).
 
@@ -230,6 +233,7 @@ is left as is and means "next pull is ★5". `grantCharacter` now also returns `
 | `rules.tutorialPromptMaxS`, `rules.tutorialNoneS` | — | `src/ui/tutorial.js` (ui-developer) |
 | Result fields are snake_case (`character_id`, `resonance_after`, `jade_added`) per GDD §11.3 | — | ui-developer, qa-tester |
 | Round 3: battle event `hit_discarded` (reason `rush_invulnerable`) | `BATTLE_EVENT_TYPES`, `HIT_DISCARD_REASONS` | Battle scene event switch / hit FX / damage numbers / SFX (ui-developer, vfx-developer, audio-designer): must not show a damage number, "DODGE" or play a hit sound for it |
+| Round 3: `whiff.reason` `rush_invulnerable` (new; same tick as a `hit_discarded`) | `WHIFF_REASONS` | Whiff text / "MISS" FX keyed by reason, strings.json (ui-developer, vfx-developer) |
 | Round 3: `tri_burst_whiff.reason` list | `TRI_BURST_WHIFF_REASONS` | Any whiff text keyed by reason (ui-developer); `safety_net` should never happen now |
 | Round 3: AI `dodgeLog` entries, `outcome` list | `DODGE_DECISION_OUTCOMES` | Balance harness / QA sims only (balance-analyst, qa-tester); not for the UI |
 

@@ -32,6 +32,8 @@ function instrument(b, side) {
   rng.next = function () {
     const v = realNext();
     if (inDodge) {
+      // The card being decided: the opponent's current action, or (round 3) a detached projectile the AI still watches.
+      if (!key || key !== ai.watched) key = ai.watched || key;
       let rec = perWindup.get(key);
       if (!rec) { rec = { rolls: 0, slips: 0, perfects: 0, offTick: 0 }; perWindup.set(key, rec); }
       const tier = ai.tier();
