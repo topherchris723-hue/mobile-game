@@ -17,6 +17,7 @@ import { Worker } from 'node:worker_threads';
 const LOGIC_URL = process.env.BALANCE_LOGIC ? pathToFileURL(path.resolve(process.env.BALANCE_LOGIC)).href
   : new URL('../../../src/logic/index.js', import.meta.url).href;
 const { createBattle, createContent } = await import(LOGIC_URL);
+const { missionMet } = await import(new URL('./missions.js', LOGIC_URL).href);
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const FILES = ['battle', 'characters', 'cards', 'enemies', 'stages', 'economy'];
@@ -162,7 +163,10 @@ export function runOne(content, cfg, seed) {
     }
   }
   const r = b.getResult();
+  const stage = cfg.stageId ? content.stages[cfg.stageId] : null;
+  const missions = stage ? (stage.missions || []).filter((mi) => missionMet(mi, r)).map((mi) => mi.id) : [];
   return {
+    missions,
     outcome: r ? r.outcome : 'stuck', reason: r ? r.reason : 'stuck',
     timerS: r ? r.timeElapsedS : NaN, realS: realTicks / 60,
     playerHp: r ? r.playerHpRatio : NaN, enemyHp: r ? r.enemyHpRatio : NaN, m, tb,
@@ -190,6 +194,8 @@ export function summarize(rows) {
   const med = (a) => { const x = a.slice().sort((p, q) => p - q); return x.length ? x[Math.floor(x.length / 2)] : NaN; };
   s.koMedianS = med(rows.filter((r) => r.reason === 'ko').map((r) => r.timerS));
   s.winTimers = rows.filter((r) => r.outcome === 'win').map((r) => r.timerS);
+  s.missionCounts = {};
+  for (const r of rows) for (const id of r.missions || []) s.missionCounts[id] = (s.missionCounts[id] || 0) + 1;
   const tbs = rows.flatMap((r) => r.tb || []);
   s.tbMedian = med(tbs); s.tbN = tbs.length;
   timers.sort((a, b) => a - b);

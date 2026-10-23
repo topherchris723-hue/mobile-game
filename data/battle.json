@@ -84,7 +84,7 @@
     "max": 100,
     "gain_dealt_factor": 40,
     "gain_taken_factor": 25,
-    "power_per_member": 3.0,
+    "power_per_member": 3.3,
     "rush_time_s": 0.3,
     "whiff_refund_pct": 0.5,
     "cinematic_s": 4.0,

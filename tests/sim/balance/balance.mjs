@@ -157,6 +157,23 @@ async function selftest() {
   process.exitCode = ok ? 0 : 1;
 }
 
+async function missions() {
+  // §9.3: for each stage mission, share of wins (per player proxy) in which it is met.
+  const tiers = arg('--tiers', 'proxy_average,proxy_skilled').split(',');
+  const jobs = [];
+  for (const st of STAGES) for (const t of tiers) jobs.push({ cfg: { stageId: st, team: STARTERS, playerTier: t }, seed0: 1000000 * TIER_SEED[t] + 10000 * Number(st.slice(-3)) + Number(arg('--seed-offset', '0')), count: N, patches });
+  const res = await runJobs(jobs);
+  console.log('| Stage | Mission | ' + tiers.map((t) => t + ' share of wins').join(' | ') + ' |');
+  console.log('|---|---|' + tiers.map(() => '---|').join(''));
+  const d = applyPatchesSafe();
+  STAGES.forEach((st, si) => {
+    for (const mi of d.stages.stages.find((x) => x.id === st).missions || []) {
+      console.log('| ' + st + ' | ' + mi.id + ' ' + mi.type + (mi.value !== undefined ? ' ' + mi.value : '') + ' | ' +
+        tiers.map((t, ti) => { const s = res[si * tiers.length + ti]; return pct(s.win ? (s.missionCounts[mi.id] || 0) / s.win : 0); }).join(' | ') + ' |');
+    }
+  });
+}
+
 async function sweep() {
   // --sweep file.json: { "<name>": [patches...], ... }. Mirror win rate per character for each named patch set
   // (added on top of --patch), at each tier in --tiers. --rarity limits the characters (e.g. 3).
@@ -216,5 +233,5 @@ async function stagesweep() {
 function meanHp(s) { return s.playerHpSum / s.n; }
 
 const t0 = Date.now();
-await ({ stages, mirror, cards, selftest, sweep, stagesweep }[cmd] || (() => { console.log('unknown command ' + cmd); }))();
+await ({ stages, mirror, cards, selftest, sweep, stagesweep, missions }[cmd] || (() => { console.log('unknown command ' + cmd); }))();
 console.error('(' + ((Date.now() - t0) / 1000).toFixed(1) + ' s)');

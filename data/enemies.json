@@ -43,9 +43,9 @@
       "name_override": "Umbral Rook",
       "ai_tier": "fighter",
       "stat_mult": {
-        "hp": 0.9,
-        "atk": 0.9,
-        "def": 0.9
+        "hp": 0.92,
+        "atk": 0.92,
+        "def": 0.92
       },
       "ignition_enabled": false,
       "boss": false
@@ -56,9 +56,9 @@
       "name_override": "Umbral Pell",
       "ai_tier": "fighter",
       "stat_mult": {
-        "hp": 0.9,
-        "atk": 0.9,
-        "def": 0.9
+        "hp": 0.92,
+        "atk": 0.92,
+        "def": 0.92
       },
       "ignition_enabled": false,
       "boss": false
@@ -68,9 +68,9 @@
       "character_id": "char_thessa_001",
       "ai_tier": "fighter",
       "stat_mult": {
-        "hp": 0.9,
-        "atk": 0.9,
-        "def": 0.9
+        "hp": 0.92,
+        "atk": 0.92,
+        "def": 0.92
       },
       "ignition_enabled": false,
       "boss": false
@@ -116,9 +116,9 @@
       "character_id": "char_thessa_001",
       "ai_tier": "veteran",
       "stat_mult": {
-        "hp": 0.75,
-        "atk": 0.75,
-        "def": 0.75
+        "hp": 0.72,
+        "atk": 0.72,
+        "def": 0.72
       },
       "ignition_enabled": true,
       "boss": false
@@ -129,9 +129,9 @@
       "name_override": "Umbral Solenne",
       "ai_tier": "veteran",
       "stat_mult": {
-        "hp": 0.75,
-        "atk": 0.75,
-        "def": 0.75
+        "hp": 0.72,
+        "atk": 0.72,
+        "def": 0.72
       },
       "ignition_enabled": true,
       "boss": false
