@@ -3,25 +3,40 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** 2/Growth — summon screen build + balance (in progress)
+- **Phase:** Growth — milestone features complete (battle + summon); balance done. Next: polish (VFX, art, audio, economy review)
 - **Round:** 3
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** none
 - **Unity port started:** no
 
+## Producer standing rules (from owner feedback, round 3 — read every round)
+- Decide routine and open questions yourself; log them under "Decisions made without the
+  owner". Ask the owner only about CLAUDE.md §8 items or a BLOCKER the rules forbid deciding.
+- Chain rounds automatically: when a round ends, schedule the next `/round`; after a usage-limit
+  stop, resume from the last WIP commit and this file. Automation never removes a gate (§7
+  irreversible-action ban, release-reviewer PASS, tests, safety/licensing/privacy/IP/security).
+- Build a GDD section only after the game-designer has committed it READY; never run designer
+  and programmer in parallel on the same section; later changes are numbered rulings forwarded
+  to every affected agent.
+- Parallel agents: no `git stash`/`reset`/`checkout`/`restore`/`clean` on files they don't own;
+  stage each agent's owned paths separately so commit labels match contents.
+- Keep the core feel the owner approved after the round-3 playtest (controls, per-second battle
+  pace, hit feedback, HUD layout); any change to it is named in the round plan with a reason.
+- Release builds contain no test hooks (only with `VITE_TEST_HOOKS=1`); QA and release-reviewer
+  grep `dist/` for hook names.
+- Before a section is built, gameplay-programmer runs a "READY review" (works W-class ACs on
+  FX-GDD, checks reachability and preconditions) and returns defects to the game-designer.
+- After each round, republish the private playtest build:
+  https://claude.ai/artifact/Mhc2SgVEgtoxFb5nHeqjXh
+
 ## Open issues
 - Owner to pick a working title (GDD §1): Jade Tempest, Meridian Burst, Heavenbreak,
   Thunderclap Trio, Ironroar. Trademark check by compliance-checker before release.
-- BUG-2-11 (MINOR, ui-developer): name labels collide at melee range / clipped at right wall.
-- AC-5.8.5 chain_index ambiguity and AC-5.6.1/5.6.2 example off-by-one (game-designer).
-- Tutorial 20 s prompt cap was chosen by ui-developer; GDD §9.4 must rule on it.
-- TRI-BURST locked vs ready look too similar (ui-developer / art-director).
-- smoke.spec.js overwrites committed screenshots on every run (ui-developer: gate behind env flag).
-- Security before Launch: `window.__TEST__` hook (src/main.js, `?test`) must be stripped from
-  release builds (release-engineer; release-reviewer to check).
-- Balance risks flagged for later (stage_005 hard for starters, Riposte/Tri-Burst numbers)
-  — balance-analyst. Sim: battles ~56 s vs GDD 120–200 s; starters win stage_004 ~3%,
-  stage_005 0%.
+- BUG-3-03 (MINOR, ui-developer): "RIPOSTE!" callout drawn over the combo hit counter.
+- GDD §15.1 owner column should note balance-analyst tunes numeric fields of characters/cards/
+  enemies from Growth (game-designer).
+- Home screen does not show save-repair warnings yet (console only).
+- Trademark check for "Jade Tempest" pending (compliance-checker, Launch).
 
 ## Owner feedback
 Write anything you liked or disliked here, in your own words. Every line becomes a
@@ -58,6 +73,29 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 3 — Summon screen + balance (result)
+- **Result:** milestone features complete. Summon screen (rates, pity, first-×10 guarantee,
+  atomic save before reveal, reveal + results), title Jade Tempest, BUG-2-11 fixed, TRI-BURST
+  states, test hooks gated out of release builds. GDD: §11 fully specified, FX-GDD fixture + AC
+  classes, rush invulnerability, AI one-decision rule, validator rules 10–12. Balance (Growth
+  start): HP ×2, retune — battles 2.3–2.6 min on stages 3–5, stage_005 average/skilled proxies
+  18%/69%, mirrors 43–59%, Tri-Burst 26–37% of enemy HP, all missions reachable.
+- **Bugs:** BUG-3-01 (AI re-rolled slip every tick; found by balance-analyst) and BUG-3-02 (planned
+  slips lost; found by QA) fixed; 381 unit tests, 45 e2e.
+- **QA:** 2 loops. Loop 1 FAIL (1 major), loop 2 PASS (0/0/1 minor BUG-3-03).
+- **Verdict:** none yet (Launch phase not started).
+- **Owner:** delegated decisions, asked for maximum automation, playtested on phone: "its good".
+- **Interruptions:** usage limit hit 3 times; resumed each time from WIP commits.
+- **Retro (step C):** 16 new lessons + 5 restored (round-2 retro had truncated two lesson files);
+  promotions across 9 agents; playbook rewrites for ui-developer, gameplay-programmer/qa-tester,
+  game-designer; METRICS filled for rounds 1–3. No rule loosened (diff checked). Coach's CLAUDE.md
+  proposals recorded as "Producer standing rules" above.
+- **Next:** Round 4 — Growth polish: art-director (style guide + placeholder-art briefs),
+  vfx-developer (super attacks, hit sparks, summon reveal), audio-designer (licensed SFX/music,
+  volume/mute), economy-designer (review Jade economy, fairness), ui-developer BUG-3-03 + save
+  warning notice, game-designer §15.1 owner note; QA loop; retro. Then Launch rounds:
+  compliance-checker, release-reviewer, release-engineer (APK/AAB).
 
 ### Round 3 — Summon screen + balance (plan)
 - **Goal:** complete the milestone's features (summon screen) and start Growth (balance),
