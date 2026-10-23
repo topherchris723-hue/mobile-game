@@ -12,14 +12,15 @@ import { BattleHud } from '../ui/battle-hud.js';
 import { sfx, haptic } from '../ui/feedback.js';
 import { cardColor } from '../ui/icons.js';
 import { FloatPlacer } from '../ui/float-placer.js';
+import { testHooks, testSeedParam } from '../ui/test-hooks.js';
 
 const TICK_MS = 1000 / 60;
 const MENU_ARM_MS = 250; // new menus (and the battle after a menu closes) ignore input this long
 const MAX_STEPS_PER_FRAME = 8; // keeps real-time speed down to ~8 fps; below that the battle slows instead of jumping
 
 function randomSeed() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.has('seed')) return Number(params.get('seed')) >>> 0;
+  const fixed = testSeedParam('seed'); // test builds only
+  if (fixed !== null) return fixed;
   const a = new Uint32Array(1);
   (window.crypto || window.msCrypto).getRandomValues(a);
   return a[0];
@@ -245,7 +246,8 @@ export class BattleScene extends BaseScene {
   queue(input) {
     if (this.ending) return;
     this.pendingInputs.push(input);
-    if (window.__TEST__) (window.__TEST__.inputLog = window.__TEST__.inputLog || []).push(input);
+    const T = testHooks();
+    if (T) (T.inputLog = T.inputLog || []).push(input);
   }
 
   longPress(x, y) {
@@ -397,7 +399,8 @@ export class BattleScene extends BaseScene {
     this.hud.update(st, delta || 0, now);
     this.updateCombo(st);
     this.updateTutorialUi(now);
-    if (window.__TEST__) window.__TEST__.lastFrame = now;
+    const T = testHooks();
+    if (T) T.lastFrame = now;
   }
 
   updateCombo(st) {
@@ -424,8 +427,9 @@ export class BattleScene extends BaseScene {
   // ------------------------------------------------------------------ events → feedback
   handleEvents(events, now) {
     const st = events.length ? this.battle.getState() : null;
-    if (window.__TEST__ && events.length) {
-      const log = (window.__TEST__.eventLog = window.__TEST__.eventLog || []);
+    const T = testHooks();
+    if (T && events.length) {
+      const log = (T.eventLog = T.eventLog || []);
       for (const e of events) log.push(e);
       if (log.length > 400) log.splice(0, log.length - 400);
     }

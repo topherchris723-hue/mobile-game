@@ -181,6 +181,26 @@ async function sweep() {
   }
 }
 
+async function stagesweep() {
+  // --sweep file.json { name: [patches] } on top of --patch; --stages a,b; --tiers t1,t2. Starter team.
+  const sets = JSON.parse(fs.readFileSync(arg('--sweep'), 'utf8'));
+  const tiers = arg('--tiers', 'fighter,veteran').split(',');
+  const sts = arg('--stages', STAGES.join(',')).split(',');
+  const jobs = []; const meta = [];
+  for (const [name, extra] of Object.entries(sets)) for (const st of sts) for (const t of tiers) {
+    meta.push({ name, st, t });
+    jobs.push({ cfg: { stageId: st, team: STARTERS, playerTier: t }, seed0: 1000000 * TIER_SEED[t] + 10000 * Number(st.slice(-3)) + Number(arg('--seed-offset', '0')), count: N, patches: patches.concat(extra) });
+  }
+  const res = await runJobs(jobs);
+  console.log('| Set | Stage | ' + tiers.map((t) => t + ' win | ' + t + ' avg s | ' + t + ' playerHP left').join(' | ') + ' |');
+  console.log('|---|---|' + tiers.map(() => '---|---|---|').join('') );
+  for (let i = 0; i < meta.length; i += tiers.length) {
+    const cells = tiers.map((t, j) => { const s = res[i + j]; return pct(s.winRate) + ' | ' + s.timerS.toFixed(1) + ' | ' + pct(s.m && s.n ? meanHp(s) : 0); });
+    console.log('| ' + meta[i].name + ' | ' + meta[i].st + ' | ' + cells.join(' | ') + ' |');
+  }
+}
+function meanHp(s) { return s.playerHpSum / s.n; }
+
 const t0 = Date.now();
-await ({ stages, mirror, cards, selftest, sweep }[cmd] || (() => { console.log('unknown command ' + cmd); }))();
+await ({ stages, mirror, cards, selftest, sweep, stagesweep }[cmd] || (() => { console.log('unknown command ' + cmd); }))();
 console.error('(' + ((Date.now() - t0) / 1000).toFixed(1) + ' s)');

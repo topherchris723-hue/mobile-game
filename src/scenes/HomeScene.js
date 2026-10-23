@@ -46,10 +46,8 @@ export class HomeScene extends BaseScene {
       y: y0 + 72,
       w: bw,
       h: 56,
-      label: t('home_summon_soon'),
-      kind: 'disabled',
-      enabled: false,
-      onDisabledTap: () => this.toast(t('home_summon_soon'), y0 - 30),
+      label: t('home_summon'),
+      onTap: () => this.goTo('Summon'),
     });
     this.button({
       id: 'home_team',

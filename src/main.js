@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { computeViewport } from './ui/layout.js';
 import { data } from './ui/game-data.js';
+import { installTestHooks } from './ui/test-hooks.js';
 import { TitleScene } from './scenes/TitleScene.js';
 import { HomeScene } from './scenes/HomeScene.js';
 import { StoryListScene } from './scenes/StoryListScene.js';
@@ -9,12 +10,13 @@ import { DialogueScene } from './scenes/DialogueScene.js';
 import { TeamScene } from './scenes/TeamScene.js';
 import { BattleScene } from './scenes/BattleScene.js';
 import { ResultScene } from './scenes/ResultScene.js';
+import { SummonScene } from './scenes/SummonScene.js';
+import { SummonRevealScene } from './scenes/SummonRevealScene.js';
 
 const params = new URLSearchParams(window.location.search);
-if (params.has('test')) {
-  // Read-only hooks for Playwright (scene key, touch targets, battle snapshot, sound-hook log).
-  window.__TEST__ = { sceneKey: null, sfxLog: [], errors: [] };
-}
+// Read-only hooks for Playwright (scene key, touch targets, battle snapshot, sound-hook log).
+// Dev / test builds only (src/ui/test-hooks.js): a release bundle has no hook code at all.
+const T = params.has('test') ? installTestHooks() : null;
 
 data.init();
 
@@ -45,7 +47,7 @@ const game = new Phaser.Game({
   callbacks: {
     preBoot: (g) => g.registry.set('viewport', vp),
   },
-  scene: [TitleScene, HomeScene, StoryListScene, DialogueScene, TeamScene, BattleScene, ResultScene],
+  scene: [TitleScene, HomeScene, StoryListScene, DialogueScene, TeamScene, BattleScene, ResultScene, SummonScene, SummonRevealScene],
 });
 
 let resizeTimer = null;
@@ -66,8 +68,7 @@ function onResize() {
 window.addEventListener('resize', onResize);
 window.addEventListener('orientationchange', onResize);
 
-if (window.__TEST__) {
-  const T = window.__TEST__;
+if (T) {
   T.game = game;
   T.viewport = () => game.registry.get('viewport');
   T.activeScene = () => {

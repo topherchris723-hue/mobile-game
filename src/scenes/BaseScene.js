@@ -5,6 +5,7 @@ import { COLORS, FONT, hex } from '../ui/theme.js';
 import { t } from '../ui/strings.js';
 import { data } from '../ui/game-data.js';
 import { sfx } from '../ui/feedback.js';
+import { testHooks } from '../ui/test-hooks.js';
 
 export class BaseScene extends Phaser.Scene {
   init(initData) {
@@ -29,7 +30,8 @@ export class BaseScene extends Phaser.Scene {
     };
     this.game.events.on('viewport-changed', onViewport);
     this.events.once('shutdown', () => this.game.events.off('viewport-changed', onViewport));
-    window.__TEST__ && (window.__TEST__.sceneKey = this.scene.key);
+    const T = testHooks();
+    if (T) T.sceneKey = this.scene.key;
   }
 
   /** Data used to rebuild this scene after a resize. */

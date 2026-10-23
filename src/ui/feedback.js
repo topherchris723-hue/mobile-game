@@ -1,5 +1,6 @@
 // Tap feedback hooks. Audio is a later round (audio-designer): sfx() is the hook it will fill.
 import { data } from './game-data.js';
+import { testHooks } from './test-hooks.js';
 
 const listeners = [];
 
@@ -7,7 +8,8 @@ const listeners = [];
 export function sfx(name) {
   const entry = { name: name, t: performance.now() };
   listeners.forEach((fn) => fn(entry));
-  if (typeof window !== 'undefined' && window.__TEST__) window.__TEST__.sfxLog.push(entry);
+  const T = testHooks();
+  if (T) T.sfxLog.push(entry);
 }
 
 export function onSfx(fn) {

@@ -10,12 +10,13 @@ import enemies from '../../data/enemies.json';
 import stages from '../../data/stages.json';
 import economy from '../../data/economy.json';
 import story from '../../data/story.json';
+import banners from '../../data/banners.json';
 import saveSchema from '../../data/schemas/save.schema.json';
 
 import { createContent, playerFighterDef, formulas } from '../logic/index.js';
 import { loadSave, writeSave, applyBattleResult, checkTeamFamilies, isStageUnlocked } from '../state/save.js';
 
-const content = createContent({ battle, characters, cards, enemies, stages, economy });
+const content = createContent({ battle, characters, cards, enemies, stages, economy, banners });
 
 const scenesById = {};
 for (const s of story.scenes) scenesById[s.id] = s;
@@ -44,7 +45,7 @@ function pickStorage() {
 }
 
 export const data = {
-  raw: { battle, characters, cards, enemies, stages, economy, story },
+  raw: { battle, characters, cards, enemies, stages, economy, story, banners },
   content,
   scenesById,
   currenciesById,
@@ -162,6 +163,11 @@ export const data = {
     const out = applyBattleResult(this.save, stage, result, economy, content.characters, new Date().toISOString());
     this.persist();
     return out;
+  },
+
+  /** Replace the in-memory save with one that is already written (summonAndSave → r.saveAfter). */
+  adoptSave(saved) {
+    this.save = saved;
   },
 
   hapticsOn() {

@@ -134,6 +134,7 @@ export function summarize(rows) {
     s[r.outcome] += 1;
     if (r.reason === 'timeout') s.timeout += 1;
     s.timerS += r.timerS; s.realS += r.realS; timers.push(r.timerS);
+    s.playerHpSum = (s.playerHpSum || 0) + r.playerHp;
     addInto(s.m, r.m);
   }
   timers.sort((a, b) => a - b);
