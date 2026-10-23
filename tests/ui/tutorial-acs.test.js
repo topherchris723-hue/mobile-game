@@ -128,38 +128,70 @@ describe('AC-9.4.3: the prompt cap (rules.tutorialPromptMaxS of shown time)', ()
   });
 });
 
-describe('AC-9.4.5: ignition_ready only for the active fighter', () => {
-  it('Tavi benched when its Ignition unlocks: no prompt while benched; prompt on the first active, unfrozen frame', () => {
-    const h = harness(content, ['ignition_ready'], 3);
-    const tavi = h.b.getState().teams.player.fighters.findIndex((f) => f.characterId === 'char_tavi_001');
-    expect(tavi).toBe(h.b.getState().teams.player.activeSlot);
-    let taggedOut = false;
-    let promptWhileBenched = 0;
-    let unlockedWhileBenched = false;
+describe('AC-9.4.5 (P, formula form on live data): ignition_ready only for the active fighter', () => {
+  // S = a starter whose Ignition has a battle_time_s trigger (value v); it unlocks on fight tick round(v × 60) − 1.
+  const starters = bundle.economy.starting.team;
+  const timeTrig = (id) => {
+    const ch = bundle.characters.characters.find((c) => c.id === id);
+    const tr = ch && ch.ignition && (ch.ignition.triggers || []).find((x) => x.type === 'battle_time_s');
+    return tr ? tr.value : null;
+  };
+  const S = starters.find((id) => timeTrig(id) !== null);
+  it('a starter has a battle_time_s Ignition trigger (GDD §15.3 rule 11; otherwise switch to the HP branch)', () => {
+    expect(S, 'starter with battle_time_s').toBeTruthy();
+  });
+  it('S benched at its unlock tick: no prompt while benched; prompt on the first frame S is active and unfrozen', () => {
+    const v = timeTrig(S);
+    const unlockTick = Math.round(v * 60) - 1;
+    const team = [S, ...starters.filter((x) => x !== S)];
+    const b = createBattle({ content, stageId: stage.id, playerTeam: team }, 3);
+    for (const side of ['player', 'enemy']) for (const f of b.teams[side].fighters) f.hp = f.def.maxHp = 10 ** 7; // no hp_below_pct trigger
+    const tut = new TutorialController(stage.tutorial_steps, b, content.rules);
+    let ms = 0;
+    let acc = 0;
+    let fightStart = null;
+    let taggedOut = null;
+    let unlockedAt = null;
     let taggedBack = false;
+    let promptWhileBenched = 0;
     let firstActiveFrame = null;
     let promptFrame = null;
-    for (let i = 0; i < 60 * 150 && promptFrame === null && !h.b.getResult(); i++) {
-      const st = h.b.getState();
+    for (let i = 0; i < 60 * (v + 90) && promptFrame === null && !b.getResult(); i++) {
+      const st = b.getState();
       const inp = [];
-      const benched = st.teams.player.activeSlot !== tavi;
-      if (!taggedOut && st.phase === 'fight' && st.teams.player.tagReady) {
-        inp.push({ type: 'tag', slot: (tavi + 1) % 3 });
-        taggedOut = true;
-      } else if (taggedOut && benched && st.teams.player.fighters[tavi].ignition.available && st.teams.player.tagReady) {
-        unlockedWhileBenched = true;
-        inp.push({ type: 'tag', slot: tavi });
+      const sSlot = 0;
+      const benched = st.teams.player.activeSlot !== sSlot;
+      if (taggedOut === null && st.phase === 'fight' && st.teams.player.tagReady) {
+        inp.push({ type: 'tag', slot: 1 });
+        taggedOut = st.tick - (fightStart || 0);
+      } else if (taggedOut !== null && benched && unlockedAt !== null && st.teams.player.tagReady && !taggedBack) {
+        inp.push({ type: 'tag', slot: sSlot });
         taggedBack = true;
       }
-      h.frame(inp);
-      const s2 = h.b.getState();
-      const active = s2.teams.player.activeSlot === tavi;
-      if (!active && trig(h.tut) === 'ignition_ready') promptWhileBenched++;
+      ms += FRAME;
+      acc += FRAME * tut.speed();
+      let first = true;
+      while (acc >= TICK) {
+        acc -= TICK;
+        const evs = b.step(first ? inp : []);
+        first = false;
+        for (const e of evs) {
+          if (e.type === 'fight_start') fightStart = e.tick;
+          if (e.type === 'ignition_ready' && e.side === 'player' && e.slot === sSlot && unlockedAt === null) unlockedAt = e.tick - fightStart;
+        }
+        tut.handleEvents(evs, ms);
+      }
+      const s2 = b.getState();
+      tut.handleState(s2, ms);
+      if (tut.active && tut.active.step.trigger !== 'ignition_ready') tut.complete();
+      const active = s2.teams.player.activeSlot === sSlot;
+      if (!active && trig(tut) === 'ignition_ready') promptWhileBenched++;
       if (taggedBack && active && !s2.freeze && s2.teams.player.igniteReady && firstActiveFrame === null) firstActiveFrame = i;
-      if (trig(h.tut) === 'ignition_ready' && promptFrame === null) promptFrame = i;
+      if (trig(tut) === 'ignition_ready' && promptFrame === null) promptFrame = i;
     }
-    expect(taggedOut).toBe(true);
-    expect(unlockedWhileBenched, 'Ignition unlocked while Tavi was benched').toBe(true);
+    expect(taggedOut, 'S tagged out before its unlock tick').toBeLessThan(unlockTick);
+    expect(unlockedAt, 'unlock tick = round(v × 60) − 1 (±1 tick)').not.toBeNull();
+    expect(Math.abs(unlockedAt - unlockTick)).toBeLessThanOrEqual(1);
     expect(promptWhileBenched).toBe(0);
     expect(promptFrame).not.toBeNull();
     expect(promptFrame).toBe(firstActiveFrame);

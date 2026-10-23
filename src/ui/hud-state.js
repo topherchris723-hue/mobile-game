@@ -17,3 +17,14 @@ export function burstVisual(team) {
 
 /** strings.json key of the TRI-BURST label for each visual state. */
 export const BURST_LABEL_KEYS = { charging: 'battle_tri_burst_button', ready: 'battle_tri_burst_button', locked: 'battle_tri_burst_locked', used: 'battle_tri_burst_used' };
+
+/** hit_discarded.reason → small feedback text (GDD §5.10 round 3: never a damage number or "DODGE"). */
+export const HIT_DISCARD_TEXT_KEYS = { rush_invulnerable: 'battle_hit_immune' };
+
+/** tri_burst_whiff.reason → callout text. */
+export const TRI_BURST_WHIFF_TEXT_KEYS = { invulnerable: 'battle_tri_burst_whiff_invulnerable', safety_net: 'battle_tri_burst_whiff' };
+
+/** Key for a reason from one of the maps above; unknown reasons fall back to `fallback` (never a raw [key]). */
+export function reasonTextKey(map, reason, fallback) {
+  return Object.prototype.hasOwnProperty.call(map, reason) ? map[reason] : fallback;
+}

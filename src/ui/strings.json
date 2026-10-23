@@ -140,6 +140,8 @@
     "summon_event_summon_pull": "Pull {pull}",
     "summon_event_summon_pity_reset": "Pity reset",
     "summon_event_summon_currency_capped": "Jade is at the maximum: {lost} Jade could not be added.",
-    "summon_rates_percent": "{percent}%"
+    "summon_rates_percent": "{percent}%",
+    "battle_hit_immune": "IMMUNE",
+    "battle_tri_burst_whiff_invulnerable": "TRI-BURST BLOCKED!"
   }
 }

@@ -11,7 +11,7 @@
 // Seeds are fixed (stage s, tier t → seeds from a fixed base), so every run is reproducible.
 
 import fs from 'node:fs';
-import { loadData, runJobs, pct, ci95 } from './lib.mjs';
+import { loadData, runJobs, pct, ci95, applyPatches } from './lib.mjs';
 
 const argv = process.argv.slice(2);
 const cmd = argv[0] || 'stages';
@@ -22,26 +22,39 @@ const jsonOut = arg('--json');
 const data = loadData();
 const STARTERS = data.economy.starting.team;
 const STAGES = data.stages.stages.map((s) => s.id);
-const TIER_SEED = { rookie: 1, fighter: 2, veteran: 3, master: 4 };
+const TIER_SEED = { rookie: 1, fighter: 2, veteran: 3, master: 4, proxy_average: 5, proxy_skilled: 6 };
+const STAGE_BY_ID = Object.fromEntries(data.stages.stages.map((x) => [x.id, x]));
+/** §9.3: share of wins that meet the stage's time_under_s mission (null if the stage has none). */
+function timeMission(st, s, d = data) {
+  const stage = (d.stages.stages.find((x) => x.id === st)) || STAGE_BY_ID[st];
+  const mis = (stage.missions || []).find((x) => x.type === 'time_under_s');
+  if (!mis) return null;
+  return { value: mis.value, share: s.winTimers.length ? s.winTimers.filter((t) => t < mis.value).length / s.winTimers.length : 0 };
+}
+function balRow(st, s) {
+  const tm = timeMission(st, s, applyPatchesSafe());
+  return pct(s.winRate) + ' | ' + (isNaN(s.koMedianS) ? '-' : s.koMedianS.toFixed(0)) + ' | ' + pct(s.timeout / s.n) + ' | ' +
+    (s.tbN ? pct(s.tbMedian) + ' (n ' + s.tbN + ')' : '-') + ' | ' + (tm ? '<' + tm.value + ': ' + pct(tm.share) : '-');
+}
+let patchedData = null;
+function applyPatchesSafe() { if (!patchedData) patchedData = applyPatches(data, patches); return patchedData; }
 
 async function stages() {
-  const tiers = arg('--tiers', 'rookie,fighter,veteran,master').split(',');
+  const tiers = arg('--tiers', 'proxy_average,proxy_skilled').split(',');
   const jobs = [];
   for (const st of STAGES) for (const t of tiers) {
     jobs.push({ cfg: { stageId: st, team: STARTERS, playerTier: t }, seed0: 1000000 * TIER_SEED[t] + 10000 * Number(st.slice(-3)) + Number(arg('--seed-offset', '0')), count: N, patches });
   }
   const res = await runJobs(jobs);
   console.log('Starter team ' + STARTERS.join(',') + ' — ' + N + ' battles per cell');
-  console.log('| Stage | Player tier | Win | Lose | Draw | Timeouts | Avg timer s | p10/p50/p90 timer | Avg real s (incl. freezes) |');
-  console.log('|---|---|---|---|---|---|---|---|---|');
+  console.log('| Stage | Player | Win | KO-ended median s | Timeouts | Tri-Burst median (% target max HP, full team) | time_under_s mission share of wins | Avg real s |');
+  console.log('|---|---|---|---|---|---|---|---|');
   const out = [];
   let k = 0;
   for (const st of STAGES) for (const t of tiers) {
     const s = res[k++];
-    out.push({ stage: st, tier: t, winRate: s.winRate, lose: s.lose / s.n, draw: s.draw / s.n, timeout: s.timeout / s.n, timerS: s.timerS, realS: s.realS, p10: s.p10, p50: s.p50, p90: s.p90, stuck: s.stuck,
-      triBurstPlayer: (s.m.triBurst?.player || 0) / s.n, dmgTypePlayer: s.m.dmgType?.player, dmgTypeEnemy: s.m.dmgType?.enemy });
-    console.log('| ' + st + ' | ' + t + ' | ' + pct(s.winRate) + ' ±' + (ci95(s.winRate, s.n) * 100).toFixed(1) + ' | ' + pct(s.lose / s.n) + ' | ' + pct(s.draw / s.n) + ' | ' + pct(s.timeout / s.n) +
-      ' | ' + s.timerS.toFixed(1) + ' | ' + s.p10.toFixed(0) + '/' + s.p50.toFixed(0) + '/' + s.p90.toFixed(0) + ' | ' + s.realS.toFixed(1) + ' |' + (s.stuck ? ' STUCK=' + s.stuck : ''));
+    out.push({ stage: st, tier: t, winRate: s.winRate, koMedianS: s.koMedianS, timeout: s.timeout / s.n, tbMedian: s.tbMedian, tbN: s.tbN, mission: timeMission(st, s, applyPatchesSafe()), realS: s.realS, stuck: s.stuck });
+    console.log('| ' + st + ' | ' + t + ' | ' + balRow(st, s) + ' | ' + s.realS.toFixed(0) + ' |' + (s.stuck ? ' STUCK=' + s.stuck : ''));
   }
   if (jsonOut) fs.writeFileSync(jsonOut, JSON.stringify(out, null, 1));
   return out;
@@ -184,20 +197,21 @@ async function sweep() {
 async function stagesweep() {
   // --sweep file.json { name: [patches] } on top of --patch; --stages a,b; --tiers t1,t2. Starter team.
   const sets = JSON.parse(fs.readFileSync(arg('--sweep'), 'utf8'));
-  const tiers = arg('--tiers', 'fighter,veteran').split(',');
+  const tiers = arg('--tiers', 'proxy_average,proxy_skilled').split(',');
   const sts = arg('--stages', STAGES.join(',')).split(',');
   const jobs = []; const meta = [];
   for (const [name, extra] of Object.entries(sets)) for (const st of sts) for (const t of tiers) {
-    meta.push({ name, st, t });
+    meta.push({ name, st, t, extra });
     jobs.push({ cfg: { stageId: st, team: STARTERS, playerTier: t }, seed0: 1000000 * TIER_SEED[t] + 10000 * Number(st.slice(-3)) + Number(arg('--seed-offset', '0')), count: N, patches: patches.concat(extra) });
   }
   const res = await runJobs(jobs);
-  console.log('| Set | Stage | ' + tiers.map((t) => t + ' win | ' + t + ' avg s | ' + t + ' playerHP left').join(' | ') + ' |');
-  console.log('|---|---|' + tiers.map(() => '---|---|---|').join('') );
-  for (let i = 0; i < meta.length; i += tiers.length) {
-    const cells = tiers.map((t, j) => { const s = res[i + j]; return pct(s.winRate) + ' | ' + s.timerS.toFixed(1) + ' | ' + pct(s.m && s.n ? meanHp(s) : 0); });
-    console.log('| ' + meta[i].name + ' | ' + meta[i].st + ' | ' + cells.join(' | ') + ' |');
-  }
+  console.log('| Set | Stage | Player | Win | KO median s | Timeouts | Tri-Burst median | time mission |');
+  console.log('|---|---|---|---|---|---|---|---|');
+  meta.forEach((mt, i) => {
+    const s = res[i];
+    const tm = timeMission(mt.st, s, applyPatches(data, patches.concat(mt.extra)));
+    console.log('| ' + mt.name + ' | ' + mt.st + ' | ' + mt.t + ' | ' + pct(s.winRate) + ' | ' + (isNaN(s.koMedianS) ? '-' : s.koMedianS.toFixed(0)) + ' | ' + pct(s.timeout / s.n) + ' | ' + (s.tbN ? pct(s.tbMedian) : '-') + ' | ' + (tm ? '<' + tm.value + ': ' + pct(tm.share) : '-') + ' |');
+  });
 }
 function meanHp(s) { return s.playerHpSum / s.n; }
 

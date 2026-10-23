@@ -12,6 +12,7 @@ import { BattleHud } from '../ui/battle-hud.js';
 import { sfx, haptic } from '../ui/feedback.js';
 import { cardColor } from '../ui/icons.js';
 import { FloatPlacer, silhouetteExtent, placeFighters, placeNameLabels } from '../ui/float-placer.js';
+import { HIT_DISCARD_TEXT_KEYS, TRI_BURST_WHIFF_TEXT_KEYS, reasonTextKey } from '../ui/hud-state.js';
 import { TEST_HOOKS, testHooks, testSeedParam } from '../ui/test-hooks.js';
 
 const TICK_MS = 1000 / 60;
@@ -524,7 +525,12 @@ export class BattleScene extends BaseScene {
           this.onTriBurstHit(e);
           break;
         case 'tri_burst_whiff':
-          this.callout(t('battle_tri_burst_whiff'), COLORS.textDim, 22);
+          this.callout(t(reasonTextKey(TRI_BURST_WHIFF_TEXT_KEYS, e.reason, 'battle_tri_burst_whiff')), COLORS.textDim, 22);
+          break;
+        case 'hit_discarded':
+          // GDD §5.10 round 3: a hit on a rushing fighter does nothing — no damage number, no flash, no "DODGE",
+          // no hit sound. Only a small low-priority "IMMUNE" tag on the rushing fighter.
+          this.onHitDiscarded(e);
           break;
         case 'climax_cinematic':
           this.showCinematic('climax', e, st);
@@ -585,6 +591,17 @@ export class BattleScene extends BaseScene {
     this.fighters[target].hitFlash();
     this.hud.onDamage(target);
     this.floatText({ x: pos.x, y: this.L.arena.floorY - 50 }, String(e.damage), '#ffa53d', 28, true);
+  }
+
+  onHitDiscarded(e) {
+    const target = e.side === 'player' ? 'enemy' : 'player'; // e.side = attacker
+    const key = reasonTextKey(HIT_DISCARD_TEXT_KEYS, e.reason, 'battle_hit_immune');
+    const now = performance.now();
+    if (this.lastImmuneAt && now - this.lastImmuneAt < 400) return; // one tag per burst of discarded hits
+    this.lastImmuneAt = now;
+    const p = this.bodyPos(target);
+    this.spawnFloat({ x: p.x, y: p.y, str: t(key), color: '#c8cce8', size: 13, rise: 10, bands: ['body'], priority: 0 });
+    sfx('hit_immune');
   }
 
   // ------------------------------------------------------------------ fx helpers

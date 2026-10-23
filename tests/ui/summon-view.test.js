@@ -1,6 +1,6 @@
 // ui-developer round 3: Summon screen view-model (GDD §11.1) and every SUMMON_* enum → string (L-shared-009).
-// Numbers come from data (the balance-analyst may change them): expectations are derived from banners.json /
-// economy.json, never typed in.
+// AC-11.4 / 11.6 / 11.11 are class W (GDD §15.4): they run on the frozen FX-GDD fixture (tests/fixtures/gdd), never on
+// data/. Expectations are still computed from the fixture's banner/economy values rather than typed in.
 import { describe, it, expect } from 'vitest';
 import {
   createContent,
@@ -14,12 +14,11 @@ import {
 import { summonScreenModel, rateTableModel, outcomeTag, guaranteeText, rejectText, eventText, outcomeKey, guaranteeKey, reasonKey, eventKey, formatNum } from '../../src/ui/summon-view.js';
 import { BURST_VISUALS, BURST_LABEL_KEYS, burstVisual } from '../../src/ui/hud-state.js';
 import { hasString } from '../../src/ui/strings.js';
-import { loadBundle, readJson } from '../helpers/load-data.js';
+import { loadGddBundle } from '../helpers/load-data.js';
 import table from '../../src/ui/strings.json';
 
-const bundle = loadBundle();
-bundle.economy = readJson('data/economy.json');
-bundle.banners = readJson('data/banners.json');
+const bundle = loadGddBundle();
+if (!bundle.banners) throw new Error('FX-GDD has no banners.json');
 const content = createContent(bundle);
 const banner = bundle.banners.banners[0];
 const NOW = '2026-10-22T12:00:00.000Z';

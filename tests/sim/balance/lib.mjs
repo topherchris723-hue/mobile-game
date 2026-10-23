@@ -56,6 +56,49 @@ export function applyPatches(data, patches) {
   return d;
 }
 
+/**
+ * GDD §5.15 (round 3) balance-only player proxies, added to battle.ai_tiers IN MEMORY (never in game data):
+ * proxy_average = the fighter tier unchanged; proxy_skilled = veteran with the §5.15 overrides, plus "spacing"
+ * (see installSpacing). Both obey the same fairness rules: the engine's AiController and permission checks are used.
+ */
+export const PROXY_SKILLED_OVERRIDES = {
+  reaction_s: 0.20, slip_chance: 0.70, perfect_slip_chance: 0.60, riposte_chance: 1.00, combo_continue: 0.90,
+  break_slip_chance: 0.40, climax_chance: 1.00, vigor_reserve: 2,
+};
+export function addProxies(d) {
+  const t = d.battle.ai_tiers;
+  t.proxy_average = { ...t.fighter };
+  t.proxy_skilled = { ...t.veteran, ...PROXY_SKILLED_OVERRIDES };
+  return d;
+}
+
+/**
+ * proxy_skilled spacing (GDD §5.15): when the opponent's Fist approach begins at distance > 20, Dash back with
+ * chance 0.5 (one roll per approach). Reads public state only (the opponent's visible approach and the distance).
+ * The engine AI still runs every tick (its dodge decision must happen on its tick D); the dash is used only on a tick
+ * where the AI itself chose no input, so it never overrides a Slip, card or Tag. Own seeded RNG (no shared stream).
+ */
+export function installSpacing(b, side, seed) {
+  const ctl = b.controllers[side];
+  const orig = ctl.decide.bind(ctl);
+  let st = (seed ^ 0x9e3779b9) >>> 0;
+  const rnd = () => { st = (st + 0x6d2b79f5) >>> 0; let t = st; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  let seen = null; let wantDash = false;
+  ctl.spacingLog = { approaches: 0, rolled: 0, dashes: 0 };
+  ctl.decide = () => {
+    const opp = b.activeFighter(side === 'player' ? 'enemy' : 'player');
+    const a = opp.action;
+    if (a && a !== seen && a.kind === 'card' && a.phase === 'approach' && a.card && a.card.type === 'fist') {
+      seen = a; ctl.spacingLog.approaches += 1;
+      if (b.distance() > 20) { ctl.spacingLog.rolled += 1; wantDash = rnd() < 0.5; } else wantDash = false;
+    }
+    if (wantDash && !(a && a === seen && a.phase === 'approach')) wantDash = false; // approach over: chance gone
+    const list = orig();
+    if (wantDash && list.length === 0 && b.dashMode(side).ok) { wantDash = false; ctl.spacingLog.dashes += 1; return [{ type: 'dash', dir: 'back' }]; }
+    return list;
+  };
+}
+
 /** Synthetic 1.0× enemies for mirror matches (in memory only). id = 'simx_<character id>'. */
 export function addMirrorEnemies(d, tier) {
   for (const c of d.characters.characters) {
@@ -77,6 +120,8 @@ export function runOne(content, cfg, seed) {
     playerTeam: cfg.team, playerController: { aiTier: cfg.playerTier },
     enemyController: cfg.enemyTier ? { aiTier: cfg.enemyTier } : 'ai', skipIntro: true,
   }, seed);
+  if (cfg.playerTier === 'proxy_skilled') installSpacing(b, 'player', seed);
+  if (cfg.enemyTier === 'proxy_skilled') installSpacing(b, 'enemy', seed + 1);
   const m = {
     dmg: { player: {}, enemy: {} },          // by character id
     dmgType: { player: {}, enemy: {} },      // by card type (+ tri_burst, tag_strike)
@@ -84,6 +129,7 @@ export function runOne(content, cfg, seed) {
     triBurst: { player: 0, enemy: 0 }, ignitions: { player: 0, enemy: 0 },
     perfectSlips: { player: 0, enemy: 0 }, kos: { player: 0, enemy: 0 },
   };
+  const tb = [];                             // BAL-5.10: full-team player Tri-Burst damage / target max HP
   let realTicks = 0;
   const maxTicks = 60 * 60 * 30;
   while (!b.getResult() && realTicks < maxTicks) {
@@ -102,6 +148,10 @@ export function runOne(content, cfg, seed) {
         m.cardPlays[e.cardId] = (m.cardPlays[e.cardId] || 0) + 1;
       } else if (e.type === 'tri_burst') {
         m.triBurst[e.side] += 1;
+        if (e.side === 'player' && e.members.length === 3) {
+          const tgt = b.activeFighter('enemy');
+          tb.push(e.damages.reduce((x, y) => x + y, 0) / tgt.def.maxHp);
+        }
       } else if (e.type === 'ignition') {
         m.ignitions[e.side] += 1;
       } else if (e.type === 'perfect_slip') {
@@ -115,7 +165,7 @@ export function runOne(content, cfg, seed) {
   return {
     outcome: r ? r.outcome : 'stuck', reason: r ? r.reason : 'stuck',
     timerS: r ? r.timeElapsedS : NaN, realS: realTicks / 60,
-    playerHp: r ? r.playerHpRatio : NaN, enemyHp: r ? r.enemyHpRatio : NaN, m,
+    playerHp: r ? r.playerHpRatio : NaN, enemyHp: r ? r.enemyHpRatio : NaN, m, tb,
   };
 }
 
@@ -137,6 +187,11 @@ export function summarize(rows) {
     s.playerHpSum = (s.playerHpSum || 0) + r.playerHp;
     addInto(s.m, r.m);
   }
+  const med = (a) => { const x = a.slice().sort((p, q) => p - q); return x.length ? x[Math.floor(x.length / 2)] : NaN; };
+  s.koMedianS = med(rows.filter((r) => r.reason === 'ko').map((r) => r.timerS));
+  s.winTimers = rows.filter((r) => r.outcome === 'win').map((r) => r.timerS);
+  const tbs = rows.flatMap((r) => r.tb || []);
+  s.tbMedian = med(tbs); s.tbN = tbs.length;
   timers.sort((a, b) => a - b);
   s.timerS /= rows.length; s.realS /= rows.length;
   s.winRate = s.win / rows.length;
@@ -178,7 +233,7 @@ export async function runJobs(jobs, threads = Math.max(1, os.cpus().length)) {
 
 /** Build content for a job (patches + optional mirror enemies). */
 export function buildContent(job) {
-  let d = applyPatches(loadData(), job.patches);
+  let d = addProxies(applyPatches(loadData(), job.patches));
   if (job.mirrorTier) d = addMirrorEnemies(d, job.mirrorTier);
   return createContent(d);
 }
