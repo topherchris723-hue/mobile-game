@@ -611,9 +611,15 @@ from fighting, so every battle reaches it.
   later hits of a multi-hit card whose first hit already landed before T (it overrides the "first hit decides the whole
   card" rule for this one case) and projectiles already in flight. Such a hit is discarded: 0 damage, no hitstun, no
   knockback, no Burst gain for either side, no `on: "hit"` effects, no hitstop, and it is not a dodge (no Perfect Slip,
-  no Riposte window); the engine logs it as `hit_discarded` with reason `rush_invulnerable`. The attacking card is not
-  otherwise changed (its remaining hits after T + 18 resolve as normal against the then-`Idle` or cinematic-frozen
-  fighter). So the rusher **cannot be KO'd during its own rush**, and every rush ends by landing or whiffing on T + 18.
+  no Riposte window); the engine logs it as `hit_discarded` with reason `rush_invulnerable`. What happens to the rest of
+  the attacking card depends on **when its first hit was decided** (round 3, exact):
+  - **First hit decided before T** (landed): the card stays "landed". Its hits on T … T + 18 are discarded; its hits after
+    T + 18 resolve as normal (first-hit rule) against the rusher, who is then `Idle` (whiff) or frozen in the cinematic
+    (landing: the target's projectiles are cancelled anyway, so in practice only a whiffed rush meets them).
+  - **First hit falls on T … T + 18**: it is discarded, and by the first-hit rule the **whole card is a whiff**: `whiff`
+    event with reason `rush_invulnerable` (in addition to `hit_discarded`), none of its later hits ever deal damage, even
+    those after T + 18, no `on: "hit"` effects, and the attacker gets the after-whiff Recovery (no link window, §5.0
+    table). Vigor is not refunded. So the rusher **cannot be KO'd during its own rush**, and every rush ends by landing or whiffing on T + 18.
   What can still end a rush early, and what happens to its spent Burst:
 
 | Event during the rush (T … T+18) | Effect on the rush | Burst gauge (set to 0 at T) |
@@ -659,6 +665,13 @@ from fighting, so every battle reaches it.
   starts a Tri-Burst on T. Result: on T + 4 the second hit is `hit_discarded` (`rush_invulnerable`), HP stays 1, both Burst
   gauges are unchanged by it, and the rush resolves on T + 18. Must-FAIL: an engine that applies the second hit (KO on T + 4,
   rush ended by the safety net).
+- AC-5.10.9 (W, FX-GDD battle.json, unit test with test state; round 3): the player starts a Tri-Burst on tick T and
+  the enemy is made invulnerable on T + 18 (test state), so the rush whiffs. An enemy 3-hit `projectile` Bolt (speed
+  160, `hit_interval_s` 0.1 = 6 ticks) thrown at distance 40 has its windup end on T − 5, so its hits are scheduled on
+  T + 10 (first; 40 / 160 s = 15 ticks of travel), T + 16 and T + 22. Result: on T + 10 a `hit_discarded`
+  (`rush_invulnerable`) and a `whiff` (`rush_invulnerable`) for the card; on T + 16 and T + 22 nothing resolves (no damage,
+  no event); the player's HP is unchanged on every tick T … T + 22; the enemy gets no link window. Must-FAIL: an engine
+  that applies the T + 22 hit (damage after the rush). Contrast AC-5.10.8 (first hit before T → its hits after T + 18 land).
 - **BAL-5.10 (round 3, balance target, keeps Tri-Burst "powerful" after the HP change):** with live data, a landed
   Tri-Burst by a full living starter team against a same-tier stage enemy removes **25–45%** of that enemy's max HP in the
   median case (balance-analyst sim). Lever: `battle.burst.power_per_member` (data, default 3.0), not the formula shape.
@@ -812,6 +825,12 @@ after `reaction_s`. It never reads the player's hand or inputs before they happe
   A decided card is **never re-examined** (no second roll on a later tick, even if the AI's state or Vigor changes). So
   per opposing card there are 0, 1 or 2 seeded rolls, never more. A new card (e.g. the next card of a chain) gets its own
   decision.
+  **Detached projectiles (round 3 ruling, overrules "no decision").** The decision belongs to the **card**, not to the
+  thrower's action. If the thrower is hit after its `projectile` card's windup ended (§5.5: the projectiles keep flying,
+  the thrower's action ends), the AI still makes its one decision for that card on tick D, using the projectiles' first
+  scheduled hit tick, under the same steps 1–3. Reason: the projectile is still a real threat that a player could dodge,
+  and skipping it would make AI dodging depend on an unrelated trade. If the thrower is hit **during** its windup, the card
+  is cancelled (no projectile), so there is nothing to decide.
   **Design intent (round 3):** with every tier's `reaction_s` (12–27 ticks), a Fist at melee range (windup 6–12 ticks)
   can never be reacted to; a Fist from range can (approach 11 ticks from distance 40 + windup). That is intended: Fists
   are the reliable poke, and the answers to them are spacing (Dash back), Break Slip and Tag Escape. No tier parameter
@@ -853,6 +872,13 @@ after `reaction_s`. It never reads the player's hand or inputs before they happe
   (stubbed roll 0.99): the AI does not Slip on any tick D+1 … first-hit tick (must-FAIL: an AI that rolls again on D+1).
   Statistical check: over 10,000 seeded player Climax windups (≥ 30 ticks, AI Vigor ≥ 2 and Idle on D), the slipped share
   is within ±2 percentage points of the tier's `slip_chance` (fighter 25%; round-3 engine gave ≈ 69%).
+- AC-5.15.8 (W, FX-GDD battle.json, unit test with test state; round 3): a player 1-hit `projectile` Bolt with windup
+  12 ticks starts its windup on tick W at distance 40 (speed 160 → 15 ticks of travel), so its first hit is scheduled on
+  W + 27; the enemy is veteran tier (`reaction_s` 0.27 → round(16.2) = 16 ticks, D = W + 16), Idle, Vigor ≥ 2. The player's
+  fighter is hit on W + 13 (after its windup ended on W + 12) by an earlier enemy projectile, so its action ends and the
+  Bolt flies on. With stubbed rolls 0.0 (`slip_chance` success, `perfect_slip_chance` success) the AI rolls exactly twice
+  on W + 16 and starts its Slip on W + 21 (6 ticks before the hit); the Bolt whiffs and a `perfect_slip` is logged for the
+  enemy. Must-FAIL: an AI that makes no decision for the detached projectile (the Bolt lands on W + 27).
 - **Balance-only player proxies (round 3; used by sims, never by stages).** The AI tiers model enemies, not players. For
   balance, the player side is driven by two named profiles, kept in the balance harness (`tests/sim/balance/`, owned by
   the balance-analyst), not in game data: **`proxy_average`** = the `fighter` tier unchanged; **`proxy_skilled`** = the
@@ -1462,9 +1488,10 @@ examples must stay exact.
 **FX-GDD** = a frozen copy of every data file in `tests/fixtures/gdd/` (owned by gameplay-programmer):
 - `battle.json`, `characters.json`, `cards.json`, `enemies.json`, `stages.json`, `story.json`, `banners.json`,
   `economy.json` copied **from the round-2 commit** (the last commit before round 3; `git show <round-2 commit>:data/<file>`),
-  i.e. the values the GDD examples were written with (Tavi: HP 8,200, Ignition `hp_below_pct` 50 + `battle_time_s` 60,
-  ATK ×1.30, DEF ×1.20, 25 s, heal 0.10, regen +0.2; banner and economy as in §11's default-data block; battle.json = the
-  §5 values).
+  i.e. the values the GDD examples were written with (Tavi at commit 8ab0ca6: HP 8,200, Ignition `hp_below_pct` 50 +
+  `battle_time_s` 60, ATK ×1.30, DEF ×1.10, 25 s, heal 0.10, regen +0.2. The snapshot file wins over this summary if they
+  ever differ. The §5.9 example's DEF ×1.20 belongs to a generic example fighter, not Tavi, and is tested as class X.
+  Banner and economy as in §11's default-data block; battle.json = the §5 values.) The round-2 commit is `8ab0ca6`.
 - Plus two fixture records: character `char_fxbase_001` (★4, Blaze, HP 10,000, ATK 1,000, DEF 500, crit 0.05, no
   Ignition, deck = 8 cards owned by `common` that satisfy §15.3 rule 3; if the snapshot has too few `common` cards, add
   fixture cards `card_common_fx<slug>` with §7-budget values) and enemy `enemy_fxbase_001`
@@ -1483,8 +1510,8 @@ examples must stay exact.
 
 | Class | ACs |
 |---|---|
-| W | §5.9 example; AC-5.1.1, 5.1.2, 5.1.4, 5.1.5 (test-copy part); 5.3.1; 5.4.1, 5.4.3; 5.6.1–5.6.3, 5.6.4, 5.6.5–5.6.7; 5.7.1–5.7.3; 5.8.0–5.8.5; 5.9.1, 5.9.3, 5.9.5, 5.9.6, 5.9.7; 5.10.1, 5.10.3–5.10.6, 5.10.8; 5.14.1; 5.15.3, 5.15.5, 5.15.6; 8.1; 11.2, 11.3, 11.3b, 11.3c, 11.4, 11.6, 11.7, 11.8, 11.11 |
-| X | AC-5.10.2, 5.11.1, 5.11.2, 5.11.3, 11.1 |
+| W | AC-5.1.1, 5.1.2, 5.1.4, 5.1.5 (test-copy part); 5.3.1; 5.4.1, 5.4.3; 5.6.1–5.6.3, 5.6.4, 5.6.5–5.6.7; 5.7.1–5.7.3; 5.8.0–5.8.5; 5.9.1, 5.9.3, 5.9.5, 5.9.6, 5.9.7; 5.10.1, 5.10.3–5.10.6, 5.10.8, 5.10.9; 5.14.1; 5.15.3, 5.15.5, 5.15.6, 5.15.8; 8.1; 11.2, 11.3, 11.3b, 11.3c, 11.4, 11.6, 11.7, 11.8, 11.11 |
+| X | §5.9 example (inline Ignition 1.30 / 1.20 / 25 s / 10% / +0.2, HP 3,000/10,000, ATK 1,000); AC-5.10.2, 5.11.1, 5.11.2, 5.11.3, 11.1 |
 | P | AC-1.1; 4.1, 4.2; 5.0.1; 5.1.3, 5.1.5 (1,000-battle part); 5.2.1–5.2.3; 5.3.2, 5.3.3; 5.4.2; 5.5.1–5.5.6; 5.9.2, 5.9.4; 5.10.7; 5.11.4; 5.12.1; 5.13.1; 5.14.2, 5.14.3; 5.15.1, 5.15.2, 5.15.4, 5.15.7; 6.1, 6.2; 7.1; 8.1 (live property part); 9.1.1; 9.3.1; 9.4.1–9.4.7; 10.1; 11.5, 11.9, 11.10, 11.12–11.14; 12.1; 13.1–13.3; 14.1, 14.2 |
 
 - In-browser (Playwright) tests of P-class ACs run on live data and must compute their expectations from it (e.g. AC-9.4.5
