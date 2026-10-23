@@ -115,8 +115,11 @@ export class PhaserVfxRenderer {
     switch (name) {
       case 'attacker':
         return { x: actor.x, y: actor.y - 60 };
-      case 'feet':
-        return { x: (name === 'feet' && ctx.raw && (ctx.raw.type === 'knockdown' || ctx.raw.type === 'hit')) ? target.x : actor.x, y: (ctx.raw && (ctx.raw.type === 'knockdown')) ? target.y : actor.y };
+      case 'feet': {
+        // knockdown dust rises at the feet of the fighter knocked down; everything else at the actor's feet
+        const p = ctx.raw && ctx.raw.type === 'knockdown' ? target : actor;
+        return { x: p.x, y: p.y };
+      }
       case 'between':
         return { x: (actor.x + target.x) / 2, y: (actor.y + target.y) / 2 - 60 };
       default:

@@ -174,7 +174,7 @@
         }
       ]
     },
-    "sparks_fist": {
+    "sparks_fist_default": {
       "duration_ms": 400,
       "priority": 0,
       "layers": [
@@ -193,7 +193,7 @@
         }
       ]
     },
-    "sparks_bolt": {
+    "sparks_bolt_default": {
       "duration_ms": 400,
       "priority": 0,
       "layers": [
@@ -212,7 +212,7 @@
         }
       ]
     },
-    "sparks_signature": {
+    "sparks_signature_default": {
       "duration_ms": 400,
       "priority": 0,
       "layers": [
@@ -231,7 +231,7 @@
         }
       ]
     },
-    "sparks_climax": {
+    "sparks_climax_default": {
       "duration_ms": 400,
       "priority": 1,
       "layers": [
@@ -1580,28 +1580,1506 @@
           "scale_to": 1.0
         }
       ]
+    },
+    "vfx_tavi_spark_jab": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_tavi_redline_hook": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_tavi_flare_toss": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 8,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 110,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_tavi_furnace_rush": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_tavi_wildfire_crash": {
+      "duration_ms": 2400,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 960,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 960,
+          "duration_ms": 1080,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 960,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 1680,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_tavi_overheat_barrage": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_tavi_meltdown_meteor": {
+      "duration_ms": 2900,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 1160,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 1160,
+          "duration_ms": 1305,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 1160,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 2029,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_lark_tailwind_kick": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_lark_slipstream_jab": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_lark_kite_cutter": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 8,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 110,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_lark_crosswind_lance": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_lark_skyrail_tempest": {
+      "duration_ms": 1900,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 760,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 760,
+          "duration_ms": 855,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 760,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 1330,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_dunmore_riverstone_jab": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_dunmore_bulwark_palm": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_dunmore_skipping_stone": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 8,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 110,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_dunmore_quarry_quake": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_dunmore_mountain_drop": {
+      "duration_ms": 2400,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 960,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 960,
+          "duration_ms": 1080,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 960,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 1680,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_pell_bell_strike": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_pell_lantern_sweep": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_pell_wisp_volley": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 8,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 110,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_pell_dawn_chant": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_pell_hundred_lanterns": {
+      "duration_ms": 2400,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 960,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 960,
+          "duration_ms": 1080,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 960,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 1680,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_pell_sunbell_mantra": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_pell_thousand_dawns": {
+      "duration_ms": 2900,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 1160,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 1160,
+          "duration_ms": 1305,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 1160,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 2029,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_thessa_ink_needle": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_thessa_cracked_mask": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_thessa_night_thread": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 8,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 110,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_thessa_eclipse_veil": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_thessa_black_sun_requiem": {
+      "duration_ms": 2400,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 960,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 960,
+          "duration_ms": 1080,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 960,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 1680,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_thessa_umbra_bloom": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_thessa_new_moon_ending": {
+      "duration_ms": 2900,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 1160,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 1160,
+          "duration_ms": 1305,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 1160,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 2029,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_rook_one_two_count": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_rook_three_step_kick": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_rook_razor_draft": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 8,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 110,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_rook_gambit_cyclone": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_rook_endgame_storm": {
+      "duration_ms": 2400,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 960,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 960,
+          "duration_ms": 1080,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 960,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 1680,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_rook_castling_blitz": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_rook_checkmate_typhoon": {
+      "duration_ms": 2900,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 1160,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 1160,
+          "duration_ms": 1305,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 1160,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 2029,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_solenne_sunray_jab": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_solenne_crown_knee": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_solenne_corona_lance": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 8,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 110,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_solenne_noonday_halo": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_solenne_nine_peaks_dawn": {
+      "duration_ms": 2400,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 960,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 960,
+          "duration_ms": 1080,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 960,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 1680,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_solenne_zenith_crown": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_solenne_sovereign_sunfall": {
+      "duration_ms": 2900,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 1160,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 1160,
+          "duration_ms": 1305,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 1160,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 2029,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_corvane_shard_backhand": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_corvane_ribbon_lash": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 6,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 100,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_corvane_obsidian_rain": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 8,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 110,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_corvane_aura_thief": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_corvane_starless_night": {
+      "duration_ms": 2400,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 960,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 960,
+          "duration_ms": 1080,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 960,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 1680,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
+    },
+    "vfx_corvane_crown_of_nothing": {
+      "duration_ms": 400,
+      "priority": 0,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 12,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 400,
+          "speed": 120,
+          "direction": "out"
+        }
+      ]
+    },
+    "vfx_corvane_last_star_falls": {
+      "duration_ms": 2900,
+      "priority": 3,
+      "layers": [
+        {
+          "kind": "particles",
+          "start_ms": 0,
+          "duration_ms": 1160,
+          "anchor": "feet",
+          "color": "aura",
+          "count": 16,
+          "size_px": 3,
+          "size_max_px": 6,
+          "life_ms": 700,
+          "speed": 80,
+          "direction": "up",
+          "spread_deg": 50,
+          "emit_interval_ms": 75
+        },
+        {
+          "kind": "beam",
+          "start_ms": 1160,
+          "duration_ms": 1305,
+          "anchor": "between",
+          "color": "aura",
+          "alpha": 0.8,
+          "size_px": 26
+        },
+        {
+          "kind": "particles",
+          "start_ms": 1160,
+          "duration_ms": 0,
+          "anchor": "target",
+          "color": "aura",
+          "count": 30,
+          "size_px": 3,
+          "size_max_px": 7,
+          "life_ms": 500,
+          "speed": 180,
+          "direction": "out"
+        },
+        {
+          "kind": "ring",
+          "start_ms": 2029,
+          "duration_ms": 300,
+          "anchor": "target",
+          "color": "aura",
+          "alpha": 0.85,
+          "size_px": 64,
+          "scale_from": 0.3,
+          "scale_to": 1.0
+        }
+      ]
     }
   },
   "events": {
     "hit.fist": [
       "r3_hit_flash",
       "r3_impact_ring",
-      "sparks_fist"
+      "sparks_fist_default"
     ],
     "hit.bolt": [
       "r3_hit_flash",
       "r3_impact_ring",
-      "sparks_bolt"
+      "sparks_bolt_default"
     ],
     "hit.signature": [
       "r3_hit_flash",
       "r3_impact_ring",
-      "sparks_signature"
+      "sparks_signature_default"
     ],
     "hit.climax": [
       "r3_hit_flash",
       "r3_impact_ring",
-      "sparks_climax",
+      "sparks_climax_default",
       "r3_shake_hit"
     ],
     "hit.crit": [

@@ -203,7 +203,8 @@ export class VfxCore {
       const ch = ctx.characterId && L.character ? L.character(ctx.characterId) : null;
       const v = ch && ch.ignition && ch.ignition.art ? ch.ignition.art.vfx : null;
       if (v) override = key === 'ignition' ? v : v + '_active';
-    } else if (key === 'climax_cinematic') {
+    } else if (key === 'climax_cinematic' || key === 'hit.fist' || key === 'hit.bolt' || key === 'hit.signature') {
+      // A Climax card's art.vfx is its cinematic effect; for hit.climax the per-hit sparks stay the default.
       const card = ctx.cardId && L.card ? L.card(ctx.cardId) : null;
       override = card && card.art ? card.art.vfx || null : null;
     }
