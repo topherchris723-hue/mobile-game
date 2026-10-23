@@ -6,13 +6,15 @@
 //   --dir tests/fixtures/gdd validates the FX-GDD fixture (GDD §15.4): rules 10–12 are skipped automatically for it.
 //   --skip-balance skips rules 10–12 for any directory.
 //   --credits <path> CREDITS.md for rule 13 (default assets/CREDITS.md). Asset paths in rule 13 are repo-relative.
-//   Rule 15 reads SFX_HOOKS (src/ui/feedback.js) and VFX_EVENT_KEYS (src/ui/vfx/*.js) as literal lists from source text.
+//   Rule 15 reads SFX_HOOKS (src/ui/**, then src/audio/**) and VFX_EVENT_KEYS (src/vfx/**) as literal lists from
+//   source text (`--src-root <dir>` overrides src/, for tests); not found → a NOTICE and those warnings are skipped.
 // Exit code 0 = no errors (warnings allowed), 1 = errors found, 2 = could not run.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DATA_FILES, parseBannedTerms, validateDataset, parseExportedStringList } from './lib/data-validator.js';
+import { DATA_FILES, parseBannedTerms, validateDataset } from './lib/data-validator.js';
+import { findExportedList } from './lib/source-lists.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -29,27 +31,20 @@ const schemaDir = argValue('--schema-dir', path.join(root, 'data', 'schemas'));
 const gddPath = argValue('--gdd', path.join(root, 'docs', 'GDD.md'));
 const creditsPath = argValue('--credits', path.join(root, 'assets', 'CREDITS.md'));
 
-/** Find `export const name = [...]` in the given source files (first match), or null. */
-function exportedList(files, name) {
-  for (const f of files) {
-    if (!fs.existsSync(f)) continue;
-    const list = parseExportedStringList(fs.readFileSync(f, 'utf8'), name);
-    if (list) return list;
-  }
-  return null;
-}
+const srcRoot = argValue('--src-root', path.join(root, 'src'));
 
 /** Inputs for §15.3 rules 13–15 (CREDITS.md, files on disk, the UI's exported key lists). */
 function mediaOptions() {
   const vfxDir = path.join(root, 'assets', 'vfx');
-  const vfxSrc = path.join(root, 'src', 'ui', 'vfx');
-  const vfxSources = fs.existsSync(vfxSrc) ? fs.readdirSync(vfxSrc).filter((f) => f.endsWith('.js')).map((f) => path.join(vfxSrc, f)) : [];
+  // Producer decision (round 4): VFX code lives in src/vfx/, audio in src/audio/; SFX_HOOKS is exported by src/ui/.
+  const hooks = findExportedList([path.join(srcRoot, 'ui'), path.join(srcRoot, 'audio')], 'SFX_HOOKS');
+  const events = findExportedList([path.join(srcRoot, 'vfx')], 'VFX_EVENT_KEYS');
   return {
     credits: fs.existsSync(creditsPath) ? fs.readFileSync(creditsPath, 'utf8') : '',
     fileExists: (p) => fs.existsSync(path.join(root, p)),
     listVfxFiles: () => (fs.existsSync(vfxDir) ? fs.readdirSync(vfxDir).map((f) => 'assets/vfx/' + f) : []),
-    sfxHooks: exportedList([path.join(root, 'src', 'ui', 'feedback.js')], 'SFX_HOOKS'),
-    vfxEventKeys: exportedList(vfxSources, 'VFX_EVENT_KEYS'),
+    sfxHooks: hooks ? hooks.list : null,
+    vfxEventKeys: events ? events.list : null,
   };
 }
 

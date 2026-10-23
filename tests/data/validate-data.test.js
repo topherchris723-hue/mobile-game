@@ -110,7 +110,11 @@ describe('validate-data: negative fixtures (each must FAIL its rule)', () => {
   // by accident or a must-PASS fixture fail; "current data passes" above still demands 0 live errors.
   const key = (e) => e.rule + '|' + e.file + '|' + e.path + '|' + e.message;
   const baseline = {};
-  for (const e of validateDataset(loadAllData(), schemas, banned, []).errors) baseline[key(e)] = true;
+  const baseRun = validateDataset(loadAllData(), schemas, banned, []);
+  for (const e of baseRun.errors) baseline[key(e)] = true;
+  // Same for warnings: live rule-15 coverage warnings (round 4) are not caused by the fixture.
+  const baseWarn = {};
+  for (const w of baseRun.warnings) baseWarn[key(w)] = true;
   it('has at least one fixture per rule 1–12 plus schema', () => {
     const all = files.map((f) => JSON.parse(fs.readFileSync(path.join(FIXTURE_DIR, f), 'utf8')).name).join(' ');
     for (const tag of ['schema', 'rule1', 'rule2', 'rule3', 'rule4', 'rule5', 'rule6', 'rule7', 'rule8', 'rule9', 'rule10', 'rule11', 'rule12']) {
@@ -139,7 +143,7 @@ describe('validate-data: negative fixtures (each must FAIL its rule)', () => {
           expect(r.warnings.some((w) => w.message.indexOf(fx.expect.warningContains) >= 0), JSON.stringify(r.warnings)).toBe(true);
         }
       }
-      if (fx.expect.warningRule === null) expect(r.warnings).toEqual([]);
+      if (fx.expect.warningRule === null) expect(r.warnings.filter((w) => !baseWarn[key(w)])).toEqual([]);
     });
   }
   it('reports a data file that GDD §15.1 does not list', () => {

@@ -422,7 +422,7 @@ export function validateMedia(data, err, warn, notice, opts) {
         if (opts.sfxHooks.indexOf(h) < 0) warn(R15, 'audio.json', '.hooks.' + h, 'audio.json: hooks key "' + h + '" is not in SFX_HOOKS');
       }
     } else {
-      notice('SFX_HOOKS list not found (src/ui/feedback.js): audio hook-key coverage warnings skipped');
+      notice('SFX_HOOKS list not found (src/ui/**, src/audio/**): audio hook-key coverage warnings skipped');
     }
   }
 
@@ -504,7 +504,7 @@ export function validateMedia(data, err, warn, notice, opts) {
         if (opts.vfxEventKeys.indexOf(ev) < 0) warn(R15, 'vfx.json', '.events.' + ev, 'vfx.json: events key "' + ev + '" is not in VFX_EVENT_KEYS');
       }
     } else {
-      notice('VFX_EVENT_KEYS list not found (src/ui/vfx/): vfx event-key coverage warnings skipped');
+      notice('VFX_EVENT_KEYS list not found (src/vfx/**): vfx event-key coverage warnings skipped');
     }
   }
 }

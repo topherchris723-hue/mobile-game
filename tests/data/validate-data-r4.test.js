@@ -9,6 +9,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { parseBannedTerms, validateDataset, parseCreditsRows, parseExportedStringList } from '../../scripts/lib/data-validator.js';
 import { ROOT, loadAllData, loadAllSchemas, loadGdd } from '../helpers/load-data.js';
+import { findExportedList } from '../../scripts/lib/source-lists.js';
 
 const DIR = path.join(ROOT, 'tests', 'fixtures', 'validator-r4');
 const banned = parseBannedTerms(loadGdd());
@@ -127,6 +128,29 @@ describe('validate-data rules 13–15: helpers and optional files', () => {
     expect(bad.stdout).toContain('ERROR [14-flash-safety]');
     expect(bad.status).toBe(1);
     fs.rmSync(dir, { recursive: true, force: true });
+  });
+  it('the CLI finds VFX_EVENT_KEYS under src/vfx/** and SFX_HOOKS under src/ui/** or src/audio/** (NOTICE when absent)', () => {
+    const src = fs.mkdtempSync(path.join(os.tmpdir(), 'vd4src-'));
+    const run = () => spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'validate-data.js'), '--src-root', src], { encoding: 'utf8' }).stdout;
+    const empty = run();
+    expect(empty).toContain('NOTICE SFX_HOOKS list not found');
+    expect(empty).toContain('NOTICE VFX_EVENT_KEYS list not found');
+    fs.mkdirSync(path.join(src, 'vfx', 'deep'), { recursive: true });
+    fs.mkdirSync(path.join(src, 'audio'), { recursive: true });
+    fs.writeFileSync(path.join(src, 'vfx', 'deep', 'keys.js'), "export const VFX_EVENT_KEYS = ['hit.fist'];\n");
+    fs.writeFileSync(path.join(src, 'audio', 'hooks.js'), "export const SFX_HOOKS = ['ui_press'];\n");
+    expect(findExportedList([path.join(src, 'vfx')], 'VFX_EVENT_KEYS').list).toEqual(['hit.fist']);
+    expect(findExportedList([path.join(src, 'ui'), path.join(src, 'audio')], 'SFX_HOOKS').list).toEqual(['ui_press']);
+    const found = run();
+    expect(found).not.toContain('NOTICE SFX_HOOKS');
+    expect(found).not.toContain('NOTICE VFX_EVENT_KEYS');
+    if (fs.existsSync(path.join(ROOT, 'data', 'vfx.json'))) expect(found).toContain('is not in VFX_EVENT_KEYS');
+    if (fs.existsSync(path.join(ROOT, 'data', 'audio.json'))) expect(found).toContain('is not in SFX_HOOKS');
+    fs.rmSync(src, { recursive: true, force: true });
+  });
+  it('the live repo exports VFX_EVENT_KEYS from src/vfx/ (no NOTICE for it)', () => {
+    const r = spawnSync(process.execPath, [path.join(ROOT, 'scripts', 'validate-data.js')], { encoding: 'utf8' });
+    if (findExportedList([path.join(ROOT, 'src', 'vfx')], 'VFX_EVENT_KEYS')) expect(r.stdout).not.toContain('NOTICE VFX_EVENT_KEYS');
   });
   it('must PASS: the default data/vfx.json and data/audio.json with assets/CREDITS.md (when they exist) have 0 rule 13/14 errors', () => {
     const present = ['vfx.json', 'audio.json'].filter((f) => fs.existsSync(path.join(ROOT, 'data', f)));
