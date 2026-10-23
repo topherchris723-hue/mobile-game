@@ -54,6 +54,11 @@ lesson and a hard rule at the next `/retro`.
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
   currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 4: economy review passed fairness with no data change. Adopted its proposal to make
+  stage_001 a worse Jade farm than later stages (repeat-clear Jade stage_001 30 → 10, stage_002
+  30 → 20; first-time budget unchanged) — content-designer, wave 2. Its displayed-vs-real rate
+  check becomes a permanent test (gameplay-programmer); tests that hardcode live economy numbers
+  get fixed (gameplay-programmer, qa-tester).
 - Round 3: game-designer doubled all HP (battle target 120–200 s kept; "fast" = feel per
   second, not short fights). balance-analyst may edit `data/economy.json` power_formula this
   round (economy-designer not active yet).
