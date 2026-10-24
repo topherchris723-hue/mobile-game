@@ -1417,3 +1417,38 @@ test('Settings → Licenses: shows every bundled package notice, scrolls, 44 px 
   await waitScene(page, 'Settings');
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// ------------------------------------------------------------------ round 7: R-6 / L-ui-008 reveal counter
+test('Summon reveal: the Jade balance advances pull by pull (never the final value early)', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  // starters at max Resonance: every ★3 pull pays Jade, so the balance must grow during the reveal
+  await bootWithSave(page, 1, `s.roster.forEach((r) => (r.resonance = 4)); s.currencies.cur_jade = ${BANNER.cost_multi};`);
+  await page.goto('/?test=1&renderer=canvas&summonSeed=4242');
+  await waitScene(page, 'Title');
+  await toSummon(page);
+  await tap(page, 'summon_x' + BANNER.multi_count);
+  await page.waitForTimeout(350);
+  await tap(page, 'summon_confirm');
+  await waitScene(page, 'SummonReveal');
+  const res = await page.evaluate(() => window.__TEST__.activeScene().result);
+  const credited = res.results.map((x) => x.jade_added || 0);
+  const total = credited.reduce((a, b) => a + b, 0);
+  expect(total, 'precondition: some pulls pay Jade').toBeGreaterThan(0);
+  const at = (k) => res.jade_after - credited.slice(k).reduce((a, b) => a + b, 0);
+  // step 1 of N: before pull 1 is revealed only the cost has been taken
+  const first = await page.evaluate(() => window.__TEST__.summonReveal());
+  expect(first.jadeShown).toBe(at(Math.max(0, first.index)));
+  expect(first.jadeShown).toBeLessThan(res.jade_after);
+  const seen = [];
+  const end = Date.now() + 25000;
+  while (Date.now() < end) {
+    const s = await page.evaluate(() => window.__TEST__.summonReveal());
+    if (s.phase !== 'reveal') break;
+    seen.push(s);
+    for (const x of seen) expect(x.jadeShown, 'never ahead of the reveal').toBeLessThanOrEqual(at(x.index + 1));
+    await page.waitForTimeout(80);
+  }
+  await page.waitForFunction(() => window.__TEST__.summonReveal().phase === 'results', null, { timeout: 15000 });
+  expect((await page.evaluate(() => window.__TEST__.summonReveal())).jadeShown).toBe(res.jade_after);
+  expect(errors, errors.join('\n')).toEqual([]);
+});

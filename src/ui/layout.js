@@ -7,14 +7,21 @@ export const MIN_H = 640;
 export const MAX_H = 820;
 export const MIN_TOUCH = 44;
 
-/** cssW/cssH = the safe-area box in CSS px. Returns logical size, zoom and canvas size. */
-export function computeViewport(cssW, cssH, dpr) {
+/**
+ * Max device px per logical unit on the Canvas 2D renderer (reviewer R-2, AC-17.7): Canvas rasterises every pixel
+ * on the CPU each frame, so its backing store is capped at 1.5× (540 × 960 for 360 × 640); WebGL keeps up to 2×.
+ */
+export const CANVAS_MAX_ZOOM = 1.5;
+
+/** cssW/cssH = the safe-area box in CSS px; maxZoom caps the render resolution (Canvas renderer). */
+export function computeViewport(cssW, cssH, dpr, maxZoom) {
   const w = Math.max(1, cssW);
   const h = Math.max(1, cssH);
   const H = Math.min(MAX_H, Math.max(MIN_H, Math.round((LOGICAL_W * h) / w)));
   const cssScale = Math.min(w / LOGICAL_W, h / H);
   // Render at most 2 device px per CSS px: sharp on phones, and cheap enough for mid-range GPUs (GDD §14: 30 fps min).
-  const zoom = Math.max(1, Math.min(4, cssScale * Math.min(Math.max(dpr || 1, 1), 2)));
+  const cap = typeof maxZoom === 'number' && maxZoom > 0 ? maxZoom : 4;
+  const zoom = Math.max(1, Math.min(4, cap, cssScale * Math.min(Math.max(dpr || 1, 1), 2)));
   return {
     W: LOGICAL_W,
     H: H,

@@ -1,6 +1,6 @@
 // Entry point: Phaser boot, portrait scaling inside the safe area, scene list, test hooks.
 import Phaser from 'phaser';
-import { computeViewport } from './ui/layout.js';
+import { computeViewport, CANVAS_MAX_ZOOM } from './ui/layout.js';
 import { data } from './ui/game-data.js';
 import { TEST_HOOKS, installTestHooks } from './ui/test-hooks.js';
 import { TitleScene } from './scenes/TitleScene.js';
@@ -30,16 +30,30 @@ initAudio(audioData, data.save.settings);
 
 const parent = document.getElementById('game');
 
+// Canvas 2D when asked for (?renderer=canvas) or when the device has no WebGL (Phaser.AUTO would fall back to it).
+function hasWebGL() {
+  try {
+    const c = document.createElement('canvas');
+    const gl = window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl'));
+    const lose = gl && gl.getExtension('WEBGL_lose_context');
+    if (lose) lose.loseContext(); // free the probe context at once
+    return !!gl;
+  } catch (e) {
+    return false;
+  }
+}
+const useCanvas = params.get('renderer') === 'canvas' || !hasWebGL();
+
 function measure() {
   const r = parent.getBoundingClientRect();
-  return computeViewport(r.width, r.height, window.devicePixelRatio || 1);
+  return computeViewport(r.width, r.height, window.devicePixelRatio || 1, useCanvas ? CANVAS_MAX_ZOOM : undefined);
 }
 
 let vp = measure();
 
 const game = new Phaser.Game({
   // ?renderer=canvas forces Canvas 2D (fallback for devices with broken WebGL; also used by headless tests).
-  type: params.get('renderer') === 'canvas' ? Phaser.CANVAS : Phaser.AUTO,
+  type: useCanvas ? Phaser.CANVAS : Phaser.AUTO,
   parent: parent,
   backgroundColor: '#0d1020',
   width: vp.canvasW,

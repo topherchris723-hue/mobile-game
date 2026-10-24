@@ -2,7 +2,7 @@
 // docs/art-briefs/char_*.md). Pure data + math (no Phaser) so heights and distinctness are unit-tested.
 //
 // Authored facing right (+x = front, toward the opponent), feet at y = 0, y negative = up, scale 1.
-// Primitive: { k: 'rect'|'circle'|'ellipse'|'poly'|'line', ..., fill (0xRRGGBB | 'aura' | 'skin'), stroke, sw,
+// Primitive: { k: 'rect'|'circle'|'ellipse'|'poly'|'line'|'mask', ..., fill (0xRRGGBB | 'aura' | 'skin'), stroke, sw,
 //   alpha, role: 'torso'|'prop'|'skin'|'leg'|'fist'|'hair'|'eye' }
 // Hard ceiling: no opaque part above y = −112 (name row at −122 stays clear).
 
@@ -29,8 +29,11 @@ export const FIGHTER_SHAPES = {
   char_tavi_001: {
     height: 96, chest: -56,
     parts: [
-      { k: 'poly', pts: [[-20, -34], [20, -34], [27, -16], [-27, -16]], fill: 0xc8282e, role: 'prop' }, // jacket flare
+      { k: 'poly', pts: [[-20, -34], [20, -34], [27, -16], [-27, -16]], fill: 0x3a3a46, role: 'prop' }, // tied jacket (charcoal)
+      { k: 'line', x1: -20, y1: -34, x2: 20, y2: -34, w: 2, fill: 0xffb13d, role: 'prop' }, // orange trim / knot
       ...legs(8, 11, 32),
+      { k: 'rect', x: -16, y: -6, w: 13, h: 6, r: 2, fill: 0xe0a030, role: 'prop' }, // mismatched high-tops: ochre
+      { k: 'rect', x: 3, y: -6, w: 13, h: 6, r: 2, fill: 0x2fa7a0, role: 'prop' }, // teal (front)
       { k: 'line', x1: -9, y1: -88, x2: -18, y2: -46, w: 6, fill: 0xc7662b, role: 'hair' }, // braid
       torso(40, -76, -30),
       head(-84, 12), eye(-84, 12),
@@ -56,7 +59,8 @@ export const FIGHTER_SHAPES = {
   char_pell_001: {
     height: 112, chest: -58,
     parts: [
-      { k: 'line', x1: -7, y1: -94, x2: -16, y2: -70, w: 6, fill: 0xd8dce6, role: 'hair' }, // ponytail
+      { k: 'line', x1: -7, y1: -94, x2: -16, y2: -70, w: 6, fill: 0x7a4a2a, role: 'hair' }, // ponytail (brown)
+      { k: 'line', x1: -11, y1: -90, x2: -6, y2: -88, w: 2, fill: 0xe2b341, role: 'prop' }, // gold tie at the nape
       { k: 'poly', pts: [[-20, -34], [20, -34], [28, 0], [-28, 0]], fill: 0xfaf7ee, stroke: 0xe2b341, sw: 2, role: 'prop' }, // robe
       torso(40, -78, -32),
       head(-90, 12), eye(-90, 12),
@@ -66,20 +70,29 @@ export const FIGHTER_SHAPES = {
       fist(24, -56, 7),
     ],
   },
-  // Rook: lanky, long legs, checker chest band, hood bump behind, raised back hand, forward-swept hair. Height 108.
+  // Rook (round-7 redesign, docs/art-briefs/char_rook_001.md recipe): navy vest panels over the Gale torso, a
+  // battlement hem with 4 teeth, collar, plum cap with a backward crest, raised bare back hand with a tally counter.
   char_rook_001: {
-    height: 108, chest: -84,
+    height: 108, chest: -62,
     parts: [
-      { k: 'circle', x: -13, y: -88, r: 10, fill: 0x1a1a1a, role: 'prop' }, // hood bump
-      { k: 'circle', x: -27, y: -82, r: 6, fill: AURA, stroke: W, sw: 2, role: 'fist' }, // raised back hand
-      { k: 'rect', x: -31, y: -96, w: 2, h: 8, fill: AURA, role: 'fist' },
-      { k: 'rect', x: -25, y: -96, w: 2, h: 8, fill: AURA, role: 'fist' },
-      ...legs(6, 10, 40),
-      torso(36, -92, -40),
-      { k: 'checker', x: -16, y: -70, cols: 4, rows: 2, size: 8, fill: 0x1a1a1a, fill2: 0xf2f2f2, role: 'prop' },
-      head(-96, 11), eye(-96, 11),
-      { k: 'poly', pts: [[-11, -98], [-6, -106], [16, -108], [9, -100], [11, -96]], fill: 0x1f2330, role: 'hair' },
-      fist(28, -62, 8),
+      { k: 'rect', x: -13, y: -40, w: 10, h: 40, r: 4, fill: 0x2a3447, role: 'leg' },
+      { k: 'rect', x: 3, y: -40, w: 10, h: 40, r: 4, fill: 0x2a3447, role: 'leg' },
+      torso(36, -84, -32),
+      { k: 'rect', x: -18, y: -84, w: 10, h: 56, fill: 0x3c4a63, role: 'prop' }, // vest panels
+      { k: 'rect', x: 8, y: -84, w: 10, h: 56, fill: 0x3c4a63, role: 'prop' },
+      { k: 'rect', x: -22, y: -32, w: 44, h: 4, fill: 0x3c4a63, role: 'prop' }, // battlement hem
+      ...[-22, -10, 2, 14].map((x) => ({ k: 'rect', x: x, y: -28, w: 8, h: 5, fill: 0x3c4a63, role: 'prop' })),
+      { k: 'line', x1: -22, y1: -32, x2: 22, y2: -32, w: 1, fill: 0xf2eee4, role: 'prop' },
+      { k: 'rect', x: -10, y: -88, w: 20, h: 6, fill: 0x3c4a63, stroke: 0xf2eee4, sw: 1, role: 'prop' }, // collar
+      head(-94, 13),
+      { k: 'poly', pts: [[8, -104], [8, -107], [-12, -107], [-12, -104]], fill: 0x5e2a48, role: 'hair' }, // cap
+      { k: 'poly', pts: [[4, -107], [-12, -104], [-24, -106]], fill: 0x5e2a48, role: 'hair' }, // crest, backward
+      eye(-94, 13),
+      fist(28, -60, 8),
+      { k: 'circle', x: -24, y: -92, r: 6, fill: SKIN, role: 'fist' }, // raised back hand
+      { k: 'rect', x: -28, y: -106, w: 2, h: 8, fill: SKIN, role: 'fist' },
+      { k: 'rect', x: -22, y: -106, w: 2, h: 8, fill: SKIN, role: 'fist' },
+      { k: 'rect', x: -27, y: -87, w: 6, h: 6, fill: 0xc9a23f, stroke: 0x8e7128, sw: 1, role: 'prop' }, // tally counter
     ],
   },
   // Solenne: broad shoulders, white sash diagonal with ticks, gold bracer, swept-back hair. Height 108.
@@ -196,8 +209,6 @@ export function partBounds(p) {
   switch (p.k) {
     case 'rect':
       return { x0: p.x - sw, y0: p.y - sw, x1: p.x + p.w + sw, y1: p.y + p.h + sw };
-    case 'checker':
-      return { x0: p.x, y0: p.y, x1: p.x + p.cols * p.size, y1: p.y + p.rows * p.size };
     case 'circle':
     case 'mask':
       return { x0: p.x - p.r - sw, y0: p.y - p.r - sw, x1: p.x + p.r + sw, y1: p.y + p.r + sw };
@@ -232,8 +243,6 @@ export function partContains(p, x, y) {
   switch (p.k) {
     case 'rect':
       return x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h;
-    case 'checker':
-      return x >= p.x && x <= p.x + p.cols * p.size && y >= p.y && y <= p.y + p.rows * p.size;
     case 'circle':
       return (x - p.x) ** 2 + (y - p.y) ** 2 <= p.r * p.r;
     case 'mask':

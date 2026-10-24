@@ -44,7 +44,7 @@ export class SummonRevealScene extends BaseScene {
     const T = TEST_HOOKS ? testHooks() : null;
     if (T) {
       (T.summonLog = T.summonLog || []).push({ type: 'reveal_start', t: performance.now(), count: r ? r.results.length : 0 });
-      T.summonReveal = () => ({ phase: this.phase, index: this.index, rows: this.ui.rows || null, warning: this.ui.warning || null });
+      T.summonReveal = () => ({ phase: this.phase, index: this.index, rows: this.ui.rows || null, warning: this.ui.warning || null, jadeShown: this.jadeShown });
     }
     if (!r || !r.results || !r.results.length) {
       this.goTo('Summon');
@@ -60,7 +60,10 @@ export class SummonRevealScene extends BaseScene {
     }
     this.tweens.add({ targets: bg, angle: 360, duration: 30000, repeat: -1 });
     this.bg = bg;
-    this.jadeLabel(W - 12, 26);
+    // R-6 / L-ui-008: the balance advances with the reveal. It starts at the balance after the cost, before any
+    // duplicate Jade, and each revealed "+N Jade" pull adds N; the results show the final (saved) balance.
+    this.jadeRevealed = 0;
+    this.drawJade();
     // VFX (GDD §17.2 summon_orb / summon_reveal): screen flash (limited, reduce-motion aware) drawn as a rect just
     // above the background rays and below the card, as in R3; the shake and particles are the layer's too.
     this.vfx = createVfx(this, null, data.save.settings, {
@@ -130,6 +133,8 @@ export class SummonRevealScene extends BaseScene {
       orb.destroy();
       for (const o of extras) o.destroy();
       this.showCard(res, cx, cy);
+      this.jadeRevealed = this.index + 1;
+      this.drawJade();
       this.time.delayedCall(PULL_MS[res.rarity] || PULL_MS[3], () => this.nextPull());
     });
   }
@@ -249,6 +254,20 @@ export class SummonRevealScene extends BaseScene {
     return c;
   }
 
+  /** Balance shown during the reveal: jade_after minus the Jade of pulls not revealed yet. */
+  jadeAt(revealedCount) {
+    const r = this.result;
+    let pending = 0;
+    for (let i = revealedCount; i < r.results.length; i++) pending += r.results[i].jade_added || 0;
+    return r.jade_after - pending;
+  }
+
+  drawJade() {
+    if (this.jadeObjs) for (const o of [this.jadeObjs.txt, this.jadeObjs.g, this.jadeObjs.name]) o.destroy();
+    this.jadeShown = this.jadeAt(this.jadeRevealed);
+    this.jadeObjs = this.jadeLabel(this.W - 12, 26, this.jadeShown);
+  }
+
   showResults() {
     if (this.phase === 'results') return;
     this.phase = 'results';
@@ -264,6 +283,8 @@ export class SummonRevealScene extends BaseScene {
     }
     if (this.hint) this.hint.destroy();
     if (this.counter) this.counter.destroy();
+    this.jadeRevealed = this.result.results.length;
+    this.drawJade();
     const { W, H } = this;
     const r = this.result;
     this.text(14, 26, t('summon_results_title'), 20, COLORS.text, { fontStyle: 'bold' }).setOrigin(0, 0.5);

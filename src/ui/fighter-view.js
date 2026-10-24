@@ -91,15 +91,6 @@ export function drawFighter(g, shape, o) {
         }
         break;
       }
-      case 'checker':
-        for (let r = 0; r < p.rows; r++) {
-          for (let c = 0; c < p.cols; c++) {
-            g.fillStyle(col((r + c) % 2 ? p.fill2 : p.fill), 1);
-            const x = p.x + c * p.size;
-            g.fillRect((fx > 0 ? x : -(x + p.size)) * s, Y(p.y + r * p.size), p.size * s, p.size * s);
-          }
-        }
-        break;
       case 'circle':
         g.fillCircle(X(p.x), Y(p.y), p.r * s);
         if (sw) g.strokeCircle(X(p.x), Y(p.y), p.r * s);

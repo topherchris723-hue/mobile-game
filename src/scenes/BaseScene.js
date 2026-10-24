@@ -226,9 +226,10 @@ export class BaseScene extends Phaser.Scene {
     }
   }
 
-  jadeLabel(rightX, cy) {
+  /** Jade balance (diamond + "Jade" + number). value: shown amount (default: the saved balance). */
+  jadeLabel(rightX, cy, value) {
     const cur = data.currenciesById.cur_jade;
-    const txt = this.text(rightX, cy, String(data.jade()), 16, COLORS.text, { fontStyle: 'bold' }).setOrigin(1, 0.5);
+    const txt = this.text(rightX, cy, String(value === undefined ? data.jade() : value), 16, COLORS.text, { fontStyle: 'bold' }).setOrigin(1, 0.5);
     const g = this.add.graphics();
     const ix = rightX - txt.width - 14;
     g.fillStyle(0x3ddc97, 1);
