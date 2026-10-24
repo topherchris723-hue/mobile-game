@@ -30,14 +30,16 @@ change the asset allowed-licence list above.
 ### Android app only (ship in the APK/AAB, not in the web bundle) — added round 7 by release-engineer
 
 `@capacitor/core` and `@capacitor/cli` are not bundled (`src/` does not import `@capacitor/core`; the CLI is a dev
-tool). The Android build adds native libraries that `dist/THIRD_PARTY_LICENSES.txt` (generated from the web bundle's
-module list) does **not** cover yet. Exact transitive list: `./gradlew :app:dependencies --configuration
-releaseRuntimeClasspath` on the CI build.
+tool). The Android build adds the native libraries below; since round 7 their notices are in
+`dist/THIRD_PARTY_LICENSES.txt` (shown in-game by `src/scenes/LicensesScene.js`, which fetches that file; reached
+from Settings → Licenses, `src/scenes/SettingsScene.js:47`). Exact transitive list: `./gradlew :app:dependencies
+--configuration releaseRuntimeClasspath` on the CI build.
 
 | Package | Version | License | Copyright | Commercial use OK? | Notice shipped in | Added round |
 |---|---|---|---|---|---|---|
-| @capacitor/android (Capacitor Android runtime + native-bridge.js) | 8.5.3 | MIT | (c) 2017-present Drifty Co. | Yes | PENDING: not yet in THIRD_PARTY_LICENSES.txt / Settings → Licenses (ui-developer) | 7 |
-| AndroidX: appcompat 1.7.1, coordinatorlayout 1.3.0, core 1.17.0, core-splashscreen 1.2.0, activity 1.11.0, fragment 1.8.9, webkit 1.14.0 and their AndroidX/Kotlin transitive deps | see `android/variables.gradle` | Apache-2.0 | The Android Open Source Project; JetBrains (Kotlin stdlib) | Yes | PENDING: Apache-2.0 text not yet shipped (ui-developer) | 7 |
+| @capacitor/android (Capacitor Android runtime + native-bridge.js, incl. the generated Cordova plugin bridge, no plugins) | 8.5.3 | MIT | (c) 2017-present Drifty Co. | Yes | `dist/THIRD_PARTY_LICENSES.txt` + Settings → Licenses | 7 |
+| AndroidX: appcompat 1.7.1, coordinatorlayout 1.3.0, core 1.17.0, core-splashscreen 1.2.0, activity 1.11.0, fragment 1.8.9, webkit 1.14.0 and their AndroidX/Kotlin/kotlinx transitive deps | see `android/variables.gradle` | Apache-2.0 | The Android Open Source Project; JetBrains s.r.o. and Kotlin contributors | Yes | `dist/THIRD_PARTY_LICENSES.txt` (full Apache-2.0 text) + Settings → Licenses | 7 |
+| Apache Cordova Android framework (`org.apache.cordova:framework`) | 14.0.1 | Apache-2.0 | The Apache Software Foundation (NOTICE file reproduced) | Yes | `dist/THIRD_PARTY_LICENSES.txt` (full Apache-2.0 text + NOTICE) + Settings → Licenses | 7 |
 
 Rule: when `package.json`, `package-lock.json` or the build changes, re-list the bundled packages from
 the bundler's module list and update this table and the notices file in the same hand-off.
@@ -48,6 +50,20 @@ the bundler's module list and update this table and the notices file in the same
   (search of `src/`, `*.html`, `public/`, build configs for image/audio/font extensions,
   `@font-face`, Google Fonts URLs and Phaser `load.*` calls: 0 hits). All art is drawn in code
   (team-made, no entry needed per file). The table above stays empty.
+- **Round 7 (art-director):**
+  - Android code-library rows flipped from PENDING after checking the notices file (L-ad-002):
+    `dist/THIRD_PARTY_LICENSES.txt` contains sections for @capacitor/android 8.5.3 (line 158, "Copyright (c)
+    2017-present Drifty Co."), the Capacitor Cordova bridge (184), the 7 AndroidX libraries (210–246),
+    `org.apache.cordova:framework 14.0.1` with the ASF NOTICE (252–258), AndroidX/Kotlin/kotlinx transitive (265–277)
+    and the full Apache License 2.0 text (303 onward). Settings → Licenses opens `LicensesScene`, which fetches
+    that same file. **NOT VERIFIED on a fresh build:** the art-director has no shell, so `npm run build` was not run
+    this round; the check is on the `dist/` file present in the tree. The Producer or QA should run `npm run build`
+    and repeat the grep (`Drifty|androidx|org.apache.cordova:framework 14.0.1|Apache License`).
+  - App-icon row (release-engineer) **approved**: all listed files exist (6 SVGs, play-store-icon-512.png, 25 mipmap
+    PNGs in 5 densities, drawable/splash.xml). The SVGs and generator contain no external URL, `<image>`, `<text>` or
+    font. The design (green faceted crystal, gold lightning bolt, two mint swoosh arcs, navy background) is original;
+    look-echo check: no franchise logo or character emblem uses this combination. Note: the bolt is a generic
+    storm shape, distinct from the in-game Bolt card icon (an arrow).
 
 ## Fonts
 
