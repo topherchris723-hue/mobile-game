@@ -88,3 +88,13 @@ Rule: For every AC with a time limit, start the transition in the same frame the
   and make it at least one frame (17 ms) shorter than the limit. The test measures from the event
   timestamp.
 Status: ACTIVE
+
+### L-ui-007: Measure frame cost before and after every drawing change
+Seen: 1 (round 5)
+Severity of what it caused: MINOR (near miss; new visual layers cost Canvas frame budget)
+What happened: Round-5 notes — the new placeholder-art layers raised Canvas frame cost. The
+  ui-developer baked fighter bodies into textures to recover it.
+Root cause: Drawing changes were added without a frame-cost comparison.
+Rule: For every change that adds or changes drawing, run the perf spec ≥ 3 times, alternating with
+  the parent commit, and report the frame-time and game-work p95 change (L-qa-005 method).
+Status: ACTIVE

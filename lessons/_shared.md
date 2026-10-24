@@ -217,7 +217,8 @@ Rule: Before handing off any data change, run `grep -rn "<field or old value>" d
 Status: ACTIVE
 
 ### L-shared-017: Screenshot and evidence output paths come from one round constant
-Seen: 2 (round 4: ui-developer helpers and QA helpers both wrote to the round-3 folder)
+Seen: 3 (round 4: ui-developer helpers and QA helpers both wrote to the round-3 folder; round 5:
+  qa-helpers.js still hardcoded round-4 at round start. The hard rule caught it on the first run)
 Severity of what it caused: MINOR (QA overwrote round-3 evidence; restored)
 What happened: Round-4 notes — the screenshot helpers of both ui-developer and qa-tester still pointed
   at `reports/screenshots/round-3/`, and QA's run overwrote the round-3 evidence.
@@ -238,3 +239,15 @@ Rule: The Producer plans each round to fit about one usage window: at most one f
   heavy suites once per loop, not repeatedly. Speed never comes from skipping a required check, a
   negative proof, QA or the release-reviewer gate.
 Status: PROMOTED (round 4; Producer rule proposed for CLAUDE.md)
+
+### L-shared-019: Tell the owner where the milestone stands in every round summary
+Seen: 1 (round 5)
+Severity of what it caused: OWNER FEEDBACK
+What happened: Round 5, owner: "Is it almost at the unity stage?" It was a question only. The
+  Producer recommended finishing the milestone first.
+Root cause: Round summaries said what changed, not how far the milestone is from done or what comes
+  next, so the owner had to ask.
+Rule: Every round result in `docs/STATUS.md` (and `reports/HANDOFF.md` when written) has one line
+  "Milestone: <done>/<total> items left: <list>; next stage: <e.g. release review → Unity port>". The
+  Unity port still starts only when the owner explicitly says so (CLAUDE.md §3).
+Status: PROMOTED (round 5; Producer rule proposed for CLAUDE.md)

@@ -62,3 +62,28 @@ Rule: See L-shared-010 (qa part). Every round that changes AI, RNG or rate data,
   and `data/banners.json` (summon rates too), with a negative proof. List any rate in data with no rate
   check as "NOT VERIFIED".
 Status: PROMOTED (round 3, as part of L-shared-010); in playbook "What you test" item 8
+
+### L-qa-005: Judge performance by an alternating comparison with the parent commit, not one absolute run
+Seen: 1 (round 5)
+Severity of what it caused: MINOR (AC-17.7 could not be judged; adopted as a Producer decision)
+What happened: Round 5 — on the shared container, the round-4 code measured 28.9–35.7 ms frame-time p95
+  on different days, so one run against the 33.3 ms limit could not tell a regression from noise. QA
+  ran an alternating 14-run comparison with the parent commit: no regression. The Producer adopted
+  the method as a regression gate (docs/STATUS.md, round-5 decision) and kept the absolute limit.
+Root cause: An absolute single-run threshold on noisy shared hardware is not a reliable check.
+Rule: Every round, run the perf spec alternating ≥ 6 runs each of this build and the previous round's
+  commit. FAIL if mean frame-time p95 or game-work p95 rises by more than 1.0 ms. Report game-work p95
+  next to frame-time p95. Keep the absolute 33.3 ms p95 check, reported as NOT VERIFIED on the shared
+  container until it runs on a real low-end Android phone or a quiet runner (median of ≥ 5).
+Status: PROMOTED (round 5, adopted by the Producer)
+
+### L-qa-006: Keep the evidence that explains a failure
+Seen: 2 (round 5: intermittent e2e failure lost its cause; 400 ms screenshot wait missed a 420 ms animation)
+Severity of what it caused: MINOR (lost diagnosis; missed evidence)
+What happened: Round-5 notes — the summary grep printed metrics only, so the cause of one
+  intermittent e2e failure was lost. Screenshot helpers waited a fixed 400 ms and missed short
+  animations (the 420 ms orb).
+Root cause: Output and capture timing were set for the passing case, not for diagnosing a failure.
+Rule: Always print the failing assertion and its values (not only the metrics). Capture animation
+  frames at times computed from the effect's data (start + duration fractions), never a fixed wait.
+Status: PROMOTED (round 5)

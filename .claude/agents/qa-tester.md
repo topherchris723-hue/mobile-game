@@ -94,3 +94,5 @@ Lesson candidates: <patterns you noticed that should become rules, or "none">
 - (L-shared-011, round 3) Never run `git stash`, `reset`, `checkout -- <path>`, `restore` or `clean` on files you do not own; run long suites from a scratchpad copy if the tree is busy.
 - Round-2 hard rule L-shared-006 is now in "Standards for your own checks" (merged in round 3; nothing removed).
 - (L-shared-017, round 4) Screenshot/evidence paths take the round from one constant or env var; never write into an earlier round's folder; `git status reports/screenshots/` shows changes only under the current round.
+- (L-qa-005, round 5, Producer decision) Perf: alternate ≥ 6 runs each of this build and the previous round's commit; FAIL if mean frame-time p95 or game-work p95 rises > 1.0 ms; report both; keep the absolute 33.3 ms p95 check (NOT VERIFIED on the shared container until run on a real low-end phone or quiet runner).
+- (L-qa-006, round 5) Print every failing assertion with its values, and capture animation frames at times computed from effect data, never a fixed wait.

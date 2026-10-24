@@ -3,7 +3,7 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** Growth — polish nearly done (VFX, audio, settings in). Next: round 5 leftovers + placeholder art, then Launch
+- **Phase:** Growth complete. Next: Launch (round 6)
 - **Round:** 5
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** none
@@ -30,6 +30,8 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
   list every script/test that reads it in the same hand-off.
 - Plan each round to fit about one usage window: one feature goal plus fixes; move extras on.
   Never shorten a round by skipping a check, QA or the review gate.
+- Every round result has a line "Milestone: <done>/<total>; left: <list>; next stage: <…>".
+  The Unity port starts only when the owner explicitly says so.
 - After each round, republish the private playtest build:
   https://claude.ai/artifact/Mhc2SgVEgtoxFb5nHeqjXh
 
@@ -92,6 +94,21 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 5 — Leftovers + placeholder art (result)
+- **Result:** BUG-4-01/4-02 fixed (overlay fade in the event frame; GDD points to ECONOMY.md for
+  numbers); distinct silhouettes + prop colours for all 8 fighters; Umbral look from the new
+  display-only `variant` field (AC-8.2); mirror-match floor rims; summon rarity frames and orbs.
+- **QA:** 1 loop, PASS with 0 bugs. Perf: no regression vs round 4 (14 alternating runs);
+  absolute AC-17.7 NOT VERIFIED on this container → Producer added a regression gate.
+- **Retro:** 4 new lessons, qa-tester hard rules for the perf gate and failure evidence. No rule
+  loosened.
+- **Milestone: 4/7 stages done (Design, Build, QA, Growth); left: Compliance, Release review,
+  Build APK/AAB + owner playtest; next stage: Launch.**
+- **Next:** Round 6 — Launch: compliance-checker (IP, licences, privacy policy, data safety, age
+  rating, gacha disclosure, trademark check "Jade Tempest"); fixes; release-reviewer (cold review,
+  build + GAME_BRIEF only); if PASS, release-engineer prepares Capacitor/Android + signing config
+  (owner must create the keystore + GitHub secrets — CLAUDE.md §8). Retro with step C.
 
 ### Round 5 — Leftovers + placeholder art (plan)
 - **Goal:** finish Growth so Launch can start next round. Fits one usage window.
