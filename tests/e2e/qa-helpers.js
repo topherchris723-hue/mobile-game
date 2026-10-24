@@ -2,8 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-// Round 3: screenshots only with QA_SHOTS=1 (or UI_SHOTS=1), so normal test runs never rewrite evidence.
-export const QA_SHOTS = 'reports/screenshots/round-3/qa';
+// Round 3+: screenshots only with QA_SHOTS=1 (or UI_SHOTS=1), so normal test runs never rewrite evidence.
+export const QA_SHOTS = 'reports/screenshots/round-4/qa';
 export const WRITE_QA_SHOTS = process.env.QA_SHOTS === '1' || process.env.UI_SHOTS === '1';
 if (WRITE_QA_SHOTS) fs.mkdirSync(QA_SHOTS, { recursive: true });
 
@@ -32,7 +32,7 @@ export function freshSave() {
     team: e.starting.team.slice(),
     stages: {},
     summon: { pity: {}, first_multi_done: {}, total_pulls: 0 },
-    settings: { bgm_volume: 1, sfx_volume: 1, haptics: true },
+    settings: { master_volume: 1, bgm_volume: 1, sfx_volume: 1, muted: false, haptics: true, reduce_motion: false }, // R4-1
     tutorial: { completed: false },
   };
 }

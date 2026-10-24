@@ -60,7 +60,8 @@ lesson and a hard rule at the next `/retro`.
   `src/ui/vfx|audio` as GDD §17/§18 consumer notes say; ui-developer wires them in. GDD to align.
 - Round 4: economy review passed fairness with no data change. Adopted its proposal to make
   stage_001 a worse Jade farm than later stages (repeat-clear Jade stage_001 30 → 10, stage_002
-  30 → 20; first-time budget unchanged) — content-designer, wave 2. Its displayed-vs-real rate
+  30 → 20; first-time budget unchanged) — content-designer, wave 2. Then, so skilled Jade/min
+  rises every stage, stage_003 40 → 45 and stage_005 60 → 75 (final: 10/20/45/50/75). Its displayed-vs-real rate
   check becomes a permanent test (gameplay-programmer); tests that hardcode live economy numbers
   get fixed (gameplay-programmer, qa-tester).
 - Round 3: game-designer doubled all HP (battle target 120–200 s kept; "fast" = feel per

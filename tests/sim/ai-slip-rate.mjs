@@ -16,7 +16,8 @@ for (const [tier, enemy] of Object.entries(tiers)) {
   let n = 0;
   let skipped = 0;
   let multi = 0;
-  for (let seed = 1; seed <= N; seed++) {
+  const S0 = Number(process.env.SEED0 || 1);
+  for (let seed = S0; seed < S0 + N; seed++) {
     const b = createBattle({ content, enemyTeam: [enemy], playerTeam: ['char_pell_001', 'char_lark_001', 'char_dunmore_001'], skipIntro: true }, seed);
     b.teams.player.x = 44; b.teams.enemy.x = 56;
     const f = b.activeFighter('player');

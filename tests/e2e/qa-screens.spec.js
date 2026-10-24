@@ -1,5 +1,5 @@
 // QA round 2: every screen at 360×640, 390×844, 430×932 (+ 360×800 for AC-14.2). Screenshots go to
-// reports/screenshots/round-3/qa/. Automated layout scan: text clipped off-screen, font < 12 px,
+// reports/screenshots/round-<N>/qa/ (QA_SHOTS in qa-helpers.js). Automated layout scan: text clipped off-screen, font < 12 px,
 // text/text overlap, touch targets ≥ 44 and ≥ 8 px apart (GDD §14, AC-14.1), no shop/purchase UI (AC-4.2),
 // zero console errors. Runs once (in the 360 project) and opens its own contexts per size.
 import { test, expect } from '@playwright/test';
@@ -34,6 +34,13 @@ test('QA screens at 3 phone sizes: layout scan + screenshots', async ({ browser 
     await tap(page, 'start');
     await waitScene(page, 'Home');
     await check(page, n, '02-home', findings);
+    // Round 4: Settings from the Home gear (GDD §19, ruling R4-3)
+    await tap(page, 'home_settings');
+    await waitScene(page, 'Settings');
+    await check(page, n, '02b-settings', findings);
+    await page.waitForTimeout(300);
+    await tap(page, 'back');
+    await waitScene(page, 'Home');
     // Round 3: Summon is built (GDD §11.1)
     await tap(page, 'home_summon');
     await waitScene(page, 'Summon');
