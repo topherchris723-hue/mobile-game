@@ -4,7 +4,7 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
 - **Phase:** Growth complete. Next: Launch (round 6)
-- **Round:** 5
+- **Round:** 6
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** none
 - **Unity port started:** no
@@ -94,6 +94,18 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 6 — Launch: compliance + release review (plan)
+- **Goal:** get a release-reviewer verdict on the milestone build. Fits one usage window where
+  possible; Android packaging follows only after PASS.
+- **Step 1 (parallel):** compliance-checker (full Launch checklist on the web build + planned
+  Android packaging; privacy policy draft; trademark search "Jade Tempest"); store-writer (Play
+  listing, release notes, screenshot plan — only claims what's in the build).
+- **Step 2:** route every compliance FAIL to its owner; QA re-check if code changed.
+- **Step 3:** release-reviewer, cold (build location + GAME_BRIEF only) → reports/release-review.md.
+- **Step 4:** on FAIL route findings and re-review; on PASS, next round release-engineer
+  (Capacitor, Android project, signing config — owner creates keystore + secrets).
+- Retro with step C (round 6).
 
 ### Round 5 — Leftovers + placeholder art (result)
 - **Result:** BUG-4-01/4-02 fixed (overlay fade in the event frame; GDD points to ECONOMY.md for
