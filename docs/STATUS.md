@@ -64,6 +64,14 @@ lesson and a hard rule at the next `/retro`.
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
   currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 6: code libraries (phaser, ajv, ajv-formats, fast-deep-equal, json-schema-traverse: MIT;
+  fast-uri: BSD-3) are covered by CLAUDE.md §2's owner-set stack (Phaser 3). They are logged in a
+  "Code libraries" table in assets/CREDITS.md and their licence texts ship in-game (Settings →
+  Licenses). The asset allowed-licence list itself is unchanged.
+- Round 6: title — compliance found Atari's live US "TEMPEST" mark (Class 9) and a Monster Hunter
+  weapon named "Jade Tempest". Keep "Jade Tempest" for private builds only; before any public Play
+  upload the title needs human legal clearance (paid → owner, CLAUDE.md §8) or a switch to the
+  lowest-risk fallback "Meridian Burst" (also to be cleared). Asked the owner.
 - Round 5: perf (AC-17.7) — keep the absolute 33.3 ms p95 check unchanged; ADD a regression gate
   each round (alternating ≥6 runs vs the previous round's commit; fail if mean frame-time p95 or
   game-work p95 rises > 1.0 ms) and report game-work p95 next to frame-time p95. The absolute check
