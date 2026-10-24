@@ -10,6 +10,25 @@ Allowed licenses without owner approval: CC0, CC-BY (with credit shown in-game),
 made by the team, assets the owner has bought with a commercial license.
 Anything else needs owner approval logged in `docs/STATUS.md`.
 
+## Code libraries (shipped in the app)
+
+Every npm package bundled into the release build (module list from the release bundle, compliance
+report `reports/compliance/round-6.md` item 2). Versions from `package-lock.json`. These are covered by
+the owner-set tech stack in CLAUDE.md §2 (Producer decision logged in `docs/STATUS.md`); they do not
+change the asset allowed-licence list above.
+
+| Package | Version | License | Copyright | Commercial use OK? | Notice shipped in | Added round |
+|---|---|---|---|---|---|---|
+| phaser | 3.90.0 | MIT | (c) 2024 Richard Davey, Phaser Studio Inc. (bundles eventemitter3, MIT, (c) 2014 Arnout Kazemier) | Yes | `dist/THIRD_PARTY_LICENSES.txt` + Settings → Licenses | 6 |
+| ajv | 8.20.0 | MIT | (c) 2015-2021 Evgeny Poberezkin | Yes | `dist/THIRD_PARTY_LICENSES.txt` + Settings → Licenses | 6 |
+| ajv-formats | 3.0.1 | MIT | (c) 2020 Evgeny Poberezkin | Yes | `dist/THIRD_PARTY_LICENSES.txt` + Settings → Licenses | 6 |
+| fast-deep-equal | 3.1.3 | MIT | (c) 2017 Evgeny Poberezkin | Yes | `dist/THIRD_PARTY_LICENSES.txt` + Settings → Licenses | 6 |
+| json-schema-traverse | 1.0.0 | MIT | (c) 2017 Evgeny Poberezkin | Yes | `dist/THIRD_PARTY_LICENSES.txt` + Settings → Licenses | 6 |
+| fast-uri | 3.1.9 | BSD-3-Clause | (c) 2011-2021 Gary Court; (c) 2021-present The Fastify team | Yes | `dist/THIRD_PARTY_LICENSES.txt` + Settings → Licenses | 6 |
+
+Rule: when `package.json`, `package-lock.json` or the build changes, re-list the bundled packages from
+the bundler's module list and update this table and the notices file in the same hand-off.
+
 ## Review log
 
 - **Round 4 (art-director):** consistent. The repo ships **no** image, audio or font files
