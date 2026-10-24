@@ -27,10 +27,13 @@ Mood references (described, never franchise images):
   franchise (CLAUDE.md §9, GDD §3). Briefs never say "like <character>"; they describe shapes and colours.
 - **Ignition is never "the hair turns gold and spikes up" and never a body-hugging flame outline that flickers around
   the whole figure.** Those read as a famous franchise transformation. Our Ignition changes a **signature prop or
-  accessory** (braid, lanterns, mask, checker tiles, sun disc, shard crown) and adds an aura-coloured shape *behind*
+  accessory** (braid, lanterns, mask, tower blocks, sun disc, shard crown) and adds an aura-coloured shape *behind*
   the fighter. Hair colour never changes on Ignition.
 - No energy "ball held in cupped hands at the hip", no straw hats, no cracked bone-white skull masks, no forehead
   protectors with metal plates, no headbands with a symbol plate, no orange gi with a chest kanji.
+- No check/chequer costume patterns (round 7, R-7: a green-and-black check is a famous protagonist's signature).
+  Every look gets the look-echo check (colours + pattern + hair + accessory, hard rule L-ad-001): two signature
+  elements matching one known character means one must change.
 - No real-world writing used as decoration (no kanji/hanzi/hangul "for flavour"). Use our own geometric glyphs
   (the 5 aura shapes, chevrons, checks) instead.
 - No dragons, no wish orbs, no "seven of anything" collectible set in summon or UI art.
@@ -118,7 +121,7 @@ deutan players, and ★4 violet is close to Void. Rarity is therefore always sho
 - **Rim light:** a 1 px (logical) rim in the fighter's aura **Light** colour on the side facing the opponent. This
   ties the fighter to its type without painting the whole costume in the aura colour.
 - **Shapes first.** Big simple shapes, readable at 100 px tall. Signature props are oversized (braid, kite fins,
-  stone gauntlets, lantern staff, coat, hood, sash, ribbons).
+  stone gauntlets, lantern staff, coat, battlement vest, sash, ribbons).
 - **Faces:** big eyes, one clear brow shape, readable expression at 20 px head width. Mouth open in every attack
   frame (it is a shouting game).
 - Light comes from the upper front; cast shadow is the existing floor ellipse (code-drawn).
@@ -332,14 +335,14 @@ Priority order; owner agent in brackets. Each item ends with how to prove it.
    Playwright screenshot of all 8 fighters in idle as black fills side by side
    (`reports/screenshots/round-4/silhouettes-360x640.png`) where every pair is tellable apart, plus the existing
    name-overlap specs still passing.
-2. **Signature prop colours** [ui-developer]. Draw each fighter's props (braid, fins, gauntlets, staff, coat, hood,
+2. **Signature prop colours** [ui-developer]. Draw each fighter's props (braid, fins, gauntlets, staff, coat, vest,
    sash, ribbons) in the hex colours from its brief; the torso stays aura-coloured so the approved type read stays.
 3. **Umbral rendering rule** [ui-developer]. For Umbral enemies apply §9 in code: dark tint, violet outline, crack
    lines, glowing eyes, real aura icon. Today the only marker is the id (`enemy_umbral_*`) and the `name_override`
    text; a data flag such as `variant: "umbral"` in `enemies.json` (game-designer/content-designer decision) is the
    clean trigger, because code must not depend on display text. Proof: stage_003 and stage_005 screenshots.
 4. **Ignition prop transformations** [vfx-developer]. Replace the pulsing ellipse with each brief's Ignition
-   back-shape and prop change (braid flame, lantern halo, mask drop, checker tiles, sun disc, shard throne), drawn
+   back-shape and prop change (braid flame, lantern halo, mask drop, tower blocks, sun disc, shard throne), drawn
    behind the body, alpha ≤ 50% in the name row band. Timing unchanged.
 5. **Aura hit particles and trails** [vfx-developer]. §7.1 shapes and colours per aura; respect the L0–L2 budgets.
 6. **Tri-Burst three-stripe band** [vfx-developer]. §7.2 L5: three diagonal aura-key stripes with aura icons inside

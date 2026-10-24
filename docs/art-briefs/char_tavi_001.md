@@ -16,17 +16,17 @@ Expression default: wide grin, one brow up. Attacks: mouth open, yelling.
 ## Colours
 | Part | Hex |
 |---|---|
-| Work jacket (crimson) | #C8282E, shadow #8E1A22 |
+| Work jacket (charcoal canvas, round 7) | #3A3A46, shadow #26262F; cuffs, collar and knot trim Blaze light #FFB13D |
 | Braid (copper) | #C7662B, shadow #8A4419 |
 | Tank top | #F4F1EA |
 | Knuckle tape | #E9DCC3 |
 | Trousers (dark work canvas) | #2E2A3A |
-| High-tops, mismatched | left #E0A030 (ochre), right #C8282E (crimson), soles #F4F1EA |
+| High-tops, mismatched | left #E0A030 (ochre), right #2FA7A0 (teal), soles #F4F1EA |
 | Skin | #E8B48F, shadow #C48A66 |
 | Rim light | Blaze light #FFB13D |
 
 ## Outfit
-White tank top, crimson oversized work jacket tied at the waist, dark canvas work trousers rolled once at the
+White tank top, charcoal oversized canvas work jacket with orange trim, tied at the waist, dark canvas work trousers rolled once at the
 ankle, mismatched high-tops, knuckle tape on both hands, small scar on the **chin** (not near the eyes). A wrench
 clipped to the belt loop (small, no brand marks).
 
@@ -55,7 +55,7 @@ Style guide §4.4: sprite frames 576×858 @3x, portraits 512 master, summon art 
 ## Placeholder recipe (code, now)
 Torso 40×46 aura key with white stroke; braid = tapered 6 px strip from the back of the head to the waist on the
 side away from the opponent (#C7662B); jacket flare = trapezoid 40→54 px wide at the hips behind the legs
-(#C8282E); fists white-taped (small #E9DCC3 band). Height 96. Ignition: braid strip turns into 3 stacked Blaze
+(#3A3A46 with a 2 px #FFB13D top edge for the knot); fists white-taped (small #E9DCC3 band). Height 96. Ignition: braid strip turns into 3 stacked Blaze
 teardrops in the ramp.
 
 ## What makes it original
@@ -67,6 +67,14 @@ jacket. The look is "workshop" not "pirate" and not "ninja".
 - No spiky pink/red hair, no white scale-pattern scarf; no flame-haired boy with a dragon motif.
 - No orange/blue martial-arts gi, no wristbands with symbols.
 - Fire never wraps the whole body as an outline; it lives in the braid, jacket edges and hit VFX.
+- No red/crimson top (shirt or jacket) together with the single long braid, no Chinese-collar shirt with knot
+  buttons, no black kung-fu trousers and slippers (avoids the famous braided martial-artist with a red shirt).
+
+## Look-echo check (L-ad-001, round 7)
+Signature combination (round 4): crimson top + single long copper/red braid + martial artist → **2 elements** matched
+a famous braided martial-arts protagonist (red shirt, single braid; red hair in one form). **Changed:** the jacket is
+now charcoal #3A3A46 with orange trim; the right shoe is teal. Braid, wrench and tied jacket stay. Other near
+designs: a straw-hat pirate (red top only, now gone: 0), a pink-haired fire wizard (0). Result: **OK after change**.
 
 ## Mood references (words)
 1. A garage at night, a single hot work lamp, sparks from a grinder.

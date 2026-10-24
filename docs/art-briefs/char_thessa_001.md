@@ -64,6 +64,14 @@ An ink-and-eclipse herald: her power is calligraphy ink and night sky, her mask 
   look; see the GDD §3 banned-term list for the related franchise term.)
 - No black hooded cloak with red clouds; no plague-doctor beak; no katana.
 - No glowing red eyes; her dark eyes have a violet ring.
+- The mask covers the eye like a theatre domino; it is **never a helmet fragment on the side/top of the head**, and
+  there are **no tear-track lines** painted under the eye (avoids a famous pale espada with a half-helmet and green
+  tear marks).
+
+## Look-echo check (L-ad-001, round 7)
+Signature combination: black long coat + star-flecked violet lining + white porcelain half-mask + ink hands + dark
+violet hair. Nearest: a pale half-masked espada (1 element: white half-mask; coat colour, hair and marks differ);
+a black cloak with red clouds (0: no clouds, violet stars). Result: **OK**, with the extra avoid line above.
 
 ## Mood references (words)
 1. Ink dropped in water, spreading in slow clouds.

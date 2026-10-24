@@ -10,7 +10,7 @@ Expression default: calm half-smile, eyes half-closed. Attacks: eyes snap open, 
 ## Silhouette keys
 1. **Paper-lantern staff** taller than he is (staff top at 112 px), a round lantern hanging from a crook at the top.
 2. **Layered robe to the ankles** with wide **bell sleeves** (small bells on the cuffs): a bell-shaped body.
-3. **Long silver hair in a low ponytail** that falls behind the back (he is not bald).
+3. **Long chestnut hair in a low ponytail** (round 7: was silver) that falls behind the back (he is not bald).
 
 ## Colours
 | Part | Hex |
@@ -18,7 +18,7 @@ Expression default: calm half-smile, eyes half-closed. Attacks: eyes snap open, 
 | Outer robe | #FAF7EE, shadow #D9D3C2 |
 | Inner robe and trims | #E2B341, shadow #B08623 |
 | Bells | #F2C94C, highlight #FFF0A8 |
-| Hair (silver) | #D8DCE6, shadow #A9AEC0 |
+| Hair (warm chestnut, tied with a gold cord #E2B341) | #7A4A2A, shadow #55321C, shine #A0683E |
 | Staff | #8A6A3A, shadow #5E4626 |
 | Lantern paper | #FFE7A3, light #FFF6D6, ribs #C99A1E |
 | Sandals | #8A6A3A |
@@ -52,16 +52,24 @@ Style guide §4.4. The staff may reach 112 px but no higher; the lantern halo in
 ## Placeholder recipe (code, now)
 Torso 40×46 aura key; robe = trapezoid 40→56 from waist to floor (#FAF7EE, gold #E2B341 hem line), legs hidden;
 staff = 4 px vertical line #8A6A3A from floor to −112 in front of the body; lantern = rounded rect 12×16 #FFE7A3 at
-−100; ponytail = 6 px strip #D8DCE6 behind the head. Ignition: 7 circles r 5 #FFE7A3 orbiting at radius 40 behind.
+−100; ponytail = 6 px strip #7A4A2A behind the head with a 2 px #E2B341 tie at the nape. Ignition: 7 circles r 5 #FFE7A3 orbiting at radius 40 behind.
 
 ## What makes it original
 A light-themed healer whose tool is a paper lantern: festival light, not holy light. His humour (betting on
 rematches) undercuts the serene monk cliché.
 
 ## Must not resemble / avoid
+- No long silver/white hair with white robes, no crescent mark on the forehead, no fur stole (avoids a famous
+  silver-haired demon lord in white).
 - No bald head with dots on the forehead; no orange-and-yellow monk robe with a glider staff and arrow tattoos.
 - No monkey-king staff (red-gold extending pole), no cloud riding.
 - No halo ring over the head (angel look); lanterns orbit behind the shoulders instead.
+
+## Look-echo check (L-ad-001, round 7)
+Signature combination (round 4): long silver hair + white robes + calm aristocratic air → **2 elements** matched a
+famous silver-haired demon lord in a white kimono. **Changed:** hair is now chestnut #7A4A2A with a gold tie. Other
+near designs: an arrow-tattooed bald air monk (0: has hair, no tattoos, no glider), a bald small monk with forehead
+dots (0). Result: **OK after change**.
 
 ## Mood references (words)
 1. A river lantern festival: hundreds of paper lights drifting on dark water.
