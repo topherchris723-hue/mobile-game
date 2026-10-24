@@ -4,7 +4,7 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
 - **Phase:** Launch — first release review FAILED (round 6); fixing for re-review
-- **Round:** 6
+- **Round:** 7
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** FAIL (round 6, commit 48fb519; 1 blocker, 2 major)
 - **Unity port started:** no
@@ -73,6 +73,10 @@ lesson and a hard rule at the next `/retro`.
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
   currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 7 (owner did not answer → default option 3): the milestone release candidate targets
+  Google Play **internal testing** only (private testers, not public). The "Jade Tempest" title
+  stays for that track; human trademark clearance (or a title switch) is required before any
+  closed/open/production (public) track. Compliance judges the title against that scope.
 - Round 6: code libraries (phaser, ajv, ajv-formats, fast-deep-equal, json-schema-traverse: MIT;
   fast-uri: BSD-3) are covered by CLAUDE.md §2's owner-set stack (Phaser 3). They are logged in a
   "Code libraries" table in assets/CREDITS.md and their licence texts ship in-game (Settings →
@@ -115,6 +119,18 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 7 — Launch fixes + re-review (plan)
+- **Goal:** fix every round-6 reviewer finding, pass the round-6 release gate, re-review.
+- **Step 1 (parallel):** art-director — Rook redesign brief (R-7); release-engineer — pre-review
+  app identity (pinned Capacitor, appId, original icon/splash, versionCode, portrait, VIBRATE only,
+  no INTERNET, debug build only — nothing signed) (R-3); vfx-developer — VFX perf so AC-17.7 median
+  p95 ≤ 33.3 ms at 4× CPU (R-2).
+- **Step 2:** ui-developer — renderer perf share of R-2, R-4 title text, R-6 reveal spoiler, R-8
+  Settings spacing, Rook drawing per new brief.
+- **Step 3:** qa-tester (full suites on the exact commit, absolute perf, placeholder sweep, R-5);
+  compliance-checker on the exact commit (internal-testing scope); release-reviewer.
+- Retro A+B.
 
 ### Round 6 — Launch: compliance + release review (result)
 - **Result:** compliance on bf48920: 5 PASS / 2 FAIL (title trademark; code-library notices) / 1 N/A.
