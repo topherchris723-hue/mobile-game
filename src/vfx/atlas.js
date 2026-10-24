@@ -2,6 +2,7 @@
 // ≤ 1,024², generated shapes; no image files, nothing to license). Shapes follow docs/STYLE_GUIDE.md §7.1 and the
 // art briefs' Ignition "Placeholder recipe". White shapes take a tint; back-shapes bake the brief's hex colours.
 import { FRAMES } from './particles.js';
+import { VECTOR_FRAMES, paintShape } from './vector-shapes.js';
 
 export const ATLAS_KEY = 'vfx_gen_atlas';
 export const ATLAS_SIZE = 512;
@@ -132,49 +133,21 @@ const AURA_KEYS = { blaze: 0xff6a3d, gale: 0x3ddc97, stone: 0xc9a36b, radiant: 0
 
 /** Frame painters: (ctx, w, h). Coordinates are local to the cell. */
 const PAINT = {
-  dot(c, w, h) { c.fillStyle = '#fff'; c.beginPath(); c.arc(w / 2, h / 2, w / 2 - 1, 0, Math.PI * 2); c.fill(); },
+  // dot, ember, chevron, kite, hex, star4, star5, crescent, diamond, ring, ring_seg, disc, ghost: vector-shapes.js
   soft(c, w, h) {
     const g = c.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
     g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.5, 'rgba(255,255,255,0.45)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     c.fillStyle = g; c.fillRect(0, 0, w, h);
   },
-  ember(c, w, h) { c.fillStyle = '#fff'; teardrop(c, w / 2, h / 2, w - 4, h - 2); c.fill(); },
-  chevron(c, w, h) { c.fillStyle = '#fff'; poly(c, [[2, 2], [w - 2, h / 2], [2, h - 2], [7, h / 2]]); c.fill(); },
-  kite(c, w, h) { c.fillStyle = '#fff'; poly(c, [[w / 2, 1], [w - 1, h * 0.4], [w / 2, h - 1], [1, h * 0.4]]); c.fill(); },
-  hex(c, w, h) { c.fillStyle = '#fff'; poly(c, hexPts(w / 2, h / 2, w / 2 - 1)); c.fill(); },
-  star4(c, w, h) { c.fillStyle = '#fff'; poly(c, starPts(w / 2, h / 2, 4, w / 2 - 1, w * 0.14, -Math.PI / 2)); c.fill(); },
-  star5(c, w, h) { c.fillStyle = '#fff'; poly(c, starPts(w / 2, h / 2, 5, w / 2 - 1, w * 0.22, -Math.PI / 2)); c.fill(); },
-  // Void: dark fill + bright rim (tinted #C7A6FF-ish by the key colour; fill stays dark, §7.1)
-  crescent(c, w, h) { crescent(c, w / 2, h / 2, w / 2 - 1, 'rgba(70,70,70,1)', 'rgba(255,255,255,1)'); },
-  diamond(c, w, h) { c.fillStyle = '#fff'; poly(c, [[w / 2, 0], [w, h / 2], [w / 2, h], [0, h / 2]]); c.fill(); },
   streak_small(c, w, h) {
     const g = c.createLinearGradient(0, 0, w, 0);
     g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(255,255,255,1)');
     c.fillStyle = g; c.fillRect(0, 1, w, h - 2);
   },
-  ring(c, w, h) { c.strokeStyle = '#fff'; c.lineWidth = 3; c.beginPath(); c.arc(w / 2, h / 2, RING_RADIUS, 0, Math.PI * 2); c.stroke(); },
-  // segmented ring: shape-distinct from the solid card-colour windup ring (style guide §2.3)
-  ring_seg(c, w, h) {
-    c.strokeStyle = '#fff'; c.lineWidth = 4;
-    for (let i = 0; i < 8; i++) {
-      c.beginPath();
-      c.arc(w / 2, h / 2, RING_RADIUS, (i * Math.PI) / 4 + 0.08, ((i + 1) * Math.PI) / 4 - 0.18);
-      c.stroke();
-    }
-  },
-  disc(c, w, h) { c.fillStyle = '#fff'; c.beginPath(); c.arc(w / 2, h / 2, DISC_RADIUS, 0, Math.PI * 2); c.fill(); },
   streak(c, w, h) {
     const g = c.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(0.5, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     c.fillStyle = g; c.fillRect(0, 0, w, h);
-  },
-  // afterimage silhouette (placeholder body: legs, torso, head), facing right
-  ghost(c, w, h) {
-    c.fillStyle = '#fff';
-    c.fillRect(w / 2 - 16, h - 34, 12, 34); c.fillRect(w / 2 + 4, h - 34, 12, 34);
-    c.beginPath(); c.roundRect ? c.roundRect(w / 2 - 22, h - 80, 44, 50, 10) : c.rect(w / 2 - 22, h - 80, 44, 50); c.fill();
-    c.beginPath(); c.arc(w / 2, h - 94, 13, 0, Math.PI * 2); c.fill();
-    c.beginPath(); c.arc(w / 2 + 28, h - 58, 8, 0, Math.PI * 2); c.fill();
   },
   beam(c, w, h) {
     const g = c.createLinearGradient(0, 0, w, 0);
@@ -205,7 +178,7 @@ const PAINT = {
       c.fillStyle = hex(0xffffff, 0.9); c.fillRect(x - 2, y - 3, 4, 6);
     }
   },
-  // Rook: 8 checker tiles orbiting at radius 44 in a Gale spiral (brief)
+  // Rook: 8 off-white tower blocks orbiting at radius 44 in a Gale spiral (brief, round 7)
   back_rook(c, w, h) {
     c.strokeStyle = hex(0x3ddc97, 0.45); c.lineWidth = 3; c.beginPath();
     for (let i = 0; i <= 50; i++) {
@@ -216,12 +189,14 @@ const PAINT = {
       if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
     }
     c.stroke();
+    // round 7 (art brief char_rook_001 "Ignition"): 8 tower blocks 8×8 #F2EEE4 with a 1 px #3DDC97 edge — one colour,
+    // no alternation (no check / chequer pattern anywhere)
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
       const x = w / 2 + Math.cos(a) * 44;
       const y = h / 2 + Math.sin(a) * 44;
-      c.fillStyle = i % 2 ? '#f2f2f2' : '#1a1a1a'; c.fillRect(x - 6, y - 6, 12, 12);
-      c.strokeStyle = '#3ddc97'; c.lineWidth = 1.5; c.strokeRect(x - 6, y - 6, 12, 12);
+      c.fillStyle = '#f2eee4'; c.fillRect(x - 4, y - 4, 8, 8);
+      c.strokeStyle = '#3ddc97'; c.lineWidth = 1; c.strokeRect(x - 4, y - 4, 8, 8);
     }
   },
   // Solenne: sun disc r45 #FFD27A at 40% + 8 triangle rays in Blaze key, core #FFF4D6 (brief)
@@ -281,7 +256,9 @@ export function ensureAtlas(scene) {
     ctx.rect(0, 0, r.w, r.h);
     ctx.clip();
     try {
-      PAINT[f](ctx, r.w, r.h);
+      // plain shapes: the same geometry the Canvas renderer draws as vectors (vector-shapes.js), white for the tint
+      if (VECTOR_FRAMES.indexOf(f) >= 0) paintShape(ctx, f, r.w, r.h, RING_RADIUS, DISC_RADIUS, '#ffffff', 'rgba(70,70,70,1)');
+      else PAINT[f](ctx, r.w, r.h);
     } catch (e) {
       ctx.fillStyle = '#fff';
       ctx.fillRect(r.w / 4, r.h / 4, r.w / 2, r.h / 2); // missing painter: a generated square (§17.1 rule 3)

@@ -6,8 +6,93 @@
 import { ensureAtlas, ATLAS_KEY, FRAME_SIZES, RING_RADIUS, DISC_RADIUS } from './atlas.js';
 import { FRAMES } from './particles.js';
 import { BACK_SHAPES } from './aura-style.js';
+import { VECTOR_FRAMES, shapeParts, cssOf } from './vector-shapes.js';
 
 const VISUAL_POOL = 64;
+const CANVAS_RENDERER = 1; // Phaser.CANVAS
+
+// ---------------------------------------------------------------- Canvas vector draw (round 7, R-2 / AC-17.7)
+// On the Canvas renderer a textured drawImage() is the costly part of a VFX frame (see vector-shapes.js). Pooled VFX
+// images whose frame is a plain shape draw that shape as cached Path2D parts instead, with the same transform, origin,
+// alpha and blend mode as Phaser's own batchSprite, in the image's tint colour (WebGL look). Other frames (gradients,
+// portraits, baked back-shapes) fall through to Phaser's normal image draw.
+const VEC_PATHS = {};
+const CSS = new Map();
+let vecM = null;
+let vecSpr = null;
+
+function vecShape(frame) {
+  if (VEC_PATHS[frame] !== undefined) return VEC_PATHS[frame];
+  let out = null;
+  if (VECTOR_FRAMES.indexOf(frame) >= 0 && FRAME_SIZES[frame]) {
+    const [w, h] = FRAME_SIZES[frame];
+    const parts = shapeParts(frame, w, h, RING_RADIUS, DISC_RADIUS);
+    out = parts.map((pt) => {
+      const path = new Path2D();
+      pt.build(path);
+      return { path: path, stroke: pt.mode === 'stroke', lineWidth: pt.lineWidth, dark: pt.color === 'dark' };
+    });
+  }
+  VEC_PATHS[frame] = out;
+  return out;
+}
+
+function cssCached(c, dark) {
+  const k = dark ? -1 - c : c;
+  let v = CSS.get(k);
+  if (v === undefined) {
+    v = cssOf(c, dark);
+    CSS.set(k, v);
+  }
+  return v;
+}
+
+/** renderCanvas override for a pooled VFX Image (installed per instance on the Canvas renderer only). */
+function vectorRenderCanvas(renderer, src, camera, parentMatrix) {
+  const parts = src.frame ? vecShape(src.frame.name) : null;
+  if (!parts) {
+    Object.getPrototypeOf(src).renderCanvas.call(src, renderer, src, camera, parentMatrix);
+    return;
+  }
+  const alpha = camera.alpha * src.alpha;
+  if (alpha <= 0) return;
+  camera.addToRenderList(src);
+  const ctx = renderer.currentContext;
+  if (!vecM) {
+    vecM = new camera.matrix.constructor();
+    vecSpr = new camera.matrix.constructor();
+  }
+  // same maths as Phaser's GetCalcMatrix / batchSprite (flip = negative scale about the origin)
+  vecSpr.applyITRS(src.x, src.y, src.rotation, src.scaleX * (src.flipX ? -1 : 1), src.scaleY * (src.flipY ? -1 : 1));
+  vecM.copyFrom(camera.matrix);
+  if (parentMatrix) {
+    vecM.multiplyWithOffset(parentMatrix, -camera.scrollX * src.scrollFactorX, -camera.scrollY * src.scrollFactorY);
+    vecSpr.e = src.x;
+    vecSpr.f = src.y;
+  } else {
+    vecSpr.e -= camera.scrollX * src.scrollFactorX;
+    vecSpr.f -= camera.scrollY * src.scrollFactorY;
+  }
+  vecM.multiply(vecSpr);
+  ctx.save();
+  vecM.setToContext(ctx);
+  ctx.translate(-src.displayOriginX, -src.displayOriginY);
+  ctx.globalCompositeOperation = renderer.blendModes[src.blendMode];
+  ctx.globalAlpha = alpha;
+  const tint = src.tintTopLeft === undefined ? 0xffffff : src.tintTopLeft;
+  for (let i = 0; i < parts.length; i++) {
+    const pt = parts[i];
+    if (pt.stroke) {
+      ctx.strokeStyle = cssCached(tint, false);
+      ctx.lineWidth = pt.lineWidth;
+      ctx.stroke(pt.path);
+    } else {
+      ctx.fillStyle = cssCached(tint, pt.dark);
+      ctx.fill(pt.path);
+    }
+  }
+  ctx.restore();
+}
 const HALF_PI = Math.PI / 2;
 
 function clamp01(v) {
@@ -38,6 +123,13 @@ export class PhaserVfxRenderer {
     this.depth = o.depth === undefined ? 54 : o.depth;
     ensureAtlas(scene);
     this.frameNames = FRAMES;
+    const rnd = (scene.sys && scene.sys.renderer) || scene.renderer || null;
+    // Canvas renderer only: plain-shape frames draw as vectors (o.vector === false keeps the atlas images, for A/B)
+    this.vector = o.vector !== false && !!rnd && rnd.type === CANVAS_RENDERER && typeof Path2D !== 'undefined';
+    // scratch points (no per-frame allocation)
+    this._pa = { x: 0, y: 0, rot: 0 };
+    this._pb = { x: 0, y: 0, rot: 0 };
+    this._anc = { x: 0, y: 0 };
 
     // particle images
     const S = core.store;
@@ -45,6 +137,7 @@ export class PhaserVfxRenderer {
     this.pSeq = new Float64Array(S.capacity);
     for (let i = 0; i < S.capacity; i++) {
       const img = scene.add.image(-100, -100, ATLAS_KEY, 'dot').setDepth(this.depth).setVisible(false);
+      if (this.vector) img.renderCanvas = vectorRenderCanvas;
       this.pImgs[i] = img;
     }
     if (this.mode === 'battle') {
@@ -57,12 +150,14 @@ export class PhaserVfxRenderer {
     this.vis = [];
     for (let i = 0; i < VISUAL_POOL; i++) {
       const img = scene.add.image(-100, -100, ATLAS_KEY, 'ring').setDepth(this.depth).setVisible(false);
+      if (this.vector) img.renderCanvas = vectorRenderCanvas;
       this.vis.push({ active: false, img: img, spec: null, t0: 0, dur: 0, kind: '', i: 0, fadeAt: 0, fadeMs: 0, x: 0, y: 0, seed: 0, placed: false, inDecor: false });
     }
     // hit halos (R3 hit-flash look: white ellipse 70×120 behind the body, centre 60 px above the feet)
     this.halo = {};
     for (const side of ['player', 'enemy']) {
       this.halo[side] = scene.add.image(-100, -100, ATLAS_KEY, 'disc').setDepth(o.haloDepth === undefined ? -1 : o.haloDepth).setVisible(false);
+      if (this.vector) this.halo[side].renderCanvas = vectorRenderCanvas;
     }
     this.backDepth = o.backDepth === undefined ? -2 : o.backDepth;
     // cinematic decor (radial lines, Tri-Burst stripes + icons, portraits). The scene may adopt it into its cinematic
@@ -94,11 +189,27 @@ export class PhaserVfxRenderer {
   }
 
   // ------------------------------------------------------------------ anchors
-  sidePos(side) {
+  /** Fighter feet position. `out` = a scratch object to fill (default a reused one: copy the values, do not keep it). */
+  sidePos(side, out) {
+    const o = out || this._pa;
     const f = this.fighters && this.fighters[side];
-    if (f && f.root) return { x: f.root.x, y: f.root.y, rot: f.root.rotation || 0 };
-    const x = side === 'enemy' ? this.W * 0.7 : this.W * 0.3;
-    return { x: x, y: this.arena.floorY, rot: 0 };
+    if (f && f.root) {
+      o.x = f.root.x;
+      o.y = f.root.y;
+      o.rot = f.root.rotation || 0;
+      return o;
+    }
+    o.x = side === 'enemy' ? this.W * 0.7 : this.W * 0.3;
+    o.y = this.arena.floorY;
+    o.rot = 0;
+    return o;
+  }
+
+  pt(x, y) {
+    const a = this._anc;
+    a.x = x;
+    a.y = y;
+    return a;
   }
 
   anchor(name, ctx) {
@@ -106,24 +217,25 @@ export class PhaserVfxRenderer {
       const p = this.opts.anchor(name, ctx);
       if (p) return p;
     }
+    // Returns a reused point: callers copy x / y at once (core.refreshAnchor, updateRec), nothing keeps it.
     if (this.mode !== 'battle' || name === 'screen') {
-      if (this.mode !== 'battle') return { x: this.center.x, y: this.center.y };
-      return { x: this.W / 2, y: (this.arena.top + this.arena.floorY) / 2 };
+      if (this.mode !== 'battle') return this.pt(this.center.x, this.center.y);
+      return this.pt(this.W / 2, (this.arena.top + this.arena.floorY) / 2);
     }
-    const actor = this.sidePos(ctx.side || 'player');
-    const target = this.sidePos(ctx.target || 'enemy');
+    const actor = this.sidePos(ctx.side || 'player', this._pa);
+    const target = this.sidePos(ctx.target || 'enemy', this._pb);
     switch (name) {
       case 'attacker':
-        return { x: actor.x, y: actor.y - 60 };
+        return this.pt(actor.x, actor.y - 60);
       case 'feet': {
         // knockdown dust rises at the feet of the fighter knocked down; everything else at the actor's feet
         const p = ctx.raw && ctx.raw.type === 'knockdown' ? target : actor;
-        return { x: p.x, y: p.y };
+        return this.pt(p.x, p.y);
       }
       case 'between':
-        return { x: (actor.x + target.x) / 2, y: (actor.y + target.y) / 2 - 60 };
+        return this.pt((actor.x + target.x) / 2, (actor.y + target.y) / 2 - 60);
       default:
-        return { x: target.x, y: target.y - 60 };
+        return this.pt(target.x, target.y - 60);
     }
   }
 
@@ -191,7 +303,7 @@ export class PhaserVfxRenderer {
       r.seed = Math.random();
       r.img.setTexture(ATLAS_KEY, frame).setVisible(false).setAlpha(0).setRotation(0).setScale(1).setOrigin(0.5, 0.5).setFlipX(false);
       r.img.setTint(spec.color);
-      r.img.setDepth(this.depth);
+      if (r.img.depth !== this.depth) r.img.setDepth(this.depth); // setDepth always queues a display-list re-sort
       r.img.setBlendMode(0);
       recs.push(r);
       return r;
@@ -282,10 +394,15 @@ export class PhaserVfxRenderer {
       g.clear();
       g.setPosition(W / 2, cy);
       g.lineStyle(3, spec.color, 1);
+      // one path, one stroke (16 separate lineBetween strokes cost 16 raster ops on Canvas; same pixels: the lines
+      // never overlap)
+      g.beginPath();
       for (let i = 0; i < 16; i++) {
         const a = (i / 16) * Math.PI * 2;
-        g.lineBetween(Math.cos(a) * 70, Math.sin(a) * 50, Math.cos(a) * 260, Math.sin(a) * 200);
+        g.moveTo(Math.cos(a) * 70, Math.sin(a) * 50);
+        g.lineTo(Math.cos(a) * 260, Math.sin(a) * 200);
       }
+      g.strokePath();
       g.setAlpha(0);
       this.decorRecs.radial = { t0: now, dur: spec.durationMs, fadeAt: 0, fadeMs: 0, a: spec.alpha };
     }
@@ -435,12 +552,12 @@ export class PhaserVfxRenderer {
         const mi = s.memberIndex || 0;
         const mc = s.memberCount || 1;
         if (s.direction === 'up') {
-          const a = this.sidePos(s.side);
+          const a = this.sidePos(s.side, this._pa);
           const len = Math.max(8, a.y - this.arena.top);
           img.setPosition(a.x, (a.y + this.arena.top) / 2).setRotation(0).setScale((s.sizePx * (0.85 + 0.15 * Math.sin(t / 40))) / 32, len / 128);
         } else {
-          const a = this.sidePos(s.side);
-          const b = this.sidePos(s.target);
+          const a = this.sidePos(s.side, this._pa);
+          const b = this.sidePos(s.target, this._pb);
           const len = Math.max(8, Math.abs(b.x - a.x));
           const y = (a.y + b.y) / 2 - 60 + (mi - (mc - 1) / 2) * 12;
           img.setPosition((a.x + b.x) / 2, y).setRotation(HALF_PI).setScale(s.sizePx / 32, len / 128);
@@ -459,8 +576,8 @@ export class PhaserVfxRenderer {
           img.setPosition(x, y).setRotation(0).setScale(60 / 64, Math.max(1, s.sizePx) / 8);
           img.setAlpha(s.alpha * (1 - p) * fade);
         } else {
-          const a = this.sidePos(s.side);
-          const b = this.sidePos(s.target);
+          const a = this.sidePos(s.side, this._pa);
+          const b = this.sidePos(s.target, this._pb);
           const len = Math.abs(b.x - a.x) * clamp01(p / 0.4);
           img.setPosition(a.x, a.y - 60).setRotation(b.x >= a.x ? 0 : Math.PI).setScale(Math.max(1, len) / 64, s.sizePx / 8);
           img.setAlpha(s.alpha * clamp01((1 - p) / 0.5) * fade);
@@ -469,7 +586,7 @@ export class PhaserVfxRenderer {
       }
       case 'afterimage': {
         if (!r.placed) {
-          const a = this.sidePos(s.side);
+          const a = this.sidePos(s.side, this._pa);
           r.x = a.x;
           r.y = a.y;
           r.placed = true;
@@ -497,7 +614,7 @@ export class PhaserVfxRenderer {
       }
       case 'tint': {
         const B = BACK_SHAPES[s.frame] || BACK_SHAPES.back_ellipse;
-        const a = this.sidePos(s.side);
+        const a = this.sidePos(s.side, this._pa);
         const sf = s.scaleFrom === null ? 1 : s.scaleFrom;
         const st = s.scaleTo === null ? 1 : s.scaleTo;
         const grow = sf + (st - sf) * (1 - Math.pow(1 - clamp01(t / 300), 3));

@@ -114,8 +114,11 @@ export function shapeParts(frame, w, h, ringR, discR) {
       else p.rect(w / 2 - 22, h - 80, 44, 50);
       p.moveTo(w / 2 + 13, h - 94);
       p.arc(w / 2, h - 94, 13, 0, TAU);
-      p.moveTo(w / 2 + 36, h - 58);
-      p.arc(w / 2 + 28, h - 58, 8, 0, TAU);
+      // fist: the circle (w/2 + 28, r 8) sits on the cell's right edge; the atlas cell clip always cut it to its
+      // left half, so the shape IS that half (vector draw = atlas pixels)
+      p.moveTo(w / 2 + 28, h - 50);
+      p.arc(w / 2 + 28, h - 58, 8, Math.PI / 2, Math.PI * 1.5);
+      p.closePath();
     })];
     default: return null;
   }
