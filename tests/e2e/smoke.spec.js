@@ -1269,3 +1269,42 @@ test('AC-19.6: Vibration off → navigator.vibrate never called in battle; on �
   }
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// ------------------------------------------------------------------ round 5: BUG-4-01 (AC-17.8, L-ui-006)
+test('BUG-4-01: Tri-Burst overlay hidden ≤ 160 ms after freeze_end (positive control: drawn before it)', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await bootWithSave(page, 1);
+  await startStage(page, 'stage_002');
+  await page.evaluate((brk) => {
+    const T = window.__TEST__;
+    const sc = T.game.scene.getScene('Battle');
+    if (brk) sc.cinFadeMs = 160 + 40; // must-FAIL: a fade longer than the limit
+    T.cine = { frames: [], ends: [] };
+    const he = sc.handleEvents.bind(sc);
+    sc.handleEvents = (events, now) => { for (const e of events) if (e.type === 'freeze_end' && e.kind === 'tri_burst') T.cine.ends.push(performance.now()); return he(events, now); };
+    const loop = () => {
+      if (T.sceneKey !== 'Battle') return;
+      T.cine.frames.push({ t: performance.now(), on: !!(sc.cinematic.visible && sc.cinematic.alpha > 0.02) });
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+    const b = sc.battle;
+    for (const s of ['player', 'enemy']) for (const f of b.teams[s].fighters) f.hp = f.def.maxHp = 10 ** 7;
+    b.teams.player.burst = 100;
+  }, !!process.env.UI_BREAK_CINE);
+  await page.waitForFunction(() => window.__TEST__.battleState().teams.player.burstReady, null, { timeout: 15000 });
+  await tap(page, 'tri_burst');
+  await page.waitForFunction(() => window.__TEST__.cine.ends.length > 0, null, { timeout: 20000 });
+  await page.waitForTimeout(600);
+  const r = await page.evaluate(() => window.__TEST__.cine);
+  const end = r.ends[0];
+  const before = r.frames.filter((f) => f.t < end && f.t > end - 300);
+  const after = r.frames.filter((f) => f.t >= end);
+  const lastOn = after.filter((f) => f.on).map((f) => f.t - end).pop() || 0;
+  const firstOff = after.find((f) => !f.on);
+  console.log(`[${testInfo.project.name}] BUG-4-01 drawn until ${lastOn.toFixed(0)} ms, hidden at ${firstOff ? (firstOff.t - end).toFixed(0) : 'never'} ms after freeze_end`);
+  expect(before.some((f) => f.on), 'positive control: overlay drawn before freeze_end').toBe(true);
+  expect(lastOn, 'overlay still drawn after the 160 ms limit').toBeLessThanOrEqual(160);
+  expect(firstOff).toBeTruthy();
+  expect(errors, errors.join('\n')).toEqual([]);
+});

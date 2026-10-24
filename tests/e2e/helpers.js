@@ -3,9 +3,26 @@ import { expect } from '@playwright/test';
 import fs from 'node:fs';
 
 // Screenshots are written only with UI_SHOTS=1 (ui-developer's own review runs), so QA runs never rewrite the
-// committed ones. Round 4 → reports/screenshots/round-4/.
-export const SHOTS = 'reports/screenshots/round-4';
+// committed ones. The round comes from ONE source (L-shared-017): env ROUND, else the "**Round:** N" line of
+// docs/STATUS.md; both must agree when both are set, and the helper never writes into an earlier round's folder.
+export function currentRound(env, statusText) {
+  const m = /\*\*Round:\*\*\s*(\d+)/.exec(statusText || '');
+  const fromStatus = m ? Number(m[1]) : null;
+  const fromEnv = env && env.ROUND ? Number(env.ROUND) : null;
+  if (fromEnv !== null && fromStatus !== null && fromEnv !== fromStatus) throw new Error(`ROUND=${fromEnv} but docs/STATUS.md says round ${fromStatus}`);
+  const r = fromEnv !== null ? fromEnv : fromStatus;
+  if (!r) throw new Error('No round: set ROUND or keep "**Round:** N" in docs/STATUS.md');
+  return r;
+}
+/** Refuse a folder of an earlier round than the newest round-N folder that exists. */
+export function shotsDir(round, existing) {
+  const newest = Math.max(0, ...existing.map((d) => (/^round-(\d+)$/.exec(d) || [0, 0])[1]).map(Number));
+  if (round < newest) throw new Error(`refusing to write screenshots for round ${round}: round-${newest} already exists`);
+  return 'reports/screenshots/round-' + round;
+}
+export const ROUND = currentRound(process.env, fs.existsSync('docs/STATUS.md') ? fs.readFileSync('docs/STATUS.md', 'utf8') : '');
 export const WRITE_SHOTS = process.env.UI_SHOTS === '1';
+export const SHOTS = shotsDir(ROUND, fs.existsSync('reports/screenshots') ? fs.readdirSync('reports/screenshots') : []);
 if (WRITE_SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 
 /** Screenshot to SHOTS/<size>-<name>.png, only when UI_SHOTS=1. */
