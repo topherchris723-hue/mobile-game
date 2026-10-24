@@ -106,6 +106,19 @@ jobs:
       - name: Copy web build into the Android project
         run: npx cap sync android
 
+      # Round 7 (gameplay-programmer): the shipped licence notices (dist/THIRD_PARTY_LICENSES.txt, Settings → Licenses)
+      # list the native dependencies from the reviewed android/third-party/native-deps.json. Fail the build if Gradle's
+      # real release runtime classpath has a module or project that list does not cover (or a version it does not match).
+      - name: Native licence notices cover the runtime classpath
+        working-directory: android
+        run: |
+          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath --no-daemon > ../native-runtime-classpath.txt
+          node ../scripts/check-native-licenses.mjs ../native-runtime-classpath.txt
+          # For the list's reviewer: the NOTICE shipped inside the Cordova framework artifact (best effort, never fails).
+          for f in $(find ~/.gradle/caches -path '*org.apache.cordova*' \( -name '*.aar' -o -name '*.jar' \) 2>/dev/null); do
+            unzip -p "$f" 'META-INF/NOTICE*' 2>/dev/null | head -20 || true
+          done
+
       - name: Build debug APK
         if: env.BUILD_TYPE == 'debug'
         working-directory: android
