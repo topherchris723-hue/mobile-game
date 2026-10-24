@@ -52,9 +52,10 @@ Rule: For every timer, cooldown, gauge, window, meter and counter in the GDD, st
   Round 3: worked. The §5.0 counting convention was added and no tick-count defect was found.
 Status: PROMOTED (round 2); merged into playbook "READY checklist" item 2 (round 3 step C)
 
-### L-gd-004: Keep the GDD §3 banned-term list complete and clear every new name
-Seen: 1 (round 1)
-Severity of what it caused: MINOR (caught inside the round; IP risk)
+### L-gd-004: Keep the GDD §3 banned-term list complete and clear every new name, word by word
+Seen: 2 (rounds 1, 6: compliance FAIL — "Jade Tempest" contains Atari's live TEMPEST mark and a
+  Monster Hunter weapon name; the round-1/3 search only checked the exact phrase)
+Severity of what it caused: MAJOR (compliance FAIL item 1; title needs legal clearance or a change)
 What happened: Round 1 notes items 4 and 7 — §3 missed nine well-known franchise terms
   (Spirit Bomb … Stand); the title "Overpeak" was already in use; "Ascension" and "Spark" echoed
   franchise terms. All were caught before commit.
@@ -64,8 +65,12 @@ Rule: When writing or updating §3, go through each franchise named in the brief
   (and the top anime battle franchises) and list their mechanic, power and currency names. Before
   writing any proposed title or term, web-search it with "game" and "anime" and check it against
   §3; record the result in your report. Mark common English words as context-dependent (warn,
-  not error). See also L-shared-008.
-Status: ACTIVE
+  not error). See also L-shared-008. Round 6: search every distinctive word of a title or name on its
+  own as well as the full phrase: trademark registries (USPTO, EUIPO, WIPO Global Brand Database)
+  in game classes 9/28/41, store and game databases, and franchise wikis. Record each query and
+  result. Any live mark on a distinctive word = not cleared; the title then needs human legal
+  clearance (owner, CLAUDE.md §8) or a change.
+Status: PROMOTED (round 6)
 
 ### L-gd-005: State schema validation as NOT VERIFIED and hand over the exact command
 Seen: 1 (round 1)

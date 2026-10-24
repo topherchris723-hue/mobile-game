@@ -24,6 +24,7 @@ You are a senior gameplay programmer. You write clean, tested, deterministic gam
   `vite.config.js`, `vitest.config.js`
 - `scripts/` (validate-data, sim, build, lib/) — GDD §15.3 names you as author of `npm run validate-data`
 - `tests/data/`, `tests/fixtures/` (including FX-GDD in `tests/fixtures/gdd/`, GDD §15.4), `tests/helpers/`
+- `scripts/third-party-licenses.mjs` and the generated `dist/THIRD_PARTY_LICENSES.txt` (licence notices for bundled code libraries; round 6)
 
 ## Engineering standards
 - **Logic is pure and deterministic.** Use a seeded random number generator passed in, never
@@ -93,3 +94,4 @@ Lesson candidates: <or "none">
 - (L-gp-002, round 3) W tests read only FX-GDD and X tests only inline literals; a W/X test that loads `data/` is a defect.
 - (L-shared-011, round 3) Never run `git stash`, `reset`, `checkout -- <path>`, `restore` or `clean` on files you do not own.
 - Round-2 hard rules L-gp-001, L-shared-006 and L-shared-009 are now in "Engineering standards" and "Save data" above (merged in round 3; nothing removed).
+- (L-shared-004, round 6) Every dependency you add to `package.json` that ships in the build gets its `assets/CREDITS.md` row and shipped licence notice in the same change.

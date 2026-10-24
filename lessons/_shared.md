@@ -23,12 +23,19 @@ Rule: Only change files you own. If something outside your files is wrong, descr
   your report for the Producer instead of editing it.
 Status: ACTIVE
 
-### L-shared-004: Original and licensed only
-Seen: 0
-Severity of what it caused: —
-Rule: Nothing from existing franchises. Every asset has a license logged in
-  `assets/CREDITS.md`. No secrets in the repo.
-Status: ACTIVE
+### L-shared-004: Original and licensed only — assets AND code libraries
+Seen: 1 (round 6: compliance FAIL — bundled code libraries shipped with no licence notice for 5 rounds)
+Severity of what it caused: MAJOR (compliance FAIL item 2; fixed in round 6)
+What happened: Round-6 compliance — phaser, ajv, ajv-formats, fast-deep-equal and json-schema-traverse
+  (MIT) were bundled into the build without licence notices. CREDITS.md and the playbooks only spoke
+  of "assets". Fixed with generated notices, Settings → Licenses and a must-FAIL test.
+Root cause: The licensing rule said "every asset", so code that ships in the bundle had no owner and no
+  check.
+Rule: Nothing from existing franchises. Every asset AND every code library bundled into the build has
+  a licence logged in `assets/CREDITS.md`, and the notice file each CREDITS row points to exists and is
+  shown in-game. Whoever adds a dependency (`package.json`) or an asset adds its CREDITS row and notice
+  in the same change. No secrets in the repo.
+Status: PROMOTED (round 6)
 
 ### L-shared-005: Always end with lesson candidates
 Seen: 0
@@ -90,8 +97,9 @@ Rule: Every round, copy the banned-term list from the current GDD §3 (do not re
 Status: ACTIVE
 
 ### L-shared-009: Changing an interface (state field, enum value, event, reject reason) means updating and testing every consumer in the same hand-off
-Seen: 4 (round 2: BUG-2-07; triBurstLock hand-off; round 3: QA probe broke on TutorialController
-  constructor change; QA screen spec still tapped the old disabled Summon button)
+Seen: 5 (round 2: BUG-2-07; triBurstLock hand-off; round 3: QA probe broke on TutorialController
+  constructor change; QA screen spec still tapped the old disabled Summon button; round 6: reviewer R-5 —
+  ui-developer added a Licenses button, and qa-settings-audio.spec.js still expected 13 targets)
 Severity of what it caused: MINOR
 What happened: BUG-2-07 — the engine returns `reason: "double_ko"` for a Draw, but the UI built
   the string key `result_reason_<reason>` and strings.json only had ko/timeout/retreat, so the Result
@@ -251,3 +259,61 @@ Rule: Every round result in `docs/STATUS.md` (and `reports/HANDOFF.md` when writ
   "Milestone: <done>/<total> items left: <list>; next stage: <e.g. release review → Unity port>". The
   Unity port still starts only when the owner explicitly says so (CLAUDE.md §3).
 Status: PROMOTED (round 5; Producer rule proposed for CLAUDE.md)
+
+### L-shared-020: The release-reviewer is called only on a commit that is already green everywhere
+Seen: 1 (round 6: reviewer R-1 BLOCKER, R-5)
+Severity of what it caused: BLOCKER (reviewer FAIL)
+What happened: R-1 — the reviewer was called on `48fb519`, but the only compliance report was for
+  `bf48920` (31 files earlier) and had 2 FAIL items. R-5 — the full Playwright suite was red on the
+  reviewed commit (a stale spec plus the perf AC).
+Root cause: CLAUDE.md §4 orders the phases but has no entry condition for Phase 6, so "compliance done"
+  and "QA done" were taken from older commits.
+Rule: Call the release-reviewer only when, on the exact HEAD commit: (1) `reports/compliance/` has a
+  report naming that commit with 0 FAIL; (2) `npm test` and the full `npx playwright test` are green
+  (logs attached); (3) the latest QA report names that commit with QA PASS and no failing check; (4) the
+  release-engineer's pre-review identity check is done (L-shared-022). Any change after these checks
+  means re-running them. compliance-checker: every report names the exact commit and is re-run after any
+  change.
+Status: PROMOTED (round 6; Producer rule proposed for CLAUDE.md §4)
+
+### L-shared-021: A check that runs and fails is a FAIL — never "noise" or "NOT VERIFIED"
+Seen: 1 (round 6: reviewer R-2 MAJOR)
+Severity of what it caused: MAJOR (reviewer FAIL)
+What happened: R-2 — AC-17.7 (p95 ≤ 33.3 ms at 4× CPU) failed 3 of 3 runs at review (36.5–50.1 ms).
+  In round 5, QA had measured 28.9–35.7 ms, judged the overruns "noise", passed on the "no regression"
+  gate and reported the absolute check as NOT VERIFIED. The Producer accepted that, and so did the
+  coach's L-qa-005 hard rule.
+Root cause: "NOT VERIFIED" (meant for checks that cannot run) was used for a check that ran and failed.
+  A regression gate was treated as a replacement for the absolute limit, not an addition to it.
+Rule: NOT VERIFIED is only for a check that could not run. A check that ran and failed at least once in
+  its required runs is a FAIL with a filed bug. Only a formal change of method or limit (Producer
+  decision recorded in STATUS, or GDD change) can change that. Noise is handled by the method (e.g.
+  median of ≥ 5 runs), decided before the run, never after. A QA PASS with any failing check is invalid.
+Status: PROMOTED (round 6)
+
+### L-shared-022: App identity is release-ready before review; only signing and building wait for PASS
+Seen: 1 (round 6: reviewer R-3 MAJOR)
+Severity of what it caused: MAJOR (reviewer FAIL)
+What happened: R-3 — no `capacitor.config.*`, icon, package id or versionCode existed at review, because
+  CLAUDE.md §4 calls the release-engineer only after a PASS, while the review checklist needs app
+  identity.
+Root cause: A pipeline gap. The review checks things that nobody was assigned to produce before review.
+Rule: In the Launch phase, before release review, the release-engineer prepares and commits the app
+  identity: Capacitor config (appId, app name), icon and adaptive icon, versionName/versionCode, portrait
+  lock, target SDK. It builds and signs nothing then. Signing and release builds still happen only after
+  `VERDICT: PASS` on the same commit (unchanged).
+Status: PROMOTED (round 6; Producer rule proposed for CLAUDE.md §4)
+
+### L-shared-023: The release candidate shows no placeholder, prototype or test values
+Seen: 2 (round 6: reviewer R-4 "working title — prototype" on the title screen; store-writer found the
+  existing screenshots showed test-hook values)
+Severity of what it caused: MINOR
+What happened: R-4 — `strings.json` `game_subtitle` still read "working title — prototype" at review.
+  The store-writer found that the existing screenshots were taken with test hooks (unreal values) and
+  could not be used.
+Root cause: Placeholder and test-mode content was never swept before Launch, and nobody captured
+  evidence from the release build itself.
+Rule: Before calling the reviewer (Launch phase), grep `src/ui/strings.json`, `data/`, `index.html` and
+  `store/` for `prototype|placeholder|working title|TBD|TODO|lorem|test`, and resolve every hit or log it
+  as an accepted decision. Store screenshots come only from a release build (no hooks).
+Status: PROMOTED (round 6)

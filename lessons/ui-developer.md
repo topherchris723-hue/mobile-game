@@ -89,12 +89,34 @@ Rule: For every AC with a time limit, start the transition in the same frame the
   timestamp.
 Status: ACTIVE
 
-### L-ui-007: Measure frame cost before and after every drawing change
-Seen: 1 (round 5)
+### L-ui-007: Every drawing change stays inside the absolute frame budget, not only "no regression"
+Seen: 2 (round 5: new layers raised Canvas cost; round 6: reviewer R-2 — AC-17.7 failed 3/3 at 4× CPU)
 Severity of what it caused: MINOR (near miss; new visual layers cost Canvas frame budget)
 What happened: Round-5 notes — the new placeholder-art layers raised Canvas frame cost. The
   ui-developer baked fighter bodies into textures to recover it.
 Root cause: Drawing changes were added without a frame-cost comparison.
 Rule: For every change that adds or changes drawing, run the perf spec ≥ 3 times, alternating with
-  the parent commit, and report the frame-time and game-work p95 change (L-qa-005 method).
+  the parent commit, and report the frame-time and game-work p95 change (L-qa-005 method). Round 6:
+  also run the absolute AC-17.7 check (median p95 of ≥ 5 runs at 4× CPU, Canvas ≤ 33.3 ms). A change
+  that pushes it over the limit is not finished (L-shared-021).
+Status: PROMOTED (round 6)
+
+### L-ui-008: Reveals never show values ahead of what has been revealed
+Seen: 1 (round 6: reviewer R-6 POLISH)
+Severity of what it caused: POLISH
+What happened: R-6 — the summon reveal showed the final Jade balance at pull 2, giving away duplicates
+  revealed later.
+Root cause: The HUD read the final save state instead of a state that advances with the reveal.
+Rule: During any reveal or animation sequence, every counter shown advances step by step with the
+  reveal. Add one test that checks the counter at step 1 of N.
+Status: ACTIVE
+
+### L-ui-009: Rows keep the style-guide spacing, not only the 8 px minimum
+Seen: 1 (round 6: reviewer R-8 POLISH)
+Severity of what it caused: POLISH
+What happened: R-8 — the Settings volume rows met the 8 px target gap but looked cramped: each label sat
+  right under the previous row's −/+ buttons.
+Root cause: Layout was checked only against the hard minimum, not against the style guide's row rhythm.
+Rule: Every list/settings row uses the `docs/STYLE_GUIDE.md` row spacing. Look at the 360×640
+  screenshot of every changed screen and note "spacing per style guide: yes/no".
 Status: ACTIVE

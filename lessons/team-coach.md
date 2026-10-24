@@ -36,3 +36,17 @@ Rule: Never open a file for writing in the same expression that reads it: read i
   present (`grep -ho "^### L-[a-z]*-[0-9]*" lessons/*.md` before vs after) and that no lessons file
   shrank. Paste the counts in the retro report.
 Status: PROMOTED (round 3)
+
+### L-tc-003: A promoted rule must never give a failing check a way to pass
+Seen: 1 (round 6)
+Severity of what it caused: MAJOR (contributed to reviewer R-2)
+What happened: In the round-5 retro I promoted L-qa-005 with "keep the absolute 33.3 ms check, reported
+  as NOT VERIFIED on the shared container". QA then reported a check that ran and failed as NOT
+  VERIFIED, and the reviewer failed the build on it (R-2).
+Root cause: I copied a Producer decision into a rule without checking it against L-shared-002 (NOT
+  VERIFIED is for checks that could not run). The rule loosened a test in practice, against my
+  guardrail.
+Rule: Before writing any hard rule that mentions NOT VERIFIED, noise, skip, waive or tolerance, check
+  that no reading lets a check that ran and failed count as passed. If a Producer decision would allow
+  that, keep the stricter reading and flag it to the Producer.
+Status: PROMOTED (round 6)

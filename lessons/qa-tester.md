@@ -63,8 +63,8 @@ Rule: See L-shared-010 (qa part). Every round that changes AI, RNG or rate data,
   check as "NOT VERIFIED".
 Status: PROMOTED (round 3, as part of L-shared-010); in playbook "What you test" item 8
 
-### L-qa-005: Judge performance by an alternating comparison with the parent commit, not one absolute run
-Seen: 1 (round 5)
+### L-qa-005: Judge performance by an alternating comparison with the parent commit AND the absolute limit
+Seen: 2 (rounds 5, 6: reviewer R-2 — the absolute check failed while QA reported "no regression")
 Severity of what it caused: MINOR (AC-17.7 could not be judged; adopted as a Producer decision)
 What happened: Round 5 — on the shared container, the round-4 code measured 28.9–35.7 ms frame-time p95
   on different days, so one run against the 33.3 ms limit could not tell a regression from noise. QA
@@ -75,7 +75,12 @@ Rule: Every round, run the perf spec alternating ≥ 6 runs each of this build a
   commit. FAIL if mean frame-time p95 or game-work p95 rises by more than 1.0 ms. Report game-work p95
   next to frame-time p95. Keep the absolute 33.3 ms p95 check, reported as NOT VERIFIED on the shared
   container until it runs on a real low-end Android phone or a quiet runner (median of ≥ 5).
-Status: PROMOTED (round 5, adopted by the Producer)
+  Round 6 correction (stricter; the round-5 wording let a failing check pass — see L-shared-021, L-tc-003):
+  the regression gate is an extra check and never replaces the absolute limit. Run the absolute check
+  every round with the method fixed in advance (≥ 5 runs at 4× CPU, median p95). If it is over 33.3 ms,
+  file a bug and QA is FAIL. NOT VERIFIED is allowed only for real-device/WebGL numbers this container
+  cannot produce.
+Status: PROMOTED (round 5); rule tightened (round 6)
 
 ### L-qa-006: Keep the evidence that explains a failure
 Seen: 2 (round 5: intermittent e2e failure lost its cause; 400 ms screenshot wait missed a 420 ms animation)
@@ -87,3 +92,14 @@ Root cause: Output and capture timing were set for the passing case, not for dia
 Rule: Always print the failing assertion and its values (not only the metrics). Capture animation
   frames at times computed from the effect's data (start + duration fractions), never a fixed wait.
 Status: PROMOTED (round 5)
+
+### L-qa-007: Before a QA PASS, run the full suite on the exact commit; derive expected counts from source
+Seen: 1 (round 6: reviewer R-5)
+Severity of what it caused: MINOR (reviewer finding)
+What happened: R-5 — `qa-settings-audio.spec.js` hardcoded 13 Settings targets. The Licenses button made
+  it 14, the spec failed, and the full Playwright suite had not been run on the reviewed commit.
+Root cause: Count literals in specs, and QA PASS based on targeted specs, not the whole suite on HEAD.
+Rule: Every QA PASS names the commit and includes a green `npm test` and full `npx playwright test` on
+  it. Count-based assertions derive the expected count from the source list (strings/targets), not a
+  literal.
+Status: ACTIVE

@@ -52,6 +52,25 @@ how the game *feels* under a thumb.
   - Never weaken `tests/ui/release-bundle.test.js`.
 - Run e2e against a fresh build (`reuseExistingServer: false`) and report the commit it ran on
   (L-ui-004).
+- **Frame budget** (round-6 upgrade; reviewer R-2 MAJOR; L-ui-007, L-shared-021). For every
+  change that adds or changes drawing, run the perf spec alternating ≥ 3 times with the parent
+  commit, AND the absolute AC-17.7 check (median p95 of ≥ 5 runs at 4× CPU, Canvas, ≤ 33.3 ms).
+  Over the limit = not finished.
+- **Reveals** (L-ui-008). Counters shown during a reveal advance step by step; never show final
+  values early.
+- **Spacing** (L-ui-009). Rows follow the `docs/STYLE_GUIDE.md` spacing, not only the 8 px minimum.
+- **Launch text** (L-shared-023). No `prototype`, `placeholder`, `working title`, `TBD` or test
+  values in `strings.json` or any screen of a release candidate.
+- **Tests fail first** (L-shared-006). Show every new or changed UI test failing once (break the
+  code or input it guards) before reporting PASS. No negative run = "NOT VERIFIED".
+- **Hook gate pinned** (L-ui-005). The exact gate expression (`VITE_TEST_HOOKS === '1'` only) is
+  pinned in a unit test. Hooks never compile in for development mode, DEV, MODE or a URL
+  parameter.
+- **Evidence paths** (L-shared-017). Paths take the round from one constant or env var. Never
+  write into an earlier round's folder. `git status reports/screenshots/` shows changes only under
+  the current round.
+- **Shared tree** (L-shared-011). Never run `git stash`, `reset`, `checkout -- <path>`, `restore`
+  or `clean` on files you do not own. Run long suites from a scratchpad copy if the tree is busy.
 
 ## Layout self-check (required before every report)
 Text overlap was this role's most repeated bug class (5 bugs in rounds 2–3, L-ui-003). Before
@@ -77,6 +96,7 @@ Screens changed: <list>
 Screenshots: <paths>
 Tested sizes: <list>
 Layout self-check: placer registry <list>; busy scan <problems per size>; placer-off FAIL <counts>
+Perf: vs parent <Δ p95>; AC-17.7 absolute <median p95> → PASS/FAIL
 Tests shown failing first: <test → how broken → FAIL line>
 Consumers must handle (QA specs/probes affected): <list or "none">
 Feel changes: <list (each named in the round plan) or "none">
@@ -85,9 +105,6 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- (L-shared-006, round 2) Show every new or changed UI test failing once (break the code or input it guards) before reporting PASS; no negative run = "NOT VERIFIED".
-- (L-shared-011, round 3) Never run `git stash`, `reset`, `checkout -- <path>`, `restore` or `clean` on files you do not own; run long suites from a scratchpad copy if the tree is busy.
 - (L-shared-014, owner feedback round 3) Report every change to controls, gestures, battle HUD layout or hit feedback under "Feel changes"; an unplanned one is a bug.
-- Round-2 hard rules L-ui-001, L-ui-003 and L-shared-009 are now in "Standards" and "Layout self-check" above (merged in round 3; nothing removed).
-- (L-ui-005, round 4) The exact test-hook gate expression (`VITE_TEST_HOOKS === '1'` only) is pinned in a unit test; hooks never compile in for development mode, DEV, MODE or a URL parameter.
-- (L-shared-017, round 4) Screenshot/evidence paths take the round from one constant or env var; never write into an earlier round's folder; `git status reports/screenshots/` shows changes only under the current round.
+- (L-ui-007, round 6) No drawing change is finished while AC-17.7 (median p95 of ≥ 5 runs at 4× CPU, Canvas) is over 33.3 ms.
+- Earlier hard rules (L-ui-001, L-ui-003, L-shared-009 in round 3; L-shared-006, L-shared-011, L-ui-005, L-shared-017 in round 6) are now in "Standards" and "Layout self-check" above (nothing removed).

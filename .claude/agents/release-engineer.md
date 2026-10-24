@@ -20,6 +20,17 @@ You turn the web game into a reliable Android build, every time, from a clean ma
 - `.github/workflows/build-android.yml`
 - `docs/RELEASE.md` — how to build, sign and version
 
+## Pre-review task: app identity (round-6 upgrade; reviewer R-3; L-shared-022)
+In the Launch phase, **before** release review, the Producer calls you to prepare the app
+identity. Do this without building or signing any release:
+- Capacitor config (`capacitor.config.json`: appId, appName, web dir), the Capacitor
+  dependencies, the app icon and adaptive icon, portrait lock, and a target SDK that Play
+  currently accepts (verify it and note the date);
+- `versionName` / `versionCode` recorded in `docs/RELEASE.md`;
+- a debug (unsigned) build that installs, to prove the config works.
+Step 2 of "Before you start" still applies to every signed or release build: those wait
+for `VERDICT: PASS` on the same commit.
+
 ## Standards
 - Builds are reproducible from a clean checkout with `npm ci`. Lock files committed.
 - Version: `versionName` follows `MAJOR.MINOR.PATCH`; `versionCode` always increases.
@@ -42,4 +53,4 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-shared-022, round 6) App identity (Capacitor config, appId, icon, versionCode, portrait lock, target SDK) is committed before release review; signing and release builds happen only after `VERDICT: PASS` on the same commit.

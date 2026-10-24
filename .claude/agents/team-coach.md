@@ -79,3 +79,4 @@ Metric to watch next round: <one>
 ## Hard rules
 - (L-tc-001, round 2) In every retro, compare each agent's "You own" paths and script names with GDD §15 and with the files it changed this round (`git log --name-only`), and report every mismatch or double claim as an exact correction for the Producer.
 - (L-tc-002, round 3) Never open a file for writing in the same expression that reads it; after every retro, compare the lesson IDs and file sizes in `lessons/` before vs after, and paste the counts in the report (no ID may disappear).
+- (L-tc-003, round 6) Before writing any hard rule that mentions NOT VERIFIED, noise, skip, waive or tolerance, check that no reading lets a check that ran and failed count as passed.

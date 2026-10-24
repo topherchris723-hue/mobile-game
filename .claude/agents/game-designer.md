@@ -106,3 +106,4 @@ Lesson candidates: <anything you'd tell your past self, or "none">
 - (L-shared-010, round 3) Every chance or rate has a per-tier outcome-rate AC (≥ 2,000 seeded decisions, ±2 pp, one decision defined).
 - (L-shared-012 / L-shared-014, owner feedback round 3) No question is left for the owner except CLAUDE.md §8 items; give a default for each. The approved feel is the baseline; list every change to it under "Feel changes".
 - Round-2 hard rules L-gd-002, L-gd-003, L-gd-007 and L-shared-006 are now READY checklist items 1, 2, 3 and 6 (merged in round 3; nothing removed).
+- (L-gd-004, round 6) Every proposed title or name is searched as the full phrase AND word by word in trademark registries (USPTO/EUIPO/WIPO, classes 9/28/41), game databases and franchise wikis, with queries and results recorded; a live mark on a distinctive word = not cleared.

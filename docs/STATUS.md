@@ -3,10 +3,10 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** Growth complete. Next: Launch (round 6)
+- **Phase:** Launch — first release review FAILED (round 6); fixing for re-review
 - **Round:** 6
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
-- **Last release verdict:** none
+- **Last release verdict:** FAIL (round 6, commit 48fb519; 1 blocker, 2 major)
 - **Unity port started:** no
 
 ## Producer standing rules (from owner feedback, round 3 — read every round)
@@ -32,6 +32,15 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
   Never shorten a round by skipping a check, QA or the review gate.
 - Every round result has a line "Milestone: <done>/<total>; left: <list>; next stage: <…>".
   The Unity port starts only when the owner explicitly says so.
+- Release gate (round 6): call release-reviewer only when, on the exact HEAD commit, a compliance
+  report names that commit with 0 FAIL; `npm test` and the full `npx playwright test` are green;
+  the latest QA report names that commit with QA PASS and no failing check; release-engineer's
+  pre-review app-identity task is done (config, appId, icon, versionCode, portrait; debug build
+  only, nothing signed); the placeholder-text sweep is clean. Any later commit = redo the checks.
+- A check that ran and failed is a FAIL — never "noise" or NOT VERIFIED. The perf regression gate
+  adds to the absolute AC-17.7 limit, never replaces it.
+- Every bundled code library is in assets/CREDITS.md with its notice shipped and shown in-game.
+- Start any human clearance (title trademark, legal) in the first Launch round — it's paid → owner.
 - After each round, republish the private playtest build:
   https://claude.ai/artifact/Mhc2SgVEgtoxFb5nHeqjXh
 
@@ -106,6 +115,30 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 6 — Launch: compliance + release review (result)
+- **Result:** compliance on bf48920: 5 PASS / 2 FAIL (title trademark; code-library notices) / 1 N/A.
+  Licence notices fixed (generated THIRD_PARTY_LICENSES.txt, Settings → Licenses, must-FAIL test).
+  Store listing, 0.1.0 release notes, screenshot plan, privacy policy draft written.
+- **Release review (48fb519): VERDICT: FAIL** — R-1 BLOCKER no exact-commit compliance at 0 FAIL
+  (title undecided); R-2 MAJOR AC-17.7 perf p95 36.5–50.1 ms at 4× CPU; R-3 MAJOR no Capacitor
+  config/icon/appId/versionCode; R-4 "working title — prototype" on title screen; R-5 stale e2e
+  count; R-6 reveal shows final Jade early; R-7 Rook's look may echo a famous anime hero; R-8
+  cramped Settings volume rows.
+- **Owner:** asked to decide the title (keep + legal clearance / switch to Meridian Burst / private
+  builds only for now). Default if no answer: option 3.
+- **Interruptions:** usage limit once.
+- **Retro (step C):** 14 new lessons; release-gate, perf and IP/licensing playbooks rewritten
+  (qa-tester, compliance-checker, release-engineer pre-review identity task, vfx/ui perf budget,
+  art-director look-echo check). Coach's own round-5 rule caused R-2 → fixed (L-tc-003). Stricter
+  gate rules added to "Producer standing rules". No rule loosened; release-reviewer untouched.
+- **Milestone: 4/7 done; left: Compliance (re-run), Release review (re-run), Build APK/AAB + owner
+  playtest; next stage: Launch fixes.**
+- **Next:** Round 7 — fix R-2 (vfx-developer + ui-developer perf to median p95 ≤ 33.3 ms at 4× CPU),
+  R-3 (release-engineer pre-review identity: Capacitor pinned, appId, original icon/splash,
+  versionCode, VIBRATE only, no INTERNET, debug build), R-4/R-6/R-8 (ui), R-5 (qa), R-7
+  (art-director + ui: Rook redesign), title per owner; then QA (full suites, exact commit),
+  compliance on exact commit, release review.
 
 ### Round 6 — Launch: compliance + release review (plan)
 - **Goal:** get a release-reviewer verdict on the milestone build. Fits one usage window where
