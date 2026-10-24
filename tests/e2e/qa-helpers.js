@@ -3,7 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Round 3+: screenshots only with QA_SHOTS=1 (or UI_SHOTS=1), so normal test runs never rewrite evidence.
-export const QA_SHOTS = 'reports/screenshots/round-4/qa';
+// L-shared-017: the round comes from the ONE shared source in helpers.js (env ROUND, else "**Round:** N" in
+// docs/STATUS.md; both must agree) and shotsDir() refuses an earlier round's folder.
+import { ROUND, SHOTS } from './helpers.js';
+export { ROUND };
+export const QA_SHOTS = SHOTS + '/qa';
 export const WRITE_QA_SHOTS = process.env.QA_SHOTS === '1' || process.env.UI_SHOTS === '1';
 if (WRITE_QA_SHOTS) fs.mkdirSync(QA_SHOTS, { recursive: true });
 

@@ -36,12 +36,10 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
 ## Open issues
 - Owner to pick a working title (GDD §1): Jade Tempest, Meridian Burst, Heavenbreak,
   Thunderclap Trio, Ironroar. Trademark check by compliance-checker before release.
-- BUG-4-01 (MINOR, ui-developer): Tri-Burst overlay visible 167 ms after freeze_end (limit 160).
-- BUG-4-02 (MINOR): GDD §9.2 and docs/ECONOMY.md still show old repeat-clear Jade (data is
-  10/20/45/50/75) — game-designer (prefer §9.2 referencing ECONOMY.md), economy-designer.
-- GDD §17/§18 say src/ui/vfx|audio; code is src/vfx and src/audio — game-designer aligns GDD.
-- Placeholder-art plan items 1–3, 7–8 (STYLE_GUIDE §11) deferred from round 4.
-- Real low-end Android perf check needed (AC-17.7 margin < 1 ms at 4× throttle; WebGL unmeasured).
+- AC-17.7 perf NOT VERIFIED here (shared container noise; WebGL unmeasurable) — needs a real
+  low-end Android phone before release.
+- One unreproduced intermittent failure in the VFX/audio e2e (likely a ducking timing check
+  within ~1 frame of its limit) — watch.
 - Trademark check for "Jade Tempest" pending (compliance-checker, Launch).
 
 ## Owner feedback
@@ -60,6 +58,11 @@ lesson and a hard rule at the next `/retro`.
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
   currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 5: perf (AC-17.7) — keep the absolute 33.3 ms p95 check unchanged; ADD a regression gate
+  each round (alternating ≥6 runs vs the previous round's commit; fail if mean frame-time p95 or
+  game-work p95 rises > 1.0 ms) and report game-work p95 next to frame-time p95. The absolute check
+  stays NOT VERIFIED on this shared container; it must pass on a real low-end Android phone (and a
+  quiet runner, median of ≥5) before release.
 - Round 4: keep system fonts (no font files); OFL fonts are not on the CREDITS.md allowed list
   and a font swap would change the approved feel. Revisit only with owner approval.
 - Round 4: VFX code lives in `src/vfx/` and audio in `src/audio/` (agents' playbook lanes), not

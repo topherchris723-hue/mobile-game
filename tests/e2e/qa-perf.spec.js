@@ -32,6 +32,9 @@ for (const renderer of ['canvas', 'default']) {
           requestAnimationFrame(loop);
         });
       }
+      // Reported only (method proposal, round 5): the game's own work per frame = time inside Phaser's game.step().
+      // (Phaser's loop holds a pre-bound step(), so measure between its own 'prestep' and 'postrender' game events.)
+      await page.evaluate(() => { const g = window.__TEST__.game; window.__work = []; let a = 0; g.events.on('prestep', () => { a = performance.now(); }); g.events.on('postrender', () => { if (a) window.__work.push(performance.now() - a); a = 0; }); });
       if (throttle > 1) await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });
       const r = await scriptBigMoments(page);
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
@@ -41,7 +44,9 @@ for (const renderer of ['canvas', 'default']) {
       const med = pct(d, 50);
       const p95 = pct(d, 95);
       const lowAt = r.frames.find((f) => f.quality === 'low');
-      console.log(`[perf ${renderer} cpu×${throttle}${process.env.QA_BREAK ? ' ' + process.env.QA_BREAK : ''}] frames=${d.length} median=${med.toFixed(1)} ms p95=${p95.toFixed(1)} ms max=${Math.max(...d).toFixed(1)} ms; auto quality → low: ${lowAt ? 'yes' : 'no'}`);
+      const work = await page.evaluate(() => window.__work.slice(5));
+      if (!work.length) throw new Error('work-time probe recorded nothing');
+      console.log(`[perf ${renderer} cpu×${throttle}${process.env.QA_BREAK ? ' ' + process.env.QA_BREAK : ''}] frames=${d.length} median=${med.toFixed(1)} ms p95=${p95.toFixed(1)} ms max=${Math.max(...d).toFixed(1)} ms; work median=${pct(work, 50).toFixed(1)} p95=${pct(work, 95).toFixed(1)} ms; auto quality → low: ${lowAt ? 'yes' : 'no'}`);
       if (renderer === 'default') {
         // Headless Chromium here has no GPU: WebGL runs on software GL (SwiftShader), ~100-300 ms per frame even for
         // round-2 builds (see smoke.spec.js notes). Not representative of a phone → reported, not asserted (NOT VERIFIED).
