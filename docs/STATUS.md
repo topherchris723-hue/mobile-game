@@ -3,7 +3,7 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** Growth — milestone features complete (battle + summon); balance done. Next: polish (VFX, art, audio, economy review)
+- **Phase:** Growth — polish nearly done (VFX, audio, settings in). Next: round 5 leftovers + placeholder art, then Launch
 - **Round:** 4
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** none
@@ -26,16 +26,22 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
   grep `dist/` for hook names.
 - Before a section is built, gameplay-programmer runs a "READY review" (works W-class ACs on
   FX-GDD, checks reachability and preconditions) and returns defects to the game-designer.
+- Quote GDD values, paths and licence terms exactly in prompts; when a path differs from the GDD,
+  list every script/test that reads it in the same hand-off.
+- Plan each round to fit about one usage window: one feature goal plus fixes; move extras on.
+  Never shorten a round by skipping a check, QA or the review gate.
 - After each round, republish the private playtest build:
   https://claude.ai/artifact/Mhc2SgVEgtoxFb5nHeqjXh
 
 ## Open issues
 - Owner to pick a working title (GDD §1): Jade Tempest, Meridian Burst, Heavenbreak,
   Thunderclap Trio, Ironroar. Trademark check by compliance-checker before release.
-- BUG-3-03 (MINOR, ui-developer): "RIPOSTE!" callout drawn over the combo hit counter.
-- GDD §15.1 owner column should note balance-analyst tunes numeric fields of characters/cards/
-  enemies from Growth (game-designer).
-- Home screen does not show save-repair warnings yet (console only).
+- BUG-4-01 (MINOR, ui-developer): Tri-Burst overlay visible 167 ms after freeze_end (limit 160).
+- BUG-4-02 (MINOR): GDD §9.2 and docs/ECONOMY.md still show old repeat-clear Jade (data is
+  10/20/45/50/75) — game-designer (prefer §9.2 referencing ECONOMY.md), economy-designer.
+- GDD §17/§18 say src/ui/vfx|audio; code is src/vfx and src/audio — game-designer aligns GDD.
+- Placeholder-art plan items 1–3, 7–8 (STYLE_GUIDE §11) deferred from round 4.
+- Real low-end Android perf check needed (AC-17.7 margin < 1 ms at 4× throttle; WebGL unmeasured).
 - Trademark check for "Jade Tempest" pending (compliance-checker, Launch).
 
 ## Owner feedback
@@ -83,6 +89,23 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 4 — Growth polish (result)
+- **Result:** style guide + 8 art briefs; economy review (fair, no data change) and repeat-clear
+  Jade 10/20/45/50/75 so harder stages pay more per minute; GDD §17 VFX, §18 Audio, §19 Settings;
+  procedural audio (46 SFX hooks, 5 original music loops, ducking, gesture unlock); VFX layer
+  (101 effects, flash/shake limiters, particle budget, reduce motion); Settings screen; settings
+  save repair; validator rules 13–15; BUG-3-03 fixed; release builds hook-free (stricter gate).
+- **QA:** 1 loop, PASS (0/0/2 minor). 542 unit tests, 73 e2e.
+- **Owner:** asked about speed ("4 resets") and the Unity stage; Producer trimmed placeholder art
+  to round 5 and republished the playtest before QA.
+- **Interruptions:** usage limit hit twice (vfx-developer, retro).
+- **Retro:** 4 new lessons, 5 repeats, promotions to ui-developer, qa-tester, audio-designer,
+  vfx-developer and Producer rules (above). Ownership lists corrected. No rule loosened.
+- **Next:** Round 5 — leftovers (BUG-4-01, BUG-4-02, GDD path alignment), placeholder-art items
+  (distinct fighter silhouettes, prop colours, Umbral rendering, mirror-match shadow, rarity
+  frames), QA, retro (step C at round 6). Then Launch: compliance-checker, release-reviewer,
+  release-engineer (APK/AAB), owner playtest.
 
 ### Round 4 — Growth polish (plan)
 - **Goal:** make it look, sound and feel like the brief ("fast, flashy, powerful", big

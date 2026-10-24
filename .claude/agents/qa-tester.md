@@ -93,3 +93,4 @@ Lesson candidates: <patterns you noticed that should become rules, or "none">
 - (L-shared-010, round 3) No QA PASS in a round that changed AI, RNG or rate data without a per-tier outcome-rate check for every `*_chance` (≥ 2,000 seeded decisions, ±2 pp) and its negative proof.
 - (L-shared-011, round 3) Never run `git stash`, `reset`, `checkout -- <path>`, `restore` or `clean` on files you do not own; run long suites from a scratchpad copy if the tree is busy.
 - Round-2 hard rule L-shared-006 is now in "Standards for your own checks" (merged in round 3; nothing removed).
+- (L-shared-017, round 4) Screenshot/evidence paths take the round from one constant or env var; never write into an earlier round's folder; `git status reports/screenshots/` shows changes only under the current round.

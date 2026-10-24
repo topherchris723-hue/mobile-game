@@ -61,7 +61,8 @@ Rule: Keep `reuseExistingServer: false`, start servers you can stop by PID, and 
 Status: ACTIVE
 
 ### L-ui-005: Release builds contain no test hooks
-Seen: 1 (round 3)
+Seen: 2 (rounds 3, 4: the round-3 gate still enabled hooks in development mode; caught by re-reading
+  the upgraded playbook)
 Severity of what it caused: MINOR (caught by ui-developer; security-relevant)
 What happened: Round-3 notes — gating `window.__TEST__` on Vite's DEV flag was not enough: under
   Vitest/NODE_ENV=test DEV was true, and the round-2 hook was enabled by a `?test` URL parameter in
@@ -73,4 +74,17 @@ Rule: Test hooks are compiled in only when `VITE_TEST_HOOKS=1` is set explicitly
   or a URL parameter). After every change to hooks or build config, run a clean `npm run build` and
   grep `dist/` for every hook name (expect 0), then do the same with the flag on (expect > 0). Never
   delete or weaken `tests/ui/release-bundle.test.js`.
-Status: ACTIVE; in playbook main text as a security rule (round 3 step C)
+  Round 4: also pin the exact gate expression in a unit test, so any loosening fails.
+Status: PROMOTED (round 4); also in playbook main text
+
+### L-ui-006: Start "within N ms" transitions in the frame the event is handled, with one frame of margin
+Seen: 1 (round 4: BUG-4-01)
+Severity of what it caused: MINOR
+What happened: BUG-4-01 — the Tri-Burst overlay was still visible 167 ms after `freeze_end` (AC-17.8
+  limit 160 ms) because the fade started one frame late.
+Root cause: The fade was scheduled for the next frame and its length used the whole limit, with no
+  frame of margin.
+Rule: For every AC with a time limit, start the transition in the same frame the event is handled,
+  and make it at least one frame (17 ms) shorter than the limit. The test measures from the event
+  timestamp.
+Status: ACTIVE

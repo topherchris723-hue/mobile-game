@@ -89,3 +89,5 @@ Lesson candidates: <or "none">
 - (L-shared-011, round 3) Never run `git stash`, `reset`, `checkout -- <path>`, `restore` or `clean` on files you do not own; run long suites from a scratchpad copy if the tree is busy.
 - (L-shared-014, owner feedback round 3) Report every change to controls, gestures, battle HUD layout or hit feedback under "Feel changes"; an unplanned one is a bug.
 - Round-2 hard rules L-ui-001, L-ui-003 and L-shared-009 are now in "Standards" and "Layout self-check" above (merged in round 3; nothing removed).
+- (L-ui-005, round 4) The exact test-hook gate expression (`VITE_TEST_HOOKS === '1'` only) is pinned in a unit test; hooks never compile in for development mode, DEV, MODE or a URL parameter.
+- (L-shared-017, round 4) Screenshot/evidence paths take the round from one constant or env var; never write into an earlier round's folder; `git status reports/screenshots/` shows changes only under the current round.

@@ -99,8 +99,9 @@ Rule: For every rule that cancels, interrupts, stuns, KOs or swaps a fighter, ad
 Status: PROMOTED (round 3); in playbook "READY checklist" item 4
 
 ### L-gd-007: Work every AC with the default data before marking a section READY
-Seen: 6 (round 2: AC-5.11.2, approach timeout, AC-5.8.5; round 3: BAL-5.10 population, AC-5.8.5
-  precondition, battle-length target unreachable inside the bands)
+Seen: 7 (round 2: AC-5.11.2, approach timeout, AC-5.8.5; round 3: BAL-5.10 population, AC-5.8.5
+  precondition, battle-length target unreachable inside the bands; round 4: the §17 frozen R3 baseline
+  had camera flash alpha 1.0, breaking §17's own 0.9 cap)
 Severity of what it caused: MINOR (found by gameplay-programmer while building; 12 decisions where the
   GDD was silent)
 What happened: Round-2 notes — AC-5.11.2 left out one input of its formula; the approach timeout can

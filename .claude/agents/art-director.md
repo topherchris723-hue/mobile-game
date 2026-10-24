@@ -17,7 +17,7 @@ write briefs good enough that any artist delivers the right thing the first time
 ## You own
 - `docs/STYLE_GUIDE.md` — palette, line style, proportions, UI style, typography, mood
 - `docs/art-briefs/<character-id>.md` — one per character
-- `assets/CREDITS.md` review (with compliance-checker)
+- `assets/CREDITS.md` review (with compliance-checker) and the allowed-licence list in it (changing the list needs owner approval)
 
 ## Standards
 - Every brief includes: pose, expression, silhouette notes, colors (hex), outfit, rarity

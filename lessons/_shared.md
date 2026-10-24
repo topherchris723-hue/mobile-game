@@ -38,7 +38,8 @@ Rule: Every report ends with "Lesson candidates": what went wrong or nearly went
 Status: ACTIVE
 
 ### L-shared-006: Prove your checker can fail before trusting its PASS
-Seen: 2 (rounds 1, 2)
+Seen: 3 (rounds 1, 2, 4: "0 events" tests without a positive control; mutation tests that did not
+  confirm the mutation was applied)
 Severity of what it caused: MINOR (caught inside the round both times)
 What happened: Round 1 — the scratch content validator crashed on a record with a missing ID; only a
   deliberately broken input revealed it. Round 2 (round-2 notes, "Other process problems") — GDD §15.3
@@ -56,8 +57,9 @@ Rule: Before reporting PASS from any validator, test or grep you wrote, changed 
   gameplay-programmer, ui-developer, qa-tester and anyone else who writes a check.
 Status: PROMOTED (round 2)
 
-### L-shared-007: GDD §15 is the source of truth for data file paths
-Seen: 1 (round 1)
+### L-shared-007: The GDD is the source of truth for paths, values and licence terms quoted elsewhere
+Seen: 4 (round 1; round 4 ×3: src/vfx vs GDD src/ui/vfx path drift; licence "team-made" vs GDD
+  "self-made"; "OFL Google Fonts" vs the CREDITS.md allowed list)
 Severity of what it caused: MINOR (caught inside the round)
 What happened: Round 1 notes item 6 — the content-designer playbook ("You own") and the Producer's
   task prompt named `data/skills.json` and `data/story/*.json`; GDD §15.1 defines `data/cards.json`
@@ -67,8 +69,11 @@ Root cause: File names were written into playbooks and prompts before the GDD fi
 Rule: Before creating or editing a data file, look up its path in GDD §15.1. If your task prompt or
   playbook names a different path, use the GDD §15.1 path and list the mismatch under
   "Notes for the Producer" in your report. Never create a file at a path GDD §15.1 does not list
-  without saying so in the report.
-Status: ACTIVE
+  without saying so in the report. Round 4 widening: the same applies to every value, licence term or
+  code path a prompt or playbook quotes from the GDD or `assets/CREDITS.md`. Quote them exactly, and
+  when a GDD path changes, list the scripts and tests that read it. audio-designer and art-director
+  followed the GDD and flagged the mismatches. The fix is on the Producer side (proposed CLAUDE.md text).
+Status: PROMOTED (round 4; Producer rule proposed for CLAUDE.md)
 
 ### L-shared-008: Check names and text against the banned-term list read fresh from GDD §3
 Seen: 1 (round 1)
@@ -133,7 +138,8 @@ Rule: For every `*_chance`, rate or probability in data:
 Status: PROMOTED (round 3)
 
 ### L-shared-011: Never use git commands that hide or discard other agents' work in the shared tree
-Seen: 2 (round 3: balance-analyst `git stash`; WIP commits mixing agents' files)
+Seen: 3 (round 3: balance-analyst `git stash`; WIP commits mixing agents' files; round 4: WIP commit
+  picked up files in the middle of audio-designer's mutation test)
 Severity of what it caused: MINOR (work looked lost; no data lost)
 What happened: Round-3 notes — the balance-analyst ran `git stash` in the shared working tree, which
   made other agents' changes look lost. WIP commits made during usage-limit pauses swept up whatever
@@ -143,7 +149,8 @@ Root cause: Several agents work in one working tree at the same time, with no ru
   commands are safe and no isolation for long-running reads.
 Rule: Never run `git stash`, `git reset`, `git checkout -- <path>`, `git restore` or `git clean` on
   files you do not own. For stable long runs (sims, e2e suites), copy what you need to the scratchpad
-  and run from the copy. Report the copy's source commit. Only the Producer commits.
+  and run from the copy. Report the copy's source commit. Only the Producer commits. Mutation tests
+  (deliberately breaking a file) run only on a scratchpad copy, never on the shared tree.
 Status: PROMOTED (round 3)
 
 ### L-shared-012: The Producer decides routine and open questions; do not wait for the owner
@@ -197,3 +204,37 @@ Rule: A section is built only after the game-designer has committed it as READY.
   are numbered rulings (what changed, which ACs, which agents) that the Producer forwards. The
   programmer does not start a section the designer is editing this round.
 Status: ACTIVE (Producer rule proposed for CLAUDE.md §4)
+
+### L-shared-016: A data change updates every document that quotes the value, in the same hand-off
+Seen: 1 (round 4: BUG-4-02)
+Severity of what it caused: MINOR
+What happened: BUG-4-02 — the repeat-clear Jade in data was changed (10/20/45/50/75), but GDD §9.2,
+  `docs/ECONOMY.md` §2.2 and `docs/STATUS.md` still showed the old values.
+Root cause: Nobody listed where a data value is quoted in prose, so the docs drifted from the data.
+Rule: Before handing off any data change, run `grep -rn "<field or old value>" docs/` and update every
+  document you own in the same change. List the documents you do not own under "Consumers must handle"
+  (L-shared-009). economy-designer: add a Jade-per-minute table whenever rewards change.
+Status: ACTIVE
+
+### L-shared-017: Screenshot and evidence output paths come from one round constant
+Seen: 2 (round 4: ui-developer helpers and QA helpers both wrote to the round-3 folder)
+Severity of what it caused: MINOR (QA overwrote round-3 evidence; restored)
+What happened: Round-4 notes — the screenshot helpers of both ui-developer and qa-tester still pointed
+  at `reports/screenshots/round-3/`, and QA's run overwrote the round-3 evidence.
+Root cause: The round number was hardcoded in each helper instead of read from one source.
+Rule: Evidence paths take the round from one constant or env var (e.g. `ROUND`, checked against
+  `docs/STATUS.md`). A helper refuses to write into an existing earlier round's folder. Before
+  finishing, check that `git status reports/screenshots/` shows changes only under the current round.
+Status: PROMOTED (round 4)
+
+### L-shared-018: Keep rounds short without dropping checks
+Seen: 1 (round 4)
+Severity of what it caused: OWNER FEEDBACK
+What happened: Round 4, owner: "How long is this step its been going for 4 resets now". This was a
+  concern about round duration, not a request for a specific rule.
+Root cause: Rounds bundled many agents and long suites, so a round spanned several usage windows.
+Rule: The Producer plans each round to fit about one usage window: at most one feature goal plus
+  fixes, and moves extras to the next round. Agents keep reports to their required format and run
+  heavy suites once per loop, not repeatedly. Speed never comes from skipping a required check, a
+  negative proof, QA or the release-reviewer gate.
+Status: PROMOTED (round 4; Producer rule proposed for CLAUDE.md)

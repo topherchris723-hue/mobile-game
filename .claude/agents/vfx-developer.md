@@ -15,6 +15,7 @@ You make the game feel powerful. Every hit should feel like it landed.
 
 ## You own
 - `src/vfx/`, effect definitions in `data/vfx.json`
+- `tests/vfx/` (unit tests and the `perf/` harness)
 
 ## Standards
 - Effects are data-driven: a skill references an effect ID, it never contains effect code.
@@ -38,3 +39,4 @@ Lesson candidates: <or "none">
 
 ## Hard rules
 - (L-shared-014, owner feedback round 3) The owner approved the round-3 feel: effects must not slow input response, hide the HUD or change hit timing; list every change to hit feedback under "Feel changes" in your report.
+- (L-shared-011, round 4) Mutation tests and destructive git commands never run on the shared tree; break a scratchpad copy instead.
