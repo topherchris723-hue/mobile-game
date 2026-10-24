@@ -2,10 +2,142 @@
 // Poses come only from the logic snapshot (state, action, ignition, invulnerable).
 import { auraColor, COLORS } from './theme.js';
 import { drawAuraIcon, cardColor } from './icons.js';
+import { shapeFor, shapeBounds, umbralColor, UMBRAL, SIDE_RIM } from './fighter-shapes.js';
+
+const SKIN_COLOR = 0xf1d3b8;
+
+/**
+ * Draw a fighter shape (src/ui/fighter-shapes.js) into Graphics g. o = { aura, facing, scale, umbral, side,
+ * silhouette (black fill only, for the silhouette sheet) }. Torso and fists keep the aura key colour (approved type
+ * read); Umbral (STYLE_GUIDE §9) darkens every colour, outlines in violet, adds cracks and glowing eyes, and draws the
+ * chest aura icon in the REAL aura colour.
+ */
+export function drawFighter(g, shape, o) {
+  const s = o.scale || 1;
+  const fx = o.facing || 1;
+  const aura = auraColor(o.aura);
+  const black = !!o.silhouette;
+  const col = (c) => {
+    if (black) return 0x000000;
+    let v = c === 'aura' ? aura : c === 'skin' ? SKIN_COLOR : c;
+    if (o.umbral) v = c === 'skin' ? UMBRAL.skin : umbralColor(v);
+    return v;
+  };
+  const strokeCol = (c) => (black ? 0x000000 : o.umbral ? UMBRAL.outline : c);
+  const X = (x) => x * s * fx;
+  const Y = (y) => y * s;
+  g.clear();
+  if (!black) {
+    // floor shadow with a side-coloured rim (§11 item 7); Umbral: violet smoke wisps at the edge (§9)
+    g.fillStyle(0x000000, 0.35);
+    g.fillEllipse(0, 2, 64 * s, 12);
+    const rim = SIDE_RIM[o.side] || SIDE_RIM.player;
+    g.lineStyle(2, rim.color, rim.alpha);
+    g.strokeEllipse(0, 2, 64 * s, 12);
+    if (o.umbral) {
+      g.fillStyle(UMBRAL.outline, 0.45);
+      for (const dx of [-30, -18, 20, 31]) g.fillEllipse(dx * s, 1, 10 * s, 5);
+    }
+  }
+  for (const p of shape.parts) {
+    if (p.role === 'eye') {
+      if (black) continue;
+      g.fillStyle(o.umbral ? UMBRAL.eye : col(p.fill), 1);
+      g.fillCircle(X(p.x), Y(p.y), (o.umbral ? 3 : p.r) * s);
+      continue;
+    }
+    g.fillStyle(col(p.fill), p.alpha === undefined ? 1 : p.alpha);
+    const sw = p.sw || 0;
+    if (sw) g.lineStyle(sw, strokeCol(p.stroke), 0.85);
+    switch (p.k) {
+      case 'rect': {
+        const x = fx > 0 ? p.x : -(p.x + p.w);
+        if (p.r) {
+          g.fillRoundedRect(x * s, Y(p.y), p.w * s, p.h * s, p.r);
+          if (sw) g.strokeRoundedRect(x * s, Y(p.y), p.w * s, p.h * s, p.r);
+        } else {
+          g.fillRect(x * s, Y(p.y), p.w * s, p.h * s);
+          if (sw) g.strokeRect(x * s, Y(p.y), p.w * s, p.h * s);
+        }
+        break;
+      }
+      case 'checker':
+        for (let r = 0; r < p.rows; r++) {
+          for (let c = 0; c < p.cols; c++) {
+            g.fillStyle(col((r + c) % 2 ? p.fill2 : p.fill), 1);
+            const x = p.x + c * p.size;
+            g.fillRect((fx > 0 ? x : -(x + p.size)) * s, Y(p.y + r * p.size), p.size * s, p.size * s);
+          }
+        }
+        break;
+      case 'circle':
+        g.fillCircle(X(p.x), Y(p.y), p.r * s);
+        if (sw) g.strokeCircle(X(p.x), Y(p.y), p.r * s);
+        break;
+      case 'ellipse':
+        g.fillEllipse(X(p.x), Y(p.y), p.w * s, p.h * s);
+        if (sw) g.strokeEllipse(X(p.x), Y(p.y), p.w * s, p.h * s);
+        break;
+      case 'mask': {
+        // half circle over the upper face on the facing side
+        g.beginPath();
+        g.moveTo(X(p.x), Y(p.y));
+        g.arc(X(p.x), Y(p.y), p.r * s, fx > 0 ? -Math.PI / 2 : Math.PI, fx > 0 ? 0 : Math.PI * 1.5, false);
+        g.closePath();
+        g.fillPath();
+        break;
+      }
+      case 'poly': {
+        const pts = p.pts.map((q) => {
+          let x = q[0];
+          let y = q[1];
+          if (p.rot) {
+            const c = Math.cos(p.rot.a);
+            const sn = Math.sin(p.rot.a);
+            const dx = x - p.rot.cx;
+            const dy = y - p.rot.cy;
+            x = p.rot.cx + dx * c - dy * sn;
+            y = p.rot.cy + dx * sn + dy * c;
+          }
+          return { x: X(x), y: Y(y) };
+        });
+        g.fillPoints(pts, true);
+        if (sw) g.strokePoints(pts, true);
+        break;
+      }
+      case 'line': {
+        g.lineStyle(p.w * s, col(p.fill), 1);
+        g.lineBetween(X(p.x1), Y(p.y1), X(p.x2), Y(p.y2));
+        if (p.ticks && !black) {
+          g.lineStyle(1.5, col(p.tickFill), 1);
+          for (let i = 1; i <= p.ticks; i++) {
+            const t = i / (p.ticks + 1);
+            const cx = p.x1 + (p.x2 - p.x1) * t;
+            const cy = p.y1 + (p.y2 - p.y1) * t;
+            g.lineBetween(X(cx - 2), Y(cy - 2), X(cx + 2), Y(cy + 2));
+          }
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  if (black) return;
+  if (o.umbral) {
+    // 4 crack lines across the torso (Corvane's cracked-glass motif)
+    g.lineStyle(1, UMBRAL.crack, 0.9);
+    const cracks = [[-8, -70, 2, -58], [2, -58, -4, -46], [6, -76, 12, -64], [-12, -52, -4, -44]];
+    for (const c of cracks) g.lineBetween(X(c[0]), Y(c[1]), X(c[2]), Y(c[3]));
+  }
+  drawAuraIcon(g, o.aura, 0, Y(shape.chest), 9, o.umbral ? aura : 0xffffff);
+}
 
 export class FighterView {
-  constructor(scene, facing) {
+  /** opts.variantOf(fighterSnapshot) → 'umbral' | null (from enemies.json `variant`; never from ids or names). */
+  constructor(scene, facing, opts) {
     this.scene = scene;
+    this.variantOf = opts && opts.variantOf ? opts.variantOf : null;
     this.facing = facing; // +1 faces right (player), -1 faces left (enemy)
     this.root = scene.add.container(0, 0);
     this.glow = scene.add.graphics();
@@ -23,41 +155,17 @@ export class FighterView {
   }
 
   setFighter(f) {
-    const key = f.characterId + '|' + (f.ignition && f.ignition.active ? 'ign' : 'base');
+    const variant = this.variantOf ? this.variantOf(f) : null;
+    const umbral = variant === 'umbral';
+    const key = f.characterId + '|' + (umbral ? 'umbral' : 'base') + '|' + (f.boss ? 'boss' : '');
     if (key === this.key) return;
     this.key = key;
-    const g = this.body;
-    const col = auraColor(f.aura);
     const s = f.boss ? 1.12 : 1;
-    g.clear();
-    // shadow
-    g.fillStyle(0x000000, 0.35);
-    g.fillEllipse(0, 2, 64 * s, 12);
-    // legs
-    g.fillStyle(0x1b1d2e, 1);
-    g.fillRoundedRect(-16 * s, -34 * s, 12 * s, 34 * s, 4);
-    g.fillRoundedRect(4 * s, -34 * s, 12 * s, 34 * s, 4);
-    // torso
-    g.fillStyle(col, 1);
-    g.lineStyle(2, 0xffffff, 0.85);
-    g.fillRoundedRect(-22 * s, -80 * s, 44 * s, 50 * s, 10);
-    g.strokeRoundedRect(-22 * s, -80 * s, 44 * s, 50 * s, 10);
-    // head
-    g.fillStyle(0xf1d3b8, 1);
-    g.fillCircle(0, -94 * s, 13 * s);
-    g.lineStyle(2, 0xffffff, 0.85);
-    g.strokeCircle(0, -94 * s, 13 * s);
-    // hair band in aura colour + eye on the facing side
-    g.fillStyle(col, 1);
-    g.fillRect(-13 * s, -104 * s, 26 * s, 6 * s);
-    g.fillStyle(0x14172b, 1);
-    g.fillCircle(6 * s * this.facing, -94 * s, 2.5 * s);
-    // fist on the facing side
-    g.fillStyle(col, 1);
-    g.fillCircle(28 * s * this.facing, -58 * s, 8 * s);
-    g.lineStyle(2, 0xffffff, 0.85);
-    g.strokeCircle(28 * s * this.facing, -58 * s, 8 * s);
-    drawAuraIcon(g, f.aura, 0, -56 * s, 9, 0xffffff);
+    const shape = shapeFor(f.characterId);
+    const b = shapeBounds(shape);
+    this.bounds = { x0: b.x0 * s, x1: b.x1 * s, y0: b.y0 * s, y1: b.y1 * s };
+    this.umbral = umbral;
+    drawFighter(this.body, shape, { aura: f.aura, facing: this.facing, scale: s, umbral: umbral, side: this.facing > 0 ? 'player' : 'enemy' });
     this.nameTag.setText(f.name);
     this.nameOffset = -122 * s;
     this.scale = s;

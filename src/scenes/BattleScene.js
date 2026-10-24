@@ -127,7 +127,11 @@ export class BattleScene extends BaseScene {
     g.fillRect(0, a.floorY, L.W, a.bottom - a.floorY);
     g.lineStyle(2, 0x8f86c9, 0.7);
     g.lineBetween(0, a.floorY, L.W, a.floorY);
-    this.fighters = { player: new FighterView(this, 1), enemy: new FighterView(this, -1) };
+    // Umbral look only from data (enemies.json `variant`, STYLE_GUIDE §9); absent field → normal look.
+    const enemyById = {};
+    for (const en of data.raw.enemies.enemies || []) enemyById[en.id] = en;
+    const variantOf = (f) => (f && f.enemyId && enemyById[f.enemyId] && enemyById[f.enemyId].variant) || null;
+    this.fighters = { player: new FighterView(this, 1, { variantOf }), enemy: new FighterView(this, -1, { variantOf }) };
     this.distanceText = null;
   }
 
@@ -455,7 +459,7 @@ export class BattleScene extends BaseScene {
       fs[side] = team.fighters[team.activeSlot];
       views[side].setFighter(fs[side]);
       poses[side] = views[side].pose(fs[side], now, frozen);
-      ext[side] = silhouetteExtent(poses[side].rot, views[side].scale, views[side].facing, poses[side].ox, poses[side].glow);
+      ext[side] = silhouetteExtent(poses[side].rot, views[side].scale, views[side].facing, poses[side].ox, poses[side].glow, views[side].bounds);
     }
     const placed = placeFighters(
       { x: arenaToScreen(st.teams.player.x, st.arenaWidth, L), left: ext.player.left, right: ext.player.right },

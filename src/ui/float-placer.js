@@ -132,7 +132,13 @@ export class FloatPlacer {
  * rot = body rotation (rad, Phaser: clockwise positive), s = scale (boss 1.12), facing = +1 right / −1 left,
  * ox = pose x offset, glow = Ignition glow drawn. Returns { left, right } (both ≥ 0, logical px).
  */
-export function silhouetteExtent(rot, s, facing, ox, glow) {
+export function silhouetteExtent(rot, s, facing, ox, glow, bounds) {
+  if (bounds) {
+    // per-fighter shape bounds (FighterView.bounds, scaled, authored facing right) + the wind-up ring
+    const xs = facing > 0 ? [bounds.x0, bounds.x1] : [-bounds.x1, -bounds.x0];
+    const corner = [[xs[0], bounds.y0], [xs[1], bounds.y0], [xs[0], Math.max(bounds.y1, 8)], [xs[1], Math.max(bounds.y1, 8)], [-42, -58 * s], [42, -58 * s]];
+    return extentOf(corner, rot, ox, glow);
+  }
   const pts = [
     [0, -107 * s], [-13 * s, -94 * s], [13 * s, -94 * s], // head
     [-22 * s, -80 * s], [22 * s, -80 * s], [-22 * s, -30 * s], [22 * s, -30 * s], // torso
@@ -140,6 +146,11 @@ export function silhouetteExtent(rot, s, facing, ox, glow) {
     [-32 * s, 0], [32 * s, 0], [-32 * s, 8], [32 * s, 8], // shadow / feet
     [-42, -58 * s], [42, -58 * s], // wind-up ring (r ≤ 38 + 4 px line)
   ];
+  return extentOf(pts, rot, ox, glow);
+}
+
+function extentOf(pts0, rot, ox, glow) {
+  const pts = pts0.slice();
   if (glow) pts.push([-45, -60], [45, -60], [0, -130], [0, 10]);
   const c = Math.cos(rot || 0);
   const sn = Math.sin(rot || 0);
