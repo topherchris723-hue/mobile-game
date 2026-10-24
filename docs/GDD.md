@@ -1049,13 +1049,18 @@ rises by `0.1 × old HP`, e.g. +850).
 
 ### 9.2 Milestone stage plan (content-designer fills names, enemies and story)
 
-| Stage | Enemies | AI tiers | stat_mult (hp/atk/def) | timer_s | First clear | Repeat |
-|---|---|---|---|---|---|---|
-| stage_001 (tutorial) | 1 | rookie | 0.7/0.7/0.7 | 120 | 300 Jade | 30 |
-| stage_002 | 2 | rookie | 0.8/0.8/0.8 | 150 | 300 Jade | 30 |
-| stage_003 | 3 | fighter | 0.92/0.92/0.92 | 180 | 400 Jade | 40 |
-| stage_004 | 3 | fighter, fighter, veteran | 0.88/0.88/0.88 | 180 | 500 Jade | 50 |
-| stage_005 (boss) | 3 | veteran, veteran, master (boss) | 0.72/0.72/0.72; boss 1.0/0.7/0.8 | 180 | 600 Jade + 1 ★4 fighter | 60 |
+| Stage | Enemies | AI tiers | stat_mult (hp/atk/def) | timer_s | Rewards |
+|---|---|---|---|---|---|
+| stage_001 (tutorial) | 1 | rookie | 0.7/0.7/0.7 | 120 | Jade, see docs/ECONOMY.md |
+| stage_002 | 2 | rookie | 0.8/0.8/0.8 | 150 | Jade, see docs/ECONOMY.md |
+| stage_003 | 3 | fighter | 0.92/0.92/0.92 | 180 | Jade, see docs/ECONOMY.md |
+| stage_004 | 3 | fighter, fighter, veteran | 0.88/0.88/0.88 | 180 | Jade, see docs/ECONOMY.md |
+| stage_005 (boss) | 3 | veteran, veteran, master (boss) | 0.72/0.72/0.72; boss 1.0/0.7/0.8 | 180 | Jade, see docs/ECONOMY.md; first clear also gives 1 ★4 fighter |
+
+**Round 5 ruling (BUG-4-02, L-shared-016): reward amounts are not written in the GDD.** First-clear, repeat-clear and
+mission Jade amounts live in `data/stages.json` (the truth) and are explained by the economy-designer in
+`docs/ECONOMY.md`. The GDD only states the binding design: every stage gives Jade on first clear and on every repeat
+clear, and stage_005's first clear also gives one ★4 fighter. No AC or test reads an amount from the GDD.
 
 **Round 3 ruling — this table is advisory; `data/enemies.json` and `data/stages.json` are the truth.** The values above
 are the round-3 balance-analyst snapshot after balance pass 2 (stage_003 regulars 0.92; stage_004 regulars 0.88;
@@ -1344,7 +1349,7 @@ both lists from `src/logic`; the UI maps every value (L-shared-009). `jade_added
 - Summon costs (in banner data): 100 single, 1,000 ×10.
 - Milestone Jade budget (first-time): start 1,000 + stage first clears 2,100 + missions 15 × 50 = 750 →
   **3,850 Jade ≈ 38 pulls**, with a guaranteed ★5 on the first ×10. P(no further ★5 in the remaining 28 single-rate
-  pulls) = 0.97^28 ≈ 43%. That is fine because the guarantee already gives one, and repeat clears (30–60) give more.
+  pulls) = 0.97^28 ≈ 43%. That is fine because the guarantee already gives one, and repeat clears give more (amounts: docs/ECONOMY.md, round 5).
 - Duplicate conversion and the power formula live here (§11.4, §9.1).
 - AC-12.1: A fresh save has exactly 1,000 Jade and the 3 starters defined in economy.json.
 
