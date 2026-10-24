@@ -7,7 +7,7 @@ import {
   mixOf, normalizeSettings, sfxBusGain, bgmBusGain, VoiceLimiter, DuckState, resolveTrack, rampValue,
   midiToHz, stepSeconds, synthLength,
 } from './mix.js';
-import { startSynth, startVoice, isPercussion } from './synth.js';
+import { startSynth, startVoice, isPercussion, renderBatch, startBuffer, voiceLength } from './synth.js';
 
 const LOOKAHEAD_S = 0.15; // schedule music this far ahead
 const PUMP_MS = 25;
@@ -18,6 +18,35 @@ function defaultCreateContext() {
   const C = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
   return C ? new C({ latencyHint: 'interactive' }) : null;
 }
+
+function defaultCreateOffline() {
+  const C = typeof window !== 'undefined' && (window.OfflineAudioContext || window.webkitOfflineAudioContext);
+  return C ? (ch, frames, sr) => new C(ch, frames, sr) : null;
+}
+
+/** Max voices built per render job (one OfflineAudioContext); keeps each idle job short. */
+const BATCH_VOICES = 8;
+const BATCH_ITEMS = 8;
+
+/**
+ * Runs fn only when the browser reports ≥ 10 ms of idle time (one render job is a few ms at 4× CPU). Never forced into
+ * a busy frame: if the game never idles, items stay on the live path (the pre-round-7 behaviour).
+ */
+function defaultIdle() {
+  if (typeof window !== 'undefined' && window.requestIdleCallback) {
+    return (fn) => {
+      const tryRun = (dl) => {
+        if (dl.timeRemaining() >= 10) fn();
+        else window.requestIdleCallback(tryRun);
+      };
+      window.requestIdleCallback(tryRun);
+    };
+  }
+  return (fn) => setTimeout(fn, 30);
+}
+
+/** Hit-frame sounds are pre-rendered first (perf R-2): hits, card wind-ups, combo, movement. */
+const FIRST_HOOKS = /^(hit_|card_|combo_up|riposte|tag_strike|knockdown|slip|perfect_slip|swipe_|tag$|ui_press)/;
 
 function setParam(param, from, to, t0, dur) {
   try {
@@ -34,7 +63,9 @@ export class AudioEngine {
   /**
    * @param {object} audioData parsed data/audio.json
    * @param {object} settings save.settings (master_volume, bgm_volume, sfx_volume, muted)
-   * @param {object} [opts] { createContext, setInterval, clearInterval, warn } — injectable for tests
+   * @param {object} [opts] { createContext, createOffline, idle, setInterval, clearInterval, warn } — injectable for
+   *   tests. createOffline(channels, frames, sampleRate) → OfflineAudioContext (null = no pre-rendering);
+   *   idle(fn) runs fn when the main thread is idle (requestIdleCallback).
    */
   constructor(audioData, settings, opts) {
     const o = opts || {};
@@ -48,6 +79,13 @@ export class AudioEngine {
     this.clearIntervalFn = o.clearInterval || ((id) => clearInterval(id));
     this.warnFn = o.warn || ((m) => console.warn(m));
     this.warned = new Set();
+    this.createOffline = o.createOffline === undefined ? defaultCreateOffline() : o.createOffline;
+    this.idle = o.idle || defaultIdle();
+    // Pre-rendered AudioBuffers (perf R-2): sound key → buffer; music note key → buffer.
+    this.buffers = new Map();
+    this.noteBuffers = new Map();
+    this.renderQueue = [];
+    this.rendering = false;
 
     this.ctx = null;
     this.unlocked = false;
@@ -87,6 +125,7 @@ export class AudioEngine {
       if (this.desiredTrack) this.startTrack(this.desiredTrack, this.mix.music_fade_in_s);
       this.timer = this.setIntervalFn(() => this.pump(), PUMP_MS);
       this.pump();
+      this.queueSoundRenders();
       return;
     }
     if (this.ctx.state === 'suspended') this.resume();
@@ -209,13 +248,43 @@ export class AudioEngine {
       if (victim) victim.stop(t);
       this.handles.delete(req.stopId);
     }
-    const g = this.ctx.createGain();
-    g.gain.value = def.gain;
-    g.connect(this.sfxBus);
-    const h = startSynth(this.ctx, g, def.synth, t);
+    const g = this.voiceGain(t, def.gain);
+    const buf = this.buffers.get(key);
+    // pre-rendered: 1 source node; not yet rendered: the live graph (same samples)
+    const h = buf ? startBuffer(this.ctx, g.node, buf, t, g.node) : startSynth(this.ctx, g.node, def.synth, t);
+    g.busyUntil = h.end + 0.05;
+    const stop = h.stop;
+    h.stop = (at) => {
+      stop(at);
+      g.busyUntil = Math.max(at, this.now()) + 0.05; // after the 5 ms steal fade
+    };
     this.handles.set(req.id, h);
     this.stats.soundsStarted += 1;
+    if (buf) this.stats.buffered = (this.stats.buffered || 0) + 1;
     return { played: true, key, reason: null, end: h.end, id: req.id };
+  }
+
+  /**
+   * A per-voice GainNode (= sound.gain) from a pool connected to the SFX bus (perf R-2: no createGain + connect per
+   * hit). A node is free once its last sound (or steal fade) has ended. The pool grows only if all are busy.
+   */
+  voiceGain(t, gain) {
+    if (!this.gainPool) this.gainPool = [];
+    let g = null;
+    for (const x of this.gainPool) if (x.busyUntil <= t) { g = x; break; }
+    if (!g) {
+      const node = this.ctx.createGain();
+      node.connect(this.sfxBus);
+      g = { node, busyUntil: 0 };
+      this.gainPool.push(g);
+    }
+    try {
+      g.node.gain.cancelScheduledValues(t);
+      g.node.gain.setValueAtTime(gain, t);
+    } catch (e) {
+      /* closed context */
+    }
+    return g;
   }
 
   // ------------------------------------------------------------ music
@@ -271,6 +340,7 @@ export class AudioEngine {
     const gain = this.ctx.createGain();
     gain.connect(this.duckNode);
     setParam(gain.gain, 0, def.gain, t, fade);
+    this.queueNoteRenders(key);
     this.players.push({ key, def, gain, fade: { from: 0, to: 1, t0: t, t1: t + fade }, step: 0, nextTime: t + 0.05, stopAt: null });
   }
 
@@ -299,6 +369,7 @@ export class AudioEngine {
     this.players = this.players.filter((p) => {
       if (p.stopAt !== null && t > p.stopAt + 0.3) {
         try { p.gain.disconnect(); } catch (e) { /* ignore */ }
+        this.releaseNotes(p.key);
         return false;
       }
       return true;
@@ -306,13 +377,137 @@ export class AudioEngine {
   }
 
   scheduleStep(p, step, when) {
-    for (const tr of p.def.pattern.tracks) {
+    const tracks = p.def.pattern.tracks;
+    for (let i = 0; i < tracks.length; i++) {
+      const tr = tracks[i];
       const n = tr.notes[step];
       if (n === null || n === undefined) continue;
-      const perc = isPercussion(tr.voice);
-      startVoice(this.ctx, p.gain, tr.voice, when, perc ? { gainMul: n / 127 } : { freqHz: midiToHz(n) });
+      const buf = this.noteBuffers.get(noteKey(p.key, i, n));
+      if (buf) startBuffer(this.ctx, p.gain, buf, when, null);
+      else startVoice(this.ctx, p.gain, tr.voice, when, noteOpts(tr.voice, n));
       this.stats.notesStarted += 1;
     }
+  }
+
+  // ------------------------------------------------------------ pre-rendering (perf R-2)
+  // Every procedural sound and every distinct music note is rendered once into an AudioBuffer, one item per idle
+  // callback (never in a hit frame). Until an item is ready the live graph plays it, so nothing is ever silent.
+  queueSoundRenders() {
+    if (!this.createOffline) return;
+    const first = [];
+    const rest = [];
+    for (const [hook, key] of Object.entries(this.hooks)) {
+      if (!key || !this.sounds[key] || !this.sounds[key].synth) continue;
+      (FIRST_HOOKS.test(hook) ? first : rest).push(key);
+    }
+    for (const k of Object.keys(this.sounds)) if (this.sounds[k].synth) rest.push(k); // card sfx overrides etc.
+    const seen = new Set();
+    const items = [];
+    for (const key of first.concat(rest)) {
+      if (seen.has(key)) continue;
+      seen.add(key);
+      items.push({ kind: 'sound', key });
+    }
+    // hit sounds go before any queued music notes; the rest after them
+    const nFirst = items.filter((it) => first.includes(it.key)).length;
+    this.renderQueue = items.slice(0, nFirst).concat(this.renderQueue, items.slice(nFirst));
+    this.kickRender();
+  }
+
+  queueNoteRenders(trackKey) {
+    if (!this.createOffline) return;
+    const def = this.sounds[trackKey];
+    if (!def || !def.pattern) return;
+    def.pattern.tracks.forEach((tr, i) => {
+      const seen = new Set();
+      for (const n of tr.notes) {
+        if (n === null || n === undefined || seen.has(n)) continue;
+        seen.add(n);
+        const k = noteKey(trackKey, i, n);
+        if (!this.noteBuffers.has(k)) this.renderQueue.push({ kind: 'note', key: k, track: trackKey, voice: tr.voice, n });
+      }
+    });
+    this.kickRender();
+  }
+
+  /** A track that stopped playing frees its note buffers (memory: only playing tracks keep them). */
+  releaseNotes(trackKey) {
+    if (this.desiredTrack === trackKey || this.players.some((q) => q.key === trackKey && q.stopAt === null)) return;
+    const prefix = trackKey + '|';
+    for (const k of [...this.noteBuffers.keys()]) if (k.startsWith(prefix)) this.noteBuffers.delete(k);
+    this.renderQueue = this.renderQueue.filter((it) => it.kind !== 'note' || it.track !== trackKey);
+  }
+
+  kickRender() {
+    if (this.rendering || !this.renderQueue.length || !this.ctx) return;
+    this.rendering = true;
+    this.idle(() => this.renderNext());
+  }
+
+  renderNext() {
+    if (!this.ctx) {
+      this.rendering = false;
+      return;
+    }
+    // take a batch: up to BATCH_ITEMS items / BATCH_VOICES voices (always at least one item)
+    const batch = [];
+    let voices = 0;
+    while (this.renderQueue.length && batch.length < BATCH_ITEMS) {
+      const it = this.renderQueue[0];
+      const map = it.kind === 'sound' ? this.buffers : this.noteBuffers;
+      if (map.has(it.key)) {
+        this.renderQueue.shift();
+        continue;
+      }
+      const v = it.kind === 'sound' ? this.sounds[it.key].synth.voices.length : 1;
+      if (batch.length && voices + v > BATCH_VOICES) break;
+      voices += v;
+      batch.push(this.renderQueue.shift());
+    }
+    const next = () => {
+      this.rendering = false;
+      this.kickRender();
+    };
+    if (!batch.length) return next();
+    const ctx = this.ctx;
+    const sr = ctx.sampleRate || 44100;
+    const items = batch.map((it) => {
+      if (it.kind === 'sound') {
+        const synth = this.sounds[it.key].synth;
+        let len = 0;
+        for (const v of synth.voices) len = Math.max(len, voiceLength(v));
+        return { length: len, build: (c, dest, when) => startSynth(c, dest, synth, when) };
+      }
+      return { length: voiceLength(it.voice), build: (c, dest, when) => startVoice(c, dest, it.voice, when, noteOpts(it.voice, it.n)) };
+    });
+    let p;
+    try {
+      p = renderBatch(this.createOffline, sr, items);
+    } catch (e) {
+      p = Promise.reject(e);
+    }
+    p.then((slices) => {
+      if (this.ctx !== ctx) return next();
+      batch.forEach((it, i) => {
+        // a note of a track that stopped meanwhile is not kept
+        if (it.kind === 'note' && !(this.desiredTrack === it.track || this.players.some((q) => q.key === it.track))) return;
+        const buf = ctx.createBuffer(1, slices[i].length, sr);
+        if (buf.copyToChannel) buf.copyToChannel(slices[i], 0);
+        else buf.getChannelData(0).set(slices[i]);
+        (it.kind === 'sound' ? this.buffers : this.noteBuffers).set(it.key, buf);
+      });
+      next();
+    }, (e) => {
+      for (const it of batch) this.warnOnce('render:' + it.key, 'pre-render failed for "' + it.key + '" (live synthesis used): ' + (e && e.message));
+      next();
+    });
+  }
+
+  /** Bytes held by pre-rendered buffers (mono float32). */
+  bufferBytes() {
+    let b = 0;
+    for (const m of [this.buffers, this.noteBuffers]) for (const buf of m.values()) b += (buf.length || 0) * 4;
+    return b;
   }
 
   // ------------------------------------------------------------ ducking
@@ -364,6 +559,10 @@ export class AudioEngine {
       bgmBusGain: bgmBusGain(this.settings),
       bgmGain: p ? bgmBusGain(this.settings) * p.def.gain * rampValue(p.fade, t) * duck : 0,
       activeVoices: this.limiter.active(t * 1000),
+      buffers: this.buffers.size,
+      noteBuffers: this.noteBuffers.size,
+      bufferBytes: this.bufferBytes(),
+      renderQueue: this.renderQueue.length,
     };
   }
 
@@ -381,5 +580,17 @@ export class AudioEngine {
     this.ctx = null;
     this.unlocked = false;
     this.players = [];
+    this.renderQueue = [];
+    this.gainPool = [];
+    this.buffers.clear();
+    this.noteBuffers.clear();
   }
+}
+
+function noteKey(trackKey, trackIndex, n) {
+  return trackKey + '|' + trackIndex + '|' + n;
+}
+
+function noteOpts(voice, n) {
+  return isPercussion(voice) ? { gainMul: n / 127 } : { freqHz: midiToHz(n) };
 }

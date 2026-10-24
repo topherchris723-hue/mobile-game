@@ -126,9 +126,13 @@ export class MockAudioContext {
     n.Q = new MockParam(this, 1);
     return n;
   }
-  createBuffer(ch, len) {
+  createBuffer(ch, len, sr) {
     const data = new Float32Array(len);
-    return { numberOfChannels: ch, length: len, getChannelData: () => data };
+    return {
+      numberOfChannels: ch, length: len, sampleRate: sr || this.sampleRate, duration: len / (sr || this.sampleRate),
+      getChannelData: () => data,
+      copyToChannel: (src) => data.set(src.subarray(0, len)),
+    };
   }
   createDynamicsCompressor() {
     const n = new MockNode(this);
@@ -142,11 +146,58 @@ export class MockAudioContext {
 }
 MockAudioContext.instances = [];
 
+/** OfflineAudioContext mock: startRendering resolves to a buffer whose samples encode the frame index (for slicing
+ *  checks). Every instance is recorded in MockOfflineContext.instances. */
+export class MockOfflineContext extends MockAudioContext {
+  constructor(ch, frames, sr) {
+    super();
+    MockAudioContext.instances.pop();
+    this.frames = frames;
+    this.sampleRate = sr;
+    MockOfflineContext.instances.push(this);
+  }
+  startRendering() {
+    const b = this.createBuffer(1, this.frames, this.sampleRate);
+    const d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = i;
+    return Promise.resolve(b);
+  }
+}
+MockOfflineContext.instances = [];
+
+/** Engine options with pre-rendering: offline factory + a manual idle queue (flushIdle runs it to the end). */
+export function prerenderOpts() {
+  const o = testOpts();
+  o.offline = [];
+  o.idleQueue = [];
+  o.createOffline = (ch, frames, sr) => {
+    const c = new MockOfflineContext(ch, frames, sr);
+    o.offline.push(c);
+    return c;
+  };
+  o.idle = (fn) => o.idleQueue.push(fn);
+  o.flushIdle = async () => {
+    let jobs = 0;
+    for (let guard = 0; guard < 1000; guard++) {
+      await Promise.resolve();
+      await new Promise((r) => setTimeout(r, 0));
+      const fn = o.idleQueue.shift();
+      if (!fn) break;
+      jobs += 1;
+      fn();
+    }
+    await new Promise((r) => setTimeout(r, 0));
+    return jobs;
+  };
+  return o;
+}
+
 /** Engine options for tests: mock context factory, manual timers, silent warnings collected in `warnings`. */
 export function testOpts() {
   const warnings = [];
   const o = {
     listen: false,
+    createOffline: null, // live synthesis only; prerenderOpts() turns pre-rendering on
     created: [],
     warnings,
     createContext: () => {

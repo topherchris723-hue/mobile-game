@@ -12,21 +12,34 @@
 
 const SILENT = 0.0001;
 
-/** One shared 1 s white-noise buffer per AudioContext. */
+/** One shared 1 s white-noise buffer per AudioContext. The samples are generated once per sample rate and copied
+ *  into each context's buffer (pre-rendering creates many OfflineAudioContexts; perf R-2). */
 const noiseCache = new WeakMap();
-export function noiseBuffer(ctx) {
-  let b = noiseCache.get(ctx);
-  if (b) return b;
-  const len = Math.max(1, Math.floor(ctx.sampleRate || 44100));
-  b = ctx.createBuffer(1, len, ctx.sampleRate || 44100);
-  const ch = b.getChannelData(0);
+const noiseSamples = new Map();
+export function noiseData(sampleRate) {
+  const sr = sampleRate || 44100;
+  let d = noiseSamples.get(sr);
+  if (d) return d;
+  const len = Math.max(1, Math.floor(sr));
+  d = new Float32Array(len);
   let seed = 0x9e3779b9; // deterministic noise (xorshift32)
   for (let i = 0; i < len; i++) {
     seed ^= seed << 13; seed >>>= 0;
     seed ^= seed >>> 17;
     seed ^= seed << 5; seed >>>= 0;
-    ch[i] = (seed / 0xffffffff) * 2 - 1;
+    d[i] = (seed / 0xffffffff) * 2 - 1;
   }
+  noiseSamples.set(sr, d);
+  return d;
+}
+export function noiseBuffer(ctx) {
+  let b = noiseCache.get(ctx);
+  if (b) return b;
+  const sr = ctx.sampleRate || 44100;
+  const d = noiseData(sr);
+  b = ctx.createBuffer(1, d.length, sr);
+  if (b.copyToChannel) b.copyToChannel(d, 0);
+  else b.getChannelData(0).set(d);
   noiseCache.set(ctx, b);
   return b;
 }
@@ -130,6 +143,95 @@ export function startSynth(ctx, dest, synth, when) {
     end,
     stop(t) {
       for (const v of voices) v.stop(t);
+    },
+  };
+}
+
+// ------------------------------------------------------------ pre-rendering (round 7, perf R-2)
+// The live graphs above cost 6–10 node creations + automation per sound on the main thread. Rendering the very same
+// graph once into an AudioBuffer (OfflineAudioContext, rendered off the main thread) makes every later play one
+// AudioBufferSourceNode. Same graph, same sample rate, same deterministic noise → the same samples.
+
+/** Length in seconds of a single voice (start offset included). */
+export function voiceLength(voice) {
+  return (voice.start_s || 0) + voice.duration_s;
+}
+
+/**
+ * Render `build(ctx, dest)` (which starts its voices at time 0) into a mono AudioBuffer of `lengthS` seconds.
+ * createOffline(channels, frames, sampleRate) → OfflineAudioContext. Resolves to the AudioBuffer.
+ */
+export function renderOffline(createOffline, sampleRate, lengthS, build) {
+  const frames = Math.max(1, Math.ceil((lengthS + 0.02) * sampleRate));
+  const off = createOffline(1, frames, sampleRate);
+  build(off, off.destination);
+  return off.startRendering();
+}
+
+/** Pre-render a one-shot synth (without sound.gain, which stays a live GainNode). */
+export function renderSynth(createOffline, sampleRate, synth) {
+  let len = 0;
+  for (const v of synth.voices) len = Math.max(len, voiceLength(v));
+  return renderOffline(createOffline, sampleRate, len, (ctx, dest) => startSynth(ctx, dest, synth, 0));
+}
+
+/** Pre-render one pattern note (opts as for startVoice: freqHz or gainMul). */
+export function renderVoice(createOffline, sampleRate, voice, opts) {
+  return renderOffline(createOffline, sampleRate, voiceLength(voice), (ctx, dest) => startVoice(ctx, dest, voice, 0, opts));
+}
+
+/**
+ * Render several one-shots in ONE OfflineAudioContext (each startRendering() costs ~4 ms of main thread at 4× CPU,
+ * so batching amortises it). items: [{ length (s), build(ctx, dest, when) }]. Each item starts on a whole frame,
+ * ≥ 50 ms after the previous one ends, on a 128-frame boundary, so its samples equal a solo render. Resolves to one Float32Array per item.
+ */
+const RENDER_QUANTUM = 128;
+
+export function renderBatch(createOffline, sampleRate, items) {
+  const sr = sampleRate;
+  const gap = Math.ceil(0.05 * sr);
+  const spans = [];
+  let frame = 0;
+  for (const it of items) {
+    const frames = Math.max(1, Math.ceil((it.length + 0.02) * sr));
+    spans.push({ start: frame, frames });
+    // Each item starts on a 128-frame render quantum, like a live sound started at ctx.currentTime. Chrome renders
+    // automated voices that start mid-quantum differently (measured round 7), so alignment keeps the samples equal.
+    frame = Math.ceil((frame + frames + gap) / RENDER_QUANTUM) * RENDER_QUANTUM;
+  }
+  const off = createOffline(1, Math.max(1, frame), sr);
+  items.forEach((it, i) => it.build(off, off.destination, spans[i].start / sr));
+  return off.startRendering().then((buf) => {
+    const all = buf.getChannelData(0);
+    return spans.map((sp) => all.slice(sp.start, sp.start + sp.frames));
+  });
+}
+
+/** Play a pre-rendered buffer at `when` into `dest`. Returns { end, stop(t) } like startSynth. */
+export function startBuffer(ctx, dest, buffer, when, fadeGain) {
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  src.connect(dest);
+  src.start(when);
+  const end = when + buffer.duration;
+  let stopped = false;
+  return {
+    end,
+    stop(t) {
+      if (stopped) return;
+      stopped = true;
+      const at = Math.max(t, when);
+      try {
+        // voice stealing: a 5 ms fade on the sound's own gain node (as the live voices do), then stop
+        if (fadeGain) {
+          fadeGain.gain.cancelScheduledValues(at);
+          fadeGain.gain.setValueAtTime(fadeGain.gain.value, at);
+          fadeGain.gain.linearRampToValueAtTime(0.0001, at + 0.005);
+        }
+        src.stop(at + 0.01);
+      } catch (e) {
+        /* already stopped */
+      }
     },
   };
 }
