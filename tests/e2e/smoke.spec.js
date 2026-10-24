@@ -1308,3 +1308,74 @@ test('BUG-4-01: Tri-Burst overlay hidden ≤ 160 ms after freeze_end (positive c
   expect(firstOff).toBeTruthy();
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// ------------------------------------------------------------------ round 5: placeholder art (STYLE_GUIDE §11 1–3, 7, 8)
+test('Placeholder art: silhouette sheet (black / colour / Umbral) and data-driven Umbral look in stage_003 + stage_005', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await page.goto('/?test=1&renderer=canvas');
+  await waitScene(page, 'Title');
+  for (const mode of ['black', 'color', 'umbral']) {
+    const ids = await page.evaluate((m) => window.__TEST__.silhouetteSheet(m), mode);
+    expect(ids.length).toBe(8);
+    await page.waitForTimeout(150);
+    await rawShot(page, testInfo, `60-silhouettes-${mode}`);
+    await page.reload();
+    await waitScene(page, 'Title');
+  }
+  const ENEMIES = JSON.parse(fs.readFileSync('data/enemies.json', 'utf8')).enemies;
+  const dataHasVariant = ENEMIES.some((e) => e.variant === 'umbral');
+  for (const [stageId, upTo] of [['stage_003', 2], ['stage_005', 4]]) {
+    await bootWithSave(page, upTo);
+    // Until enemies.json has `variant`, the test (not the game) marks the Umbral echoes; the game reads only the field.
+    if (!dataHasVariant) await page.evaluate(() => { for (const e of window.__TEST__.data.raw.enemies.enemies) if (/^enemy_umbral_/.test(e.id)) e.variant = 'umbral'; });
+    await startStage(page, stageId);
+    const st = await battleState(page);
+    const umbralIds = await page.evaluate(() => window.__TEST__.data.raw.enemies.enemies.filter((e) => e.variant === 'umbral').map((e) => e.id));
+    // bring an Umbral enemy in (KO the ones before it)
+    const slot = st.teams.enemy.fighters.findIndex((f) => umbralIds.includes(f.enemyId));
+    expect(slot, stageId + ' has an Umbral enemy').toBeGreaterThanOrEqual(0);
+    await page.evaluate((slot) => { const b = window.__TEST__.game.scene.getScene('Battle').battle; for (const s of ['player', 'enemy']) for (const f of b.teams[s].fighters) f.hp = f.def.maxHp = 10 ** 7; for (let i = 0; i < slot; i++) b.teams.enemy.fighters[i].hp = 0; }, slot);
+    await page.waitForFunction((slot) => { const s = window.__TEST__.battleState(); return s.teams.enemy.activeSlot === slot && !s.freeze; }, slot, { timeout: 15000 });
+    await page.waitForTimeout(300);
+    const look = await page.evaluate(() => { const sc = window.__TEST__.activeScene(); return { enemy: sc.fighters.enemy.umbral, player: sc.fighters.player.umbral }; });
+    expect(look).toEqual({ enemy: true, player: false });
+    await rawShot(page, testInfo, `61-battle-umbral-${stageId}`);
+  }
+  // without the field the same enemy renders normally (no id/name parsing in game code)
+  await bootWithSave(page, 2);
+  await page.evaluate(() => { for (const e of window.__TEST__.data.raw.enemies.enemies) delete e.variant; });
+  await startStage(page, 'stage_003');
+  expect(await page.evaluate(() => window.__TEST__.activeScene().fighters.enemy.umbral)).toBe(false);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
+test('Summon rarity tiers on screen: orb rings 1/2/3 and frames per rarity in the results', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await page.goto('/?test=1&renderer=canvas&summonSeed=4242');
+  await waitScene(page, 'Title');
+  await toSummon(page);
+  await shot(page, testInfo, '62-summon-featured-frames');
+  await tap(page, 'summon_x' + BANNER.multi_count);
+  await page.waitForTimeout(350);
+  await tap(page, 'summon_confirm');
+  await waitScene(page, 'SummonReveal');
+  const seen = new Map();
+  const end = Date.now() + 25000; // 10 pulls ≈ 10 s of reveal
+  while (Date.now() < end) {
+    const r = await page.evaluate(() => { const sc = window.__TEST__.activeScene(); return sc.phase === 'reveal' && sc.index >= 0 ? { rarity: sc.result.results[sc.index].rarity, rings: sc.ui.orbRings } : null; });
+    if (r && !seen.has(r.rarity)) {
+      seen.set(r.rarity, r.rings);
+      await rawShot(page, testInfo, `63-summon-orb-${r.rarity}`);
+    }
+    if (seen.size >= 2 && seen.has(5)) break;
+    await page.waitForTimeout(60);
+  }
+  for (const [rar, rings] of seen) expect(rings, '★' + rar).toBe(rar >= 5 ? 3 : rar === 4 ? 2 : 1);
+  expect(seen.has(5), 'first ×10 shows a ★5').toBe(true);
+  await tap(page, 'summon_skip').catch(() => {});
+  await page.waitForFunction(() => window.__TEST__.summonReveal().phase === 'results', null, { timeout: 15000 });
+  await page.waitForTimeout(500);
+  expect(layoutProblems(await sceneTexts(page))).toEqual([]);
+  await shot(page, testInfo, '64-summon-results-frames');
+  expect(errors, errors.join('\n')).toEqual([]);
+});

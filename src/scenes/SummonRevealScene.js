@@ -9,6 +9,7 @@ import { drawAuraIcon } from '../ui/icons.js';
 import { sfx, haptic } from '../ui/feedback.js';
 import { outcomeTag, guaranteeText, eventText, rarityColor, stars } from '../ui/summon-view.js';
 import { createVfx } from '../vfx/index.js';
+import { drawRarityFrame, addLightSweep } from '../ui/rarity-frame.js';
 import { TEST_HOOKS, testHooks } from '../ui/test-hooks.js';
 
 const SKIP_ARM_MS = 300; // the 2nd tap of the Confirm double tap must not skip the reveal
@@ -116,6 +117,7 @@ export class SummonRevealScene extends BaseScene {
     orb.fillStyle(0xffffff, 0.85);
     orb.fillCircle(-8, -8, 9);
     orb.setPosition(cx, cy).setScale(0.1);
+    const extras = this.orbExtras(res.rarity, cx, cy, col);
     this.layer.add(orb);
     sfx('summon_orb_' + res.rarity);
     this.vfx.onSummon('orb', res.rarity);
@@ -126,9 +128,57 @@ export class SummonRevealScene extends BaseScene {
       if (this.phase !== 'reveal') return;
       this.flash(col, res.rarity);
       orb.destroy();
+      for (const o of extras) o.destroy();
       this.showCard(res, cx, cy);
       this.time.delayedCall(PULL_MS[res.rarity] || PULL_MS[3], () => this.nextPull());
     });
+  }
+
+  /**
+   * STYLE_GUIDE §6 orb language (§11 item 8): ★3 one ring; ★4 two counter-rotating rings + 4 diamond glints;
+   * ★5 three rings inside a jade-green storm (#3DDC97 → #FFC23D streaks). Same charge timings as R3.
+   */
+  orbExtras(rarity, cx, cy, col) {
+    const out = [];
+    if (rarity >= 5) {
+      const storm = this.add.graphics().setPosition(cx, cy);
+      for (let i = 0; i < 10; i++) {
+        const a0 = (Math.PI * 2 * i) / 10;
+        storm.lineStyle(4, i % 2 ? 0x3ddc97 : 0xffc23d, 0.75);
+        storm.beginPath();
+        storm.arc(0, 0, 62 + (i % 3) * 10, a0, a0 + 0.9, false);
+        storm.strokePath();
+      }
+      storm.setScale(0.2);
+      this.tweens.add({ targets: storm, scale: 1, duration: 260, ease: 'Back.Out' });
+      this.tweens.add({ targets: storm, angle: 360, duration: 900, repeat: -1 });
+      this.layer.add(storm);
+      out.push(storm);
+    }
+    const rings = rarity >= 5 ? 3 : rarity === 4 ? 2 : 1;
+    for (let i = 0; i < rings; i++) {
+      const g = this.add.graphics().setPosition(cx, cy);
+      g.lineStyle(3, col, 0.9);
+      for (let k = 0; k < 4; k++) {
+        g.beginPath();
+        g.arc(0, 0, 38 + i * 8, (Math.PI / 2) * k, (Math.PI / 2) * k + 1.1, false);
+        g.strokePath();
+      }
+      g.setScale(0.2);
+      this.tweens.add({ targets: g, scale: 1, duration: 220, ease: 'Back.Out' });
+      if (rarity >= 4) this.tweens.add({ targets: g, angle: i % 2 ? -360 : 360, duration: 600, repeat: -1 });
+      this.layer.add(g);
+      out.push(g);
+    }
+    if (rarity === 4) {
+      const gl = this.add.graphics().setPosition(cx, cy);
+      gl.fillStyle(0xffffff, 0.9);
+      for (const [x, y] of [[0, -58], [58, 0], [0, 58], [-58, 0]]) gl.fillPoints([{ x, y: y - 5 }, { x: x + 3, y }, { x, y: y + 5 }, { x: x - 3, y }], true);
+      this.layer.add(gl);
+      out.push(gl);
+    }
+    this.ui.orbRings = rings;
+    return out;
   }
 
   flash(col, rarity) {
@@ -159,9 +209,9 @@ export class SummonRevealScene extends BaseScene {
     g.fillRoundedRect(-cw / 2, -chh / 2, cw, chh, 16);
     g.fillStyle(col, 0.2);
     g.fillRoundedRect(-cw / 2, -chh / 2, cw, chh, 16);
-    g.lineStyle(4, col, 1);
-    g.strokeRoundedRect(-cw / 2, -chh / 2, cw, chh, 16);
+    drawRarityFrame(g, -cw / 2, -chh / 2, cw, chh, 16, res.rarity);
     c.add(g);
+    if (res.rarity >= 5) addLightSweep(this, c, -cw / 2, -chh / 2, cw, chh, 16);
     if (ch) {
       const icon = this.add.graphics();
       drawAuraIcon(icon, ch.aura, 0, -56, 36);
@@ -235,8 +285,7 @@ export class SummonRevealScene extends BaseScene {
         g.fillRoundedRect(12, y, W - 24, rowH, 10);
         g.fillStyle(col, res.rarity >= 5 ? 0.3 : res.rarity === 4 ? 0.18 : 0.08);
         g.fillRoundedRect(12, y, W - 24, rowH, 10);
-        g.lineStyle(res.rarity >= 5 ? 3 : 2, col, 1);
-        g.strokeRoundedRect(12, y, W - 24, rowH, 10);
+        drawRarityFrame(g, 12, y, W - 24, rowH, 10, res.rarity); // frame shape per rarity (§6), not colour alone
         if (ch) drawAuraIcon(g, ch.aura, 34, y + rowH / 2, 11);
         c.add(g);
         const name = this.text(54, y + rowH / 2 - 8, ch ? ch.name : '', 15, COLORS.text, { fontStyle: 'bold' }).setOrigin(0, 0.5);

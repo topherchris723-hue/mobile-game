@@ -6,6 +6,7 @@ import { COLORS, auraColor } from '../ui/theme.js';
 import { data } from '../ui/game-data.js';
 import { drawAuraIcon } from '../ui/icons.js';
 import { sfx } from '../ui/feedback.js';
+import { drawRarityFrame } from '../ui/rarity-frame.js';
 import { summonScreenModel, rateTableModel, rejectText, rarityColor, stars } from '../ui/summon-view.js';
 import { summonAndSave } from '../state/summon-save.js';
 import { TEST_HOOKS, testHooks, testSeedParam } from '../ui/test-hooks.js';
@@ -132,8 +133,7 @@ export class SummonScene extends BaseScene {
       const cg = this.add.graphics();
       cg.fillStyle(0x0d1020, 0.75);
       cg.fillRoundedRect(cx - cw / 2, top, cw, ch, 12);
-      cg.lineStyle(2, rarityColor(c.rarity), 1);
-      cg.strokeRoundedRect(cx - cw / 2, top, cw, ch, 12);
+      drawRarityFrame(cg, cx - cw / 2, top, cw, ch, 12, c.rarity);
       const icon = this.add.graphics();
       drawAuraIcon(icon, c.aura, cx, top + ch * 0.32, Math.min(24, ch * 0.18));
       this.tweens.add({ targets: icon, y: { from: 0, to: -3 }, duration: 900 + i * 120, yoyo: true, repeat: -1, ease: 'Sine.InOut' });

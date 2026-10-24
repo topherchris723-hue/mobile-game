@@ -15,6 +15,8 @@ import { SummonRevealScene } from './scenes/SummonRevealScene.js';
 import { SettingsScene } from './scenes/SettingsScene.js';
 import audioData from '../data/audio.json';
 import { initAudio, audioDebug } from './audio/index.js';
+import { drawFighter } from './ui/fighter-view.js';
+import { FIGHTER_SHAPES } from './ui/fighter-shapes.js';
 
 const params = new URLSearchParams(window.location.search);
 // Read-only hooks for Playwright (scene key, touch targets, battle snapshot, sound-hook log).
@@ -97,4 +99,24 @@ if (T) {
   T.audioDebug = () => audioDebug();
   // ?vfxQuality=low forces the VFX quality (AC-17.6); read by the scenes that create a VFX layer.
   T.vfxQuality = params.get('vfxQuality') === 'low' ? 'low' : null;
+  // STYLE_GUIDE §11 item 1 proof: all fighters as black fills side by side on a white sheet (mode 'black'),
+  // or in colour / Umbral ('color' | 'umbral'). Draws over the active scene; returns the ids in order.
+  T.silhouetteSheet = (mode) => {
+    const sc = T.activeScene();
+    const ids = Object.keys(FIGHTER_SHAPES);
+    const c = sc.add.container(0, 0).setDepth(5000);
+    const bg = sc.add.graphics();
+    bg.fillStyle(mode === 'black' ? 0xffffff : 0x141a33, 1);
+    bg.fillRect(0, 0, sc.W, sc.H);
+    c.add(bg);
+    ids.forEach((id, i) => {
+      const g = sc.add.graphics();
+      const ch = data.character(id);
+      drawFighter(g, FIGHTER_SHAPES[id], { aura: ch ? ch.aura : 'blaze', facing: 1, scale: 1, silhouette: mode === 'black', umbral: mode === 'umbral', side: 'player' });
+      g.setPosition(45 + (i % 4) * 90, 170 + Math.floor(i / 4) * 200);
+      c.add(g);
+      c.add(sc.text(45 + (i % 4) * 90, 190 + Math.floor(i / 4) * 200, ch ? ch.name : id, 12, mode === 'black' ? '#000000' : '#ffffff').setOrigin(0.5, 0));
+    });
+    return ids;
+  };
 }

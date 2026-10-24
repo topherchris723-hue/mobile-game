@@ -60,7 +60,7 @@ export const FIGHTER_SHAPES = {
       { k: 'poly', pts: [[-20, -34], [20, -34], [28, 0], [-28, 0]], fill: 0xfaf7ee, stroke: 0xe2b341, sw: 2, role: 'prop' }, // robe
       torso(40, -78, -32),
       head(-90, 12), eye(-90, 12),
-      { k: 'line', x1: 30, y1: 0, x2: 30, y2: -112, w: 4, fill: 0x8a6a3a, role: 'prop' }, // staff
+      { k: 'line', x1: 30, y1: 0, x2: 30, y2: -110, w: 4, fill: 0x8a6a3a, role: 'prop' }, // staff
       { k: 'rect', x: 24, y: -108, w: 12, h: 16, r: 4, fill: 0xffe7a3, role: 'prop' }, // lantern
       { k: 'ellipse', x: -27, y: -54, w: 16, h: 22, fill: AURA, stroke: W, sw: 2, role: 'fist' }, // bell sleeve (back)
       fist(24, -56, 7),
@@ -117,7 +117,7 @@ export const FIGHTER_SHAPES = {
     parts: [
       ...legs(12, 16, 28),
       torso(64, -84, -28, 6),
-      head(-100, 12), eye(-100, 12),
+      head(-99, 12), eye(-99, 12),
       { k: 'poly', pts: [[-9, -92], [9, -92], [14, -62], [-14, -62]], fill: 0x6b4a2e, role: 'hair' }, // beard
       { k: 'circle', x: 3, y: -101, r: 3, fill: 0xffffff, stroke: 0x14172b, sw: 1, role: 'prop' },
       { k: 'circle', x: 10, y: -101, r: 3, fill: 0xffffff, stroke: 0x14172b, sw: 1, role: 'prop' },
@@ -137,7 +137,7 @@ export const FIGHTER_SHAPES = {
       ...legs(4, 8, 44),
       torso(34, -94, -44),
       head(-97, 10), eye(-97, 10),
-      ...[-12, -6, 0, 6, 12].map((cx) => ({ k: 'poly', pts: [[cx - 3, -104], [cx + 3, -104], [cx, -112]], fill: 0x2b2338, stroke: 0xc7a6ff, sw: 1, role: 'prop' })),
+      ...[-12, -6, 0, 6, 12].map((cx) => ({ k: 'poly', pts: [[cx - 3, -104], [cx + 3, -104], [cx, -111]], fill: 0x2b2338, stroke: 0xc7a6ff, sw: 1, role: 'prop' })),
       { k: 'circle', x: 25, y: -64, r: 7, fill: 0x3a2f52, stroke: 0xc7a6ff, sw: 1, role: 'fist' },
       { k: 'line', x1: 21, y1: -67, x2: 28, y2: -61, w: 1, fill: 0xc7a6ff, role: 'prop' },
     ],

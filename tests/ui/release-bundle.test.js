@@ -21,7 +21,7 @@ function buildTo(dir, testHooks) {
 
 /** Hook markers that must never ship. */
 export function hookMarkers(js) {
-  return ['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow'].filter((m) => js.includes(m));
+  return ['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow', 'silhouetteSheet'].filter((m) => js.includes(m));
 }
 
 describe('release bundle has no test hooks', () => {
@@ -33,6 +33,6 @@ describe('release bundle has no test hooks', () => {
   }, 180000);
   it('negative run: a VITE_TEST_HOOKS=1 build does contain them (the scan can fail)', () => {
     const js = buildTo(path.join(tmp, 'test'), true);
-    expect(hookMarkers(js)).toEqual(['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow']);
+    expect(hookMarkers(js)).toEqual(['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow', 'silhouetteSheet']);
   }, 180000);
 });

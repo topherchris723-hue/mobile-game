@@ -12,6 +12,31 @@ const SKIN_COLOR = 0xf1d3b8;
  * read); Umbral (STYLE_GUIDE §9) darkens every colour, outlines in violet, adds cracks and glowing eyes, and draws the
  * chest aura icon in the REAL aura colour.
  */
+/**
+ * Draw a fighter look once into a texture (cached by key) and return { key, feetX, feetY } in texture px. The box is
+ * the shape's own bounds (+ shadow, + 4 px), so the per-frame image draw covers as few pixels as the old vector body
+ * (Canvas renderer fill cost, AC-17.7).
+ */
+export function bakeFighter(scene, shape, id, o) {
+  const zoom = (scene.vp && scene.vp.zoom) || 1;
+  const key = ['fv', id, o.aura, o.facing, o.scale, o.umbral ? 'u' : 'b', o.side, zoom.toFixed(2)].join('_');
+  const s = o.scale || 1;
+  const b = shapeBounds(shape);
+  const fx = o.facing || 1;
+  const x0 = Math.min(fx > 0 ? b.x0 : -b.x1, -34) * s - 4; // shadow ellipse is ±32·s
+  const x1 = Math.max(fx > 0 ? b.x1 : -b.x0, 34) * s + 4;
+  const y0 = b.y0 * s - 4;
+  const y1 = 12;
+  const meta = { key: key, feetX: -x0 * zoom, feetY: -y0 * zoom, w: Math.ceil((x1 - x0) * zoom), h: Math.ceil((y1 - y0) * zoom) };
+  if (scene.textures.exists(key)) return meta;
+  const g = scene.make.graphics({ add: false });
+  // drawn at device resolution so the baked body stays sharp (the image is scaled by 1/zoom, the camera by zoom)
+  drawFighter(g, shape, Object.assign({}, o, { zoom: zoom, offset: { x: meta.feetX, y: meta.feetY } }));
+  g.generateTexture(key, meta.w, meta.h);
+  g.destroy();
+  return meta;
+}
+
 export function drawFighter(g, shape, o) {
   const s = o.scale || 1;
   const fx = o.facing || 1;
@@ -27,6 +52,11 @@ export function drawFighter(g, shape, o) {
   const X = (x) => x * s * fx;
   const Y = (y) => y * s;
   g.clear();
+  if (o.offset) {
+    // texture bake: feet at (offset.x, offset.y) in device px, drawn at device resolution
+    g.translateCanvas(o.offset.x, o.offset.y);
+    if (o.zoom && o.zoom !== 1) g.scaleCanvas(o.zoom, o.zoom);
+  }
   if (!black) {
     // floor shadow with a side-coloured rim (§11 item 7); Umbral: violet smoke wisps at the edge (§9)
     g.fillStyle(0x000000, 0.35);
@@ -141,7 +171,9 @@ export class FighterView {
     this.facing = facing; // +1 faces right (player), -1 faces left (enemy)
     this.root = scene.add.container(0, 0);
     this.glow = scene.add.graphics();
-    this.body = scene.add.graphics();
+    // The body is baked once per look into a texture and shown as an Image: a Graphics with ~30 primitives would be
+    // replayed every frame by the Canvas renderer (AC-17.7 frame budget).
+    this.body = scene.add.image(0, 0, '__DEFAULT').setVisible(false);
     this.windupRing = scene.add.graphics();
     // The name label lives outside the rotating body so it stays on one fixed row above the head
     // (it never swings into the damage-number area on Knockdown/KO; floating texts avoid this row).
@@ -165,7 +197,10 @@ export class FighterView {
     const b = shapeBounds(shape);
     this.bounds = { x0: b.x0 * s, x1: b.x1 * s, y0: b.y0 * s, y1: b.y1 * s };
     this.umbral = umbral;
-    drawFighter(this.body, shape, { aura: f.aura, facing: this.facing, scale: s, umbral: umbral, side: this.facing > 0 ? 'player' : 'enemy' });
+    const baked = bakeFighter(this.scene, shape, f.characterId, { aura: f.aura, facing: this.facing, scale: s, umbral: umbral, side: this.facing > 0 ? 'player' : 'enemy' });
+    const z = (this.scene.vp && this.scene.vp.zoom) || 1;
+    this.body.setTexture(baked.key);
+    this.body.setOrigin(baked.feetX / baked.w, baked.feetY / baked.h).setScale(1 / z).setVisible(true);
     this.nameTag.setText(f.name);
     this.nameOffset = -122 * s;
     this.scale = s;
