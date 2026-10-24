@@ -38,6 +38,10 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
 ## Open issues
 - Owner to pick a working title (GDD §1): Jade Tempest, Meridian Burst, Heavenbreak,
   Thunderclap Trio, Ironroar. Trademark check by compliance-checker before release.
+- Store screenshots must be recaptured from real play at 1080×1920 (no test-hook values) into
+  store/screenshots/0.1.0/ per store/screenshot-plan.md (ui-developer, with release-engineer round).
+- Do not upload the listing or make the feature graphic until the "Jade Tempest" trademark check
+  passes (compliance-checker).
 - AC-17.7 perf NOT VERIFIED here (shared container noise; WebGL unmeasurable) — needs a real
   low-end Android phone before release.
 - One unreproduced intermittent failure in the VFX/audio e2e (likely a ducking timing check
