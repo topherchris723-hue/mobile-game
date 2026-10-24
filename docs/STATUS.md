@@ -4,7 +4,7 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
 - **Phase:** Growth — polish nearly done (VFX, audio, settings in). Next: round 5 leftovers + placeholder art, then Launch
-- **Round:** 4
+- **Round:** 5
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** none
 - **Unity port started:** no
@@ -89,6 +89,17 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 5 — Leftovers + placeholder art (plan)
+- **Goal:** finish Growth so Launch can start next round. Fits one usage window.
+- **Step 1:** game-designer — GDD §17/§18 paths → src/vfx, src/audio; §9.2 references
+  docs/ECONOMY.md for reward numbers (BUG-4-02); optional `variant` field ("umbral") on enemies
+  (schema) for Umbral rendering.
+- **Step 2 (parallel):** content-designer sets `variant: "umbral"` on the 3 Umbral enemies;
+  economy-designer updates docs/ECONOMY.md tables to 10/20/45/50/75 (BUG-4-02); ui-developer
+  fixes BUG-4-01 and builds STYLE_GUIDE §11 items 1–3, 7, 8 (distinct silhouettes, prop colours,
+  Umbral look, mirror-match shadow, rarity frames) without changing the HUD layout.
+- **Step 3:** qa-tester loop, then retro (A+B).
 
 ### Round 4 — Growth polish (result)
 - **Result:** style guide + 8 art briefs; economy review (fair, no data change) and repeat-clear
