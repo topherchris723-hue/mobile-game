@@ -26,11 +26,11 @@ There is one currency, so there are no conversions to hide costs. Every price on
 ### 2.2 Stages (only a **Win** pays; a loss, draw or retreat gives nothing and costs nothing)
 | Stage | First clear (once) | Repeat clear (every later win) | Missions (50 Jade each, once each) |
 |---|---|---|---|
-| stage_001 | 300 | 30 | win, no_ko, perfect_slips ≥ 2 |
-| stage_002 | 300 | 30 | win, max_chain ≥ 3, use_ignition |
-| stage_003 | 400 | 40 | win, use_tri_burst, no_ko |
+| stage_001 | 300 | 10 | win, no_ko, perfect_slips ≥ 2 |
+| stage_002 | 300 | 20 | win, max_chain ≥ 3, use_ignition |
+| stage_003 | 400 | 45 | win, use_tri_burst, no_ko |
 | stage_004 | 500 | 50 | win, time_under 150 s, perfect_slips ≥ 3 |
-| stage_005 | 600 + ★4 Rook | 60 | win, max_chain ≥ 4, use_tri_burst |
+| stage_005 | 600 + ★4 Rook | 75 | win, max_chain ≥ 4, use_tri_burst |
 | **Total once** | **2,100 + Rook** | — | **15 × 50 = 750** |
 
 Rook from stage_005 follows the duplicate rules (§2.3). He does not touch pity or `total_pulls`.
@@ -106,7 +106,7 @@ rescued pull 10) and the overflow Jade bring it down to about 39%. No player rea
 counter resets on the first ×10's ★5, and at most 37 pulls follow. The two skill levels end within 50 Jade of each
 other, because a skilled player's extra missions are worth at most 4 × 50 Jade.
 
-### 5.3 30-day F2P simulation (10,000 players per row)
+### 5.3 30-day F2P simulation (10,000 players per row; rerun round 5 with repeat-clear Jade 10/20/45/50/75)
 Play model (assumptions):
 - Each player has a fixed daily playtime, drawn uniformly from 5–30 min, and skips a day with 20% chance.
 - A battle takes the balance report's median length plus 20 s of menus.
@@ -123,30 +123,36 @@ Policies:
 
 | Policy / player | Pulls p10 / median / p90 | ★5 mean | ≥1 ★5 | ≥2 ★5 | Own both ★5 | Hit hard pity | stage_005 not cleared by day 30 |
 |---|---|---|---|---|---|---|---|
-| Story / average | 42 / 43 / 43 | 2.09 | 100% | 69.0% | 42.7% | 2.4% | 0% (median clear day 2) |
-| Story / skilled | 42 / 42 / 43 | 2.09 | 100% | 68.7% | 42.6% | 2.3% | 0% (day 1) |
-| Farmer / average | 107 / 212 / 330 | 9.70 | 100% | 100% | 97.4% | 92.1% | 0% (day 2) |
-| Farmer / skilled | 113 / 217 / 332 | 9.88 | 100% | 100% | 97.8% | 92.7% | 0% (day 1) |
+| Story / average | 42 / 43 / 44 | 2.10 | 100% | 69.4% | 43.0% | 2.6% | 0% (median clear day 2) |
+| Story / skilled | 41 / 42 / 43 | 2.08 | 100% | 68.5% | 42.3% | 2.1% | 0% (day 1) |
+| Farmer / average | 66 / 104 / 146 | 4.91 | 100% | 100% | 87.5% | 69.7% | 0% (day 2) |
+| Farmer / skilled | 78 / 126 / 179 | 5.88 | 100% | 100% | 91.9% | 78.7% | 0% (day 1) |
 
 **Walls:** none. The hardest step is stage_005 for an average player: about 5.7 attempts of about 2.7 min each, all
 free. Every simulated player cleared it, with a median on day 2.
 
 ### 5.4 Repeat-clear efficiency (Jade per minute of play, including the 20 s of menus)
-| Stage | Average | Skilled |
-|---|---|---|
-| stage_001 | **37.5** | **36.7** |
-| stage_002 | 21.7 | 21.7 |
-| stage_003 | 11.1 | 14.4 |
-| stage_004 | 9.3 | 16.6 |
-| stage_005 | 3.9 | 14.0 |
+Formula: repeat-clear Jade × win rate ÷ ((median battle s + 20 s) / 60). Missions excluded (they pay once).
+Data: `stages.json` repeat-clear Jade 10/20/45/50/75 (round 4). Win rates and lengths: §5.1.
 
-Finding: the tutorial stage is the best farm for every player, at 2–10× the Jade per minute of the harder stages.
-Farmers therefore replay stage_001 (median 505 clears in 30 days), and most own both ★5 within the month.
-This is not a fairness problem: it is generous, and nothing is hidden. It is a motivation problem, because it rewards
-the most boring loop. The fix lives in `stages.json` (`repeat_clear`, owned by content-designer), not in my files.
-Proposal for the Producer: stage_001 30 → 10 and stage_002 30 → 20. Average Jade per minute then becomes s1 12.5,
-s2 14.5, s3 11.1. That is no longer a 3× gap, and skilled players earn the most on stages 3–5. The first-time
-milestone budget does not change. NOT applied (not my file).
+| Stage | Repeat Jade | Average | Skilled |
+|---|---|---|---|
+| stage_001 | 10 | 12.5 | 12.2 |
+| stage_002 | 20 | **14.5** | 14.5 |
+| stage_003 | 45 | 12.4 | 16.3 |
+| stage_004 | 50 | 9.3 | 16.6 |
+| stage_005 | 75 | 4.9 | **17.5** |
+
+Requirement: the Skilled column must be non-decreasing from stage_001 to stage_005 (harder stages pay at least as
+much per minute). Status: **PASS** (12.2 ≤ 14.5 ≤ 16.3 ≤ 16.6 ≤ 17.5). Re-check this table whenever `repeat_clear`,
+win rates or battle lengths change.
+The average column is not monotonic: an average player's best farm is stage_002 (14.5), and stage_005 pays 4.9
+because they win only 17.6% of the time. That is acceptable (no stage is a trap; all are free to retry), and it
+improves as the team levels, which the conservative sim ignores.
+Effect (round-4 change vs the old 30/30/40/50/60): the tutorial is no longer the best farm (was 37.5 Jade/min, 2–10×
+the others). Farmer median pulls in 30 days fell from 212/217 to 104/126 (average/skilled), and skilled farmers now
+earn more than average ones. Milestone budget (§5.2) and Story rows are unchanged within noise, because they depend
+on first clears and missions, not repeat clears.
 
 ## 6. Fairness checklist (round 4)
 | Check | Result |
