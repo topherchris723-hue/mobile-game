@@ -14,9 +14,12 @@
 //   android/app/src/main/res/mipmap-<dpi>/ic_launcher_foreground.png  adaptive foreground (108dp)
 //   android/app/src/main/res/mipmap-<dpi>/ic_launcher_background.png  adaptive background (108dp)
 //   android/app/src/main/res/mipmap-<dpi>/ic_launcher_monochrome.png  themed-icon layer (108dp)
-//   android/app/src/main/res/drawable[-port-<dpi>]/splash.png         pre-Android-12 splash
 //   assets/app-icon/play-store-icon-512.png                           Play Console hi-res icon
 //   assets/app-icon/*.svg                                             the SVG sources
+//
+// The launch splash uses no PNG: android/app/src/main/res/drawable/splash.xml is a layer-list (navy
+// #0D1020 + ic_launcher_foreground centred) for Android < 12, and Android 12+ uses the windowSplashScreen*
+// theme items. Full-screen gradient PNGs cost ~1.9 MB of APK for no gain.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -112,19 +115,7 @@ const SVG = {
     <g clip-path="url(#c)">${backgroundShapes()}${foregroundShapes()}</g>`),
 };
 
-function splashSvg(w, h) {
-  // Navy sky with the crystal mark centred, mark ≈ 40% of the short side. No text.
-  const s = Math.min(w, h) * 0.4;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-    <defs><radialGradient id="sk" cx="0.5" cy="0.45" r="0.75">
-      <stop offset="0" stop-color="${C.skyTop}"/><stop offset="1" stop-color="${C.sky}"/></radialGradient></defs>
-    <rect width="${w}" height="${h}" fill="url(#sk)"/>
-    <svg x="${(w - s) / 2}" y="${(h - s) / 2}" width="${s}" height="${s}" viewBox="18 18 72 72">${foregroundShapes()}</svg>
-  </svg>`;
-}
-
 const DPI = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
-const SPLASH_PORT = { mdpi: [320, 480], hdpi: [480, 800], xhdpi: [720, 1280], xxhdpi: [960, 1600], xxxhdpi: [1280, 1920] };
 
 async function render(page, markup, w, h, out, transparent) {
   await page.setViewportSize({ width: w, height: h });
@@ -143,7 +134,6 @@ const out = async (markup, w, h, file, transparent = true) => {
 };
 
 for (const [name, body] of Object.entries(SVG)) fs.writeFileSync(path.join(here, `${name}.svg`), body + '\n');
-fs.writeFileSync(path.join(here, 'splash.svg'), splashSvg(1280, 1920) + '\n');
 
 for (const [dpi, k] of Object.entries(DPI)) {
   const dir = path.join(res, `mipmap-${dpi}`);
@@ -152,15 +142,12 @@ for (const [dpi, k] of Object.entries(DPI)) {
   await out(SVG.foreground, 108 * k, 108 * k, path.join(dir, 'ic_launcher_foreground.png'));
   await out(SVG.background, 108 * k, 108 * k, path.join(dir, 'ic_launcher_background.png'), false);
   await out(SVG.monochrome, 108 * k, 108 * k, path.join(dir, 'ic_launcher_monochrome.png'));
-  const [sw, sh] = SPLASH_PORT[dpi];
-  await out(splashSvg(sw, sh), sw, sh, path.join(res, `drawable-port-${dpi}`, 'splash.png'), false);
 }
-await out(splashSvg(320, 480), 320, 480, path.join(res, 'drawable', 'splash.png'), false);
 await out(SVG.full, 512, 512, path.join(here, 'play-store-icon-512.png')); // 32-bit RGBA, as Play requires
 
 await browser.close();
 // Play Console asks for a 32-bit PNG; Chromium writes opaque shots as 24-bit RGB. Re-encode with ImageMagick.
 const playIcon = path.join(here, 'play-store-icon-512.png');
-const im = spawnSync('convert', [playIcon, `PNG32:${playIcon}`], { stdio: 'inherit' });
+const im = spawnSync('convert', [playIcon, '-strip', '-define', 'png:exclude-chunks=date,time', `PNG32:${playIcon}`], { stdio: 'inherit' });
 if (im.status !== 0) console.warn('android:icons — WARNING: ImageMagick `convert` missing; play-store-icon-512.png is 24-bit, re-encode to PNG32 before upload.');
 console.log(`android:icons — wrote ${written.length} PNGs:\n  ${written.join('\n  ')}`);

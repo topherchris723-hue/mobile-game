@@ -81,7 +81,10 @@ for (const f of ['ic_launcher', 'ic_launcher_round']) {
     && /<monochrome android:drawable="@mipmap\/ic_launcher_monochrome"/.test(x), `${f}.xml adaptive icon has background, foreground and monochrome`);
 }
 check(!fs.existsSync(path.join(root, resDir, 'drawable-v24', 'ic_launcher_foreground.xml')), 'template vector launcher foreground removed');
-check(fs.readdirSync(path.join(root, resDir)).every((d) => !d.startsWith('drawable-land')), 'no landscape splash (template art) left');
+check(fs.readdirSync(path.join(root, resDir)).every((d) => !d.startsWith('drawable-land') && !d.startsWith('drawable-port')), 'no template splash folders left');
+check(!fs.existsSync(path.join(root, resDir, 'drawable', 'splash.png')), 'no template splash.png left');
+check(/<layer-list[\s\S]*@color\/ic_launcher_background[\s\S]*@mipmap\/ic_launcher_foreground/.test(read(`${resDir}/drawable/splash.xml`)),
+  'drawable/splash.xml is the navy + crystal layer-list');
 
 if (apk) {
   // Allowed in the merged manifest: VIBRATE, plus androidx.core's app-private signature permission.

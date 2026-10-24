@@ -73,6 +73,9 @@ lesson and a hard rule at the next `/retro`.
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
   currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 7: Android application ID is title-neutral `com.animecardbattler.game` (permanent after the
+  first Play upload; title not yet cleared). Change before the first upload if the owner wants
+  otherwise (docs/RELEASE.md §1).
 - Round 7 (owner did not answer → default option 3): the milestone release candidate targets
   Google Play **internal testing** only (private testers, not public). The "Jade Tempest" title
   stays for that track; human trademark clearance (or a title switch) is required before any
