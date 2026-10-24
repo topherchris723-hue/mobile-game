@@ -36,7 +36,11 @@
           }
         },
         "ignition_enabled": { "type": "boolean" },
-        "boss": { "type": "boolean" }
+        "boss": { "type": "boolean" },
+        "variant": {
+          "description": "Optional (round 5). Display-only look variant; no rule effect. Absent = normal. 'umbral' = render per docs/STYLE_GUIDE.md §9. GDD §8.",
+          "enum": ["umbral"]
+        }
       }
     }
   }

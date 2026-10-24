@@ -1011,6 +1011,17 @@ difficulty settings.
 and a name banner; no other rule changes).
 
 - Enemy stats: `floor(base × stat_mult)`. Enemies have no Resonance.
+- **`variant` (round 5, optional, display-only):** enum `["umbral"]`; absent = normal. `"umbral"` makes the renderer draw
+  the enemy with the Umbral look of `docs/STYLE_GUIDE.md` §9 (dark tint, violet outline, crack lines, glowing eyes; the
+  aura icon stays the base fighter's real aura). It has **no rule effect**: stats, aura, AI, deck, Ignition and rewards
+  are exactly as without it, and the logic never reads it. The renderer decides the look from `variant` only, never from
+  the id or `name_override`. Set on `enemy_umbral_rook_001`, `enemy_umbral_pell_001`, `enemy_umbral_solenne_001`
+  (content-designer).
+- AC-8.2 (P, live data): (a) schema: an enemy with `variant: "shadow"` FAILS validation; `variant: "umbral"` and an
+  enemy without `variant` PASS. (b) headless: for seeds 1–200 on every stage containing an Umbral enemy, the battle event
+  log hash is identical with every `variant` field removed from enemies.json (must-FAIL: logic that reads `variant`
+  changes the hash). (c) Playwright: the 3 enemies above render with the Umbral look, and an enemy with an `enemy_umbral_`
+  id but no `variant` renders normally (proves the id is not used).
 - An enemy may use a `playable: false` character (an enemy-only boss).
 - AC-8.1 (FX-GDD, §15.4): An enemy with stat_mult.hp 1.2 on a 10,000 HP character has exactly 12,000 HP. The test uses
   the fixture character `char_fxbase_001` (HP 10,000) and enemy `enemy_fxbase_001` (stat_mult 1.2/1.0/1.0), never a live
@@ -1068,8 +1079,8 @@ stage_005 regulars 0.72; boss `enemy_corvane_001` 1.0/0.7/0.8; live `battle.burs
 reference value in §5.10 and FX-GDD stays 3.0). They were set before the HP ×2 change (§5.14) and multiply the doubled HP the same way. The balance-analyst
 may change any enemy `stat_mult` within the §8 limit (0.3–5.0) and any stage `timer_s` within 60–300 **without** a GDD
 edit, to meet BAL-5.14 and BAL-5.15. The game-designer refreshes this table at the next GDD pass. No test or AC may read
-a value from this table; the AI tiers, enemy counts and rewards columns are binding design (changing them needs a GDD
-edit). Why stage_005 regulars sit below stage_003: stage_005 fields ★4/★5 fighters with Ignition at higher AI tiers
+a value from this table; the AI tiers and enemy counts columns and the ★4 fighter reward are binding design (changing
+them needs a GDD edit); Jade amounts are owned by docs/ECONOMY.md (round 5 ruling below). Why stage_005 regulars sit below stage_003: stage_005 fields ★4/★5 fighters with Ignition at higher AI tiers
 against ★3 starters, so a lower multiplier is still a harder stage (BAL-5.15 checks that win rate falls stage by stage).
 
 ### 9.3 Missions
@@ -1347,9 +1358,10 @@ both lists from `src/logic`; the UI maps every value (L-shared-009). `jade_added
 - Currencies: one, `cur_jade` "Jade", max 999,999 (excess is lost; the UI warns at the cap).
 - Start: 1,000 Jade, the 3 ★3 starter fighters, team = those 3.
 - Summon costs (in banner data): 100 single, 1,000 ×10.
-- Milestone Jade budget (first-time): start 1,000 + stage first clears 2,100 + missions 15 × 50 = 750 →
-  **3,850 Jade ≈ 38 pulls**, with a guaranteed ★5 on the first ×10. P(no further ★5 in the remaining 28 single-rate
-  pulls) = 0.97^28 ≈ 43%. That is fine because the guarantee already gives one, and repeat clears give more (amounts: docs/ECONOMY.md, round 5).
+- Milestone Jade budget (first-time) and the Jade-per-minute of repeat clears: owned by the economy-designer in
+  docs/ECONOMY.md, computed from live `data/stages.json` and `data/economy.json` (round 5 ruling, BUG-4-02; the round-1
+  figure "3,850 Jade ≈ 38 pulls" is historical and not maintained here). The design intent stays: a fresh save can afford
+  exactly one ×10 (1,000 Jade start), which guarantees a ★5 (§11.3).
 - Duplicate conversion and the power formula live here (§11.4, §9.1).
 - AC-12.1: A fresh save has exactly 1,000 Jade and the 3 starters defined in economy.json.
 
@@ -1589,7 +1601,7 @@ examples must stay exact.
 |---|---|
 | W | AC-5.1.1, 5.1.2, 5.1.4, 5.1.5 (test-copy part); 5.3.1; 5.4.1, 5.4.3; 5.6.1–5.6.3, 5.6.4, 5.6.5–5.6.7; 5.7.1–5.7.3; 5.8.0–5.8.5; 5.9.1, 5.9.3, 5.9.5, 5.9.6, 5.9.7; 5.10.1, 5.10.3–5.10.6, 5.10.8, 5.10.9; 5.14.1; 5.15.3, 5.15.5, 5.15.6, 5.15.8; 8.1; 11.2, 11.3, 11.3b, 11.3c, 11.4, 11.6, 11.7, 11.8, 11.11 |
 | X | §5.9 example (inline Ignition 1.30 / 1.20 / 25 s / 10% / +0.2, HP 3,000/10,000, ATK 1,000); AC-5.10.2, 5.11.1, 5.11.2, 5.11.3, 11.1 |
-| P | AC-1.1; 4.1, 4.2; 5.0.1; 5.1.3, 5.1.5 (1,000-battle part); 5.2.1–5.2.3; 5.3.2, 5.3.3; 5.4.2; 5.5.1–5.5.6; 5.9.2, 5.9.4; 5.10.7; 5.11.4; 5.12.1; 5.13.1; 5.14.2, 5.14.3; 5.15.1, 5.15.2, 5.15.4, 5.15.7; 6.1, 6.2; 7.1; 8.1 (live property part); 9.1.1; 9.3.1; 9.4.1–9.4.7; 10.1; 11.5, 11.9, 11.10, 11.12–11.14; 12.1; 13.1–13.3; 14.1, 14.2 |
+| P | AC-1.1; 4.1, 4.2; 5.0.1; 5.1.3, 5.1.5 (1,000-battle part); 5.2.1–5.2.3; 5.3.2, 5.3.3; 5.4.2; 5.5.1–5.5.6; 5.9.2, 5.9.4; 5.10.7; 5.11.4; 5.12.1; 5.13.1; 5.14.2, 5.14.3; 5.15.1, 5.15.2, 5.15.4, 5.15.7; 6.1, 6.2; 7.1; 8.1 (live property part), 8.2; 9.1.1; 9.3.1; 9.4.1–9.4.7; 10.1; 11.5, 11.9, 11.10, 11.12–11.14; 12.1; 13.1–13.3; 14.1, 14.2 |
 
 - In-browser (Playwright) tests of P-class ACs run on live data and must compute their expectations from it (e.g. AC-9.4.5
   reads the starter's `battle_time_s` value v and expects the unlock on fight tick `round(v × 60) − 1`).
@@ -1615,7 +1627,7 @@ No open questions remain.
 
 ## 17. Visual effects (VFX) — READY (round 4)
 
-`data/vfx.json` (schema `vfx.schema.json`). Owner: vfx-developer (data and `src/ui/vfx/`). Every effect is data:
+`data/vfx.json` (schema `vfx.schema.json`). Owner: vfx-developer (data and `src/vfx/`). Every effect is data:
 adding a new effect or re-mapping an event needs JSON only.
 
 **Purpose:** the brief asks for fights that feel "fast, flashy and powerful" and for transformations as big moments.
@@ -1639,7 +1651,7 @@ Effects make every hit readable and every big moment loud, **on top of** the rou
 
 ### 17.2 Event → effect table (defaults in `vfx.json`)
 Event keys are logic event types, optionally with a qualifier after a dot. The vfx-developer exports the full list as
-`VFX_EVENT_KEYS` from `src/ui/vfx/` (L-shared-009). Colors: `aura` = attacker's aura color, `card_type`, `rarity` and
+`VFX_EVENT_KEYS` from `src/vfx/` (L-shared-009). Colors: `aura` = attacker's aura color, `card_type`, `rarity` and
 `white` are tokens resolved through `vfx.json` → `colors` (defaults = the round-3 theme: aura blaze #ff6a3d, gale
 #3ddc97, stone #c9a36b, radiant #ffd84a, void #9b6bff; card fist #d9483b, bolt #3a7fd9, signature #9a52d9, climax
 #e8a21f; rarity 3 #5aa9ff, 4 #b06bff, 5 #ffc23d).
@@ -1730,7 +1742,7 @@ Applies always, whatever the settings (these are the WCAG 2.3.1 "three flashes" 
 
 ## 18. Audio — READY (round 4)
 
-`data/audio.json` (schema `audio.schema.json`). Owner: audio-designer (data, `src/ui/audio/`). The UI already calls
+`data/audio.json` (schema `audio.schema.json`). Owner: audio-designer (data, `src/audio/`). The UI already calls
 `sfx(<hook>)` (`src/ui/feedback.js`); the audio layer fills that hook. Every sound and track is data.
 
 **Purpose:** sound sells impact ("powerful") and announces the big moments. It must never be a reason to mute the game.
