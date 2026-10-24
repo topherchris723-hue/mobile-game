@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs><mask id="m">
+    <rect width="108" height="108" fill="black"/>
+    <polygon points="54,25 70,37 70,69 54,83 38,69 38,37" fill="white"/>
+    <path d="M30 66 C 22 52, 26 36, 40 28" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <path d="M78 42 C 86 56, 82 72, 68 80" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+    <polygon points="56,24 67,24 57,49 66,49 44,84 50,57 41,57" fill="black" stroke="black" stroke-width="5" stroke-linejoin="round"/>
+    <polygon points="56,24 67,24 57,49 66,49 44,84 50,57 41,57" fill="white"/>
+  </mask></defs>
+  <rect width="108" height="108" fill="#FFFFFF" mask="url(#m)"/></svg>

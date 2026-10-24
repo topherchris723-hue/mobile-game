@@ -9,7 +9,7 @@
       "rarity": 3,
       "aura": "blaze",
       "role": "striker",
-      "art_brief": "Wiry teen with one long copper braid, an oversized crimson work jacket tied at the waist, white tank top, taped knuckles, mismatched high-tops and a small chin scar. Warm reds and oranges. Ignition: the braid catches fire and the jacket edges glow white-hot.",
+      "art_brief": "Wiry teen with one long copper braid, an oversized charcoal work jacket with orange trim tied at the waist, white tank top, taped knuckles, mismatched high-tops and a small chin scar. Copper, orange and charcoal. Ignition: the braid catches fire and the jacket edges glow white-hot.",
       "playable": true,
       "base_stats": {
         "hp": 16400,
@@ -213,7 +213,7 @@
       "rarity": 4,
       "aura": "radiant",
       "role": "guardian",
-      "art_brief": "Young monk with long silver hair in a low ponytail, layered white-and-gold robes with small bells on the sleeves, and a paper-lantern staff. Calm half-smile. Ignition: a halo of floating paper lanterns and robes glowing gold.",
+      "art_brief": "Young monk with long chestnut hair in a low ponytail, layered white-and-gold robes with small bells on the sleeves, and a paper-lantern staff. Calm half-smile. Ignition: a halo of floating paper lanterns and robes glowing gold.",
       "playable": true,
       "base_stats": {
         "hp": 18400,
@@ -413,7 +413,7 @@
       "rarity": 4,
       "aura": "gale",
       "role": "striker",
-      "art_brief": "Lanky young man in a black-and-white checkered hoodie with sleeves pushed up, windswept dark hair with one shaved stripe, and sneakers with spring-steel soles. Black, white and pale green palette. Cocky stance, one hand raised counting on his fingers.",
+      "art_brief": "Lanky young man in a long slate sleeveless vest with a high collar and a castle-battlement hem, plain off-white tee, mulberry hair in one swept-back crest, a brass tally counter on the wrist and spring-steel soles. No patterns. Cocky stance, one hand raised counting.",
       "playable": true,
       "base_stats": {
         "hp": 19000,

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1920" viewBox="0 0 1280 1920">
+    <defs><radialGradient id="sk" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0" stop-color="#1A1F3D"/><stop offset="1" stop-color="#0D1020"/></radialGradient></defs>
+    <rect width="1280" height="1920" fill="url(#sk)"/>
+    <svg x="384" y="704" width="512" height="512" viewBox="18 18 72 72">
+  <g fill="none" stroke-linecap="round">
+    <path d="M30 66 C 22 52, 26 36, 40 28" stroke="#14172B" stroke-width="6"/>
+    <path d="M30 66 C 22 52, 26 36, 40 28" stroke="#8FF0C4" stroke-width="3"/>
+    <path d="M78 42 C 86 56, 82 72, 68 80" stroke="#14172B" stroke-width="6"/>
+    <path d="M78 42 C 86 56, 82 72, 68 80" stroke="#8FF0C4" stroke-width="3"/>
+  </g>
+  <g stroke="#14172B" stroke-width="0.6" stroke-linejoin="round">
+    <polygon points="54,25 38,37 46,42 54,35" fill="#8FF0C4"/>
+    <polygon points="54,25 70,37 62,42 54,35" fill="#3DDC97"/>
+    <polygon points="38,37 38,69 46,62 46,42" fill="#3DDC97"/>
+    <polygon points="70,37 70,69 62,62 62,42" fill="#137A5A"/>
+    <polygon points="38,69 54,83 54,71 46,62" fill="#2BAE78"/>
+    <polygon points="70,69 54,83 54,71 62,62" fill="#0E5C44"/>
+    <polygon points="54,35 62,42 62,62 54,71 46,62 46,42" fill="#2BAE78"/>
+  </g>
+  <polygon points="54,35 46,42 46,50 54,43" fill="#F2FFF8" opacity="0.55"/>
+  <polygon points="54,25 70,37 70,69 54,83 38,69 38,37" fill="none" stroke="#14172B" stroke-width="2" stroke-linejoin="round"/>
+  <polygon points="56,24 67,24 57,49 66,49 44,84 50,57 41,57" fill="#FFC23D" stroke="#14172B" stroke-width="2.2" stroke-linejoin="round"/>
+  <polygon points="58,27 63,27 54.5,47.5 52,47.5" fill="#FFF4D6" opacity="0.9"/></svg>
+  </svg>

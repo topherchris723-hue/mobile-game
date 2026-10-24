@@ -11,7 +11,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "validate-data": "node scripts/validate-data.js",
-    "sim": "node scripts/sim.js"
+    "sim": "node scripts/sim.js",
+    "android:icons": "node assets/app-icon/generate-icons.mjs",
+    "cap:sync": "npm run build && cap sync android",
+    "android:debug": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon",
+    "android:check": "node android/tools/check-identity.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.3",

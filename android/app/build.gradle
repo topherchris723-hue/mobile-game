@@ -7,8 +7,8 @@ android {
         applicationId "com.animecardbattler.game"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 1          // must increase for every Play upload — see docs/RELEASE.md
+        versionName "0.1.0"    // MAJOR.MINOR.PATCH, matches package.json "version"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
