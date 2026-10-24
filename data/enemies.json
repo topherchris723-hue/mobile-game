@@ -41,6 +41,7 @@
       "id": "enemy_umbral_rook_001",
       "character_id": "char_rook_001",
       "name_override": "Umbral Rook",
+      "variant": "umbral",
       "ai_tier": "fighter",
       "stat_mult": {
         "hp": 0.92,
@@ -54,6 +55,7 @@
       "id": "enemy_umbral_pell_001",
       "character_id": "char_pell_001",
       "name_override": "Umbral Pell",
+      "variant": "umbral",
       "ai_tier": "fighter",
       "stat_mult": {
         "hp": 0.92,
@@ -127,6 +129,7 @@
       "id": "enemy_umbral_solenne_001",
       "character_id": "char_solenne_001",
       "name_override": "Umbral Solenne",
+      "variant": "umbral",
       "ai_tier": "veteran",
       "stat_mult": {
         "hp": 0.72,

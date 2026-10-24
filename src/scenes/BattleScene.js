@@ -14,7 +14,7 @@ import { setMusicContext, onBattleEvent, setPaused as setAudioPaused, resetDuck,
 import { createVfx } from '../vfx/index.js';
 import { cardColor } from '../ui/icons.js';
 import { FloatPlacer, silhouetteExtent, placeFighters, placeNameLabels } from '../ui/float-placer.js';
-import { HIT_DISCARD_TEXT_KEYS, TRI_BURST_WHIFF_TEXT_KEYS, WHIFF_TEXT_KEYS, reasonTextKey } from '../ui/hud-state.js';
+import { HIT_DISCARD_TEXT_KEYS, TRI_BURST_WHIFF_TEXT_KEYS, WHIFF_TEXT_KEYS, reasonTextKey, CINEMATIC_FADE_MS, cinematicFadeAlpha } from '../ui/hud-state.js';
 import { TEST_HOOKS, testHooks, testSeedParam } from '../ui/test-hooks.js';
 
 const TICK_MS = 1000 / 60;
@@ -477,6 +477,7 @@ export class BattleScene extends BaseScene {
     this.lastArena = { player: { x: views.player.x, ext: ext.player }, enemy: { x: views.enemy.x, ext: ext.enemy } };
     this.hud.update(st, delta || 0, now);
     this.updateCombo(st);
+    this.updateCinematicFade(now);
     this.updateTutorialUi(now);
     const T = TEST_HOOKS ? testHooks() : null;
     if (T) T.lastFrame = now;
@@ -602,7 +603,7 @@ export class BattleScene extends BaseScene {
           sfx('climax');
           break;
         case 'freeze_end':
-          if (e.kind === 'ignition' || e.kind === 'tri_burst' || e.kind === 'climax') this.hideCinematic();
+          if (e.kind === 'ignition' || e.kind === 'tri_burst' || e.kind === 'climax') this.hideCinematic(now);
           break;
         case 'chain_end':
           this.fadeCombo(e.side);
@@ -939,6 +940,8 @@ export class BattleScene extends BaseScene {
     g.fillRect(0, cy + 46, W, 4);
     this.cinTitle.setText(title).setY(cy - 12);
     this.cinSub.setText(sub).setY(cy + 22);
+    this.cinHideAt = null; // a new cinematic cancels a running fade-out
+    this.tweens.killTweensOf(this.cinematic);
     this.cinematic.setVisible(true).setAlpha(0);
     this.cinTitle.setScale(1.8);
     this.tweens.add({ targets: this.cinematic, alpha: 1, duration: 120 });
@@ -954,8 +957,26 @@ export class BattleScene extends BaseScene {
     }
   }
 
-  hideCinematic() {
-    this.tweens.add({ targets: this.cinematic, alpha: 0, duration: 160, onComplete: () => this.cinematic.setVisible(false) });
+  /**
+   * BUG-4-01 / L-ui-006: the fade-out starts in the frame freeze_end is handled (`now` of that frame) and is driven by
+   * render(), not a tween that would start a frame later; CINEMATIC_FADE_MS (120) leaves ≥ 1 frame inside the 160 ms
+   * limit of AC-17.8 even with 33 ms headless frames.
+   */
+  hideCinematic(now) {
+    if (!this.cinematic.visible) return;
+    this.tweens.killTweensOf(this.cinematic);
+    this.cinHideAt = now === undefined ? performance.now() : now;
+    this.cinHideFrom = this.cinematic.alpha;
+    this.updateCinematicFade(this.cinHideAt);
+  }
+
+  updateCinematicFade(now) {
+    if (this.cinHideAt === null || this.cinHideAt === undefined) return;
+    const k = cinematicFadeAlpha(now, this.cinHideAt, this.cinFadeMs || CINEMATIC_FADE_MS);
+    if (k === null) {
+      this.cinematic.setVisible(false).setAlpha(0);
+      this.cinHideAt = null;
+    } else this.cinematic.setAlpha(this.cinHideFrom * k);
   }
 
   // ------------------------------------------------------------------ tutorial

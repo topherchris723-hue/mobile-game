@@ -31,3 +31,16 @@ export function reasonTextKey(map, reason, fallback) {
 
 /** whiff.reason → small feedback text, or null = no text (the miss is already visible as the attack animation). */
 export const WHIFF_TEXT_KEYS = { approach_timeout: null, invulnerable: null, rush_invulnerable: 'battle_hit_immune' };
+
+/**
+ * Cinematic overlay fade-out (GDD §17.1 / AC-17.8: hidden within 160 ms of freeze_end). L-ui-006: the fade starts in
+ * the frame the freeze_end event is handled and is at least one frame (17 ms) shorter than the limit.
+ */
+export const CINEMATIC_HIDE_LIMIT_MS = 160;
+export const CINEMATIC_FADE_MS = 120;
+
+/** Overlay alpha factor `now` ms after the fade started (1 → 0); null = hidden (the overlay must not be drawn). */
+export function cinematicFadeAlpha(now, startMs, fadeMs) {
+  const k = 1 - (now - startMs) / fadeMs;
+  return k <= 0 ? null : Math.min(1, k);
+}
