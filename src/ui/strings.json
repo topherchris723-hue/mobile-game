@@ -156,6 +156,12 @@
     "settings_percent": "{n}%",
     "settings_minus": "−",
     "settings_plus": "+",
-    "home_save_repaired": "Some save data was fixed on load. Your fighters and Jade are safe."
+    "home_save_repaired": "Some save data was fixed on load. Your fighters and Jade are safe.",
+    "settings_licenses": "Licenses",
+    "licenses_title": "Licenses",
+    "licenses_loading": "Loading…",
+    "licenses_error": "The licence text could not be loaded.",
+    "licenses_up": "▲",
+    "licenses_down": "▼"
   }
 }

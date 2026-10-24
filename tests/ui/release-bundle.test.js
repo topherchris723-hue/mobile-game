@@ -21,7 +21,7 @@ function buildTo(dir, testHooks) {
 
 /** Hook markers that must never ship. */
 export function hookMarkers(js) {
-  return ['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow', 'silhouetteSheet'].filter((m) => js.includes(m));
+  return ['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow', 'silhouetteSheet', 'licensesScreen'].filter((m) => js.includes(m));
 }
 
 describe('release bundle has no test hooks', () => {
@@ -33,6 +33,53 @@ describe('release bundle has no test hooks', () => {
   }, 180000);
   it('negative run: a VITE_TEST_HOOKS=1 build does contain them (the scan can fail)', () => {
     const js = buildTo(path.join(tmp, 'test'), true);
-    expect(hookMarkers(js)).toEqual(['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow', 'silhouetteSheet']);
+    expect(hookMarkers(js)).toEqual(['__TEST__', 'summonSeed', 'summonLog', 'tutorialStep', 'audioDebug', 'vfxQuality', 'settingsScreen', 'particlesNow', 'silhouetteSheet', 'licensesScreen']);
   }, 180000);
+});
+
+// Compliance round 6 (FAIL 2): every package the bundler actually put into the release bundle has its full notice
+// (name, version, licence, copyright + licence text from node_modules) in dist/THIRD_PARTY_LICENSES.txt.
+// The module list comes from an independent in-process build (write: false), not from the plugin's own output.
+import { collectPackages, missingNotices, renderNotices, LICENSE_FILE } from '../../scripts/third-party-licenses.mjs';
+
+async function bundledModuleIds() {
+  const { build } = await import('vite');
+  const out = await build({ root: ROOT, configFile: path.join(ROOT, 'vite.config.js'), logLevel: 'error', build: { write: false } });
+  const outputs = (Array.isArray(out) ? out : [out]).flatMap((o) => o.output);
+  const ids = [];
+  for (const f of outputs) if (f.type === 'chunk') ids.push(...Object.keys(f.modules || {}), ...(f.moduleIds || []));
+  const notice = outputs.find((f) => f.type === 'asset' && f.fileName === LICENSE_FILE);
+  return { ids, notice: notice ? String(notice.source) : null };
+}
+
+describe('third-party licence notices ship with the bundle', () => {
+  let r;
+  it('the bundle module list finds the runtime packages (not blind)', async () => {
+    r = await bundledModuleIds();
+    const names = collectPackages(r.ids).map((p) => p.name);
+    for (const n of ['phaser', 'ajv', 'ajv-formats']) expect(names).toContain(n);
+  }, 180000);
+  it('every bundled package has its full notice in THIRD_PARTY_LICENSES.txt', () => {
+    expect(r.notice, LICENSE_FILE + ' emitted').toBeTruthy();
+    const pkgs = collectPackages(r.ids);
+    expect(pkgs.every((p) => p.licenseText.length > 200), 'licence texts found').toBe(true);
+    expect(missingNotices(pkgs, r.notice)).toEqual([]);
+    for (const p of pkgs) expect(r.notice).toMatch(/Copyright|copyright/);
+  });
+  it('must-FAIL: a notice with one package removed is caught', () => {
+    const pkgs = collectPackages(r.ids);
+    const victim = pkgs.find((p) => p.name === 'fast-uri') || pkgs[0];
+    const broken = renderNotices(pkgs.filter((p) => p !== victim), 'x');
+    expect(missingNotices(pkgs, broken)).toEqual([victim.name]);
+  });
+  it('must-FAIL: a bundled package without licence text stops the build', () => {
+    expect(() => renderNotices([{ name: 'nolicense', version: '1.0.0', license: 'MIT', licenseText: '' }], 'x')).toThrow(/nolicense@1.0.0/);
+  });
+  it('ajv and ajv-formats (runtime imports) are dependencies, not devDependencies', () => {
+    const pj = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+    for (const n of ['ajv', 'ajv-formats', 'phaser']) {
+      expect(pj.dependencies[n], n).toBeTruthy();
+      expect((pj.devDependencies || {})[n], n).toBeUndefined();
+    }
+  });
 });

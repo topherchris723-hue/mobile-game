@@ -13,6 +13,7 @@ import { ResultScene } from './scenes/ResultScene.js';
 import { SummonScene } from './scenes/SummonScene.js';
 import { SummonRevealScene } from './scenes/SummonRevealScene.js';
 import { SettingsScene } from './scenes/SettingsScene.js';
+import { LicensesScene } from './scenes/LicensesScene.js';
 import audioData from '../data/audio.json';
 import { initAudio, audioDebug } from './audio/index.js';
 import { drawFighter } from './ui/fighter-view.js';
@@ -54,7 +55,7 @@ const game = new Phaser.Game({
   callbacks: {
     preBoot: (g) => g.registry.set('viewport', vp),
   },
-  scene: [TitleScene, HomeScene, StoryListScene, DialogueScene, TeamScene, BattleScene, ResultScene, SummonScene, SummonRevealScene, SettingsScene],
+  scene: [TitleScene, HomeScene, StoryListScene, DialogueScene, TeamScene, BattleScene, ResultScene, SummonScene, SummonRevealScene, SettingsScene, LicensesScene],
 });
 
 let resizeTimer = null;

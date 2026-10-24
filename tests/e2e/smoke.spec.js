@@ -1379,3 +1379,41 @@ test('Summon rarity tiers on screen: orb rings 1/2/3 and frames per rarity in th
   await shot(page, testInfo, '64-summon-results-frames');
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+// ------------------------------------------------------------------ round 6: Settings → Licenses (compliance FAIL 2)
+test('Settings → Licenses: shows every bundled package notice, scrolls, 44 px targets, Back to Settings', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  await page.goto('/?test=1&renderer=canvas');
+  await waitScene(page, 'Title');
+  await tap(page, 'start');
+  await waitScene(page, 'Home');
+  await tap(page, 'home_settings');
+  await waitScene(page, 'Settings');
+  await checkTargets(page, 'Settings');
+  await tap(page, 'settings_licenses');
+  await waitScene(page, 'Licenses');
+  await page.waitForFunction(() => window.__TEST__.licensesScreen().loaded || window.__TEST__.licensesScreen().error, null, { timeout: 10000 });
+  const st = await page.evaluate(() => window.__TEST__.licensesScreen());
+  expect(st.error).toBe(false);
+  // the packages list the build wrote next to the bundle (same build the page runs)
+  const pkgs = await page.evaluate(async () => (await fetch('./third-party-packages.json')).json());
+  expect(pkgs.map((p) => p.name)).toEqual(expect.arrayContaining(['phaser', 'ajv', 'ajv-formats']));
+  for (const p of pkgs) expect(st.text, p.name).toContain(`==== ${p.name} ${p.version} (${p.license}) ====`);
+  await checkTargets(page, 'Licenses');
+  // fixed texts never overlap; the scrolled licence text is clipped by its mask, which ends above the ▲ / ▼ row
+  const chunks = await page.evaluate(() => window.__TEST__.activeScene().noticeBody.list.map((o) => o.text.replace(/\n/g, ' ').slice(0, 50)));
+  const all = await sceneTexts(page);
+  expect(layoutProblems({ ...all, texts: all.texts.filter((x) => !chunks.includes(x.text)) })).toEqual([]);
+  const clip = await page.evaluate(() => { const s = window.__TEST__.activeScene(); return { bottom: s.view.bottom, top: s.view.top }; });
+  const up = await target(page, 'licenses_up');
+  expect(clip.bottom + 8).toBeLessThanOrEqual(up.logical.y);
+  await shot(page, testInfo, '70-licenses-top');
+  expect(st.maxScroll).toBeGreaterThan(0);
+  await tap(page, 'licenses_down');
+  await page.waitForTimeout(150);
+  expect((await page.evaluate(() => window.__TEST__.licensesScreen())).scroll).toBeGreaterThan(0);
+  await shot(page, testInfo, '71-licenses-scrolled');
+  await tap(page, 'back');
+  await waitScene(page, 'Settings');
+  expect(errors, errors.join('\n')).toEqual([]);
+});
