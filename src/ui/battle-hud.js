@@ -143,7 +143,7 @@ export class BattleHud {
     this.updateHand(state, now);
   }
 
-  easeHp(side, hp, dt) {
+  easeHp(side, hp, dt, maxHp) {
     if (this.shownHp[side] === null) {
       this.shownHp[side] = hp;
       this.lagHp[side] = hp;
@@ -157,6 +157,16 @@ export class BattleHud {
       this.lagHp[side] = hp;
       this.lagHold[side] = 350;
     }
+    // R-2 (AC-17.7): end the exponential tails once they are below one bar pixel (≈ maxHp / 300), so the bar,
+    // its Graphics and the HP number stop re-rendering every frame for ~1 s after each hit. Looks the same.
+    const eps = maxHp ? maxHp / 300 : 0;
+    if (Math.abs(hp - this.shownHp[side]) < eps) this.shownHp[side] = hp;
+    if (Math.abs(hp - this.lagHp[side]) < eps) this.lagHp[side] = hp;
+  }
+
+  /** HP value → bar pixel key (redraw only when a pixel changes). */
+  hpPx(v, maxHp, w) {
+    return Math.round((Math.max(0, v) / maxHp) * w);
   }
 
   onDamage(side) {
@@ -193,8 +203,8 @@ export class BattleHud {
     this.timerText.setText(String(state.timer.secondsShown));
     const low = state.timer.secondsShown <= 10;
     if (this.dirty('timerLow', low)) this.timerText.setColor(low ? COLORS.bad : COLORS.text);
-    this.easeHp('enemy', f.hp, dt);
-    if (this.dirty('ehp', Math.round(this.shownHp.enemy) + '|' + Math.round(this.lagHp.enemy) + '|' + f.maxHp)) {
+    this.easeHp('enemy', f.hp, dt, f.maxHp);
+    if (this.dirty('ehp', this.hpPx(this.shownHp.enemy, f.maxHp, 292) + '|' + this.hpPx(this.lagHp.enemy, f.maxHp, 292) + '|' + Math.round(this.shownHp.enemy) + '|' + f.maxHp)) {
       this.enemyHpG.clear();
       this.drawHpBar(this.enemyHpG, 8, 26, 292, 12, 'enemy', f.maxHp, COLORS.hpEnemy);
       this.enemyHpText.setText(Math.max(0, Math.round(this.shownHp.enemy)) + '');
@@ -244,10 +254,10 @@ export class BattleHud {
       this.playerName.setText(f.name);
       this.resetHp('player');
     }
-    this.easeHp('player', f.hp, dt);
+    this.easeHp('player', f.hp, dt, f.maxHp);
     const g = this.playerHpG;
     const ignOn = !!(f.ignition && f.ignition.active);
-    const hpKey = [Math.round(this.shownHp.player), Math.round(this.lagHp.player), f.maxHp, ignOn ? Math.ceil(f.ignition.ticksLeft / 6) : -1].join('|');
+    const hpKey = [Math.round(this.shownHp.player), this.hpPx(this.lagHp.player, f.maxHp, L.playerHp.w), f.maxHp, ignOn ? Math.ceil(f.ignition.ticksLeft / 6) : -1].join('|');
     const hpDirty = this.dirty('php', hpKey);
     if (hpDirty) {
       g.clear();

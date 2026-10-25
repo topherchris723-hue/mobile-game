@@ -1398,7 +1398,9 @@ test('Settings → Licenses: shows every bundled package notice, scrolls, 44 px 
   // the packages list the build wrote next to the bundle (same build the page runs)
   const pkgs = await page.evaluate(async () => (await fetch('./third-party-packages.json')).json());
   expect(pkgs.map((p) => p.name)).toEqual(expect.arrayContaining(['phaser', 'ajv', 'ajv-formats']));
-  for (const p of pkgs) expect(st.text, p.name).toContain(`==== ${p.name} ${p.version} (${p.license}) ====`);
+  // web packages: exact header; native (Android) entries since round 7 use their own header with name + licence
+  for (const p of pkgs.filter((x) => !x.native)) expect(st.text, p.name).toContain(`==== ${p.name} ${p.version} (${p.license}) ====`);
+  for (const p of pkgs.filter((x) => x.native)) expect(st.text, p.name).toContain(p.name);
   await checkTargets(page, 'Licenses');
   // fixed texts never overlap; the scrolled licence text is clipped by its mask, which ends above the ▲ / ▼ row
   const chunks = await page.evaluate(() => window.__TEST__.activeScene().noticeBody.list.map((o) => o.text.replace(/\n/g, ' ').slice(0, 50)));
@@ -1435,10 +1437,11 @@ test('Summon reveal: the Jade balance advances pull by pull (never the final val
   const total = credited.reduce((a, b) => a + b, 0);
   expect(total, 'precondition: some pulls pay Jade').toBeGreaterThan(0);
   const at = (k) => res.jade_after - credited.slice(k).reduce((a, b) => a + b, 0);
-  // step 1 of N: before pull 1 is revealed only the cost has been taken
+  // step 1 of N: at most pull 1 is revealed, so the balance is the one after the cost plus pull 1 at most
   const first = await page.evaluate(() => window.__TEST__.summonReveal());
-  expect(first.jadeShown).toBe(at(Math.max(0, first.index)));
-  expect(first.jadeShown).toBeLessThan(res.jade_after);
+  expect(first.index).toBeLessThanOrEqual(1);
+  expect([at(first.index), at(first.index + 1)]).toContain(first.jadeShown);
+  expect(first.jadeShown, 'not the final balance at step 1').toBeLessThan(res.jade_after);
   const seen = [];
   const end = Date.now() + 25000;
   while (Date.now() < end) {

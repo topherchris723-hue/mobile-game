@@ -9,9 +9,10 @@ export const MIN_TOUCH = 44;
 
 /**
  * Max device px per logical unit on the Canvas 2D renderer (reviewer R-2, AC-17.7): Canvas rasterises every pixel
- * on the CPU each frame, so its backing store is capped at 1.5× (540 × 960 for 360 × 640); WebGL keeps up to 2×.
+ * on the CPU each frame, so its backing store is capped at 1.25× (450 × 800 for 360 × 640); WebGL keeps up to 2×.
+ * Round 7: 1.25 gave median p95 26.3 ms vs 31.1 ms for 1.5 (5 alternating runs each, 4× CPU).
  */
-export const CANVAS_MAX_ZOOM = 1.5;
+export const CANVAS_MAX_ZOOM = 1.25;
 
 /** cssW/cssH = the safe-area box in CSS px; maxZoom caps the render resolution (Canvas renderer). */
 export function computeViewport(cssW, cssH, dpr, maxZoom) {
