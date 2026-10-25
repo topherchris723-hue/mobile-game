@@ -1,6 +1,7 @@
 // QA round 4: Settings (§19 AC-19.1–19.6) and audio gates (§18 AC-18.2, AC-18.7) in the browser, with abuse cases
 // (double taps on every settings control, reload persistence). Negative proofs via QA_BREAK (see each test).
 import { test, expect } from '@playwright/test';
+import fs from 'node:fs';
 import { boot, waitScene, tap, target, targets, shot, freshSave, clearedSave, watchErrors, scanTexts, layoutProblems } from './qa-helpers.js';
 
 test.beforeEach(async ({}, testInfo) => {
@@ -11,6 +12,18 @@ const save = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('game
 const ss = (page) => page.evaluate(() => window.__TEST__.settingsScreen());
 const audio = (page) => page.evaluate(() => window.__TEST__.audioDebug());
 const BRK = process.env.QA_BREAK || '';
+
+/** Settings target ids derived from source: literal button ids in SettingsScene.js, 3 per VOLUME_KEYS entry
+ *  (− / slider / +), one per toggleRow('<key>') call. QA_BREAK=count drops one to prove the check can fail. */
+function expectedSettingsTargets() {
+  const src = fs.readFileSync('src/scenes/SettingsScene.js', 'utf8');
+  const view = fs.readFileSync('src/ui/settings-view.js', 'utf8');
+  const literal = [...src.matchAll(/this\.button\(\{\s*id:\s*'([a-z_]+)',/g)].map((m) => m[1]); // literal ids only, not 'settings_' + key
+  const vol = JSON.parse(view.match(/export const VOLUME_KEYS = (\[[^\]]*\])/)[1].replace(/'/g, '"'));
+  const toggles = [...src.matchAll(/this\.toggleRow\('([a-z_]+)'/g)].map((m) => 'settings_' + m[1]);
+  const ids = [...literal, ...vol.flatMap((k) => ['settings_' + k + '_minus', 'settings_' + k + '_slider', 'settings_' + k + '_plus']), ...toggles];
+  return BRK === 'count' ? ids.slice(1) : ids;
+}
 
 async function dbl(page, id, gap = 60) {
   const tg = await target(page, id);
@@ -101,7 +114,10 @@ test('AC-19.1 entry points + AC-19.2 layout (and double taps on gear / Back)', a
   const probs = layoutProblems(scan, tg2);
   await shot(page, 'r4-settings-360');
   console.log('settings targets:', tgs.map((t) => `${t.id} ${t.logical.w}x${t.logical.h}`).join(', '), '| problems:', JSON.stringify(probs));
-  expect(tgs.length, 'back + 3×(−, slider, +) + 3 toggles').toBe(13);
+  // R-5 / L-qa-007: expected targets come from the source, never a literal count.
+  const exp = expectedSettingsTargets();
+  console.log('expected from source:', exp.join(','));
+  expect(tgs.map((t) => t.id).sort(), 'Settings targets = ids derived from SettingsScene.js + VOLUME_KEYS').toEqual(exp.slice().sort());
   expect(probs).toEqual([]);
   await dbl(page, 'back');
   await waitScene(page, 'Home');
