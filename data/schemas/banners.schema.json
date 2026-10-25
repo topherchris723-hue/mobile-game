@@ -30,7 +30,7 @@
         "name": { "type": "string", "minLength": 1, "maxLength": 32 },
         "description": { "type": "string", "maxLength": 120 },
         "currency_id": {
-          "description": "Must be a soft currency. Real money is not allowed in the prototype.",
+          "description": "Must be a soft currency. Real-money currencies are not allowed (GAME_BRIEF: no real-money purchases).",
           "type": "string",
           "pattern": "^cur_[a-z0-9_]+$"
         },

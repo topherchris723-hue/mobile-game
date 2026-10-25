@@ -1826,12 +1826,16 @@ the slider values; un-muting restores them.
 | y | Row | Controls |
 |---|---|---|
 | 0–56 | Top bar | Back 44×44 (left), title "Settings" |
-| 176–240 | Master volume | label + value "100%"; − button 44×44, slider track 160 px (thumb hit area 44×44), + button 44×44 |
-| 240–304 | Music | same |
-| 304–368 | Sound effects | same |
-| 368–432 | Mute all | toggle, hit area ≥ 44×44, text "On"/"Off" next to it (not color alone) |
-| 432–496 | Reduce motion | toggle + text; help line below in 12 px: "Less screen shake and flashing." |
-| 496–560 | Vibration | toggle + text (the `haptics` setting) |
+| 72–160 | Master volume | label + value "100%" on top; at y+28: − button 44×44, slider track (hit area 44 high), + button 44×44 |
+| 160–248 | Music | same |
+| 248–336 | Sound effects | same |
+| 344–408 | Mute all | toggle, hit area ≥ 44×44, text "On"/"Off" next to it (not color alone) |
+| 408–472 | Reduce motion | toggle + text; help line below in 12 px: "Less screen shake and flashing." |
+| 472–536 | Vibration | toggle + text (the `haptics` setting) |
+| 544–588 | Licenses | full-width button (width 360 − 32, height 44), opens the third-party notices (compliance, round 6) |
+
+(Round 7: matches the build, `src/scenes/SettingsScene.js`: volume rows 88 px from y 72, toggle rows 64 px from y 344
+after an 8 px gap. The row heights are not rules; the rules are the ≥ 44×44 targets and ≥ 8 px spacing of AC-19.2.)
 
 **Rules**
 - Volumes move in steps of 0.1 (shown 0–100% in steps of 10). − / + change one step; dragging snaps to the nearest step.
