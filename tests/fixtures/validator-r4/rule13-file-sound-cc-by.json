@@ -1,0 +1,30 @@
+{
+  "name": "rule13-file-sound-cc-by",
+  "ops": [
+    {
+      "file": "audio.json",
+      "op": "set",
+      "path": [
+        "sounds",
+        "sfx_heavy"
+      ],
+      "value": {
+        "source": "file",
+        "gain": 0.8,
+        "path": "assets/audio/hit_heavy.ogg",
+        "license": "CC-BY",
+        "credit": "Jane Doe"
+      }
+    }
+  ],
+  "files": [
+    "assets/audio/hit_heavy.ogg"
+  ],
+  "creditsAppend": [
+    "| `assets/audio/hit_heavy.ogg` | sound | Jane Doe | CC-BY | yes | 4 |"
+  ],
+  "expect": {
+    "errorRule": "13-licensing",
+    "errorContains": "license \"CC-BY\" not allowed"
+  }
+}

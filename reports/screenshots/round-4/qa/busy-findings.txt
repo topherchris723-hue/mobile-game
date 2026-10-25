@@ -1,0 +1,3 @@
+430x932: frames=154 maxTexts=11 overlaps=0
+390x844: frames=140 maxTexts=9 overlaps=0
+360x640: frames=178 maxTexts=9 overlaps=0

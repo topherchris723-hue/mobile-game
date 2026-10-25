@@ -1,0 +1,19 @@
+{
+  "name": "warning-rule15-hook-not-in-sfx-hooks",
+  "ops": [
+    {
+      "file": "audio.json",
+      "op": "set",
+      "path": [
+        "hooks",
+        "not_a_hook"
+      ],
+      "value": "sfx_ko"
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": "15-key-coverage",
+    "warningContains": "hooks key \"not_a_hook\" is not in SFX_HOOKS"
+  }
+}

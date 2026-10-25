@@ -1,0 +1,3118 @@
+{
+ "errors": [
+  {
+   "size": "360x640",
+   "type": "warning",
+   "text": "[GroupMarkerNotSet(crbug.com/242999)!:A07020000C180000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content."
+  },
+  {
+   "size": "390x844",
+   "type": "warning",
+   "text": "[GroupMarkerNotSet(crbug.com/242999)!:A07020000C180000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content."
+  },
+  {
+   "size": "430x932",
+   "type": "warning",
+   "text": "[GroupMarkerNotSet(crbug.com/242999)!:A07020000C180000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content."
+  },
+  {
+   "size": "tablet-768x1024",
+   "type": "warning",
+   "text": "[GroupMarkerNotSet(crbug.com/242999)!:A07020000C180000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content."
+  }
+ ],
+ "targetIssues": [
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 56
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 56
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 56
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 56
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "bench_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 28,
+   "oy": 8
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "bench_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 52,
+   "oy": 8
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "ignite",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 10
+  },
+  {
+   "size": "360x640",
+   "label": "08-pause",
+   "ids": [
+    "tri_burst",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 40,
+   "oy": 14
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 56
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 56
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 56
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 56
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "bench_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 28,
+   "oy": 8
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "bench_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 52,
+   "oy": 8
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "ignite",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 10
+  },
+  {
+   "size": "360x640",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "tri_burst",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 40,
+   "oy": 14
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_0",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_0",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_1",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_1",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_2",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_2",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 80,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_3",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 20
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_3",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 12
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "bench_0",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 28,
+   "oy": 8
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "bench_1",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 52,
+   "oy": 8
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "ignite",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 10
+  },
+  {
+   "size": "360x640",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "tri_burst",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 40,
+   "oy": 14
+  },
+  {
+   "size": "360x640",
+   "label": "14-summon-rates",
+   "ids": [
+    "summon_x10",
+    "summon_rates_close"
+   ],
+   "problem": "overlap",
+   "ox": 328,
+   "oy": 56
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 61
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 61
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 61
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 61
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "bench_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 30,
+   "oy": 9
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "bench_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 9
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "ignite",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 11
+  },
+  {
+   "size": "390x844",
+   "label": "08-pause",
+   "ids": [
+    "tri_burst",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 43,
+   "oy": 15
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 61
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 61
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 61
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 61
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "bench_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 30,
+   "oy": 9
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "bench_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 9
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "ignite",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 11
+  },
+  {
+   "size": "390x844",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "tri_burst",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 43,
+   "oy": 15
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_0",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_0",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_1",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_1",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_2",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_2",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 87,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_3",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 22
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_3",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 13
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "bench_0",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 30,
+   "oy": 9
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "bench_1",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 56,
+   "oy": 9
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "ignite",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 61,
+   "oy": 11
+  },
+  {
+   "size": "390x844",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "tri_burst",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 43,
+   "oy": 15
+  },
+  {
+   "size": "390x844",
+   "label": "14-summon-rates",
+   "ids": [
+    "summon_x10",
+    "summon_rates_close"
+   ],
+   "problem": "overlap",
+   "ox": 355,
+   "oy": 61
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 67
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 67
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 67
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 67
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "bench_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 33,
+   "oy": 10
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "bench_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 62,
+   "oy": 10
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "ignite",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 12
+  },
+  {
+   "size": "430x932",
+   "label": "08-pause",
+   "ids": [
+    "tri_burst",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 48,
+   "oy": 17
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 67
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 67
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 67
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 67
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "bench_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 33,
+   "oy": 10
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "bench_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 62,
+   "oy": 10
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "ignite",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 12
+  },
+  {
+   "size": "430x932",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "tri_burst",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 48,
+   "oy": 17
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_0",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_0",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_1",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_1",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_2",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_2",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 96,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_3",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 24
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_3",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 14
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "bench_0",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 33,
+   "oy": 10
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "bench_1",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 62,
+   "oy": 10
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "ignite",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 67,
+   "oy": 12
+  },
+  {
+   "size": "430x932",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "tri_burst",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 48,
+   "oy": 17
+  },
+  {
+   "size": "430x932",
+   "label": "14-summon-rates",
+   "ids": [
+    "summon_x10",
+    "summon_rates_close"
+   ],
+   "problem": "overlap",
+   "ox": 392,
+   "oy": 67
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 90
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_0",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 90
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_1",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 90
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_2",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 90
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "card_3",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "bench_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 45,
+   "oy": 13
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "bench_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 83,
+   "oy": 13
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "ignite",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 16
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "08-pause",
+   "ids": [
+    "tri_burst",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 64,
+   "oy": 22
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 90
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_0",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 90
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_1",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 90
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_2",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_settings"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 90
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "card_3",
+    "menu_retreat"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "bench_0",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 45,
+   "oy": 13
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "bench_1",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 83,
+   "oy": 13
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "ignite",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 16
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "10-back-to-pause-Battle",
+   "ids": [
+    "tri_burst",
+    "menu_resume"
+   ],
+   "problem": "overlap",
+   "ox": 64,
+   "oy": 22
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_0",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_0",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_1",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_1",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_2",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_2",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 128,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_3",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 32
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "card_3",
+    "menu_cancel"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 19
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "bench_0",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 45,
+   "oy": 13
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "bench_1",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 83,
+   "oy": 13
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "ignite",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 90,
+   "oy": 16
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "11-retreat-confirm",
+   "ids": [
+    "tri_burst",
+    "menu_retreat_yes"
+   ],
+   "problem": "overlap",
+   "ox": 64,
+   "oy": 22
+  },
+  {
+   "size": "tablet-768x1024",
+   "label": "14-summon-rates",
+   "ids": [
+    "summon_x10",
+    "summon_rates_close"
+   ],
+   "problem": "overlap",
+   "ox": 525,
+   "oy": 90
+  }
+ ],
+ "scenes": {
+  "360x640": [
+   {
+    "label": "01-title",
+    "key": "Title",
+    "ids": [
+     "start"
+    ]
+   },
+   {
+    "label": "02-home",
+    "key": "Home",
+    "ids": [
+     "home_settings",
+     "home_story",
+     "home_summon",
+     "home_team"
+    ]
+   },
+   {
+    "label": "03-story",
+    "key": "Story",
+    "ids": [
+     "back",
+     "stage_stage_001",
+     "stage_stage_002(off)",
+     "stage_stage_003(off)",
+     "stage_stage_004(off)",
+     "stage_stage_005(off)"
+    ]
+   },
+   {
+    "label": "04-after-stage-tap-Dialogue",
+    "key": "Dialogue",
+    "ids": [
+     "back",
+     "dialogue_skip",
+     "dialogue_next"
+    ]
+   },
+   {
+    "label": "04b-dialogue-next",
+    "key": "Dialogue",
+    "ids": [
+     "back",
+     "dialogue_skip",
+     "dialogue_next"
+    ]
+   },
+   {
+    "label": "05-team-select",
+    "key": "Team",
+    "ids": [
+     "back",
+     "team_slot_0",
+     "team_slot_1",
+     "team_slot_2",
+     "roster_char_tavi_001",
+     "roster_char_lark_001",
+     "roster_char_dunmore_001",
+     "team_fight"
+    ]
+   },
+   {
+    "label": "06-battle",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst"
+    ]
+   },
+   {
+    "label": "07-battle-play",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst"
+    ]
+   },
+   {
+    "label": "08-pause",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_resume",
+     "menu_settings",
+     "menu_retreat"
+    ]
+   },
+   {
+    "label": "09-battle-settings-Settings",
+    "key": "Settings",
+    "ids": [
+     "back",
+     "settings_master_volume_minus",
+     "settings_master_volume_plus(off)",
+     "settings_master_volume_slider",
+     "settings_bgm_volume_minus",
+     "settings_bgm_volume_plus(off)",
+     "settings_bgm_volume_slider",
+     "settings_sfx_volume_minus",
+     "settings_sfx_volume_plus(off)",
+     "settings_sfx_volume_slider",
+     "settings_muted",
+     "settings_reduce_motion",
+     "settings_haptics",
+     "settings_licenses"
+    ]
+   },
+   {
+    "label": "10-back-to-pause-Battle",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_resume",
+     "menu_settings",
+     "menu_retreat"
+    ]
+   },
+   {
+    "label": "11-retreat-confirm",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_retreat_yes",
+     "menu_cancel"
+    ]
+   },
+   {
+    "label": "12-result",
+    "key": "Result",
+    "ids": [
+     "back",
+     "result_retry",
+     "result_to_story"
+    ]
+   },
+   {
+    "label": "13-summon",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1",
+     "summon_x10"
+    ]
+   },
+   {
+    "label": "14-summon-rates",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1(off)",
+     "summon_x10(off)",
+     "summon_rates_close"
+    ]
+   },
+   {
+    "summonIds": [
+     "back",
+     "summon_rates",
+     "summon_x1",
+     "summon_x10"
+    ]
+   },
+   {
+    "label": "15-summon-confirm",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1(off)",
+     "summon_x10(off)",
+     "summon_confirm",
+     "summon_cancel"
+    ]
+   },
+   {
+    "label": "16-summon-reveal",
+    "key": "SummonReveal",
+    "ids": [
+     "summon_skip"
+    ]
+   },
+   {
+    "label": "17-summon-results",
+    "key": "SummonReveal",
+    "ids": [
+     "summon_ok"
+    ]
+   },
+   {
+    "label": "18-team",
+    "key": "Team",
+    "ids": [
+     "back",
+     "team_slot_0",
+     "team_slot_1",
+     "team_slot_2",
+     "roster_char_tavi_001",
+     "roster_char_lark_001",
+     "roster_char_dunmore_001",
+     "roster_char_pell_001",
+     "roster_char_corvane_001"
+    ]
+   },
+   {
+    "label": "19-settings",
+    "key": "Settings",
+    "ids": [
+     "back",
+     "settings_master_volume_minus",
+     "settings_master_volume_plus(off)",
+     "settings_master_volume_slider",
+     "settings_bgm_volume_minus",
+     "settings_bgm_volume_plus(off)",
+     "settings_bgm_volume_slider",
+     "settings_sfx_volume_minus",
+     "settings_sfx_volume_plus(off)",
+     "settings_sfx_volume_slider",
+     "settings_muted",
+     "settings_reduce_motion",
+     "settings_haptics",
+     "settings_licenses"
+    ]
+   },
+   {
+    "label": "20-licenses",
+    "key": "Licenses",
+    "ids": [
+     "back",
+     "licenses_up",
+     "licenses_down"
+    ]
+   },
+   {
+    "done": true
+   }
+  ],
+  "390x844": [
+   {
+    "label": "01-title",
+    "key": "Title",
+    "ids": [
+     "start"
+    ]
+   },
+   {
+    "label": "02-home",
+    "key": "Home",
+    "ids": [
+     "home_settings",
+     "home_story",
+     "home_summon",
+     "home_team"
+    ]
+   },
+   {
+    "label": "03-story",
+    "key": "Story",
+    "ids": [
+     "back",
+     "stage_stage_001",
+     "stage_stage_002(off)",
+     "stage_stage_003(off)",
+     "stage_stage_004(off)",
+     "stage_stage_005(off)"
+    ]
+   },
+   {
+    "label": "04-after-stage-tap-Dialogue",
+    "key": "Dialogue",
+    "ids": [
+     "back",
+     "dialogue_skip",
+     "dialogue_next"
+    ]
+   },
+   {
+    "label": "04b-dialogue-next",
+    "key": "Dialogue",
+    "ids": [
+     "back",
+     "dialogue_skip",
+     "dialogue_next"
+    ]
+   },
+   {
+    "label": "05-team-select",
+    "key": "Team",
+    "ids": [
+     "back",
+     "team_slot_0",
+     "team_slot_1",
+     "team_slot_2",
+     "roster_char_tavi_001",
+     "roster_char_lark_001",
+     "roster_char_dunmore_001",
+     "team_fight"
+    ]
+   },
+   {
+    "label": "06-battle",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst"
+    ]
+   },
+   {
+    "label": "07-battle-play",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst"
+    ]
+   },
+   {
+    "label": "08-pause",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_resume",
+     "menu_settings",
+     "menu_retreat"
+    ]
+   },
+   {
+    "label": "09-battle-settings-Settings",
+    "key": "Settings",
+    "ids": [
+     "back",
+     "settings_master_volume_minus",
+     "settings_master_volume_plus(off)",
+     "settings_master_volume_slider",
+     "settings_bgm_volume_minus",
+     "settings_bgm_volume_plus(off)",
+     "settings_bgm_volume_slider",
+     "settings_sfx_volume_minus",
+     "settings_sfx_volume_plus(off)",
+     "settings_sfx_volume_slider",
+     "settings_muted",
+     "settings_reduce_motion",
+     "settings_haptics",
+     "settings_licenses"
+    ]
+   },
+   {
+    "label": "10-back-to-pause-Battle",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_resume",
+     "menu_settings",
+     "menu_retreat"
+    ]
+   },
+   {
+    "label": "11-retreat-confirm",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_retreat_yes",
+     "menu_cancel"
+    ]
+   },
+   {
+    "label": "12-result",
+    "key": "Result",
+    "ids": [
+     "back",
+     "result_retry",
+     "result_to_story"
+    ]
+   },
+   {
+    "label": "13-summon",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1",
+     "summon_x10"
+    ]
+   },
+   {
+    "label": "14-summon-rates",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1(off)",
+     "summon_x10(off)",
+     "summon_rates_close"
+    ]
+   },
+   {
+    "summonIds": [
+     "back",
+     "summon_rates",
+     "summon_x1",
+     "summon_x10"
+    ]
+   },
+   {
+    "label": "15-summon-confirm",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1(off)",
+     "summon_x10(off)",
+     "summon_confirm",
+     "summon_cancel"
+    ]
+   },
+   {
+    "label": "16-summon-reveal",
+    "key": "SummonReveal",
+    "ids": [
+     "summon_skip"
+    ]
+   },
+   {
+    "label": "17-summon-results",
+    "key": "SummonReveal",
+    "ids": [
+     "summon_ok"
+    ]
+   },
+   {
+    "label": "18-team",
+    "key": "Team",
+    "ids": [
+     "back",
+     "team_slot_0",
+     "team_slot_1",
+     "team_slot_2",
+     "roster_char_tavi_001",
+     "roster_char_lark_001",
+     "roster_char_dunmore_001",
+     "roster_char_rook_001",
+     "roster_char_thessa_001",
+     "roster_char_corvane_001"
+    ]
+   },
+   {
+    "label": "19-settings",
+    "key": "Settings",
+    "ids": [
+     "back",
+     "settings_master_volume_minus",
+     "settings_master_volume_plus(off)",
+     "settings_master_volume_slider",
+     "settings_bgm_volume_minus",
+     "settings_bgm_volume_plus(off)",
+     "settings_bgm_volume_slider",
+     "settings_sfx_volume_minus",
+     "settings_sfx_volume_plus(off)",
+     "settings_sfx_volume_slider",
+     "settings_muted",
+     "settings_reduce_motion",
+     "settings_haptics",
+     "settings_licenses"
+    ]
+   },
+   {
+    "label": "20-licenses",
+    "key": "Licenses",
+    "ids": [
+     "back",
+     "licenses_up",
+     "licenses_down"
+    ]
+   },
+   {
+    "done": true
+   }
+  ],
+  "430x932": [
+   {
+    "label": "01-title",
+    "key": "Title",
+    "ids": [
+     "start"
+    ]
+   },
+   {
+    "label": "02-home",
+    "key": "Home",
+    "ids": [
+     "home_settings",
+     "home_story",
+     "home_summon",
+     "home_team"
+    ]
+   },
+   {
+    "label": "03-story",
+    "key": "Story",
+    "ids": [
+     "back",
+     "stage_stage_001",
+     "stage_stage_002(off)",
+     "stage_stage_003(off)",
+     "stage_stage_004(off)",
+     "stage_stage_005(off)"
+    ]
+   },
+   {
+    "label": "04-after-stage-tap-Dialogue",
+    "key": "Dialogue",
+    "ids": [
+     "back",
+     "dialogue_skip",
+     "dialogue_next"
+    ]
+   },
+   {
+    "label": "04b-dialogue-next",
+    "key": "Dialogue",
+    "ids": [
+     "back",
+     "dialogue_skip",
+     "dialogue_next"
+    ]
+   },
+   {
+    "label": "05-team-select",
+    "key": "Team",
+    "ids": [
+     "back",
+     "team_slot_0",
+     "team_slot_1",
+     "team_slot_2",
+     "roster_char_tavi_001",
+     "roster_char_lark_001",
+     "roster_char_dunmore_001",
+     "team_fight"
+    ]
+   },
+   {
+    "label": "06-battle",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst"
+    ]
+   },
+   {
+    "label": "07-battle-play",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst"
+    ]
+   },
+   {
+    "label": "08-pause",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_resume",
+     "menu_settings",
+     "menu_retreat"
+    ]
+   },
+   {
+    "label": "09-battle-settings-Settings",
+    "key": "Settings",
+    "ids": [
+     "back",
+     "settings_master_volume_minus",
+     "settings_master_volume_plus(off)",
+     "settings_master_volume_slider",
+     "settings_bgm_volume_minus",
+     "settings_bgm_volume_plus(off)",
+     "settings_bgm_volume_slider",
+     "settings_sfx_volume_minus",
+     "settings_sfx_volume_plus(off)",
+     "settings_sfx_volume_slider",
+     "settings_muted",
+     "settings_reduce_motion",
+     "settings_haptics",
+     "settings_licenses"
+    ]
+   },
+   {
+    "label": "10-back-to-pause-Battle",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_resume",
+     "menu_settings",
+     "menu_retreat"
+    ]
+   },
+   {
+    "label": "11-retreat-confirm",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_retreat_yes",
+     "menu_cancel"
+    ]
+   },
+   {
+    "label": "12-result",
+    "key": "Result",
+    "ids": [
+     "back",
+     "result_retry",
+     "result_to_story"
+    ]
+   },
+   {
+    "label": "13-summon",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1",
+     "summon_x10"
+    ]
+   },
+   {
+    "label": "14-summon-rates",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1(off)",
+     "summon_x10(off)",
+     "summon_rates_close"
+    ]
+   },
+   {
+    "summonIds": [
+     "back",
+     "summon_rates",
+     "summon_x1",
+     "summon_x10"
+    ]
+   },
+   {
+    "label": "15-summon-confirm",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1(off)",
+     "summon_x10(off)",
+     "summon_confirm",
+     "summon_cancel"
+    ]
+   },
+   {
+    "label": "16-summon-reveal",
+    "key": "SummonReveal",
+    "ids": [
+     "summon_skip"
+    ]
+   },
+   {
+    "label": "17-summon-results",
+    "key": "SummonReveal",
+    "ids": [
+     "summon_ok"
+    ]
+   },
+   {
+    "label": "18-team",
+    "key": "Team",
+    "ids": [
+     "back",
+     "team_slot_0",
+     "team_slot_1",
+     "team_slot_2",
+     "roster_char_tavi_001",
+     "roster_char_lark_001",
+     "roster_char_dunmore_001",
+     "roster_char_rook_001",
+     "roster_char_pell_001",
+     "roster_char_solenne_001"
+    ]
+   },
+   {
+    "label": "19-settings",
+    "key": "Settings",
+    "ids": [
+     "back",
+     "settings_master_volume_minus",
+     "settings_master_volume_plus(off)",
+     "settings_master_volume_slider",
+     "settings_bgm_volume_minus",
+     "settings_bgm_volume_plus(off)",
+     "settings_bgm_volume_slider",
+     "settings_sfx_volume_minus",
+     "settings_sfx_volume_plus(off)",
+     "settings_sfx_volume_slider",
+     "settings_muted",
+     "settings_reduce_motion",
+     "settings_haptics",
+     "settings_licenses"
+    ]
+   },
+   {
+    "label": "20-licenses",
+    "key": "Licenses",
+    "ids": [
+     "back",
+     "licenses_up",
+     "licenses_down"
+    ]
+   },
+   {
+    "done": true
+   }
+  ],
+  "tablet-768x1024": [
+   {
+    "label": "01-title",
+    "key": "Title",
+    "ids": [
+     "start"
+    ]
+   },
+   {
+    "label": "02-home",
+    "key": "Home",
+    "ids": [
+     "home_settings",
+     "home_story",
+     "home_summon",
+     "home_team"
+    ]
+   },
+   {
+    "label": "03-story",
+    "key": "Story",
+    "ids": [
+     "back",
+     "stage_stage_001",
+     "stage_stage_002(off)",
+     "stage_stage_003(off)",
+     "stage_stage_004(off)",
+     "stage_stage_005(off)"
+    ]
+   },
+   {
+    "label": "04-after-stage-tap-Dialogue",
+    "key": "Dialogue",
+    "ids": [
+     "back",
+     "dialogue_skip",
+     "dialogue_next"
+    ]
+   },
+   {
+    "label": "04b-dialogue-next",
+    "key": "Dialogue",
+    "ids": [
+     "back",
+     "dialogue_skip",
+     "dialogue_next"
+    ]
+   },
+   {
+    "label": "05-team-select",
+    "key": "Team",
+    "ids": [
+     "back",
+     "team_slot_0",
+     "team_slot_1",
+     "team_slot_2",
+     "roster_char_tavi_001",
+     "roster_char_lark_001",
+     "roster_char_dunmore_001",
+     "team_fight"
+    ]
+   },
+   {
+    "label": "06-battle",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst"
+    ]
+   },
+   {
+    "label": "07-battle-play",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst"
+    ]
+   },
+   {
+    "label": "08-pause",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_resume",
+     "menu_settings",
+     "menu_retreat"
+    ]
+   },
+   {
+    "label": "09-battle-settings-Settings",
+    "key": "Settings",
+    "ids": [
+     "back",
+     "settings_master_volume_minus",
+     "settings_master_volume_plus(off)",
+     "settings_master_volume_slider",
+     "settings_bgm_volume_minus",
+     "settings_bgm_volume_plus(off)",
+     "settings_bgm_volume_slider",
+     "settings_sfx_volume_minus",
+     "settings_sfx_volume_plus(off)",
+     "settings_sfx_volume_slider",
+     "settings_muted",
+     "settings_reduce_motion",
+     "settings_haptics",
+     "settings_licenses"
+    ]
+   },
+   {
+    "label": "10-back-to-pause-Battle",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_resume",
+     "menu_settings",
+     "menu_retreat"
+    ]
+   },
+   {
+    "label": "11-retreat-confirm",
+    "key": "Battle",
+    "ids": [
+     "battle_pause",
+     "card_0",
+     "card_1",
+     "card_2",
+     "card_3",
+     "bench_0",
+     "bench_1",
+     "ignite(off)",
+     "tri_burst",
+     "menu_retreat_yes",
+     "menu_cancel"
+    ]
+   },
+   {
+    "label": "12-result",
+    "key": "Result",
+    "ids": [
+     "back",
+     "result_retry",
+     "result_to_story"
+    ]
+   },
+   {
+    "label": "13-summon",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1",
+     "summon_x10"
+    ]
+   },
+   {
+    "label": "14-summon-rates",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1(off)",
+     "summon_x10(off)",
+     "summon_rates_close"
+    ]
+   },
+   {
+    "summonIds": [
+     "back",
+     "summon_rates",
+     "summon_x1",
+     "summon_x10"
+    ]
+   },
+   {
+    "label": "15-summon-confirm",
+    "key": "Summon",
+    "ids": [
+     "back",
+     "summon_rates",
+     "summon_x1(off)",
+     "summon_x10(off)",
+     "summon_confirm",
+     "summon_cancel"
+    ]
+   },
+   {
+    "label": "16-summon-reveal",
+    "key": "SummonReveal",
+    "ids": [
+     "summon_skip"
+    ]
+   },
+   {
+    "label": "17-summon-results",
+    "key": "SummonReveal",
+    "ids": [
+     "summon_ok"
+    ]
+   },
+   {
+    "label": "18-team",
+    "key": "Team",
+    "ids": [
+     "back",
+     "team_slot_0",
+     "team_slot_1",
+     "team_slot_2",
+     "roster_char_tavi_001",
+     "roster_char_lark_001",
+     "roster_char_dunmore_001",
+     "roster_char_pell_001",
+     "roster_char_solenne_001"
+    ]
+   },
+   {
+    "label": "19-settings",
+    "key": "Settings",
+    "ids": [
+     "back",
+     "settings_master_volume_minus",
+     "settings_master_volume_plus(off)",
+     "settings_master_volume_slider",
+     "settings_bgm_volume_minus",
+     "settings_bgm_volume_plus(off)",
+     "settings_bgm_volume_slider",
+     "settings_sfx_volume_minus",
+     "settings_sfx_volume_plus(off)",
+     "settings_sfx_volume_slider",
+     "settings_muted",
+     "settings_reduce_motion",
+     "settings_haptics",
+     "settings_licenses"
+    ]
+   },
+   {
+    "label": "20-licenses",
+    "key": "Licenses",
+    "ids": [
+     "back",
+     "licenses_up",
+     "licenses_down"
+    ]
+   },
+   {
+    "done": true
+   }
+  ]
+ }
+}

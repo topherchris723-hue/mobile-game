@@ -1,0 +1,29 @@
+[perf default cpu×1] frames=254 median=125.0 ms p95=148.1 ms max=186.1 ms; work median=8.9 p95=14.1 ms; auto quality → low: yes
+  ✓  3 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=default cpu×1 (42.7s)
+
+
+  1) [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4 ────────
+
+    Error: 4× throttled p95 ≤ 33.3 ms
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m33.3[39m
+    Received:    [31m49.300000000046566[39m
+
+      53 |         test.info().annotations.push({ type: 'not-verified', description: `software WebGL median ${med.toFixed(1)} ms p95 ${p95.toFixed(1)} ms` });
+      54 |       } else if (throttle === 1) expect(med, 'unthrottled median ≤ 16.7 ms').toBeLessThanOrEqual(16.7 + 0.5);
+    > 55 |       else expect(p95, '4× throttled p95 ≤ 33.3 ms').toBeLessThanOrEqual(33.3);
+         |                                                      ^
+      56 |       expect(errors.filter((e) => !/software WebGL|GroupMarkerNotSet/.test(e)), errors.join('\n')).toEqual([]);
+      57 |     });
+      58 |   }
+        at /tmp/claude-0/-home-user-mobile-game/c91c703e-9593-59a7-a1fc-77f59d87b919/scratchpad/build/tests/e2e/qa-perf.spec.js:55:54
+
+  1 failed
+    [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4 ─────────
+  2 passed (1.5m)
+[perf canvas cpu×4] frames=719 median=22.7 ms p95=39.6 ms max=110.7 ms; work median=4.4 p95=10.8 ms; auto quality → low: yes
+  1 failed
+[perf canvas cpu×4] frames=732 median=22.6 ms p95=36.5 ms max=95.1 ms; work median=4.1 p95=10.8 ms; auto quality → low: yes
+  1 failed

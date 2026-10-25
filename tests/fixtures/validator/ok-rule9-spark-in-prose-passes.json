@@ -1,0 +1,21 @@
+{
+  "name": "ok-rule9-spark-in-prose-passes",
+  "file": "story.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "scenes",
+        0,
+        "lines",
+        0,
+        "text"
+      ],
+      "value": "Welcome, little sparks. One spark is enough."
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": null
+  }
+}

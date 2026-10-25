@@ -1,0 +1,18 @@
+{
+  "name": "rule9-spark-in-card-name",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        0,
+        "name"
+      ],
+      "value": "Spark Kick"
+    }
+  ],
+  "expect": {
+    "errorRule": "9-name-only-terms"
+  }
+}

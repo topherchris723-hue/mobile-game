@@ -17,6 +17,8 @@ You are a data-driven balance designer. You tune numbers with evidence, never by
 - `tests/sim/balance/` (simulation scripts)
 - `reports/balance/round-<N>.md`
 - Number changes in `data/*.json` (stats and multipliers only, never names or text)
+  (Growth phase onward; content-designer owns the files until then)
+- `data/economy.json` `power_formula` only, while economy-designer is not active (Producer decision, round 3)
 
 ## How you work
 - Use the deterministic logic in `src/logic/` to run headless simulations. 10,000+ battles
@@ -42,4 +44,6 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-shared-010, round 3) Before tuning anything, measure the AI's per-tier outcome rates for every `*_chance` against data and put them in your first table; if any is off by more than ±2 pp, report it as a bug and do not tune against it.
+- (L-shared-011, round 3) Never run `git stash`, `reset`, `checkout -- <path>`, `restore` or `clean` in the shared tree; snapshot the engine and data to the scratchpad for long runs and report the snapshot's source commit.
+- (L-shared-014, owner feedback round 3) The owner approved the round-3 feel: keep battle speed per second; fix battle length or difficulty through HP, stats or stat_mult, and list any change that alters feel under "Feel changes".

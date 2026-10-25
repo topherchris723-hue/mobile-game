@@ -1,0 +1,20 @@
+{
+  "name": "rule3-foreign-owner-card",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "deck",
+        0,
+        "card_id"
+      ],
+      "value": "card_lark_tailwind_kick"
+    }
+  ],
+  "expect": {
+    "errorRule": "3-deck"
+  }
+}

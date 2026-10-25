@@ -1,0 +1,5 @@
+430x932: frames=151 maxTexts=11 overlaps=0
+390x844: frames=139 maxTexts=11 overlaps=0
+360x640: frames=137 maxTexts=10 overlaps=2
+360x640 tick 474: "2 HITS"(a1) × "RIPOSTE!"(a1) 12x17 [reports/screenshots/round-3/qa/360x640-busy-overlap-1.png]
+360x640 tick 508: "2 HITS"(a1) × "RIPOSTE!"(a0.95) 12x17 [reports/screenshots/round-3/qa/360x640-busy-overlap-2.png]

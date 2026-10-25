@@ -1,0 +1,18 @@
+{
+  "name": "rule14-flash-alpha-over-limit",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "limits",
+        "max_flash_alpha"
+      ],
+      "value": 0.5
+    }
+  ],
+  "expect": {
+    "errorRule": "14-flash-safety",
+    "errorContains": "screen_flash alpha 0.9 > max_flash_alpha 0.5"
+  }
+}

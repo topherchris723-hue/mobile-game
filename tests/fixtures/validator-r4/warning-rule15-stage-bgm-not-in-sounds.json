@@ -1,0 +1,27 @@
+{
+  "name": "warning-rule15-stage-bgm-not-in-sounds",
+  "ops": [
+    {
+      "file": "audio.json",
+      "op": "delete",
+      "path": [
+        "sounds",
+        "bgm_battle_01"
+      ]
+    },
+    {
+      "file": "audio.json",
+      "op": "set",
+      "path": [
+        "music",
+        "battle_default"
+      ],
+      "value": "bgm_menu"
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": "15-key-coverage",
+    "warningContains": "stage_001: bgm \"bgm_battle_01\" not in audio.json sounds"
+  }
+}

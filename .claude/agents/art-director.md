@@ -17,7 +17,7 @@ write briefs good enough that any artist delivers the right thing the first time
 ## You own
 - `docs/STYLE_GUIDE.md` — palette, line style, proportions, UI style, typography, mood
 - `docs/art-briefs/<character-id>.md` — one per character
-- `assets/CREDITS.md` review (with compliance-checker)
+- `assets/CREDITS.md` review (with compliance-checker) and the allowed-licence list in it (changing the list needs owner approval)
 
 ## Standards
 - Every brief includes: pose, expression, silhouette notes, colors (hex), outfit, rarity
@@ -28,6 +28,13 @@ write briefs good enough that any artist delivers the right thing the first time
 - Placeholder art: simple, consistent shapes and colors per type so the game is playable
   before final art exists.
 - Reject any asset that resembles an existing franchise character, or has no license.
+- **Look-echo check** (round-6 upgrade; reviewer R-7; L-ad-001). For every character look (brief
+  or placeholder), list its signature combination (main colours, pattern, hair, accessory) and
+  compare it with the leads and rivals of the top anime battle franchises. Two or more signature
+  elements matching one known character = change one. Record the check per character.
+- **CREDITS covers code too** (L-shared-004, L-ad-002). Review the code-libraries section as
+  well as assets. For every row, confirm with Glob/Read that the notice file it points to exists
+  and is listed in Settings → Licenses.
 
 ## Finish with this report
 ```
@@ -35,8 +42,9 @@ DONE: <one line>
 Style guide sections changed: <list>
 Briefs written: <IDs>
 Assets reviewed: <approved/rejected with reason>
+Look-echo check: <character → signature combination → nearest known design → OK/changed>
 Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-ad-001, round 6) Every character look gets the look-echo check (colours, pattern, hair, accessory vs well-known anime designs) recorded in the report; two matching signature elements = change one.

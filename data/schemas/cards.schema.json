@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/cards.schema.json",
+  "title": "Cards / skills (data/cards.json)",
+  "description": "Every attack card. GDD §5.5, §5.13, §7. 'Skills' = cards.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "cards"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "cards": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/card" }
+    }
+  },
+  "$defs": {
+    "cardId": { "type": "string", "pattern": "^card_[a-z0-9]+(_[a-z0-9]+)+$" },
+    "assetKey": { "type": "string", "pattern": "^(por|spr|bg|bgm|sfx|vfx|ico|art)_[a-z0-9_]+$" },
+    "effect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "target", "value", "on"],
+      "properties": {
+        "type": { "enum": ["atk_up", "def_up", "atk_down", "def_down", "heal_pct", "vigor_gain", "burst_gain"] },
+        "target": { "enum": ["self", "enemy"] },
+        "value": { "type": "number", "exclusiveMinimum": 0, "maximum": 100 },
+        "duration_s": { "type": "number", "minimum": 0, "maximum": 20 },
+        "on": { "enum": ["hit", "use"], "description": "hit = first landed hit; use = when the card starts." }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "enum": ["atk_up", "def_up", "atk_down", "def_down"] } } },
+          "then": {
+            "required": ["duration_s"],
+            "properties": { "value": { "maximum": 0.5 }, "duration_s": { "minimum": 3 } }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "heal_pct" } } },
+          "then": { "properties": { "value": { "maximum": 0.5 }, "target": { "const": "self" } } }
+        },
+        {
+          "if": { "properties": { "type": { "enum": ["vigor_gain", "burst_gain"] } } },
+          "then": { "properties": { "target": { "const": "self" }, "value": { "maximum": 20 } } }
+        }
+      ]
+    },
+    "card": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "name", "type", "owner", "cost", "power", "hits", "delivery",
+        "windup_s", "hit_interval_s", "recovery_s", "hitstun_s", "knockback",
+        "armor", "effects", "description", "art"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/cardId" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 18 },
+        "type": { "enum": ["fist", "bolt", "signature", "climax"] },
+        "owner": {
+          "description": "Character id that owns this card, or 'common' for shared cards.",
+          "type": "string",
+          "pattern": "^(common|char_[a-z][a-z0-9]*_[0-9]{3})$"
+        },
+        "cost": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "power": { "type": "number", "exclusiveMinimum": 0, "maximum": 10 },
+        "hits": { "type": "integer", "minimum": 1, "maximum": 10 },
+        "delivery": { "enum": ["melee", "projectile", "beam"] },
+        "windup_s": { "type": "number", "minimum": 0, "maximum": 1.5 },
+        "hit_interval_s": { "type": "number", "minimum": 0.05, "maximum": 0.5 },
+        "recovery_s": { "type": "number", "minimum": 0.1, "maximum": 1.0 },
+        "hitstun_s": { "type": "number", "minimum": 0.2, "maximum": 1.2 },
+        "knockback": { "type": "number", "minimum": 0, "maximum": 40 },
+        "projectile_speed": { "type": "number", "minimum": 60, "maximum": 300 },
+        "armor": { "type": "boolean" },
+        "cinematic_s": { "type": "number", "minimum": 0, "maximum": 4 },
+        "effects": { "type": "array", "maxItems": 2, "items": { "$ref": "#/$defs/effect" } },
+        "description": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "shout": { "type": "string", "maxLength": 30 },
+        "art": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["icon"],
+          "properties": {
+            "icon": { "$ref": "#/$defs/assetKey" },
+            "vfx": { "$ref": "#/$defs/assetKey" }
+          }
+        },
+        "sfx": { "$ref": "#/$defs/assetKey" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "fist" } } },
+          "then": { "properties": { "delivery": { "const": "melee" }, "cost": { "maximum": 3 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "bolt" } } },
+          "then": { "properties": { "delivery": { "enum": ["projectile", "beam"] }, "cost": { "maximum": 4 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "signature" } } },
+          "then": { "properties": { "cost": { "minimum": 4, "maximum": 6 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "climax" } } },
+          "then": {
+            "required": ["cinematic_s", "shout"],
+            "properties": {
+              "armor": { "const": true },
+              "cinematic_s": { "minimum": 1.0 },
+              "cost": { "minimum": 7, "maximum": 10 }
+            }
+          },
+          "else": { "properties": { "cinematic_s": { "const": 0 } } }
+        },
+        {
+          "if": { "properties": { "delivery": { "const": "projectile" } }, "required": ["delivery"] },
+          "then": { "required": ["projectile_speed"] }
+        }
+      ]
+    }
+  }
+}

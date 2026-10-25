@@ -1,0 +1,17 @@
+{
+  "name": "rule1-missing-id",
+  "file": "enemies.json",
+  "ops": [
+    {
+      "op": "delete",
+      "path": [
+        "enemies",
+        0,
+        "id"
+      ]
+    }
+  ],
+  "expect": {
+    "errorRule": "1-unique-ids"
+  }
+}

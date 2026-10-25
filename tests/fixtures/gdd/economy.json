@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "currencies": [
+    {
+      "id": "cur_jade",
+      "name": "Jade",
+      "icon": "ico_jade",
+      "max": 999999,
+      "real_money": false
+    }
+  ],
+  "starting": {
+    "currencies": {
+      "cur_jade": 1000
+    },
+    "characters": [
+      "char_tavi_001",
+      "char_lark_001",
+      "char_dunmore_001"
+    ],
+    "team": [
+      "char_tavi_001",
+      "char_lark_001",
+      "char_dunmore_001"
+    ]
+  },
+  "duplicates": {
+    "max_resonance": 4,
+    "stat_bonus_per_rank": 0.05,
+    "overflow_currency_id": "cur_jade",
+    "overflow_amount_by_rarity": {
+      "3": 10,
+      "4": 40,
+      "5": 200
+    }
+  },
+  "power_formula": {
+    "hp": 0.1,
+    "atk": 1,
+    "def": 0.5
+  }
+}

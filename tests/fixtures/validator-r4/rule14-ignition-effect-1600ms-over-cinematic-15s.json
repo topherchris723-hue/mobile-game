@@ -1,0 +1,19 @@
+{
+  "name": "rule14-ignition-effect-1600ms-over-cinematic-15s",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "effects",
+        "ignition_default",
+        "duration_ms"
+      ],
+      "value": 1600
+    }
+  ],
+  "expect": {
+    "errorRule": "14-flash-safety",
+    "errorContains": "duration_ms 1600 > 1500 (ignition cinematic)"
+  }
+}

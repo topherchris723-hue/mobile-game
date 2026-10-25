@@ -1,0 +1,17 @@
+{
+  "name": "rule5-type-chart-pair-missing",
+  "file": "battle.json",
+  "ops": [
+    {
+      "op": "delete",
+      "path": [
+        "type_chart",
+        "void",
+        "radiant"
+      ]
+    }
+  ],
+  "expect": {
+    "errorRule": "5-type-chart"
+  }
+}

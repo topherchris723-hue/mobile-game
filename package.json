@@ -1,0 +1,33 @@
+{
+  "name": "anime-card-battler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Mobile anime fighting card battler prototype (Phaser 3 + pure JS logic).",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build.js",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate-data": "node scripts/validate-data.js",
+    "sim": "node scripts/sim.js",
+    "android:icons": "node assets/app-icon/generate-icons.mjs",
+    "cap:sync": "npm run build && cap sync android",
+    "android:debug": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon",
+    "android:check": "node android/tools/check-identity.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "phaser": "3.90.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3",
+    "@playwright/test": "1.56.1",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}

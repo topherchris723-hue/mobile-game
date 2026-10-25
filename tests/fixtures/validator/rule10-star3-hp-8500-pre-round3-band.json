@@ -1,0 +1,20 @@
+{
+  "name": "rule10-star3-hp-8500-pre-round3-band",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "base_stats",
+        "hp"
+      ],
+      "value": 8500
+    }
+  ],
+  "expect": {
+    "errorRule": "10-character-bands",
+    "errorContains": "hp 8500 outside [16000, 18000]"
+  }
+}

@@ -1,0 +1,32 @@
+
+> Task :app:dependencies
+
+------------------------------------------------------------
+Project ':app'
+------------------------------------------------------------
+
+releaseRuntimeClasspath - Runtime classpath of '/release'.
++--- androidx.appcompat:appcompat:1.7.1
+|    +--- androidx.activity:activity:1.8.0 -> 1.11.0
+|    |    +--- androidx.annotation:annotation:1.8.1
+|    |    \--- org.jetbrains.kotlin:kotlin-stdlib:2.1.0 (*)
+|    +--- androidx.core:core:1.13.0 -> 1.17.0
+|    |    +--- org.jspecify:jspecify:1.0.0
+|    |    \--- androidx.concurrent:concurrent-futures:1.1.0
+|    |         \--- com.google.guava:listenablefuture:1.0
+|    \--- org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1 (c)
++--- androidx.coordinatorlayout:coordinatorlayout:1.3.0
++--- androidx.core:core-splashscreen:1.2.0
++--- project :capacitor-android
+|    +--- androidx.appcompat:appcompat:1.7.1 (*)
+|    +--- androidx.fragment:fragment:1.8.9
+|    +--- androidx.webkit:webkit:1.14.0
+|    \--- org.apache.cordova:framework:14.0.1
+|         \--- org.jetbrains:annotations:23.0.0
+\--- project :capacitor-cordova-android-plugins
+     \--- org.apache.cordova:framework:14.0.1 (*)
+
+(c) - A dependency constraint, not a dependency.
+(*) - Dependencies omitted (listed previously)
+
+BUILD SUCCESSFUL in 3s

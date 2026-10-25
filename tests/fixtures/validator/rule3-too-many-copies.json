@@ -1,0 +1,20 @@
+{
+  "name": "rule3-too-many-copies",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "deck",
+        0,
+        "count"
+      ],
+      "value": 4
+    }
+  ],
+  "expect": {
+    "errorRule": "3-deck"
+  }
+}

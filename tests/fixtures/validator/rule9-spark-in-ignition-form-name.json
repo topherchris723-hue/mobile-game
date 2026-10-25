@@ -1,0 +1,19 @@
+{
+  "name": "rule9-spark-in-ignition-form-name",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "name"
+      ],
+      "value": "Spark Form"
+    }
+  ],
+  "expect": {
+    "errorRule": "9-name-only-terms"
+  }
+}

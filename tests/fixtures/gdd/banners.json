@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "banners": [
+    {
+      "id": "banner_starter_001",
+      "name": "Highcliff Open Summon",
+      "description": "Summon fighters of the nine peaks! First x10 guarantees a 5-star.",
+      "currency_id": "cur_jade",
+      "cost_single": 100,
+      "cost_multi": 1000,
+      "multi_count": 10,
+      "rates_bp": {
+        "3": 8000,
+        "4": 1700,
+        "5": 300
+      },
+      "pool": [
+        "char_tavi_001",
+        "char_lark_001",
+        "char_dunmore_001",
+        "char_pell_001",
+        "char_thessa_001",
+        "char_rook_001",
+        "char_solenne_001",
+        "char_corvane_001"
+      ],
+      "featured": [
+        {
+          "character_id": "char_solenne_001",
+          "share_bp": 5000
+        },
+        {
+          "character_id": "char_corvane_001",
+          "share_bp": 5000
+        }
+      ],
+      "pity": {
+        "group": "standard",
+        "hard_pity": 40
+      },
+      "multi_min_rarity": 4,
+      "first_multi_min_rarity": 5,
+      "art": {
+        "banner": "art_banner_starter_001",
+        "background": "bg_summon_starter"
+      },
+      "start_at": null,
+      "end_at": null
+    }
+  ]
+}

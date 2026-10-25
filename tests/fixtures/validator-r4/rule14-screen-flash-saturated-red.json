@@ -1,0 +1,21 @@
+{
+  "name": "rule14-screen-flash-saturated-red",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "effects",
+        "ignition_default",
+        "layers",
+        0,
+        "color"
+      ],
+      "value": "#ff2020"
+    }
+  ],
+  "expect": {
+    "errorRule": "14-flash-safety",
+    "errorContains": "saturated red #ff2020"
+  }
+}

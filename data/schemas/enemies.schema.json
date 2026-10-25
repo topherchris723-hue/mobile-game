@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/enemies.schema.json",
+  "title": "Enemies (data/enemies.json)",
+  "description": "AI opponents built on a character kit. GDD §8, §5.15.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "enemies"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "enemies": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/enemy" }
+    }
+  },
+  "$defs": {
+    "mult": { "type": "number", "minimum": 0.3, "maximum": 5.0 },
+    "enemy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "character_id", "ai_tier", "stat_mult", "ignition_enabled", "boss"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^enemy_[a-z0-9]+(_[a-z0-9]+)*_[0-9]{3}$" },
+        "character_id": { "type": "string", "pattern": "^char_[a-z][a-z0-9]*_[0-9]{3}$" },
+        "name_override": { "type": "string", "minLength": 1, "maxLength": 16 },
+        "ai_tier": { "enum": ["rookie", "fighter", "veteran", "master"] },
+        "stat_mult": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hp", "atk", "def"],
+          "properties": {
+            "hp": { "$ref": "#/$defs/mult" },
+            "atk": { "$ref": "#/$defs/mult" },
+            "def": { "$ref": "#/$defs/mult" }
+          }
+        },
+        "ignition_enabled": { "type": "boolean" },
+        "boss": { "type": "boolean" },
+        "variant": {
+          "description": "Optional (round 5). Display-only look variant; no rule effect. Absent = normal. 'umbral' = render per docs/STYLE_GUIDE.md §9. GDD §8.",
+          "enum": ["umbral"]
+        }
+      }
+    }
+  }
+}

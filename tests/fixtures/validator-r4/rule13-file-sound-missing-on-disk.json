@@ -1,0 +1,27 @@
+{
+  "name": "rule13-file-sound-missing-on-disk",
+  "ops": [
+    {
+      "file": "audio.json",
+      "op": "set",
+      "path": [
+        "sounds",
+        "sfx_heavy"
+      ],
+      "value": {
+        "source": "file",
+        "gain": 0.8,
+        "path": "assets/audio/hit_heavy.ogg",
+        "license": "CC0",
+        "credit": "Jane Doe"
+      }
+    }
+  ],
+  "creditsAppend": [
+    "| `assets/audio/hit_heavy.ogg` | sound | Jane Doe | CC0 | yes | 4 |"
+  ],
+  "expect": {
+    "errorRule": "13-licensing",
+    "errorContains": "does not exist"
+  }
+}

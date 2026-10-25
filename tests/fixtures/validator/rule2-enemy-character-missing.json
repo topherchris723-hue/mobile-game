@@ -1,0 +1,18 @@
+{
+  "name": "rule2-enemy-character-missing",
+  "file": "enemies.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "enemies",
+        0,
+        "character_id"
+      ],
+      "value": "char_ghost_001"
+    }
+  ],
+  "expect": {
+    "errorRule": "2-references"
+  }
+}

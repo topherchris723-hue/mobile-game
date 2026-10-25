@@ -1,0 +1,25 @@
+{
+  "name": "rule11-only-cards-played-trigger",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "triggers"
+      ],
+      "value": [
+        {
+          "type": "cards_played",
+          "value": 5
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "errorRule": "11-ignition",
+    "errorContains": "needs a hp_below_pct or battle_time_s trigger"
+  }
+}

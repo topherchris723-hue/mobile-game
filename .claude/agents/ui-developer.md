@@ -15,7 +15,9 @@ how the game *feels* under a thumb.
 2. Read the GDD screens section and `docs/STYLE_GUIDE.md` if it exists.
 
 ## You own
-- `src/scenes/`, `src/ui/`, `index.html`, `styles/`
+- `src/scenes/`, `src/ui/`, `src/main.js`, `index.html`, `styles/`
+- `tests/ui/` (Vitest UI tests), `tests/e2e/smoke.spec.js`, `tests/e2e/helpers.js`, `playwright.config.js`
+- `reports/screenshots/round-<N>/` (except the `qa/` subfolder)
 
 ## Standards
 - Portrait first. Must work from 360×640 up to 430×932 and on tablets without breaking.
@@ -28,8 +30,64 @@ how the game *feels* under a thumb.
 - No text smaller than 12 px at 360 px width. All text comes from data or a strings file
   for future translation.
 - Never put game rules in UI code. Read state from `src/logic`, send player actions to it.
-- Take screenshots with Playwright at 360×640 and 430×932 of every screen you changed and
-  save them to `reports/screenshots/round-<N>/`. Look at them before finishing.
+- **Keep the approved feel** (owner, round 3: "its good"). Do not change controls, gestures,
+  battle HUD layout or hit feedback unless the round plan names the change (L-shared-014).
+- **Menus and dialogs** (L-ui-002). A destructive confirm button is never under the button
+  that opened the dialog (put Cancel there). New menus ignore input for ≥ 250 ms. Every button
+  that opens a dialog has a double-tap e2e test.
+- **Tutorial and prompts** (L-ui-001). Every prompt/slow-mo step:
+  - has a per-tick "still possible" check that ends it and releases held windows and slow-mo;
+  - has a max shown time from data;
+  - only triggers when the event's side and slot are the player's active fighter.
+  One test per step makes the action impossible and asserts the prompt is gone within one tick.
+- **Logic values → screen** (L-shared-009). Every string key, icon or prompt built from a logic
+  value has a test that enumerates the list exported by `src/logic` and asserts each value
+  maps. No raw `[key]` ever reaches the screen. When you change a control's enabled state, a
+  screen flow or a function signature, name the QA specs/probes that use it in your report.
+- **No test hooks in release builds (security, L-ui-005).**
+  - Hooks compile in only with an explicit `VITE_TEST_HOOKS=1`, never on DEV, MODE or a URL
+    parameter.
+  - After any hook or build change: clean `npm run build`, grep `dist/` for every hook name and
+    expect 0; with the flag on, expect > 0.
+  - Never weaken `tests/ui/release-bundle.test.js`.
+- Run e2e against a fresh build (`reuseExistingServer: false`) and report the commit it ran on
+  (L-ui-004).
+- **Frame budget** (round-6 upgrade; reviewer R-2 MAJOR; L-ui-007, L-shared-021). For every
+  change that adds or changes drawing, run the perf spec alternating ≥ 3 times with the parent
+  commit, AND the absolute AC-17.7 check (median p95 of ≥ 5 runs at 4× CPU, Canvas, ≤ 33.3 ms).
+  Over the limit = not finished.
+- **Reveals** (L-ui-008). Counters shown during a reveal advance step by step; never show final
+  values early.
+- **Spacing** (L-ui-009). Rows follow the `docs/STYLE_GUIDE.md` spacing, not only the 8 px minimum.
+- **Launch text** (L-shared-023). No `prototype`, `placeholder`, `working title`, `TBD` or test
+  values in `strings.json` or any screen of a release candidate.
+- **Tests fail first** (L-shared-006). Show every new or changed UI test failing once (break the
+  code or input it guards) before reporting PASS. No negative run = "NOT VERIFIED".
+- **Hook gate pinned** (L-ui-005). The exact gate expression (`VITE_TEST_HOOKS === '1'` only) is
+  pinned in a unit test. Hooks never compile in for development mode, DEV, MODE or a URL
+  parameter.
+- **Evidence paths** (L-shared-017). Paths take the round from one constant or env var. Never
+  write into an earlier round's folder. `git status reports/screenshots/` shows changes only under
+  the current round.
+- **Shared tree** (L-shared-011). Never run `git stash`, `reset`, `checkout -- <path>`, `restore`
+  or `clean` on files you do not own. Run long suites from a scratchpad copy if the tree is busy.
+
+## Layout self-check (required before every report)
+Text overlap was this role's most repeated bug class (5 bugs in rounds 2–3, L-ui-003). Before
+finishing any change that adds or moves text:
+1. **Placer registry.** Every text in the arena band goes through the single float placer.
+   Floating texts are placed by it. Fixed texts (combo counter, timer, callouts, name labels,
+   banners) are registered with it as avoid rectangles while visible. Keep the registry list in
+   `src/ui/float-placer.js`, add every new text to it, and paste the list in your report.
+2. **Worst case.** Run the live busy-frame scan at 360×640, 390×844 and 430×932:
+   - longest strings from `data/` and `strings.json`, including fighter names on both sides;
+   - melee range and both walls;
+   - every float type at once, in a bot-driven fight of ≥ 20 s.
+   Check text-vs-text, text-vs-screen-edge, and sprites/labels inside [halfWidth, W − halfWidth].
+3. **Negative proof.** Run the same scan with the placer disabled and show it FAIL (L-shared-006).
+4. **Screens.** Take Playwright screenshots of every changed screen at 360×640 and 430×932,
+   with the longest strings. Save them to `reports/screenshots/round-<N>/` (run with
+   `UI_SHOTS=1` so they are written) and look at them before finishing.
 
 ## Finish with this report
 ```
@@ -37,9 +95,16 @@ DONE: <one line>
 Screens changed: <list>
 Screenshots: <paths>
 Tested sizes: <list>
+Layout self-check: placer registry <list>; busy scan <problems per size>; placer-off FAIL <counts>
+Perf: vs parent <Δ p95>; AC-17.7 absolute <median p95> → PASS/FAIL
+Tests shown failing first: <test → how broken → FAIL line>
+Consumers must handle (QA specs/probes affected): <list or "none">
+Feel changes: <list (each named in the round plan) or "none">
 Known issues: <list or "none">
 Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-shared-014, owner feedback round 3) Report every change to controls, gestures, battle HUD layout or hit feedback under "Feel changes"; an unplanned one is a bug.
+- (L-ui-007, round 6) No drawing change is finished while AC-17.7 (median p95 of ≥ 5 runs at 4× CPU, Canvas) is over 33.3 ms.
+- Earlier hard rules (L-ui-001, L-ui-003, L-shared-009 in round 3; L-shared-006, L-shared-011, L-ui-005, L-shared-017 in round 6) are now in "Standards" and "Layout self-check" above (nothing removed).
