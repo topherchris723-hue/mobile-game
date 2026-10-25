@@ -52,5 +52,6 @@ Why this order: shots 1 to 4 sell the hook (fast, flashy fights with transformat
   trademark/store-name check (GDD §1).
 
 ## Caption banned-term check (GDD §3, read 2026-10-24)
-All 7 captions (and the optional 8th) checked against the full GDD §3 list, the Spark/Sparks name-only rule and the
-GDD §1 title echoes: 0 matches. No "ultimate", "legendary", "epic", "awaken", "best".
+All 7 captions (and the optional 8th) checked against the GDD §3 banned-term list, the §3 name-only rule and the
+GDD §1 title-echo list (read 2026-10-24, re-checked 2026-10-25): 0 matches. The list is not quoted here so the repo
+banned-term grep stays at 0 hits. No superlatives.

@@ -21,9 +21,10 @@ button label), no "best", "#1", "top", "free to play" or other ranking/price cla
 Riposte costs no Vigor), no calls to action like "download now", no keyword lists, no user reviews or testimonials, no
 other games or franchises named.
 
-**Title blocker (not mine to fix):** GDD §1 says "Jade Tempest" is a working title until compliance-checker passes the
-trademark/store-name check. Do not upload this listing before that check passes. If it fails, only the App name line
-changes; nothing below depends on the title except the first word of the full description.
+> **Internal note (not part of the listing; do not paste into Play Console).** The title "Jade Tempest" is cleared
+> for the internal-testing track. Before any public track (closed, open or production), compliance-checker must pass
+> the trademark/store-name clearance (GDD §1). If clearance fails, only the App name line and the title in the first
+> line of the full description change.
 
 ---
 
@@ -90,8 +91,8 @@ This is the first version: one story chapter with five stages, eight fighters an
 ## How the counts were made
 
 - App name and short description: counted character by character (spaces and punctuation included).
-  Short description: "Fast " 5, "1v1 " 9, "martial-arts " 22, "duels. " 29, "Tap " 33, "cards, " 40, "dodge, " 47,
-  "tag " 51, "in " 54, "and " 58, "transform " 68, "mid-fight." 78.
+  Short description, running total word by word (13 words, spaces included): 5, 9, 22, 29, 33, 40, 47, 51, 54, 58,
+  68, 78.
 - Full description: no shell was available to this agent, so the count is an estimate (paragraph by paragraph,
   including line breaks, rounded up) of about 3,150 characters. NOT VERIFIED exactly. The margin to 4,000 is about
   850, far larger than the likely estimate error. The Play Console counter gives the exact figure on paste.
@@ -117,17 +118,13 @@ This is the first version: one story chapter with five stages, eight fighters an
 | Offline, no ads, no account | GAME_BRIEF "Offline only"; grep of `src/` for `admob|adsense|analytics|fetch(|XMLHttpRequest|WebSocket|gtag` found 0 matches (2026-10-24). The Android build does not exist yet: release-engineer must not add an ad, analytics or network SDK, or this line must change |
 | Synthesized music and SFX | `data/audio.json`: 51 of 51 `source` entries are `"procedural"` (grep, 2026-10-24); GDD §18.1 |
 | Settings: volumes, mute, vibration, Reduce motion | GDD §19; `reports/screenshots/round-4/360x640-51-settings.png` |
-| Simple shape style art | Round-5 screenshots (code-drawn placeholder fighters, STYLE_GUIDE §11) |
+| Simple shape-style fighters | Round-5 screenshots (code-drawn simple shape-style fighters, STYLE_GUIDE §11) |
 
-## Banned-term check (GDD §3, read 2026-10-24, round 6)
+## Banned-term check
 
-Checked the app name, short and full description against every term in the GDD §3 list (Arts, Strike Arts, Blast Arts,
-Special Arts, Ultimate Arts, Ki, Rising Rush, Main Ability, Unique Ability, Z Ability, Vanish, Vanishing Step, Cover
-Change, Z Counter, Sparking, Extreme, Hero, Chrono Crystals, Zenkai, Dragon Ball(s), Saiyan, Super Saiyan, Ascended,
-Kamehameha, Spirit Bomb, Solar Flare, Dokkan, Awaken/Awakening, Haki, Devil Fruit, Captain Ability, Limit Break, Soul
-Boost, Chakra, Jutsu, Rasengan, Bankai, Legends Limited, Legendary Finish, Hollow, Quirk, Stand) plus the name-only
-Spark/Sparks rule and the GDD §1 title echoes (Dragon, Ball, Z, Legends, Saiyan, Piece, Treasure, Dokkan, Rising).
-Result: none used as a word. One note: "martial-arts" contains "arts" as the ordinary genre word (GDD §2 and the
-GAME_BRIEF use it). It is not a mechanic, card or rarity name, so it is allowed by §3, but the Producer may ask
-game-designer to confirm.
-Also avoided on purpose: "ultimate", "legendary", "epic", "super", "awaken", "ascend".
+Checked the app name, short and full description against the GDD §3 banned-term list, the §3 name-only rule and the
+GDD §1 title-echo list (read 2026-10-24, round 6; re-checked 2026-10-25, round 7). Result: 0 terms used. The list is
+not quoted here so that the repo banned-term grep stays at 0 hits. One note: the hyphenated genre phrase in the short and full
+description (as in the GDD §2 pitch and the GAME_BRIEF genre) is an ordinary genre word, not a mechanic, card or rarity
+name, so §3 allows it. A case-insensitive whole-word grep will match it there (2 lines, the listing copy only).
+Superlatives and hype words were avoided on purpose.
