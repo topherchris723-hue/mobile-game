@@ -238,3 +238,37 @@ test('abuse: rotate during the reveal goes to results without a re-summon; Jade 
   expect(p2).toEqual([]);
   expect(errors, errors.join('\n')).toEqual([]);
 });
+
+test('R-6 reveal shows Jade per pull (no spoiler of the final balance)', async ({ page }) => {
+  const errors = watchErrors(page);
+  const s = freshSave();
+  s.currencies.cur_jade = 1000;
+  s.summon.first_multi_done = { banner_starter_001: true };
+  s.roster = ['char_tavi_001', 'char_lark_001', 'char_dunmore_001', 'char_pell_001', 'char_thessa_001', 'char_rook_001', 'char_solenne_001', 'char_corvane_001'].map((id) => ({ character_id: id, resonance: 4, obtained_at: s.created_at }));
+  await boot(page, s, '&renderer=canvas&summonSeed=21');
+  await toSummon(page);
+  await tap(page, 'summon_x10');
+  await page.waitForTimeout(350);
+  await tap(page, 'summon_confirm');
+  await page.waitForFunction(() => window.__TEST__.sceneKey === 'SummonReveal', null, { timeout: 10000 });
+  if (process.env.QA_BREAK === 'spoil') await page.evaluate(() => { const sc = window.__TEST__.activeScene(); const f = sc.jadeAt.bind(sc); sc.jadeAt = () => f(1e9); });
+  const samples = await page.evaluate(async () => {
+    const out = [];
+    const t0 = performance.now();
+    while (performance.now() - t0 < 25000) {
+      const r = window.__TEST__.summonReveal && window.__TEST__.summonReveal();
+      if (r) { const last = out[out.length - 1]; if (!last || last.index !== r.index || last.jade !== r.jadeShown) out.push({ index: r.index, jade: r.jadeShown, phase: r.phase }); if (r.phase === 'results') break; }
+      await new Promise((res) => setTimeout(res, 40));
+    }
+    return out;
+  });
+  const final = (await save(page)).currencies.cur_jade;
+  const vals = samples.filter((x) => typeof x.jade === 'number').map((x) => x.jade);
+  console.log(`R-6 jade shown per pull: ${JSON.stringify(samples.map((x) => x.index + ':' + x.jade))} final saved ${final}`);
+  expect(new Set(vals).size, 'the balance steps up pull by pull (> 3 distinct values)').toBeGreaterThan(3);
+  const firstFinal = samples.find((x) => x.jade === final);
+  expect(firstFinal && firstFinal.index, 'the final balance appears only once the last pull (index 9) is revealed').toBeGreaterThanOrEqual(9);
+  for (let i = 1; i < vals.length; i++) expect(vals[i], 'non-decreasing').toBeGreaterThanOrEqual(vals[i - 1]);
+  expect(vals[vals.length - 1]).toBe(final);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
