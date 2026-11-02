@@ -1,6 +1,7 @@
-# Screenshot plan — Jade Tempest 0.1.0 (Google Play, phone)
+# Screenshot plan — Fyrenza: Card Duels 0.1.0 (Google Play, phone)
 
-Owner: store-writer. Round 6. Capture is done by ui-developer or qa-tester (Playwright); this file only says what to
+Owner: store-writer. Round 6, retitled round 7 (GDD §1). Do not upload any screenshot or the feature graphic to a
+public track until the title has human registry clearance (`reports/compliance/round-7-title.md`). Capture is done by ui-developer or qa-tester (Playwright); this file only says what to
 capture and what each caption says.
 
 ## Requirements (checked 2026-10-24, Google Play Console Help + web search)
@@ -29,7 +30,7 @@ capture and what each caption says.
 
 | # | Screen and moment (maps to existing screen) | Reference for layout | Caption | Chars |
 |---|---|---|---|---|
-| 1 | **Ignition cinematic** in Stage 2 (Tavi or Pell): the full-width banner with the form name and shout over the arena, e.g. "Overheat Form / REDLINE! OVERHEAT FORM!". Most exciting moment, so it goes first. Trigger by real play (HP under 50% or after 60 s, then tap IGNITE). | `reports/screenshots/round-3/qa/abuse-ignition-cinematic.png` (layout only; recapture) | Transform mid-fight | 19 |
+| 1 | **Ignition cinematic** in Stage 2 (Tavi or Pell): the full-width banner with the form name and shout over the arena, e.g. "Overheat Form / REDLINE! OVERHEAT FORM!". Most exciting moment, so it goes first. Trigger by real play (HP under 50% or after 60 s, then tap IGNITE). | `reports/screenshots/round-3/qa/abuse-ignition-cinematic.png` (layout only; recapture) | Ignite a new form mid-fight | 27 |
 | 2 | **Perfect Slip + Riposte** in a real fight: "PERFECT SLIP!" and "RIPOSTE!" callouts visible, real HP numbers, combo counter at a real value (2 to 4). | `reports/screenshots/round-4/360x640-55-battle-combo-zone.png` (layout only; recapture) | Dodge, then strike back | 23 |
 | 3 | **Tri-Burst ready**: the TRI-BURST button lit in orange during a 3-fighter stage (stage 3 to 5), both bench portraits visible. If the Tri-Burst cinematic frame reads well, use that frame instead. | `reports/screenshots/round-3/360x640-41-burst-ready.png` (layout only; recapture) | Unleash a team finisher | 23 |
 | 4 | **Boss stage**: Stage 5 against Corvane, the Starless King (or Umbral Solenne before him), mid-fight with hit numbers on screen. | `reports/screenshots/round-5/360x640-61-battle-umbral-stage_005.png` (layout only; recapture with real HP) | Five story stages | 17 |
@@ -44,14 +45,16 @@ Why this order: shots 1 to 4 sell the hook (fast, flashy fights with transformat
 6 sells fairness. Every shot shows a feature that exists in 0.1.0 (see `store/listing.md` claim check).
 
 ## Feature graphic (1024 x 500)
-- Content: the "Jade Tempest" logo text (the in-game title font, `src/ui/theme.js`; no new font file, STYLE_GUIDE §10)
-  on the left, a real 0.1.0 Ignition frame (shot 1) cropped on the right, on the Jade green / night-blue UI palette
-  (STYLE_GUIDE §2.1).
+- Content: the "Fyrenza" logo text (the in-game title font, `src/ui/theme.js`; no new font file, STYLE_GUIDE §10)
+  on the left, a real 0.1.0 Ignition frame (shot 1, ideally Tavi's Blaze-aura Overheat Form, which fits the fire
+  theme) cropped on the right, on the existing UI palette (STYLE_GUIDE §2.1; art-director decides whether to warm it
+  toward the fire theme, not this file).
 - No caption text beyond the title, no rating badges, no "new"/"free"/"#1", no price.
-- Blocked by the same title condition as the listing: make it only after compliance-checker passes the "Jade Tempest"
-  trademark/store-name check (GDD §1).
+- Blocked by the title condition: it may be made for the internal track, but must not be uploaded to any public
+  track until a human has run registry clearance on "Fyrenza" and recorded it in `docs/STATUS.md` (GDD §1,
+  `reports/compliance/round-7-title.md`).
 
 ## Caption banned-term check (GDD §3, read 2026-10-24)
 All 7 captions (and the optional 8th) checked against the GDD §3 banned-term list, the §3 name-only rule and the
-GDD §1 title-echo list (read 2026-10-24, re-checked 2026-10-25): 0 matches. The list is not quoted here so the repo
+GDD §1 title-echo list (read 2026-10-24, re-checked 2026-10-25 and 2026-11-02 for the new shot-1 caption): 0 matches. The list is not quoted here so the repo
 banned-term grep stays at 0 hits. No superlatives.

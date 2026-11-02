@@ -22,14 +22,14 @@ Facts this draft relies on (evidence in `reports/compliance/round-6.md`, item 3)
 ---
 
 ```
-Privacy Policy for Jade Tempest
+Privacy Policy for Fyrenza: Card Duels
 
 Last updated: [DATE OF PUBLICATION]
 
-[DEVELOPER NAME] ("we") made Jade Tempest, a game for Android. This policy explains what happens to your
+[DEVELOPER NAME] ("we") made Fyrenza, a game for Android. This policy explains what happens to your
 information when you play it.
 
-The short version: Jade Tempest does not collect, store on our servers, share or sell any personal or
+The short version: Fyrenza does not collect, store on our servers, share or sell any personal or
 device information. The game works fully offline.
 
 1. Information we collect
@@ -82,6 +82,11 @@ Questions about this policy: [CONTACT EMAIL]
 - The policy must be reachable at a public URL that is not a PDF and not geo-blocked, and be linked both in
   Play Console (App content → Privacy policy) and, recommended, inside the app (for example a "Privacy" link in
   Settings — ui-developer can add it once the URL exists).
-- The policy names the game "Jade Tempest". The title trademark check did not pass in round 6
-  (`reports/compliance/round-6.md`, item 1). If the title changes, change the name here too.
+- The policy names the game "Fyrenza: Card Duels" (store title) and "Fyrenza" (in-game title), per GDD §1 (round 7).
+  The old round-3 title failed the round-6/7 trademark check and was replaced. "Fyrenza" is cleared for internal
+  testing only (`reports/compliance/round-7-title.md`). Do not publish this policy or use it on a public track until a
+  human has run registry clearance and recorded it in `docs/STATUS.md`. If the title changes again, change the name
+  here too.
+- Round 7 title change only (store-writer, at the Producer's request): no privacy facts or policy wording other than
+  the game name were changed. compliance-checker still owns the facts in this draft.
 - Google Play's own data handling (installs, Android vitals) is covered by Google's policy, not this one.

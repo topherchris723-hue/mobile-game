@@ -1,16 +1,25 @@
-# Google Play store listing — Jade Tempest 0.1.0
+# Google Play store listing — Fyrenza: Card Duels 0.1.0
 
-Owner: store-writer. Round 6 (Launch). Build: first milestone (battle + summon), version 0.1.0.
+Owner: store-writer. Round 6 (Launch), retitled round 7 (GDD §1, READY round 7). Build: first milestone (battle +
+summon), version 0.1.0. Store title "Fyrenza: Card Duels"; in-game title "Fyrenza" (say it "fye-REN-zah").
 
-## Limits (checked 2026-10-24)
+> **DO NOT UPLOAD YET (internal note, not part of the listing; do not paste into Play Console).** The title
+> "Fyrenza" is cleared for the **internal-testing track only** (`reports/compliance/round-7-title.md`, WebSearch-based;
+> registries were not reachable). Do not upload this listing to any public track (closed, open or production)
+> until a human has run registry clearance (USPTO, EUIPO, WIPO, UK IPO, classes 9/28/41, plus common-law and store
+> use) and recorded the result in `docs/STATUS.md` (CLAUDE.md §8 item). If clearance fails, only the App name line,
+> the title in the full description and the title in `store/` files change.
 
-Source: Google Play Console Help, "Add preview assets / store listing" (support.google.com/play/android-developer/answer/113469),
-confirmed by a web search on 2026-10-24.
+## Limits (checked 2026-10-24, re-checked 2026-11-02)
 
-| Field | Limit | This listing |
+Source: Google Play Console Help, "Add preview assets / store listing" (support.google.com/play/android-developer/answer/113469)
+and "Best practice for your store listing" (support.google.com/googleplay/android-developer/answer/13393723),
+confirmed by web searches on 2026-10-24 and 2026-11-02: title 30, short description 80, full description 4,000.
+
+| Field | Limit | This listing (hand count, NOT VERIFIED (no shell)) |
 |---|---|---|
-| App name | 30 characters | 12 |
-| Short description | 80 characters | 78 |
+| App name | 30 characters | 19 |
+| Short description | 80 characters | 77 |
 | Full description | 4,000 characters | about 3,150 (see "How the counts were made") |
 
 Some secondary sites say the store name can be 50 characters. Google's own page says 30, so this listing uses 30.
@@ -21,31 +30,26 @@ button label), no "best", "#1", "top", "free to play" or other ranking/price cla
 Riposte costs no Vigor), no calls to action like "download now", no keyword lists, no user reviews or testimonials, no
 other games or franchises named.
 
-> **Internal note (not part of the listing; do not paste into Play Console).** The title "Jade Tempest" is cleared
-> for the internal-testing track. Before any public track (closed, open or production), compliance-checker must pass
-> the trademark/store-name clearance (GDD §1). If clearance fails, only the App name line and the title in the first
-> line of the full description change.
-
 ---
 
-## App name (12 / 30)
+## App name (19 / 30)
 
 ```
-Jade Tempest
+Fyrenza: Card Duels
 ```
 
-## Short description (78 / 80)
+## Short description (77 / 80)
 
 ```
-Fast 1v1 martial-arts duels. Tap cards, dodge, tag in and transform mid-fight.
+Ignite your inner fire in fast 1v1 card duels. Tap, dodge, tag in, transform.
 ```
 
 ## Full description (about 3,150 / 4,000)
 
 ```
-Fast, flashy 1v1 martial-arts battles where your fighters transform mid-fight. Tap a card to throw a punch, swipe to slip past your rival's attack, and watch for the glowing IGNITE button that turns your fighter into a new, stronger form.
+Fighters ablaze with inner fire clash in fast, flashy 1v1 card duels. Tap a card to throw a punch, swipe to slip past your rival's attack, and watch for the glowing IGNITE button that turns your fighter into a new, stronger form.
 
-Jade Tempest is a real-time card battler for one thumb, played in portrait.
+Fyrenza is a real-time martial-arts card battler for one thumb, played in portrait.
 
 How a fight works
 - Bring a team of three. One fights, two wait on the bench. Tag a teammate in when their portrait is ready.
@@ -90,17 +94,31 @@ This is the first version: one story chapter with five stages, eight fighters an
 
 ## How the counts were made
 
-- App name and short description: counted character by character (spaces and punctuation included).
-  Short description, running total word by word (13 words, spaces included): 5, 9, 22, 29, 33, 40, 47, 51, 54, 58,
-  68, 78.
-- Full description: no shell was available to this agent, so the count is an estimate (paragraph by paragraph,
-  including line breaks, rounded up) of about 3,150 characters. NOT VERIFIED exactly. The margin to 4,000 is about
-  850, far larger than the likely estimate error. The Play Console counter gives the exact figure on paste.
+All counts are by hand: **NOT VERIFIED (no shell)** (L-sw-002).
+- App name "Fyrenza: Card Duels": Fyrenza 7, ":" 8, space 9, Card 13, space 14, Duels 19 → 19.
+- Short description, running total word by word (spaces included): Ignite 6, your 11, inner 17, fire 22, in 25,
+  fast 30, 1v1 34, card 39, duels. 46, Tap, 51, dodge, 58, tag 62, in, 66, transform. 77 → 77.
+- Full description: an estimate of about 3,150 characters (round-6 estimate). Round 7 changed two sentences: the
+  first sentence went from 78 to 69 characters (−9) and the title sentence gained 8 ("Fyrenza" is 5 shorter than the
+  old title, the hyphenated genre phrase plus a space adds 13), so the net change is −1. The margin to 4,000 is about 850, far larger than the
+  likely estimate error.
+
+Exact check for the Producer (run from `/home/user/mobile-game`; it prints the length of each fenced block in order:
+app name, short, full; expected 19, 77, under 4,000):
+
+```
+node -e "const t=require('fs').readFileSync('store/listing.md','utf8');const b=[...t.matchAll(/^## (App name|Short description|Full description)[^\n]*\n\n\`\`\`\n([\s\S]*?)\n\`\`\`/gm)];for(const m of b)console.log(m[1],[...m[2]].length)"
+```
+
+Title check for AC-1.1(c): `grep -c '^Fyrenza: Card Duels$' store/listing.md` → 1, and
+`grep -rniE 'jade[ ]temp[e]st' store/` → no output (the brackets keep this line from matching itself).
 
 ## Claim check (every claim is in the 0.1.0 build)
 
 | Claim | Evidence |
 |---|---|
+| Title "Fyrenza" | GDD §1 (READY round 7); `src/ui/strings.json` `game_title` per AC-1.1(a) (owned by ui-developer; not checked by me this round) |
+| "Fighters ablaze with inner fire" (flavour line, not a feature claim) | GDD §1 pitch; the IGNITE button and Ignition forms back the "ignite" wording (GDD §3, §5) |
 | 1v1 real-time, team of 3, Tag | GDD §5.8; battle screenshots show 2 bench portraits with cooldown (`reports/screenshots/round-5/360x640-61-battle-umbral-stage_003.png`) |
 | Fist / Bolt / Signature / Climax, Vigor | GDD §3, §5.3, §5.4; card faces in `reports/screenshots/round-4/360x640-55-battle-combo-zone.png` |
 | Slip, Perfect Slip, Riposte, combos | GDD §5.6, §5.7; "PERFECT SLIP!" / "RIPOSTE!" / "COMBO" callouts in the round-4 combo screenshot |
@@ -123,8 +141,11 @@ This is the first version: one story chapter with five stages, eight fighters an
 ## Banned-term check
 
 Checked the app name, short and full description against the GDD §3 banned-term list, the §3 name-only rule and the
-GDD §1 title-echo list (read 2026-10-24, round 6; re-checked 2026-10-25, round 7). Result: 0 terms used. The list is
-not quoted here so that the repo banned-term grep stays at 0 hits. One note: the hyphenated genre phrase in the short and full
-description (as in the GDD §2 pitch and the GAME_BRIEF genre) is an ordinary genre word, not a mechanic, card or rarity
-name, so §3 allows it. A case-insensitive whole-word grep will match it there (2 lines, the listing copy only).
-Superlatives and hype words were avoided on purpose.
+GDD §1 title-echo list (read 2026-10-24, round 6; re-checked 2026-10-25 and, for the new title and new copy,
+2026-11-02, round 7, list read fresh from GDD §3 and §1). Result: 0 terms used. The list is not quoted here so that the
+repo banned-term grep stays at 0 hits. The §3 name-only rule: its word is not used anywhere in the listing. One note: the
+hyphenated genre phrase in the full description (as in the GDD §2 pitch and the GAME_BRIEF genre) is an ordinary genre
+word, not a mechanic, card or rarity name, so §3 allows it. A case-insensitive whole-word grep will match it there
+(1 line in the listing copy; round 7 removed it from the short description). No storm/weather wording remains; the
+new hook uses only fire/ignite wording and our own terms (IGNITE, Ignition, Tri-Burst, Slip, Riposte, Vigor, Jade).
+Superlatives were avoided on purpose.
