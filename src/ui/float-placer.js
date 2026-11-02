@@ -21,16 +21,45 @@ export const ARENA_TEXT_REGISTRY = [
   { text: 'callouts: FIGHT!, PERFECT SLIP!, RIPOSTE!, K.O.!, TRI-BURST blocked/missed, Time up', how: 'placed' },
   { text: 'fighter shouts (card, tag-in, intro shout lines)', how: 'placed' },
   { text: 'fighter name labels (both sides)', how: 'placer2 + avoid' },
-  { text: 'combo counter COMBO xN (player)', how: 'reserve' },
+  { text: 'combo counter COMBO xN (player)', how: 'reserve (1×) + pop clamped clear of live texts (fitPopScale)' },
   { text: 'hit counter N HITS (player)', how: 'reserve' },
-  { text: 'enemy combo counter COMBO xN', how: 'reserve' },
+  { text: 'enemy combo counter COMBO xN', how: 'reserve (1×) + pop clamped clear of live texts (fitPopScale)' },
   { text: 'tutorial prompt box', how: 'avoid' },
   { text: 'intro banner (names, VS, intro shout)', how: 'avoid' },
   { text: 'cinematic overlay title/sub (Ignition, Climax, Tri-Burst)', how: 'overlay (depth 80, covers the arena on purpose)' },
 ];
 
+/**
+ * Approved start scale of the combo-counter pop (tweened down to 1 over 160 ms, Back.Out). BattleScene.popCombo
+ * lowers it only when a live text sits next to the counter (fitPopScale, BUG-7b-01).
+ */
+export const COMBO_POP = Object.freeze({ player: 1.5, enemy: 1.4 });
+
 function hit(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+/**
+ * Largest pop start scale in [1, maxScale] for a text anchored at (x, y) with origin (ox, oy) and rest size w×h,
+ * whose scaled rectangle grown by `pad` touches none of `obstacles` (BUG-7b-01). An obstacle the text already
+ * touches at rest is ignored (the pop does not make it worse). The rectangle only grows with the scale, so a
+ * bisection finds the limit. Pure, so it is unit-tested (tests/ui/float-placer.test.js).
+ */
+export function fitPopScale(a, maxScale, obstacles, pad = 0) {
+  const rectAt = (s) => ({ x: a.x - a.ox * a.w * s - pad, y: a.y - a.oy * a.h * s - pad, w: a.w * s + 2 * pad, h: a.h * s + 2 * pad });
+  if (!(maxScale > 1)) return 1;
+  const rest = rectAt(1);
+  const live = (obstacles || []).filter((o) => o && !hit(rest, o));
+  const ok = (s) => !live.some((o) => hit(rectAt(s), o));
+  if (ok(maxScale)) return maxScale;
+  let lo = 1;
+  let hi = maxScale;
+  for (let i = 0; i < 24; i++) {
+    const m = (lo + hi) / 2;
+    if (ok(m)) lo = m;
+    else hi = m;
+  }
+  return lo;
 }
 
 export class FloatPlacer {

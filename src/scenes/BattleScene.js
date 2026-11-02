@@ -13,7 +13,7 @@ import { sfx, haptic } from '../ui/feedback.js';
 import { setMusicContext, onBattleEvent, setPaused as setAudioPaused, resetDuck, endBattleMusic } from '../audio/index.js';
 import { createVfx } from '../vfx/index.js';
 import { cardColor } from '../ui/icons.js';
-import { FloatPlacer, silhouetteExtent, placeFighters, placeNameLabels } from '../ui/float-placer.js';
+import { FloatPlacer, COMBO_POP, fitPopScale, silhouetteExtent, placeFighters, placeNameLabels } from '../ui/float-placer.js';
 import { HIT_DISCARD_TEXT_KEYS, TRI_BURST_WHIFF_TEXT_KEYS, WHIFF_TEXT_KEYS, reasonTextKey, CINEMATIC_FADE_MS, cinematicFadeAlpha } from '../ui/hud-state.js';
 import { TEST_HOOKS, testHooks, testSeedParam } from '../ui/test-hooks.js';
 
@@ -490,15 +490,15 @@ export class BattleScene extends BaseScene {
   updateCombo(st) {
     const pc = st.teams.player.chain;
     if (pc.cards >= 2 && pc.cards !== this.comboShown.player) {
-      this.comboText.setText(t('battle_combo', { n: pc.cards })).setAlpha(1).setScale(1.5);
-      this.tweens.add({ targets: this.comboText, scale: 1, duration: 160, ease: 'Back.Out' });
+      this.comboText.setText(t('battle_combo', { n: pc.cards })).setAlpha(1);
+      this.popCombo(this.comboText, COMBO_POP.player);
     }
     if (pc.hits >= 2) this.comboHits.setText(t('battle_hits', { n: pc.hits })).setAlpha(1);
     this.comboShown.player = pc.cards;
     const ec = st.teams.enemy.chain;
     if (ec.cards >= 2 && ec.cards !== this.comboShown.enemy) {
-      this.enemyCombo.setText(t('battle_combo', { n: ec.cards })).setAlpha(1).setScale(1.4);
-      this.tweens.add({ targets: this.enemyCombo, scale: 1, duration: 160, ease: 'Back.Out' });
+      this.enemyCombo.setText(t('battle_combo', { n: ec.cards })).setAlpha(1);
+      this.popCombo(this.enemyCombo, COMBO_POP.enemy);
     }
     this.comboShown.enemy = ec.cards;
   }
@@ -690,7 +690,10 @@ export class BattleScene extends BaseScene {
     return { upper: { top: a.top + 2, bottom: nameTop - 2 }, body: { top: nameBottom + 2, bottom: a.floorY - 2 } };
   }
 
-  /** Reserved rectangles of the 3 combo-counter texts, measured with their longest strings (COMBO x99 / 999 HITS). */
+  /**
+   * Reserved rectangles of the 3 combo-counter texts at rest (1×), measured with their longest strings (COMBO x99 /
+   * 999 HITS). The pop above 1× is clamped at pop time so it never reaches a placed text (popCombo, BUG-7b-01).
+   */
   measureComboZones() {
     const zones = [];
     const probe = (tx, str) => {
@@ -705,6 +708,36 @@ export class BattleScene extends BaseScene {
     zones.push(probe(this.comboHits, t('battle_hits', { n: 999 })));
     zones.push(probe(this.enemyCombo, t('battle_combo', { n: 99 })));
     return zones;
+  }
+
+  /**
+   * Pop a combo counter from up to `maxPop` down to 1 (160 ms, Back.Out: the first frame is the largest).
+   * BUG-7b-01: the 1.5× pop grew out of the 1× zone and covered a shout placed legally next to it. The start
+   * scale is now the largest one (≤ maxPop) whose rectangle stays clear of every live float reservation, the name
+   * labels, the tutorial box, the intro texts and the other combo counter. With nothing next to it, this is the
+   * full approved pop. (HITS under COMBO is the one deliberate exception: they pop together, as before.)
+   */
+  popCombo(tx, maxPop) {
+    tx.setScale(1);
+    const obstacles = this.floats.rects(this.time.now).slice();
+    obstacles.push(this.fighters.player.nameRect(), this.fighters.enemy.nameRect());
+    if (this.tutLayer && this.tutLayer.visible && this.tutRect) obstacles.push(this.tutRect);
+    for (const c of [this.introC, this.introFading]) {
+      if (!c || !c.list) continue;
+      for (const o of c.list) if (o.type === 'Text') { const b = o.getBounds(); obstacles.push({ x: b.x, y: b.y, w: b.width, h: b.height }); }
+    }
+    const other = tx === this.enemyCombo ? [this.comboText, this.comboHits] : [this.enemyCombo];
+    for (const o of other) {
+      if (o.alpha > 0.05 && o.text) { const b = o.getBounds(); obstacles.push({ x: b.x, y: b.y, w: b.width, h: b.height }); }
+    }
+    const peak = TEST_HOOKS && this.disablePopClamp
+      ? maxPop // negative proof for tests only (the round-7 behaviour); compiled out of release builds
+      : fitPopScale({ x: tx.x, y: tx.y, w: tx.width, h: tx.height, ox: tx.originX, oy: tx.originY }, maxPop, obstacles, 2);
+    tx.popPeak = peak;
+    // only the previous pop is stopped (it would keep writing its own, unclamped start scale); a running fade stays
+    if (tx.popTween) tx.popTween.stop();
+    tx.setScale(peak);
+    tx.popTween = this.tweens.add({ targets: tx, scale: 1, duration: 160, ease: 'Back.Out', onComplete: () => { tx.popTween = null; } });
   }
 
   /** Fixed texts the floating ones must not cover (ARENA_TEXT_REGISTRY in src/ui/float-placer.js). */
