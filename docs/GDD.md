@@ -16,7 +16,7 @@ never breaks them. Tables that list per-stage or per-character values (e.g. §9.
 
 ## 0. Contents
 
-1. Working title — READY (Jade Tempest; trademark check pending)
+1. Title — READY (round 7: Fyrenza; store title "Fyrenza: Card Duels"; internal testing until human registry clearance)
 2. Vision, pillars, first 30 seconds — READY
 3. Glossary and banned terms — READY
 4. Milestone scope and screen flow — READY
@@ -42,30 +42,50 @@ R4-3 §4 screen flow, R4-4 §5.14 pause menu, R4-5 §15.1 rows and owners, R4-6 
 
 ---
 
-## 1. Working title — READY (round 3)
+## 1. Title — READY (round 7)
 
-**Working title: Jade Tempest.** Chosen in round 3 by the Producer (the owner delegated the decision, see
-`docs/STATUS.md` → "Decisions made without the owner"). It ties into the game's only currency (Jade) and the
-storm-of-power tone. Pitch: *A storm of martial artists fights for the Jade Throne in fast, card-powered real-time duels.*
+**Title: Fyrenza.** Chosen in round 7 by the Producer (the owner delegated the decision, see `docs/STATUS.md` →
+"Decisions made without the owner"). It replaces the round-3 working title, which failed the round-6 compliance check.
+- In-game title (title screen, Home, Android app name): exactly **"Fyrenza"**.
+- Store title (Play listing, `store/` files): exactly **"Fyrenza: Card Duels"** (19 characters, inside Play's 30-character limit).
+- Pronunciation guidance for voice, trailers and store copy: "fye-REN-zah" ("fye" as in *fire*), which keeps it apart
+  from the place name *Firenze* and the pizza chain *Firenza* (compliance note, `reports/compliance/round-7-title.md` §3.2).
+- Meaning: a coined word built on "fire" + "power/force" (fyr- + -enza). It fits the hype tone: fighters burning with
+  inner fire. The currency stays **Jade** (§12); only the title changed.
 
-- **Trademark check: PENDING.** compliance-checker must run a proper trademark/store-name check before any release.
-  Until that check passes, "Jade Tempest" is a working title only (title screen, Home, docs), not a store name.
-  If it fails, the Producer picks the next option below and only the title string changes (no rule depends on it).
-- The title contains no §3 banned term and no "Spark"/"Sparks" (§3 name-only rule). A round-1 web search found no
-  existing game with this name; that is not a trademark check.
+Pitch: *Fighters ablaze with inner fire clash in fast, card-powered real-time duels: ignite your power, tag your team
+and blow the arena apart.*
+
+- **Trademark status: CLEAR for internal testing only** (`reports/compliance/round-7-title.md`, WebSearch-based, registries
+  not reachable). Before any public Play track (closed, open or production), a human must run registry clearance
+  (USPTO, EUIPO, WIPO, UK IPO, classes 9/28/41, plus common-law and store use) and record it in `docs/STATUS.md`
+  (CLAUDE.md §8 item). If it fails, the Producer picks a new title; only the title strings change (no rule depends on
+  the title).
+- The title contains no §3 banned term and no "Spark"/"Sparks" (§3 name-only rule).
 - No title uses franchise words or echoes (no "Dragon", "Ball", "Z", "Legends", "Saiyan", "Piece", "Treasure",
   "Dokkan", "Rising"). ("Overpeak" was dropped in round 1 because a game with that name is already in development.)
 
-| # | Title | Status | One-line pitch |
-|---|---|---|---|
-| 1 | **Jade Tempest** | **chosen** (trademark check pending) | A storm of martial artists fights for the Jade Throne in fast, card-powered real-time duels. |
-| 2 | Meridian Burst | not chosen (fallback 1) | Channel your fighters' inner energy lines into tag-team combos and one three-fighter finishing blast. |
-| 3 | Heavenbreak | not chosen | Train three fighters, ignite their hidden forms and hit so hard the sky cracks open. |
-| 4 | Thunderclap Trio | not chosen | Three fighters, one hand of cards, and attacks loud enough to shake the arena. |
-| 5 | Ironroar | not chosen | A roaring tournament of fist-fighters and energy-blasters where every comeback ends in a scream. |
+| Title | Status | Reason |
+|---|---|---|
+| **Fyrenza** | **chosen** (round 7) | No live 9/28/41 mark on, inside or sounding like the word; no franchise echo found (CLEAR, internal testing). |
 
-- AC-1.1: The title screen shows exactly "Jade Tempest" (from the strings file, not hardcoded in a scene). A grep of
-  `src/` and `data/` for the 4 not-chosen titles finds 0 player-visible uses.
+Rejected (do not use):
+- **Jade Tempest** (round-3 working title): contains Atari's live TEMPEST mark, and "Jade Tempest" is a *Monster Hunter* weapon name.
+- **Kovanta**: contains the live VANTA mark (classes 9/41) and sounds the same as the live COVANTA mark.
+- **Tenvaro**: contains the live VARO mark (class 9). Fallback only after a lawyer's view.
+- **Aurenko**: contains the AUREN class-9 application and echoes *Guild Wars 2*'s Aurene and *Touhou*'s Renko.
+- **Meridian Burst, Heavenbreak, Thunderclap Trio, Ironroar** (round-3 shortlist): real-word titles with a high risk of
+  existing marks; never cleared word by word.
+
+- AC-1.1 (class P): (a) The title screen shows exactly "Fyrenza", read from `src/ui/strings.json` key `game_title`
+  (not hardcoded in a scene): a grep of `src/scenes/` and `src/ui/` (excluding `strings.json`) for `Fyrenza` finds 0
+  hits. (b) A case-insensitive grep for `Jade Tempest` over `src/`, `data/`, `index.html`, `capacitor.config.json` and
+  `android/app/src/main/res/values/` finds 0 player-visible uses (test files and code comments are not player-visible).
+  (c) The store title in `store/` files is exactly "Fyrenza: Card Duels", and no `store/` file contains `Jade Tempest`.
+  Must FAIL: `game_title` set back to "Jade Tempest" (grep (b) finds 1 hit); a scene with the literal `'Fyrenza'`
+  (grep (a) finds 1 hit); a `store/listing.md` title "Fyrenza Arena" (check (c) fails). Must PASS: the round-7 strings with
+  `game_title` = "Fyrenza", Android `app_name` = "Fyrenza", store title "Fyrenza: Card Duels". The Jade currency strings and
+  other Jade text (e.g. "Jade", the subtitle "Fight for the Jade Throne") do not fail (b): only the full phrase `Jade Tempest` is checked.
 
 ---
 
@@ -1615,7 +1635,8 @@ examples must stay exact.
 ## 16. Open questions for the owner — READY (round 3: all decided)
 
 Round 3: the owner wrote "and you decide all that", delegating these to the Producer. Decisions (owner may override):
-1. **Title:** Jade Tempest (§1), trademark check pending (compliance-checker).
+1. **Title:** round 3 chose a working title, replaced in round 7 by **Fyrenza** (§1; store title "Fyrenza: Card Duels").
+   Compliance CLEAR for internal testing only; human registry clearance is needed before any public track.
 2. **Difficulty feel:** stage_005 boss stays at the master AI tier; the balance-analyst tunes stats (data only) so the
    starter team can win it with skill.
 3. **Draw rule:** a timeout tie or a double KO stays a Draw (no rewards) (§5.14).
