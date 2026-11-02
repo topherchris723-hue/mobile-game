@@ -3,7 +3,7 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** Launch — first release review FAILED (round 6); fixing for re-review
+- **Phase:** Launch — round 7: renaming the game (owner wants an original title), then re-review
 - **Round:** 7
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
 - **Last release verdict:** FAIL (round 6, commit 48fb519; 1 blocker, 2 major)
@@ -131,6 +131,16 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 7 (continued, new session) — original title (plan)
+- **Goal:** owner asked for an original game name (replaces "Jade Tempest"), then finish the round-7 gate.
+- **Step A:** game-designer proposes coined/original title candidates (GDD §1), with its own word-by-word search.
+- **Step B:** compliance-checker trademark-searches the candidates word by word; Producer picks the best clear one.
+- **Step C (parallel, different files):** game-designer updates GDD §1; ui-developer (strings.json, index.html, Settings
+  credits/listing text it owns); release-engineer (capacitor.config.json appName, Android strings, icon generator,
+  check-identity, docs/RELEASE.md); store-writer (store/*).
+- **Step D:** qa-tester on the exact build commit; compliance-checker on that commit; release-reviewer if the gate holds.
+- Core feel unchanged (title string only). Retro after.
 
 ### Round 7 — Launch fixes + re-review (plan)
 - **Goal:** fix every round-6 reviewer finding, pass the round-6 release gate, re-review.
