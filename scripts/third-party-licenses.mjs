@@ -208,3 +208,37 @@ export function thirdPartyLicenses(appName) {
     },
   };
 }
+
+/** The product name for the notice: `strings.game_title` from a strings file (src/ui/strings.json). Throws if missing. */
+export function readGameTitle(stringsFile) {
+  const json = JSON.parse(fs.readFileSync(stringsFile, 'utf8'));
+  const title = json && json.strings ? json.strings.game_title : undefined;
+  if (typeof title !== 'string' || title.trim() === '') throw new Error('No non-empty strings.game_title in ' + stringsFile);
+  return title;
+}
+
+const OLD_TITLE = /jade\s+tempest/i;
+const COMMENT_LINE = /^\s*(\/\/|\/\*|\*|<!--)/;
+
+/**
+ * AC-1.1(b): case-insensitive search for the old title "Jade Tempest" in the given files/folders (relative to root).
+ * Lines that are code comments (start with //, /*, * or <!--) are not player-visible and are skipped.
+ * Returns { scanned: number of files read, hits: [{ file, line, text }] }.
+ */
+export function findOldTitleHits(root, rels) {
+  const files = [];
+  const walk = (p) => {
+    if (!fs.existsSync(p)) return;
+    if (fs.statSync(p).isDirectory()) { for (const e of fs.readdirSync(p).sort()) walk(path.join(p, e)); return; }
+    files.push(p);
+  };
+  for (const r of rels) walk(path.join(root, r));
+  const hits = [];
+  for (const f of files) {
+    const lines = fs.readFileSync(f, 'utf8').split('\n');
+    lines.forEach((text, i) => {
+      if (OLD_TITLE.test(text) && !COMMENT_LINE.test(text)) hits.push({ file: path.relative(root, f), line: i + 1, text: text.trim() });
+    });
+  }
+  return { scanned: files.length, hits };
+}

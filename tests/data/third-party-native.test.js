@@ -68,7 +68,7 @@ describe('native (Android) third-party notices', () => {
 
   it('the full notice (web + native) is what the build emits: renderNotices(pkgs, app, native) includes both', () => {
     const web = [{ name: 'phaser', version: '3.90.0', license: 'MIT', licenseText: 'The MIT License (MIT)\n\nCopyright (c) 2020 Richard Davey' }];
-    const all = renderNotices(web, 'Jade Tempest', native);
+    const all = renderNotices(web, 'Fyrenza', native);
     expect(all).toContain('==== phaser 3.90.0 (MIT) ====');
     expect(missingNativeNotices(native, all)).toEqual([]);
   });
