@@ -1,0 +1,160 @@
+{
+ "console": [
+  {
+   "type": "log",
+   "text": "%c %c %c %c %c Phaser v3.90.0 (WebGL | Web Audio) %c https://phaser.io/v390 background: #ff0000 background: #ffff00 background: #00ff00 background: #00ffff color: #ffffff; background: #000000 background: transparent"
+  },
+  {
+   "type": "warning",
+   "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0702000640C0000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content."
+  },
+  {
+   "type": "warning",
+   "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0A02000640C0000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content."
+  },
+  {
+   "type": "warning",
+   "text": "[.WebGL-0x21640012a600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+   "type": "warning",
+   "text": "[.WebGL-0x21640012a600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+   "type": "warning",
+   "text": "[.WebGL-0x21640012a600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+  },
+  {
+   "type": "warning",
+   "text": "[.WebGL-0x21640012a600]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  },
+  {
+   "type": "log",
+   "text": "%c %c %c %c %c Phaser v3.90.0 (WebGL | Web Audio) %c https://phaser.io/v390 background: #ff0000 background: #ffff00 background: #00ff00 background: #00ffff color: #ffffff; background: #000000 background: transparent",
+   "page": 2
+  },
+  {
+   "type": "warning",
+   "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0A02000640C0000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.",
+   "page": 2
+  },
+  {
+   "type": "warning",
+   "text": "[GroupMarkerNotSet(crbug.com/242999)!:A0D02000640C0000]Automatic fallback to software WebGL has been deprecated. Please use the --enable-unsafe-swiftshader (about:flags#enable-unsafe-swiftshader) flag to opt in to lower security guarantees for trusted content.",
+   "page": 2
+  }
+ ],
+ "loads": [
+  {
+   "kind": "cold-load-to-canvas-ms",
+   "ms": 1158
+  },
+  {
+   "kind": "warm-reload-ms",
+   "ms": 957
+  }
+ ],
+ "fps": [
+  {
+   "phase": "battle-start",
+   "fps": 7.1,
+   "worstFrameMs": 166.7
+  },
+  {
+   "phase": "battle-mid-60",
+   "fps": 8.2,
+   "worstFrameMs": 150
+  }
+ ],
+ "steps": [
+  "stage_001 cleared after 84s real"
+ ],
+ "nav": {
+  "domContentLoaded": 377,
+  "load": 576
+ },
+ "hasTestHook": false,
+ "saveAtTitle": {
+  "version": 1,
+  "created_at": "2026-10-24T17:10:37.805Z",
+  "updated_at": "2026-10-24T17:10:37.805Z",
+  "currencies": {
+   "cur_jade": 1000
+  },
+  "roster": [
+   {
+    "character_id": "char_tavi_001",
+    "resonance": 0,
+    "obtained_at": "2026-10-24T17:10:37.805Z"
+   },
+   {
+    "character_id": "char_lark_001",
+    "resonance": 0,
+    "obtained_at": "2026-10-24T17:10:37.805Z"
+   },
+   {
+    "character_id": "char_dunmore_001",
+    "resonance": 0,
+    "obtained_at": "2026-10-24T17:10:37.805Z"
+   }
+  ],
+  "team": [
+   "char_tavi_001",
+   "char_lark_001",
+   "char_dunmore_001"
+  ],
+  "stages": {},
+  "summon": {
+   "pity": {},
+   "first_multi_done": {},
+   "total_pulls": 0
+  },
+  "settings": {
+   "master_volume": 1,
+   "bgm_volume": 1,
+   "sfx_volume": 1,
+   "muted": false,
+   "haptics": true,
+   "reduce_motion": false
+  },
+  "tutorial": {
+   "completed": false
+  }
+ },
+ "saveAfterWin": {
+  "jade": {
+   "cur_jade": 1400
+  },
+  "stages": {
+   "stage_001": {
+    "cleared": true,
+    "clears": 1,
+    "best_time_s": 33.78333333333333,
+    "missions_completed": [
+     "mission_001_a",
+     "mission_001_b"
+    ]
+   }
+  },
+  "tutorial": {
+   "completed": true
+  }
+ },
+ "saveAfterReload": {
+  "jade": {
+   "cur_jade": 1400
+  },
+  "stages": {
+   "stage_001": {
+    "cleared": true,
+    "clears": 1,
+    "best_time_s": 33.78333333333333,
+    "missions_completed": [
+     "mission_001_a",
+     "mission_001_b"
+    ]
+   }
+  }
+ },
+ "saveIntact": true
+}

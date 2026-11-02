@@ -1,0 +1,21 @@
+{
+  "name": "rule14-shake-duration-400",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "effects",
+        "ko_default",
+        "layers",
+        0,
+        "duration_ms"
+      ],
+      "value": 400
+    }
+  ],
+  "expect": {
+    "errorRule": "14-flash-safety",
+    "errorContains": "shake duration_ms 400 > max_shake_ms 300"
+  }
+}

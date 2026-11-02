@@ -1,0 +1,7 @@
+{
+  "name": "ok-rule13-all-procedural-with-credits-row",
+  "ops": [],
+  "expect": {
+    "errorRule": null
+  }
+}

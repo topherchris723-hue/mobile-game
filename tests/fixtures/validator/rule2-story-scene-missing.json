@@ -1,0 +1,19 @@
+{
+  "name": "rule2-story-scene-missing",
+  "file": "stages.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "stages",
+        0,
+        "story",
+        "pre"
+      ],
+      "value": "scene_nowhere"
+    }
+  ],
+  "expect": {
+    "errorRule": "2-references"
+  }
+}

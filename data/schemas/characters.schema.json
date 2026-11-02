@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/characters.schema.json",
+  "title": "Characters (data/characters.json)",
+  "description": "Every fighter, playable or enemy-only. GDD §6. Cross-file rules in GDD §15.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "characters"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "characters": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/character" }
+    }
+  },
+  "$defs": {
+    "charId": { "type": "string", "pattern": "^char_[a-z][a-z0-9]*_[0-9]{3}$" },
+    "cardId": { "type": "string", "pattern": "^card_[a-z0-9]+(_[a-z0-9]+)+$" },
+    "assetKey": { "type": "string", "pattern": "^(por|spr|bg|bgm|sfx|vfx|ico|art)_[a-z0-9_]+$" },
+    "aura": { "enum": ["blaze", "gale", "stone", "radiant", "void"] },
+    "deckEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["card_id", "count"],
+      "properties": {
+        "card_id": { "$ref": "#/$defs/cardId" },
+        "count": { "type": "integer", "minimum": 1, "maximum": 3 }
+      }
+    },
+    "deck": {
+      "description": "Total count must be 6-10, max 1 climax (checked by validate-data).",
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": { "$ref": "#/$defs/deckEntry" }
+    },
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "value"],
+      "properties": {
+        "type": { "enum": ["hp_below_pct", "battle_time_s", "cards_played", "ally_ko"] },
+        "value": { "type": "number", "minimum": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "hp_below_pct" } } },
+          "then": { "properties": { "value": { "type": "integer", "maximum": 99 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "ally_ko" } } },
+          "then": { "properties": { "value": { "type": "integer", "maximum": 2 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "cards_played" } } },
+          "then": { "properties": { "value": { "type": "integer", "maximum": 50 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "battle_time_s" } } },
+          "then": { "properties": { "value": { "maximum": 300 } } }
+        }
+      ]
+    },
+    "ignition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "triggers", "duration_s", "stat_mult", "vigor_regen_bonus", "heal_pct", "deck", "art", "shout"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 24 },
+        "triggers": {
+          "description": "Any one trigger met makes IGNITE available.",
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/trigger" }
+        },
+        "duration_s": { "type": "number", "minimum": 10, "maximum": 60 },
+        "stat_mult": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["atk", "def"],
+          "properties": {
+            "atk": { "type": "number", "minimum": 1.0, "maximum": 2.0 },
+            "def": { "type": "number", "minimum": 1.0, "maximum": 2.0 }
+          }
+        },
+        "vigor_regen_bonus": { "type": "number", "minimum": 0, "maximum": 1.0 },
+        "heal_pct": { "type": "number", "minimum": 0, "maximum": 0.5 },
+        "deck": { "$ref": "#/$defs/deck" },
+        "art": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["sprite", "portrait"],
+          "properties": {
+            "sprite": { "$ref": "#/$defs/assetKey" },
+            "portrait": { "$ref": "#/$defs/assetKey" },
+            "vfx": { "$ref": "#/$defs/assetKey" }
+          }
+        },
+        "shout": { "type": "string", "minLength": 1, "maxLength": 40 }
+      }
+    },
+    "character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "family", "name", "epithet", "rarity", "aura", "playable", "base_stats", "deck", "art", "shouts", "bio"],
+      "properties": {
+        "id": { "$ref": "#/$defs/charId" },
+        "family": {
+          "description": "Same person across variants. A team cannot hold two of the same family.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*$"
+        },
+        "name": { "type": "string", "minLength": 1, "maxLength": 16 },
+        "epithet": { "type": "string", "maxLength": 32 },
+        "rarity": { "type": "integer", "minimum": 3, "maximum": 5 },
+        "aura": { "$ref": "#/$defs/aura" },
+        "role": {
+          "description": "Optional, descriptive only (no rule effect). GDD §6.",
+          "enum": ["striker", "blaster", "guardian", "trickster"]
+        },
+        "art_brief": {
+          "description": "Optional visual brief for the art-director. GDD §6.",
+          "type": "string",
+          "maxLength": 300
+        },
+        "playable": { "type": "boolean", "description": "false = enemy-only; never in banners or rewards." },
+        "base_stats": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hp", "atk", "def", "crit_rate"],
+          "properties": {
+            "hp": { "type": "integer", "minimum": 1000, "maximum": 50000 },
+            "atk": { "type": "integer", "minimum": 100, "maximum": 5000 },
+            "def": { "type": "integer", "minimum": 0, "maximum": 3000 },
+            "crit_rate": { "type": "number", "minimum": 0, "maximum": 0.5 }
+          }
+        },
+        "deck": { "$ref": "#/$defs/deck" },
+        "ignition": { "$ref": "#/$defs/ignition" },
+        "art": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["portrait", "sprite"],
+          "properties": {
+            "portrait": { "$ref": "#/$defs/assetKey" },
+            "sprite": { "$ref": "#/$defs/assetKey" },
+            "summon_art": { "$ref": "#/$defs/assetKey" }
+          }
+        },
+        "shouts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["intro", "ko", "victory"],
+          "properties": {
+            "intro": { "type": "string", "minLength": 1, "maxLength": 40 },
+            "tag_in": { "type": "string", "maxLength": 40 },
+            "ko": { "type": "string", "minLength": 1, "maxLength": 40 },
+            "victory": { "type": "string", "minLength": 1, "maxLength": 40 },
+            "tri_burst": { "type": "string", "maxLength": 40 }
+          }
+        },
+        "bio": { "type": "string", "maxLength": 200 }
+      }
+    }
+  }
+}

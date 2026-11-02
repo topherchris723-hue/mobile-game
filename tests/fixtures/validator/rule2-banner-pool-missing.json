@@ -1,0 +1,19 @@
+{
+  "name": "rule2-banner-pool-missing",
+  "file": "banners.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "banners",
+        0,
+        "pool",
+        0
+      ],
+      "value": "char_ghost_001"
+    }
+  ],
+  "expect": {
+    "errorRule": "2-references"
+  }
+}

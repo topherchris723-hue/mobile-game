@@ -1,0 +1,21 @@
+{
+  "name": "rule14-screen-flash-card-type-token-resolves-red",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "effects",
+        "ignition_default",
+        "layers",
+        0,
+        "color"
+      ],
+      "value": "card_type"
+    }
+  ],
+  "expect": {
+    "errorRule": "14-flash-safety",
+    "errorContains": "saturated red #d9483b (card_type.fist)"
+  }
+}

@@ -1,0 +1,146 @@
+{
+ "battles": 1000,
+ "problems": 0,
+ "tally": {
+  "stage_001/fuzz": {
+   "win": 43,
+   "lose": 7,
+   "draw": 0,
+   "n": 50,
+   "maxS": 116.61666666666666
+  },
+  "stage_002/fuzz": {
+   "win": 37,
+   "lose": 13,
+   "draw": 0,
+   "n": 50,
+   "maxS": 143.38333333333333
+  },
+  "stage_003/fuzz": {
+   "win": 20,
+   "lose": 30,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  },
+  "stage_004/fuzz": {
+   "win": 11,
+   "lose": 39,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  },
+  "stage_005/fuzz": {
+   "win": 8,
+   "lose": 42,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  },
+  "stage_001/greedy": {
+   "win": 50,
+   "lose": 0,
+   "draw": 0,
+   "n": 50,
+   "maxS": 39.63333333333333
+  },
+  "stage_002/greedy": {
+   "win": 50,
+   "lose": 0,
+   "draw": 0,
+   "n": 50,
+   "maxS": 67.4
+  },
+  "stage_003/greedy": {
+   "win": 50,
+   "lose": 0,
+   "draw": 0,
+   "n": 50,
+   "maxS": 126.03333333333333
+  },
+  "stage_004/greedy": {
+   "win": 50,
+   "lose": 0,
+   "draw": 0,
+   "n": 50,
+   "maxS": 133.65
+  },
+  "stage_005/greedy": {
+   "win": 50,
+   "lose": 0,
+   "draw": 0,
+   "n": 50,
+   "maxS": 139.43333333333334
+  },
+  "stage_001/ai": {
+   "win": 50,
+   "lose": 0,
+   "draw": 0,
+   "n": 50,
+   "maxS": 55.983333333333334
+  },
+  "stage_002/ai": {
+   "win": 50,
+   "lose": 0,
+   "draw": 0,
+   "n": 50,
+   "maxS": 92.43333333333334
+  },
+  "stage_003/ai": {
+   "win": 48,
+   "lose": 2,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  },
+  "stage_004/ai": {
+   "win": 44,
+   "lose": 6,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  },
+  "stage_005/ai": {
+   "win": 49,
+   "lose": 1,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  },
+  "stage_001/idle": {
+   "win": 0,
+   "lose": 50,
+   "draw": 0,
+   "n": 50,
+   "maxS": 120
+  },
+  "stage_002/idle": {
+   "win": 0,
+   "lose": 50,
+   "draw": 0,
+   "n": 50,
+   "maxS": 150
+  },
+  "stage_003/idle": {
+   "win": 0,
+   "lose": 50,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  },
+  "stage_004/idle": {
+   "win": 0,
+   "lose": 50,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  },
+  "stage_005/idle": {
+   "win": 0,
+   "lose": 50,
+   "draw": 0,
+   "n": 50,
+   "maxS": 180
+  }
+ }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "ok-rule12-signature-cost5-1-effect-power-295-boundary",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        3,
+        "cost"
+      ],
+      "value": 5
+    },
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        3,
+        "effects"
+      ],
+      "value": [
+        {
+          "type": "vigor_gain",
+          "target": "self",
+          "value": 1,
+          "on": "hit"
+        }
+      ]
+    },
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        3,
+        "power"
+      ],
+      "value": 2.95
+    }
+  ],
+  "expect": {
+    "errorRule": null
+  }
+}

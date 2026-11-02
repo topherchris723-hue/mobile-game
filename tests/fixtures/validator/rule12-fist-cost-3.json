@@ -1,0 +1,19 @@
+{
+  "name": "rule12-fist-cost-3",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        0,
+        "cost"
+      ],
+      "value": 3
+    }
+  ],
+  "expect": {
+    "errorRule": "12-card-budgets",
+    "errorContains": "cost 3 outside [2, 2] (fist)"
+  }
+}

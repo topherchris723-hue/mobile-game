@@ -1,0 +1,19 @@
+{
+  "name": "rule12-ignition-climax-power-60",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        6,
+        "power"
+      ],
+      "value": 6
+    }
+  ],
+  "expect": {
+    "errorRule": "12-card-budgets",
+    "errorContains": "power 6 outside [6.5, 7.5] (Ignition Climax, 0 effects)"
+  }
+}

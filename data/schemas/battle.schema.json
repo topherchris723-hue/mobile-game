@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/battle.schema.json",
+  "title": "Battle rules constants (data/battle.json)",
+  "description": "Every battle tuning number from GDD §5. Defaults are listed in each 'description' and in the GDD.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version", "tick_rate", "arena", "vigor", "hand", "slip", "riposte", "combo", "tag", "ko",
+    "hitstop_s", "ignition", "burst", "damage", "timer", "intro_s", "tutorial_slowmo", "type_chart", "ai_tiers"
+  ],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "tick_rate": { "description": "Default 60.", "type": "integer", "const": 60 },
+    "arena": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "start_x_player", "start_x_enemy", "melee_range", "min_distance", "dash_distance", "dash_time_s", "approach_speed", "approach_timeout_s"],
+      "properties": {
+        "width": { "description": "Default 100.", "type": "number", "minimum": 50, "maximum": 200 },
+        "start_x_player": { "description": "Default 30.", "type": "number", "minimum": 0 },
+        "start_x_enemy": { "description": "Default 70.", "type": "number", "minimum": 0 },
+        "melee_range": { "description": "Default 12.", "type": "number", "minimum": 1 },
+        "min_distance": { "description": "Default 8.", "type": "number", "minimum": 0 },
+        "dash_distance": { "description": "Default 20.", "type": "number", "minimum": 1 },
+        "dash_time_s": { "description": "Default 0.20.", "type": "number", "minimum": 0.05, "maximum": 1 },
+        "approach_speed": { "description": "Default 150 units/s.", "type": "number", "minimum": 10 },
+        "approach_timeout_s": { "description": "Default 0.6. Safety net only: cannot fire with default arena/approach data (GDD §5.1, AC-5.1.5).", "type": "number", "minimum": 0.1, "maximum": 3 }
+      }
+    },
+    "vigor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max", "start", "regen_per_s"],
+      "properties": {
+        "max": { "description": "Default 10.", "type": "number", "minimum": 1, "maximum": 50 },
+        "start": { "description": "Default 5.", "type": "number", "minimum": 0 },
+        "regen_per_s": { "description": "Default 1.0.", "type": "number", "minimum": 0, "maximum": 10 }
+      }
+    },
+    "hand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "refill_delay_s", "deck_min", "deck_max", "max_copies", "max_climax"],
+      "properties": {
+        "size": { "description": "Default 4.", "type": "integer", "minimum": 1, "maximum": 6 },
+        "refill_delay_s": { "description": "Default 1.5.", "type": "number", "minimum": 0, "maximum": 10 },
+        "deck_min": { "description": "Default 6.", "type": "integer", "minimum": 1 },
+        "deck_max": { "description": "Default 10.", "type": "integer", "minimum": 1 },
+        "max_copies": { "description": "Default 3.", "type": "integer", "minimum": 1 },
+        "max_climax": { "description": "Default 1.", "type": "integer", "minimum": 0 }
+      }
+    },
+    "slip": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cost", "break_cost", "iframes_s", "perfect_window_s", "recovery_s", "perfect_refund", "perfect_burst_gain"],
+      "properties": {
+        "cost": { "description": "Default 2.", "type": "number", "minimum": 0 },
+        "break_cost": { "description": "Default 4.", "type": "number", "minimum": 0 },
+        "iframes_s": { "description": "Default 0.35.", "type": "number", "minimum": 0.05, "maximum": 1 },
+        "perfect_window_s": { "description": "Default 0.15.", "type": "number", "minimum": 0, "maximum": 1 },
+        "recovery_s": { "description": "Default 0.15.", "type": "number", "minimum": 0, "maximum": 1 },
+        "perfect_refund": { "description": "Default 2 (Vigor).", "type": "number", "minimum": 0 },
+        "perfect_burst_gain": { "description": "Default 5.", "type": "number", "minimum": 0 }
+      }
+    },
+    "riposte": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["window_s", "damage_mult", "first_hit_delay_s", "allowed_types"],
+      "properties": {
+        "window_s": { "description": "Default 0.8.", "type": "number", "minimum": 0.1, "maximum": 3 },
+        "damage_mult": { "description": "Default 1.25.", "type": "number", "minimum": 1, "maximum": 3 },
+        "first_hit_delay_s": { "description": "Default 0.1.", "type": "number", "minimum": 0, "maximum": 1 },
+        "allowed_types": {
+          "description": "Default [fist, bolt, signature].",
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["fist", "bolt", "signature"] }
+        }
+      }
+    },
+    "combo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bonus_per_card", "bonus_max_steps", "max_cards", "buffer_s", "knockdown_distance", "getup_s", "chain_burst_min_cards", "chain_burst_gain"],
+      "properties": {
+        "bonus_per_card": { "description": "Default 0.05.", "type": "number", "minimum": 0, "maximum": 0.5 },
+        "bonus_max_steps": { "description": "Default 4 (max mult 1.20).", "type": "integer", "minimum": 0 },
+        "max_cards": { "description": "Default 5.", "type": "integer", "minimum": 1 },
+        "buffer_s": { "description": "Default 0.25.", "type": "number", "minimum": 0, "maximum": 1 },
+        "knockdown_distance": { "description": "Default 25.", "type": "number", "minimum": 0 },
+        "getup_s": { "description": "Default 0.6.", "type": "number", "minimum": 0, "maximum": 3 },
+        "chain_burst_min_cards": { "description": "Default 3.", "type": "integer", "minimum": 1 },
+        "chain_burst_gain": { "description": "Default 5.", "type": "number", "minimum": 0 }
+      }
+    },
+    "tag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cooldown_s", "escape_cost", "invuln_s", "strike_power", "strike_hitstun_s", "strike_knockback", "strike_first_hit_delay_s"],
+      "properties": {
+        "cooldown_s": { "description": "Default 8.", "type": "number", "minimum": 0 },
+        "initial_cooldown_s": {
+          "description": "Tag cooldown at the moment 'FIGHT!' appears. Optional; if absent, code uses the default 5.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 30,
+          "default": 5
+        },
+        "escape_cost": { "description": "Default 3.", "type": "number", "minimum": 0 },
+        "invuln_s": { "description": "Default 0.5.", "type": "number", "minimum": 0 },
+        "strike_power": { "description": "Default 0.8.", "type": "number", "minimum": 0 },
+        "strike_hitstun_s": { "description": "Default 0.6.", "type": "number", "minimum": 0 },
+        "strike_knockback": { "description": "Default 4.", "type": "number", "minimum": 0 },
+        "strike_first_hit_delay_s": { "description": "Default 0.1.", "type": "number", "minimum": 0 }
+      }
+    },
+    "ko": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anim_s", "incoming_invuln_s", "ally_ko_burst_gain"],
+      "properties": {
+        "anim_s": { "description": "Default 1.5.", "type": "number", "minimum": 0 },
+        "incoming_invuln_s": { "description": "Default 1.5.", "type": "number", "minimum": 0 },
+        "ally_ko_burst_gain": { "description": "Default 15.", "type": "number", "minimum": 0 }
+      }
+    },
+    "hitstop_s": {
+      "description": "Global freeze per landed hit. Defaults fist 0.04, bolt 0.03, signature 0.06, climax 0.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fist", "bolt", "signature", "climax"],
+      "properties": {
+        "fist": { "type": "number", "minimum": 0, "maximum": 0.2 },
+        "bolt": { "type": "number", "minimum": 0, "maximum": 0.2 },
+        "signature": { "type": "number", "minimum": 0, "maximum": 0.2 },
+        "climax": { "type": "number", "minimum": 0, "maximum": 0.2 }
+      }
+    },
+    "ignition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cinematic_s", "vigor_gain", "enemy_push"],
+      "properties": {
+        "cinematic_s": { "description": "Default 1.5.", "type": "number", "minimum": 0, "maximum": 5 },
+        "vigor_gain": { "description": "Default 3.", "type": "number", "minimum": 0 },
+        "enemy_push": { "description": "Default 20.", "type": "number", "minimum": 0 }
+      }
+    },
+    "burst": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max", "gain_dealt_factor", "gain_taken_factor", "power_per_member", "rush_time_s", "whiff_refund_pct", "cinematic_s", "uses_per_battle"],
+      "properties": {
+        "max": { "description": "Default 100.", "type": "number", "minimum": 1 },
+        "gain_dealt_factor": { "description": "Default 40 (gain = factor x dmg / target max HP).", "type": "number", "minimum": 0 },
+        "gain_taken_factor": { "description": "Default 25.", "type": "number", "minimum": 0 },
+        "power_per_member": { "description": "Default 3.0.", "type": "number", "minimum": 0 },
+        "rush_time_s": { "description": "Default 0.3.", "type": "number", "minimum": 0 },
+        "whiff_refund_pct": { "description": "Default 0.5.", "type": "number", "minimum": 0, "maximum": 1 },
+        "cinematic_s": { "description": "Default 4.0.", "type": "number", "minimum": 0, "maximum": 8 },
+        "uses_per_battle": { "description": "Default 1.", "type": "integer", "minimum": 1 }
+      }
+    },
+    "damage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["def_constant", "crit_mult", "crit_cap", "min_hit", "max_hit", "buff_factor_min", "buff_factor_max"],
+      "properties": {
+        "def_constant": { "description": "Default 1000 (def_factor = K / (K + DEF)).", "type": "number", "exclusiveMinimum": 0 },
+        "crit_mult": { "description": "Default 1.5.", "type": "number", "minimum": 1 },
+        "crit_cap": { "description": "Default 0.5.", "type": "number", "minimum": 0, "maximum": 1 },
+        "min_hit": { "description": "Default 1.", "type": "integer", "minimum": 1 },
+        "max_hit": { "description": "Default 99999.", "type": "integer", "minimum": 1 },
+        "buff_factor_min": { "description": "Default 0.5.", "type": "number", "minimum": 0 },
+        "buff_factor_max": { "description": "Default 1.5.", "type": "number", "minimum": 1 }
+      }
+    },
+    "timer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_s"],
+      "properties": {
+        "default_s": { "description": "Default 180.", "type": "integer", "minimum": 30, "maximum": 600 }
+      }
+    },
+    "intro_s": { "description": "Default 2.0.", "type": "number", "minimum": 0, "maximum": 5 },
+    "tutorial_slowmo": { "description": "Default 0.3.", "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+    "tutorial_prompt_max_s": {
+      "description": "Optional (round 3). Cap: a tutorial prompt closes after this many seconds of shown time (pause excluded). Default 20 if absent. GDD §9.4, AC-9.4.3.",
+      "type": "number", "minimum": 5, "maximum": 60, "default": 20
+    },
+    "tutorial_none_s": {
+      "description": "Optional (round 3). Shown time of a tutorial step with required_action 'none'. Default 3.0 if absent. GDD §9.4, AC-9.4.7.",
+      "type": "number", "minimum": 1, "maximum": 10, "default": 3.0
+    },
+    "type_chart": {
+      "description": "type_chart[attacker][defender] = multiplier. All 25 pairs required.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blaze", "gale", "stone", "radiant", "void"],
+      "properties": {
+        "blaze": { "$ref": "#/$defs/typeRow" },
+        "gale": { "$ref": "#/$defs/typeRow" },
+        "stone": { "$ref": "#/$defs/typeRow" },
+        "radiant": { "$ref": "#/$defs/typeRow" },
+        "void": { "$ref": "#/$defs/typeRow" }
+      }
+    },
+    "ai_tiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rookie", "fighter", "veteran", "master"],
+      "properties": {
+        "rookie": { "$ref": "#/$defs/aiTier" },
+        "fighter": { "$ref": "#/$defs/aiTier" },
+        "veteran": { "$ref": "#/$defs/aiTier" },
+        "master": { "$ref": "#/$defs/aiTier" }
+      }
+    }
+  },
+  "$defs": {
+    "mult": { "type": "number", "minimum": 0.1, "maximum": 3 },
+    "chance": { "type": "number", "minimum": 0, "maximum": 1 },
+    "typeRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blaze", "gale", "stone", "radiant", "void"],
+      "properties": {
+        "blaze": { "$ref": "#/$defs/mult" },
+        "gale": { "$ref": "#/$defs/mult" },
+        "stone": { "$ref": "#/$defs/mult" },
+        "radiant": { "$ref": "#/$defs/mult" },
+        "void": { "$ref": "#/$defs/mult" }
+      }
+    },
+    "aiTier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "think_interval_s", "think_jitter", "reaction_s", "slip_chance", "perfect_slip_chance", "riposte_chance",
+        "combo_continue", "break_slip_chance", "tag_hp_pct", "climax_chance", "ignite_delay_s",
+        "uses_burst", "vigor_reserve", "aggression", "preferred_distance"
+      ],
+      "properties": {
+        "think_interval_s": { "type": "number", "minimum": 0.1, "maximum": 5 },
+        "think_jitter": { "description": "Default 0.2 (+/-20%).", "type": "number", "minimum": 0, "maximum": 0.9 },
+        "reaction_s": { "type": "number", "minimum": 0.05, "maximum": 2 },
+        "slip_chance": { "$ref": "#/$defs/chance" },
+        "perfect_slip_chance": { "$ref": "#/$defs/chance" },
+        "riposte_chance": { "$ref": "#/$defs/chance" },
+        "combo_continue": { "$ref": "#/$defs/chance" },
+        "break_slip_chance": { "$ref": "#/$defs/chance" },
+        "tag_hp_pct": { "$ref": "#/$defs/chance" },
+        "climax_chance": { "$ref": "#/$defs/chance" },
+        "ignite_delay_s": { "type": "number", "minimum": 0, "maximum": 30 },
+        "uses_burst": { "type": "boolean" },
+        "vigor_reserve": { "type": "number", "minimum": 0, "maximum": 10 },
+        "aggression": { "$ref": "#/$defs/chance" },
+        "preferred_distance": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    }
+  }
+}

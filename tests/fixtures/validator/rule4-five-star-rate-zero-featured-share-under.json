@@ -1,0 +1,12 @@
+{
+  "name": "rule4-five-star-rate-zero-featured-share-under (round 3: 5-star counts even at rate 0)",
+  "file": "banners.json",
+  "ops": [
+    { "op": "set", "path": ["banners", 0, "rates_bp"], "value": { "3": 9000, "4": 1000, "5": 0 } },
+    { "op": "set", "path": ["banners", 0, "pool"], "value": ["char_tavi_001", "char_pell_001", "char_solenne_001"] },
+    { "op": "set", "path": ["banners", 0, "featured"], "value": [{ "character_id": "char_solenne_001", "share_bp": 5000 }] }
+  ],
+  "expect": {
+    "errorRule": "4-banner"
+  }
+}

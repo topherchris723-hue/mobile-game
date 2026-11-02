@@ -1,5 +1,122 @@
 # Lessons — ui-developer
 
 Read this before every task. Maintained by team-coach. Format: see lessons/README.md.
+(Round 3: this file was restored. The round-2 retro emptied it by mistake (see L-tc-002); the
+hard rules for L-ui-001 and L-ui-003 were in the playbook throughout.)
 
-(no lessons yet)
+### L-ui-001: Every tutorial prompt must stay possible, or end by itself
+Seen: 2 (round 2: BUG-2-01, BUG-2-02)
+Severity of what it caused: MAJOR
+What happened: BUG-2-01 — the Riposte prompt only completed on a `riposte` event; after a Tag or KO
+  closed the window, the prompt and 0.3× slow-mo stayed for the rest of the battle. BUG-2-02 — the
+  `ignition_ready` trigger fired for a benched fighter, with no IGNITE button, and held 0.3×.
+Root cause: Tutorial steps were written for the happy path only: no "still possible" check, no time
+  cap, and triggers did not check that the event was for the player's active fighter.
+Rule: Every tutorial/prompt step has (1) a per-tick "still possible" check that ends the step and
+  releases any held window or slow-mo, (2) a maximum shown time from data, and (3) triggers that
+  check side and slot are the player's active fighter. One test per step makes the action impossible
+  and asserts the prompt and slow-mo are gone within one tick.
+  Round 3: worked. AC-9.4.3–9.4.7 passed and QA Scenario C confirmed the 20 s cap.
+Status: PROMOTED (round 2); merged into playbook "Standards" (round 3 step C)
+
+### L-ui-002: Never put a destructive confirm where the opening tap landed; arm new menus
+Seen: 1 (round 2)
+Severity of what it caused: MAJOR
+What happened: BUG-2-03 — "Yes, retreat" was drawn where "Retreat" was, and new menu buttons took
+  input at once, so a double tap ended the battle as a loss without the confirm dialog.
+Root cause: The confirm dialog reused the previous menu's button slots, and new menus had no input arm
+  delay. No test double-tapped a menu button.
+Rule: On every confirm dialog, the destructive button is never under the button that opened it (put
+  Cancel there). Every newly shown menu ignores input for its arm time (≥ 250 ms). Add a double-tap e2e
+  test for every button that opens a dialog.
+  Round 3: followed. The summon Confirm is placed mid-screen and AC-11.12 passed.
+Status: ACTIVE; merged into playbook "Standards" (round 3 step C)
+
+### L-ui-003: Test text layout with the longest strings, the worst positions and live busy frames; register every text in the placer
+Seen: 5 (round 2: BUG-2-06, BUG-2-09, BUG-2-10, BUG-2-11; round 3: BUG-3-03)
+Severity of what it caused: MINOR (2-06, 2-10, 2-11, 3-03), POLISH (2-09)
+What happened: Round 2 — four overlap/clipping bugs: Story list, intro shout, floating texts, and name
+  labels at melee range or at the wall. Round 3 — BUG-3-03: "RIPOSTE!" was drawn over the combo
+  counter ("2 HITS"). The counter is drawn at a fixed spot and was never registered as an avoid
+  rectangle in the float placer. It only showed once the BUG-3-02 fix made Ripostes frequent.
+Root cause: Layouts were checked with short strings, in quiet frames, in the middle of the arena. In
+  round 3 the placer was the single authority for *floating* text, but fixed-position texts that share
+  the arena (combo counter) were outside it, so the placer could not avoid them.
+Rule: Every layout check uses the longest strings from `data/` and `strings.json` at 360×640, in the
+  worst positions (melee range, both walls, all floats at once in a busy live fight), checking
+  text-vs-text and text-vs-screen-edge. Every text drawn in the arena band, floating OR fixed (combo
+  counter, timer, callouts, labels), is either placed by the placer or registered as an avoid
+  rectangle while visible. Keep a list of registered texts in `src/ui/float-placer.js` and check it
+  when adding any text. Clamp sprites and labels to [halfWidth, W − halfWidth].
+Status: PROMOTED (round 2); merged into playbook "Layout self-check" (round 3 step C)
+
+### L-ui-004: Run e2e tests against a fresh build of the code you just changed
+Seen: 1 (round 2)
+Severity of what it caused: MINOR (near miss)
+What happened: Round-2 notes — e2e runs could reuse an already running server, so tests could pass
+  against an old build.
+Root cause: The Playwright config allowed reusing whatever server was already on the port.
+Rule: Keep `reuseExistingServer: false`, start servers you can stop by PID, and report the commit
+  hash or `git diff --stat` the e2e run used.
+Status: ACTIVE
+
+### L-ui-005: Release builds contain no test hooks
+Seen: 2 (rounds 3, 4: the round-3 gate still enabled hooks in development mode; caught by re-reading
+  the upgraded playbook)
+Severity of what it caused: MINOR (caught by ui-developer; security-relevant)
+What happened: Round-3 notes — gating `window.__TEST__` on Vite's DEV flag was not enough: under
+  Vitest/NODE_ENV=test DEV was true, and the round-2 hook was enabled by a `?test` URL parameter in
+  every build. Fixed in round 3 with an explicit `VITE_TEST_HOOKS` flag and
+  `tests/ui/release-bundle.test.js`.
+Root cause: Hook gating relied on an environment default whose value differs between tools, and
+  nothing checked the built bundle.
+Rule: Test hooks are compiled in only when `VITE_TEST_HOOKS=1` is set explicitly (never on DEV, MODE
+  or a URL parameter). After every change to hooks or build config, run a clean `npm run build` and
+  grep `dist/` for every hook name (expect 0), then do the same with the flag on (expect > 0). Never
+  delete or weaken `tests/ui/release-bundle.test.js`.
+  Round 4: also pin the exact gate expression in a unit test, so any loosening fails.
+Status: PROMOTED (round 4); also in playbook main text
+
+### L-ui-006: Start "within N ms" transitions in the frame the event is handled, with one frame of margin
+Seen: 1 (round 4: BUG-4-01)
+Severity of what it caused: MINOR
+What happened: BUG-4-01 — the Tri-Burst overlay was still visible 167 ms after `freeze_end` (AC-17.8
+  limit 160 ms) because the fade started one frame late.
+Root cause: The fade was scheduled for the next frame and its length used the whole limit, with no
+  frame of margin.
+Rule: For every AC with a time limit, start the transition in the same frame the event is handled,
+  and make it at least one frame (17 ms) shorter than the limit. The test measures from the event
+  timestamp.
+Status: ACTIVE
+
+### L-ui-007: Every drawing change stays inside the absolute frame budget, not only "no regression"
+Seen: 2 (round 5: new layers raised Canvas cost; round 6: reviewer R-2 — AC-17.7 failed 3/3 at 4× CPU)
+Severity of what it caused: MINOR (near miss; new visual layers cost Canvas frame budget)
+What happened: Round-5 notes — the new placeholder-art layers raised Canvas frame cost. The
+  ui-developer baked fighter bodies into textures to recover it.
+Root cause: Drawing changes were added without a frame-cost comparison.
+Rule: For every change that adds or changes drawing, run the perf spec ≥ 3 times, alternating with
+  the parent commit, and report the frame-time and game-work p95 change (L-qa-005 method). Round 6:
+  also run the absolute AC-17.7 check (median p95 of ≥ 5 runs at 4× CPU, Canvas ≤ 33.3 ms). A change
+  that pushes it over the limit is not finished (L-shared-021).
+Status: PROMOTED (round 6)
+
+### L-ui-008: Reveals never show values ahead of what has been revealed
+Seen: 1 (round 6: reviewer R-6 POLISH)
+Severity of what it caused: POLISH
+What happened: R-6 — the summon reveal showed the final Jade balance at pull 2, giving away duplicates
+  revealed later.
+Root cause: The HUD read the final save state instead of a state that advances with the reveal.
+Rule: During any reveal or animation sequence, every counter shown advances step by step with the
+  reveal. Add one test that checks the counter at step 1 of N.
+Status: ACTIVE
+
+### L-ui-009: Rows keep the style-guide spacing, not only the 8 px minimum
+Seen: 1 (round 6: reviewer R-8 POLISH)
+Severity of what it caused: POLISH
+What happened: R-8 — the Settings volume rows met the 8 px target gap but looked cramped: each label sat
+  right under the previous row's −/+ buttons.
+Root cause: Layout was checked only against the hard minimum, not against the style guide's row rhythm.
+Rule: Every list/settings row uses the `docs/STYLE_GUIDE.md` row spacing. Look at the 360×640
+  screenshot of every changed screen and note "spacing per style guide: yes/no".
+Status: ACTIVE

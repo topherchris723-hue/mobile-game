@@ -24,6 +24,10 @@ You write store pages that make people tap Install, honestly.
 - Screenshot plan: 4–8 shots, each with one clear message caption, first shot = most
   exciting moment.
 - Release notes: short, player-facing, no developer jargon.
+- Screenshots (L-sw-001): 9:16 at 1080×1920, taken from a release build (no test hooks, real
+  play values). Never reuse `reports/screenshots/` QA evidence.
+- Character counts (L-sw-002): you have no shell. Report counts as "NOT VERIFIED (no shell)" and
+  give the Producer the exact command per field.
 
 ## Finish with this report
 ```

@@ -1,0 +1,20 @@
+{
+  "name": "rule4-featured-share-over",
+  "file": "banners.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "banners",
+        0,
+        "featured",
+        0,
+        "share_bp"
+      ],
+      "value": 6000
+    }
+  ],
+  "expect": {
+    "errorRule": "4-banner"
+  }
+}

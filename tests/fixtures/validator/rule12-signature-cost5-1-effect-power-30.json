@@ -1,0 +1,44 @@
+{
+  "name": "rule12-signature-cost5-1-effect-power-30",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        3,
+        "cost"
+      ],
+      "value": 5
+    },
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        3,
+        "effects"
+      ],
+      "value": [
+        {
+          "type": "vigor_gain",
+          "target": "self",
+          "value": 1,
+          "on": "hit"
+        }
+      ]
+    },
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        3,
+        "power"
+      ],
+      "value": 3
+    }
+  ],
+  "expect": {
+    "errorRule": "12-card-budgets",
+    "errorContains": "cards.json card_tavi_furnace_rush: power 3 outside [2.45, 2.95] (signature cost 5, 1 effect)"
+  }
+}

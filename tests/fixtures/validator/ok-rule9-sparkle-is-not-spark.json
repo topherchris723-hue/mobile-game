@@ -1,0 +1,19 @@
+{
+  "name": "ok-rule9-sparkle-is-not-spark",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        0,
+        "name"
+      ],
+      "value": "Sparkle Jab"
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": null
+  }
+}

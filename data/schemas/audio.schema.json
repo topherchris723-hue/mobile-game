@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data/schemas/audio.schema.json",
+  "title": "Audio (data/audio.json)",
+  "description": "Sounds, music tracks, hook mapping and mix settings. GDD §18. Licensing: CC0 or self-made only (GDD §15.3 rule 13). Procedural Web Audio synthesis preferred.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "mix", "music", "sounds", "hooks"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "mix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_voices", "same_sound_min_interval_ms", "duck_gain", "duck_attack_s", "duck_release_s", "pause_gain", "crossfade_s", "music_fade_in_s"],
+      "properties": {
+        "max_voices": { "description": "Default 12.", "type": "integer", "minimum": 1, "maximum": 32 },
+        "same_sound_min_interval_ms": { "description": "Default 40.", "type": "integer", "minimum": 0, "maximum": 500 },
+        "duck_gain": { "description": "Default 0.35. BGM multiplier during Ignition/Climax/Tri-Burst cinematics.", "type": "number", "minimum": 0, "maximum": 1 },
+        "duck_attack_s": { "description": "Default 0.08.", "type": "number", "minimum": 0, "maximum": 1 },
+        "duck_release_s": { "description": "Default 0.30.", "type": "number", "minimum": 0, "maximum": 2 },
+        "pause_gain": { "description": "Default 0.5. BGM multiplier while the Pause menu is open.", "type": "number", "minimum": 0, "maximum": 1 },
+        "crossfade_s": { "description": "Default 0.6.", "type": "number", "minimum": 0, "maximum": 3 },
+        "music_fade_in_s": { "description": "Default 0.5 (first gesture start, battle-end fade).", "type": "number", "minimum": 0, "maximum": 3 }
+      }
+    },
+    "music": {
+      "description": "Context -> track key in sounds. Battle uses stage.bgm first, then battle_default.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["menu", "summon", "battle_default"],
+      "properties": {
+        "menu": { "$ref": "#/$defs/soundKey" },
+        "summon": { "$ref": "#/$defs/soundKey" },
+        "battle_default": { "$ref": "#/$defs/soundKey" }
+      }
+    },
+    "sounds": {
+      "description": "Sound/track asset key (sfx_* or bgm_*) -> definition. Stage/story bgm and card sfx keys refer here.",
+      "type": "object",
+      "propertyNames": { "pattern": "^(sfx|bgm)_[a-z0-9_]+$" },
+      "additionalProperties": { "$ref": "#/$defs/sound" }
+    },
+    "hooks": {
+      "description": "UI hook name (SFX_HOOKS in src/ui/feedback.js) -> sound key, or null = silent on purpose.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": { "oneOf": [{ "$ref": "#/$defs/soundKey" }, { "type": "null" }] }
+    }
+  },
+  "$defs": {
+    "soundKey": { "type": "string", "pattern": "^(sfx|bgm)_[a-z0-9_]+$" },
+    "sound": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "gain"],
+      "properties": {
+        "source": { "enum": ["procedural", "file"] },
+        "gain": { "type": "number", "minimum": 0, "maximum": 1 },
+        "priority": { "description": "Optional, default 0. Voice-limit priority 0-3.", "type": "integer", "minimum": 0, "maximum": 3, "default": 0 },
+        "loop": { "description": "Optional, default false (true for music tracks).", "type": "boolean", "default": false },
+        "path": { "description": "file only: path under assets/audio/.", "type": "string", "pattern": "^assets/audio/[a-z0-9_/.-]+\\.(ogg|mp3|wav|m4a)$" },
+        "license": { "description": "file only: CC0 or self-made (CC-BY not allowed for audio).", "enum": ["CC0", "self-made"] },
+        "credit": { "description": "file only: author/source as written in assets/CREDITS.md.", "type": "string", "minLength": 1, "maxLength": 200 },
+        "synth": { "$ref": "#/$defs/synth" },
+        "pattern": { "$ref": "#/$defs/pattern" }
+      },
+      "allOf": [
+        { "if": { "properties": { "source": { "const": "file" } } }, "then": { "required": ["path", "license", "credit"] } },
+        { "if": { "properties": { "source": { "const": "procedural" } } }, "then": { "anyOf": [{ "required": ["synth"] }, { "required": ["pattern"] }] } }
+      ]
+    },
+    "voice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wave", "duration_s"],
+      "properties": {
+        "wave": { "enum": ["sine", "square", "sawtooth", "triangle", "noise"] },
+        "freq_start_hz": { "type": "number", "minimum": 20, "maximum": 20000 },
+        "freq_end_hz": { "type": "number", "minimum": 20, "maximum": 20000 },
+        "start_s": { "type": "number", "minimum": 0, "maximum": 10, "default": 0 },
+        "duration_s": { "type": "number", "minimum": 0.005, "maximum": 10 },
+        "attack_s": { "type": "number", "minimum": 0, "maximum": 5, "default": 0.005 },
+        "decay_s": { "type": "number", "minimum": 0, "maximum": 10, "default": 0.1 },
+        "gain": { "type": "number", "minimum": 0, "maximum": 1, "default": 1 },
+        "filter": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "freq_hz"],
+          "properties": {
+            "type": { "enum": ["lowpass", "highpass", "bandpass"] },
+            "freq_hz": { "type": "number", "minimum": 20, "maximum": 20000 },
+            "q": { "type": "number", "minimum": 0.0001, "maximum": 30 }
+          }
+        }
+      }
+    },
+    "synth": {
+      "description": "One-shot procedural sound: layered voices.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["voices"],
+      "properties": {
+        "voices": { "type": "array", "minItems": 1, "maxItems": 8, "items": { "$ref": "#/$defs/voice" } }
+      }
+    },
+    "pattern": {
+      "description": "Procedural music loop: tracks of notes on a step grid.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tempo_bpm", "steps_per_beat", "steps", "tracks"],
+      "properties": {
+        "tempo_bpm": { "type": "number", "minimum": 40, "maximum": 240 },
+        "steps_per_beat": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "steps": { "type": "integer", "minimum": 1, "maximum": 512 },
+        "tracks": {
+          "type": "array", "minItems": 1, "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["voice", "notes"],
+            "properties": {
+              "voice": { "$ref": "#/$defs/voice" },
+              "notes": {
+                "description": "One entry per step: MIDI note number 0-127 or null (rest). Length must equal steps (checked in code/tests).",
+                "type": "array",
+                "items": { "oneOf": [{ "type": "integer", "minimum": 0, "maximum": 127 }, { "type": "null" }] }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

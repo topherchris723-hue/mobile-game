@@ -1,0 +1,20 @@
+{
+  "name": "ok-rule13-vfx-texture-without-file-is-generated",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "effects",
+        "hit_spark",
+        "layers",
+        0,
+        "texture"
+      ],
+      "value": "vfx_spark_atlas"
+    }
+  ],
+  "expect": {
+    "errorRule": null
+  }
+}

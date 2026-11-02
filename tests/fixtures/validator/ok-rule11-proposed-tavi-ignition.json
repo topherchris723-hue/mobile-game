@@ -1,0 +1,66 @@
+{
+  "name": "ok-rule11-proposed-tavi-ignition",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "stat_mult",
+        "atk"
+      ],
+      "value": 1.2
+    },
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "duration_s"
+      ],
+      "value": 20
+    },
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "heal_pct"
+      ],
+      "value": 0.05
+    },
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "vigor_regen_bonus"
+      ],
+      "value": 0
+    },
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "triggers"
+      ],
+      "value": [
+        {
+          "type": "hp_below_pct",
+          "value": 40
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": null
+  }
+}

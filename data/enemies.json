@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "enemies": [
+    {
+      "id": "enemy_rook_001",
+      "character_id": "char_rook_001",
+      "ai_tier": "rookie",
+      "stat_mult": {
+        "hp": 0.7,
+        "atk": 0.7,
+        "def": 0.7
+      },
+      "ignition_enabled": false,
+      "boss": false
+    },
+    {
+      "id": "enemy_rook_002",
+      "character_id": "char_rook_001",
+      "ai_tier": "rookie",
+      "stat_mult": {
+        "hp": 0.8,
+        "atk": 0.8,
+        "def": 0.8
+      },
+      "ignition_enabled": false,
+      "boss": false
+    },
+    {
+      "id": "enemy_pell_001",
+      "character_id": "char_pell_001",
+      "ai_tier": "rookie",
+      "stat_mult": {
+        "hp": 0.8,
+        "atk": 0.8,
+        "def": 0.8
+      },
+      "ignition_enabled": false,
+      "boss": false
+    },
+    {
+      "id": "enemy_umbral_rook_001",
+      "character_id": "char_rook_001",
+      "name_override": "Umbral Rook",
+      "variant": "umbral",
+      "ai_tier": "fighter",
+      "stat_mult": {
+        "hp": 0.92,
+        "atk": 0.92,
+        "def": 0.92
+      },
+      "ignition_enabled": false,
+      "boss": false
+    },
+    {
+      "id": "enemy_umbral_pell_001",
+      "character_id": "char_pell_001",
+      "name_override": "Umbral Pell",
+      "variant": "umbral",
+      "ai_tier": "fighter",
+      "stat_mult": {
+        "hp": 0.92,
+        "atk": 0.92,
+        "def": 0.92
+      },
+      "ignition_enabled": false,
+      "boss": false
+    },
+    {
+      "id": "enemy_thessa_001",
+      "character_id": "char_thessa_001",
+      "ai_tier": "fighter",
+      "stat_mult": {
+        "hp": 0.92,
+        "atk": 0.92,
+        "def": 0.92
+      },
+      "ignition_enabled": false,
+      "boss": false
+    },
+    {
+      "id": "enemy_rook_003",
+      "character_id": "char_rook_001",
+      "ai_tier": "fighter",
+      "stat_mult": {
+        "hp": 0.88,
+        "atk": 0.88,
+        "def": 0.88
+      },
+      "ignition_enabled": false,
+      "boss": false
+    },
+    {
+      "id": "enemy_pell_002",
+      "character_id": "char_pell_001",
+      "ai_tier": "fighter",
+      "stat_mult": {
+        "hp": 0.88,
+        "atk": 0.88,
+        "def": 0.88
+      },
+      "ignition_enabled": false,
+      "boss": false
+    },
+    {
+      "id": "enemy_solenne_001",
+      "character_id": "char_solenne_001",
+      "ai_tier": "veteran",
+      "stat_mult": {
+        "hp": 0.88,
+        "atk": 0.88,
+        "def": 0.88
+      },
+      "ignition_enabled": true,
+      "boss": false
+    },
+    {
+      "id": "enemy_thessa_002",
+      "character_id": "char_thessa_001",
+      "ai_tier": "veteran",
+      "stat_mult": {
+        "hp": 0.72,
+        "atk": 0.72,
+        "def": 0.72
+      },
+      "ignition_enabled": true,
+      "boss": false
+    },
+    {
+      "id": "enemy_umbral_solenne_001",
+      "character_id": "char_solenne_001",
+      "name_override": "Umbral Solenne",
+      "variant": "umbral",
+      "ai_tier": "veteran",
+      "stat_mult": {
+        "hp": 0.72,
+        "atk": 0.72,
+        "def": 0.72
+      },
+      "ignition_enabled": true,
+      "boss": false
+    },
+    {
+      "id": "enemy_corvane_001",
+      "character_id": "char_corvane_001",
+      "ai_tier": "master",
+      "stat_mult": {
+        "hp": 1.0,
+        "atk": 0.7,
+        "def": 0.8
+      },
+      "ignition_enabled": true,
+      "boss": true
+    }
+  ]
+}

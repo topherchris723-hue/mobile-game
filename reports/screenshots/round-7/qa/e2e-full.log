@@ -1,0 +1,217 @@
+
+Running 126 tests using 1 worker
+
+  ✓    1 [phone-360x640] › tests/e2e/qa-abuse.spec.js:43:1 › AC-12.1 fresh save; AC-13.1 win stage_001 → reload → cleared + Jade; reload during Result delay (8.9s)
+  ✓    2 [phone-360x640] › tests/e2e/qa-abuse.spec.js:81:1 › AC-13.2 corrupt / future-version save → fresh save + backup key + notice, no crash (5.5s)
+scene after start with unknown team id: Home errors: 
+  ✓    3 [phone-360x640] › tests/e2e/qa-abuse.spec.js:98:1 › GDD §13: save with a team id that no longer exists in the data is ignored, not a crash (3.4s)
+unowned team member kept after load: [33mfalse[39m ["char_lark_001","char_dunmore_001","char_tavi_001"]
+  ✓    4 [phone-360x640] › tests/e2e/qa-abuse.spec.js:113:1 › GDD §13: save whose team holds a fighter that is not owned (1.3s)
+scene creates: Home > Story > Dialogue > Team > Battle active now: Battle
+after double tap on Retreat: result= null confirm shown= [33mtrue[39m
+after retry: Home > Story > Dialogue > Team > Battle > Result > Battle
+  ✓    5 [phone-360x640] › tests/e2e/qa-abuse.spec.js:125:1 › abuse: double taps on every navigation button land on one scene, no errors (9.5s)
+player actions from taps during cinematic:  vigor during [33m8.27[39m before [33m8.27[39m
+  ✓    6 [phone-360x640] › tests/e2e/qa-abuse.spec.js:195:1 › abuse: taps during intro and Ignition cinematic do nothing; backgrounding during cinematic pauses (8.6s)
+  ✓    7 [phone-360x640] › tests/e2e/qa-abuse.spec.js:237:1 › abuse: rotate to landscape and back mid-battle (pause menu open and closed), Dialogue keeps its line (13.4s)
+  ✓    8 [phone-360x640] › tests/e2e/qa-abuse.spec.js:295:1 › abuse: reload mid-battle keeps the save intact (no result, no Jade change); AC-5.2.3 diagonal swipe = Slip; swipe from Pause ignored (6.8s)
+  ✓    9 [phone-360x640] › tests/e2e/qa-abuse.spec.js:318:1 › AC-4.1 every screen reachable and back to Home without restart (7.6s)
+[360x640] busy frames scanned=139, max arena texts in one frame=10, overlaps=0
+[390x844] busy frames scanned=135, max arena texts in one frame=9, overlaps=0
+[430x932] busy frames scanned=139, max arena texts in one frame=9, overlaps=0
+430x932: frames=139 maxTexts=9 overlaps=0
+390x844: frames=135 maxTexts=9 overlaps=0
+360x640: frames=139 maxTexts=10 overlaps=0
+  ✓   10 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+[perf canvas cpu×1] frames=956 median=16.7 ms p95=17.7 ms max=39.2 ms; work median=1.0 p95=1.8 ms; auto quality → low: no
+  ✓   11 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×1 (20.1s)
+[perf canvas cpu×4] frames=910 median=17.5 ms p95=28.0 ms max=78.6 ms; work median=4.4 p95=8.9 ms; auto quality → low: no
+  ✓   12 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4 (21.5s)
+[perf default cpu×1] frames=261 median=127.9 ms p95=155.1 ms max=206.8 ms; work median=8.8 p95=14.4 ms; auto quality → low: yes
+  ✓   13 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=default cpu×1 (45.6s)
+LAYOUT PROBLEMS (0):
+
+CONSOLE ERRORS (0):
+
+  ✓   14 [phone-360x640] › tests/e2e/qa-screens.spec.js:22:1 › QA screens at 3 phone sizes: layout scan + screenshots (2.6m)
+before gesture: {"contextCreated":false,"contextState":"none","unlocked":false,"soundsStarted":0,"soundsDropped":0,"soundsSkipped":0,"lastSkip":null,"notesStarted":0,"track":null,"desiredTrack":"bgm_menu_01","duck":1,"sfxBusGain":1,"bgmBusGain":1,"bgmGain":0,"activeVoices":0,"buffers":0,"noteBuffers":0,"bufferBytes":0,"renderQueue":0}
+after one tap: {"contextCreated":true,"contextState":"running","unlocked":true,"soundsStarted":0,"soundsDropped":0,"soundsSkipped":0,"lastSkip":null,"notesStarted":16,"track":"bgm_menu_01","desiredTrack":"bgm_menu_01","duck":1,"sfxBusGain":1,"bgmBusGain":1,"bgmGain":0.45,"activeVoices":0,"buffers":46,"noteBuffers":39,"bufferBytes":5872380,"renderQueue":0}
+  ✓   15 [phone-360x640] › tests/e2e/qa-settings-audio.spec.js:43:1 › AC-18.2 no audio before the first gesture; one tap → context running + menu track (2.8s)
+background: ctx running → suspended → running; paused true → true; timer 8999 → 8999 → 8999
+  ✓   16 [phone-360x640] › tests/e2e/qa-settings-audio.spec.js:66:1 › AC-18.7 background during battle suspends audio and pauses; visible again resumes audio, battle stays paused (7.6s)
+settings targets: back 44x44, settings_master_volume_minus 44x44, settings_master_volume_plus 44x44, settings_master_volume_slider 160x44, settings_bgm_volume_minus 44x44, settings_bgm_volume_plus 44x44, settings_bgm_volume_slider 160x44, settings_sfx_volume_minus 44x44, settings_sfx_volume_plus 44x44, settings_sfx_volume_slider 160x44, settings_muted 120x44, settings_reduce_motion 120x44, settings_haptics 120x44, settings_licenses 328x44 | problems: []
+expected from source: back,settings_licenses,settings_master_volume_minus,settings_master_volume_slider,settings_master_volume_plus,settings_bgm_volume_minus,settings_bgm_volume_slider,settings_bgm_volume_plus,settings_sfx_volume_minus,settings_sfx_volume_slider,settings_sfx_volume_plus,settings_muted,settings_reduce_motion,settings_haptics
+pause→settings→back: timer 8998 → 8998 → 8998; paused true/true; active Battle; menu targets menu_resume,menu_settings,menu_retreat
+  ✓   17 [phone-360x640] › tests/e2e/qa-settings-audio.spec.js:101:1 › AC-19.1 entry points + AC-19.2 layout (and double taps on gear / Back) (11.2s)
+drag 70→20: shown 20%, writes this screen 1, saved 0.2
+double tap −: shown 0%, saved 0, writes 3
+  ✓   18 [phone-360x640] › tests/e2e/qa-settings-audio.spec.js:166:1 › AC-19.3 Music − ×3 → 70% with 3 writes, reload keeps 70%; drag 70% → 20% writes once (5.9s)
+mute: sfx 0.81 → 0 → 0.81; bgm 0.81 → 0 → 0.81; sliders {"master_volume":90,"bgm_volume":100,"sfx_volume":100} / {"master_volume":90,"bgm_volume":100,"sfx_volume":100}
+  ✓   19 [phone-360x640] › tests/e2e/qa-settings-audio.spec.js:214:1 › AC-19.4 Mute all: gains 0 with sliders unchanged; un-mute restores; double tap on the toggle stays consistent (4.1s)
+reduce motion via Settings: camera flashes [33m0[39m shakes [33m0[39m
+  ✓   20 [phone-360x640] › tests/e2e/qa-settings-audio.spec.js:249:1 › AC-19.5 Reduce motion toggled in Settings survives reload and gives 0 shakes / 0 flashes in the next battle (10.0s)
+vibrate calls: off=[] preview=[20] on=[20,80]
+  ✓   21 [phone-360x640] › tests/e2e/qa-settings-audio.spec.js:291:1 › AC-19.6 Vibration off → navigator.vibrate never called in battle; on → preview 20 and battle calls (20 hit, 80 Ignition) (20.9s)
+Jade 0: buttons ok=[false,false] enabled=[false,false] sublabels=["Not enough Jade — clear stages to earn more.","Not enough Jade — clear stages to earn more."]
+Jade 99: buttons ok=[false,false] enabled=[false,false] sublabels=["Not enough Jade — clear stages to earn more.","Not enough Jade — clear stages to earn more."]
+Jade 100: buttons ok=[true,false] enabled=[true,false] sublabels=["","Not enough Jade — clear stages to earn more."]
+Jade 999: buttons ok=[true,false] enabled=[true,false] sublabels=["","Not enough Jade — clear stages to earn more."]
+Jade 1000: buttons ok=[true,true] enabled=[true,true] sublabels=["",""]
+  ✓   22 [phone-360x640] › tests/e2e/qa-summon.spec.js:32:1 › AC-11.6 affordability at Jade 0 / 99 / 100 / 999 / 1000; disabled taps open nothing (14.0s)
+after double confirm: jade [33m1000[39m total_pulls [33m10[39m log summon_returned,reveal_start
+  ✓   23 [phone-360x640] › tests/e2e/qa-summon.spec.js:58:1 › AC-11.12 double tap on ×10, then double tap on Confirm (100 ms), then taps during the reveal: one summon only (4.9s)
+kill after Confirm: 0ms:all(jade 0, pulls 10, roster 5) | 15ms:all(jade 0, pulls 10, roster 6) | 40ms:all(jade 0, pulls 10, roster 4) | 80ms:all(jade 10, pulls 10, roster 5) | 150ms:all(jade 0, pulls 10, roster 6) | 400ms:all(jade 0, pulls 10, roster 7)
+  ✓   24 [phone-360x640] › tests/e2e/qa-summon.spec.js:89:1 › AC-11.5 reload mid-reveal and page kill right after Confirm: results kept, Jade once, no replay, not re-rollable (27.2s)
+save failed: error text "Summon failed — no Jade was spent." scene Summon
+  ✓   25 [phone-360x640] › tests/e2e/qa-summon.spec.js:144:1 › AC-11.10 setItem throws → "Summon failed — no Jade was spent.", nothing changed (3.9s)
+rates: {"R5":"3.00%","Solenne":"1.50%","Corvane":"1.50%","R4":"17.00%","Pell":"5.67%","Thessa":"5.67%","Rook":"5.67%","R3":"80.00%","Tavi":"26.67%","Lark":"26.67%","Dunmore":"26.67%"}
+  ✓   26 [phone-360x640] › tests/e2e/qa-summon.spec.js:169:1 › AC-11.4 rate table and AC-11.11 pity / first-×10 lines track the save (13.8s)
+Summon at 999,999 problems: []
+after rotate during reveal: phase results pulls [33m10[39m -> [33m10[39m jade [33m998999[39m
+results grid problems: []
+  ✓   27 [phone-360x640] › tests/e2e/qa-summon.spec.js:209:1 › abuse: rotate during the reveal goes to results without a re-summon; Jade 999,999 fits the top bar (6.2s)
+DEBUG after TRI-BURST tap: {"log":["tri_burst_start//\"\""],"st":{"state":"Active","burst":0,"burstReady":false,"freeze":null,"inputs":[{"type":"tri_burst"}]}}
+IGNITE target during rush: {"id":"ignite","enabled":true,"x":224,"y":334,"w":56,"h":56,"logical":{"x":224,"y":334,"w":56,"h":56}}
+player ignite rejects during own rush: ["not_now","not_now"] resolve tri_burst @T+18
+after landed rush: enemy state Knockdown burstUsed [33mtrue[39m igniteReady [33mtrue[39m
+  ✓   28 [phone-360x640] › tests/e2e/qa-tribust-lock.spec.js:32:1 › player: IGNITE during own Tri-Burst rush is rejected (not_now) and greyed; rush resolves on T+18 and knocks down (17.8s)
+player rejects during enemy rush: tri_burst ["not_now"] ignite ["not_now"] slip? [33mtrue[39m resolve tri_burst_whiff:enemy
+  ✓   29 [phone-360x640] › tests/e2e/qa-tribust-lock.spec.js:83:1 › player: TRI-BURST and IGNITE during the ENEMY's rush are rejected (not_now), gauge stays 100; Slip still allowed (12.0s)
+camera flashes=4 (VFX stats 4, dropped 0), max in 1 s=1; shakes=5 (max intensity 0.012, max ms 300); particles max=126 (stats 126), cap=150; swaps=["player:spr_tavi_ignition"]
+AC-17.8 overlay hide latency: [{"kind":"climax","ms":74,"stillVisibleAtMs":51},{"kind":"ignition","ms":134,"stillVisibleAtMs":117},{"kind":"tri_burst","ms":134,"stillVisibleAtMs":117}]
+AC-18.4 context=running duck reached 0.35 after 85 ms; back to 1.0 301 ms after freeze_end; sfx bus changed=false
+  ✓   30 [phone-360x640] › tests/e2e/qa-vfx-audio.spec.js:30:1 › AC-17.5/17.6/17.8/18.4 positive control (reduce motion OFF): flashes ≤3 per rolling 1 s, particles ≤150, overlays hide ≤160 ms after freeze_end, BGM ducks (20.5s)
+reduce motion: camera flashes=0 shakes=0 vfx flashes=0 vfx shakes=0; swaps=1
+  ✓   31 [phone-360x640] › tests/e2e/qa-vfx-audio.spec.js:86:1 › AC-17.5 / AC-19.5 reduce motion ON: 0 screen flashes and 0 shakes for the whole battle; Ignition keeps overlay, form name, sprite swap (20.5s)
+low quality: particles max=60 (stats 60), cap=60, quality=low
+  ✓   32 [phone-360x640] › tests/e2e/qa-vfx-audio.spec.js:103:1 › AC-17.6 quality forced low: live particles never exceed 60 (20.2s)
+stress high: frames=241 max particles=150 (stats 150) cap=150 quality=high skippedBudget=2079
+  ✓   33 [phone-360x640] › tests/e2e/qa-vfx-audio.spec.js:121:3 › AC-17.6 stress (high): synthetic VFX load never exceeds the particle cap (9.7s)
+stress low: frames=241 max particles=60 (stats 60) cap=60 quality=low skippedBudget=2101
+  ✓   34 [phone-360x640] › tests/e2e/qa-vfx-audio.spec.js:121:3 › AC-17.6 stress (low): synthetic VFX load never exceeds the particle cap (9.7s)
+shipped data: [{"enemyId":"enemy_umbral_rook_001","umbral":true,"key":"char_rook_001|umbral|"},{"enemyId":"enemy_umbral_pell_001","umbral":true,"key":"char_pell_001|umbral|"},{"enemyId":"enemy_thessa_001","umbral":false,"key":"char_thessa_001|base|"},{"enemyId":"enemy_thessa_002","umbral":false,"key":"char_thessa_001|base|"},{"enemyId":"enemy_umbral_solenne_001","umbral":true,"key":"char_solenne_001|umbral|"},{"enemyId":"enemy_corvane_001","umbral":false,"key":"char_corvane_001|base|boss"}]
+variant removed: [{"enemyId":"enemy_umbral_rook_001","umbral":false,"key":"char_rook_001|base|"},{"enemyId":"enemy_umbral_pell_001","umbral":false,"key":"char_pell_001|base|"},{"enemyId":"enemy_thessa_001","umbral":false,"key":"char_thessa_001|base|"}]
+  ✓   35 [phone-360x640] › tests/e2e/qa-visuals.spec.js:50:1 › AC-8.2(c) Umbral look comes from enemies.json `variant` only (33.9s)
+  ✓   36 [phone-360x640] › tests/e2e/qa-visuals.spec.js:73:1 › silhouette sheets (colour / black / Umbral) and mirror-match rims for the by-eye review (3.3s)
+★3 seed 1: rows [{"pull":1,"name":"Tavi","rarity":3,"tag":"Resonance +1 (R1)"}]
+  ✓   37 [phone-360x640] › tests/e2e/qa-visuals.spec.js:88:3 › summon ★3 orb, reveal frame and results frame (seed 1) (5.5s)
+★4 seed 8: rows [{"pull":1,"name":"Thessa","rarity":4,"tag":"NEW"}]
+  ✓   38 [phone-360x640] › tests/e2e/qa-visuals.spec.js:88:3 › summon ★4 orb, reveal frame and results frame (seed 8) (5.8s)
+★5 seed 7: rows [{"pull":1,"name":"Solenne","rarity":5,"tag":"NEW"}]
+  ✓   39 [phone-360x640] › tests/e2e/qa-visuals.spec.js:88:3 › summon ★5 orb, reveal frame and results frame (seed 7) (6.2s)
+[phone-360x640] tap → press feedback: 0.6 ms
+  ✓   40 [phone-360x640] › tests/e2e/smoke.spec.js:6:1 › flow: title → home → stage → story → team → battle → pause/retreat → result → back (11.7s)
+tutorial prompts seen: battle_start, enemy_windup, chain_possible, tag_ready
+stage_001 record: {"cleared":true,"clears":1,"best_time_s":30.916666666666668,"missions_completed":["mission_001_a","mission_001_b"]} tutorial {"completed":true}
+  ✓   41 [phone-360x640] › tests/e2e/smoke.spec.js:127:1 › stage_001 tutorial: follow every prompt and win (48.9s)
+  ✓   42 [phone-360x640] › tests/e2e/smoke.spec.js:199:1 › default renderer (WebGL) boots to battle with no console errors (15.0s)
+  ✓   43 [phone-360x640] › tests/e2e/smoke.spec.js:210:1 › stage_001 tutorial: Slip prompt, Perfect Slip → Riposte prompt holds the window (AC-9.4.1, AC-9.4.2) (9.2s)
+  ✓   44 [phone-360x640] › tests/e2e/smoke.spec.js:342:1 › BUG-2-03: double tap on every pause/confirm/result button does one thing only (19.7s)
+  ✓   45 [phone-360x640] › tests/e2e/smoke.spec.js:435:1 › BUG-2-04 UI guard: an unknown character id in the in-memory team never crashes Home/Team/Story/Battle (4.7s)
+[phone-360x640] float samples: 249, max floating texts at once: 6, overlaps: 0
+  ✓   46 [phone-360x640] › tests/e2e/smoke.spec.js:508:1 › BUG-2-09/2-10: intro and floating battle texts never overlap each other or the name labels (17.5s)
+  ✓   47 [phone-360x640] › tests/e2e/smoke.spec.js:568:1 › BUG-2-06: stage list rows never overlap (all stages cleared) (2.5s)
+lock seen: {"igniteAlpha":0.5,"igniteVisible":true}
+  ✓   48 [phone-360x640] › tests/e2e/smoke.spec.js:598:1 › Tri-Burst lock (GDD §5.0): IGNITE is greyed while a rush runs (5.6s)
+[phone-360x640] rates panel maxScroll=0
+  ✓   49 [phone-360x640] › tests/e2e/smoke.spec.js:674:1 › Summon: fresh save — pity + first-×10 lines, rates, confirm (armed, one summon), save before reveal, results, Home/Team updated (6.3s)
+  ✓   50 [phone-360x640] › tests/e2e/smoke.spec.js:784:1 › Summon: affordability (AC-11.6) and save failure (AC-11.10) (11.4s)
+[phone-360x640] BUG-2-11 frames=60 problems=0
+  ✓   51 [phone-360x640] › tests/e2e/smoke.spec.js:835:1 › BUG-2-11: longest names at melee range and both walls — labels apart, nothing off screen (live frames) (13.1s)
+burst looks: {"charging":{"vis":"charging","label":"TRI\nBURST","alpha":0.75},"ready":{"vis":"ready","label":"TRI\nBURST","alpha":1},"locked":{"vis":"locked","label":"WAIT"}}
+  ✓   52 [phone-360x640] › tests/e2e/smoke.spec.js:905:1 › TRI-BURST: charging, ready and locked look different (label + shape), locked during the enemy rush (5.8s)
+  ✓   53 [phone-360x640] › tests/e2e/smoke.spec.js:963:1 › Settings from Home (AC-19.1–19.4): gear double tap, layout, − ×3 = 3 writes, drag = 1 write, mute gains, reload (5.3s)
+  ✓   54 [phone-360x640] › tests/e2e/smoke.spec.js:1063:1 › Pause → Settings → Back (AC-19.1, R4-4): double tap safe, battle paused throughout, timer unchanged (8.2s)
+[phone-360x640] vfx {"stats":{"played":44,"shakes":0,"flashes":0},"particlesMax":24,"cap":150} hooks ui_press,ui_transition,fight,card_fist,hit_fist,combo_up,card_bolt,hit_bolt
+  ✓   55 [phone-360x640] › tests/e2e/smoke.spec.js:1103:1 › Audio + VFX wiring: music per scene, hit/riposte hooks, battle ducks, VFX stats; reduce motion → 0 shakes/flashes (AC-19.5) (24.5s)
+[phone-360x640] BUG-3-03 frames=92 problems=0 
+  ✓   56 [phone-360x640] › tests/e2e/smoke.spec.js:1184:1 › BUG-3-03: callouts never cover the combo / hit counter (reserved zones; busy live frames) (11.4s)
+  ✓   57 [phone-360x640] › tests/e2e/smoke.spec.js:1237:1 › Home save-repair notice: shown for a team repair, not for settings_repaired, never the damaged text (3.2s)
+  ✓   58 [phone-360x640] › tests/e2e/smoke.spec.js:1257:1 › AC-19.6: Vibration off → navigator.vibrate never called in battle; on → called with §14 durations (17.7s)
+[phone-360x640] BUG-4-01 drawn until 118 ms, hidden at 134 ms after freeze_end
+  ✓   59 [phone-360x640] › tests/e2e/smoke.spec.js:1274:1 › BUG-4-01: Tri-Burst overlay hidden ≤ 160 ms after freeze_end (positive control: drawn before it) (10.4s)
+  ✓   60 [phone-360x640] › tests/e2e/smoke.spec.js:1313:1 › Placeholder art: silhouette sheet (black / colour / Umbral) and data-driven Umbral look in stage_003 + stage_005 (19.5s)
+  ✓   61 [phone-360x640] › tests/e2e/smoke.spec.js:1352:1 › Summon rarity tiers on screen: orb rings 1/2/3 and frames per rarity in the results (13.2s)
+  ✓   62 [phone-360x640] › tests/e2e/smoke.spec.js:1384:1 › Settings → Licenses: shows every bundled package notice, scrolls, 44 px targets, Back to Settings (2.9s)
+  ✓   63 [phone-360x640] › tests/e2e/smoke.spec.js:1424:1 › Summon reveal: the Jade balance advances pull by pull (never the final value early) (16.4s)
+  -   64 [phone-430x932] › tests/e2e/qa-abuse.spec.js:43:1 › AC-12.1 fresh save; AC-13.1 win stage_001 → reload → cleared + Jade; reload during Result delay
+  -   65 [phone-430x932] › tests/e2e/qa-abuse.spec.js:81:1 › AC-13.2 corrupt / future-version save → fresh save + backup key + notice, no crash
+  -   66 [phone-430x932] › tests/e2e/qa-abuse.spec.js:98:1 › GDD §13: save with a team id that no longer exists in the data is ignored, not a crash
+  -   67 [phone-430x932] › tests/e2e/qa-abuse.spec.js:113:1 › GDD §13: save whose team holds a fighter that is not owned
+  -   68 [phone-430x932] › tests/e2e/qa-abuse.spec.js:125:1 › abuse: double taps on every navigation button land on one scene, no errors
+  -   69 [phone-430x932] › tests/e2e/qa-abuse.spec.js:195:1 › abuse: taps during intro and Ignition cinematic do nothing; backgrounding during cinematic pauses
+  -   70 [phone-430x932] › tests/e2e/qa-abuse.spec.js:237:1 › abuse: rotate to landscape and back mid-battle (pause menu open and closed), Dialogue keeps its line
+  -   71 [phone-430x932] › tests/e2e/qa-abuse.spec.js:295:1 › abuse: reload mid-battle keeps the save intact (no result, no Jade change); AC-5.2.3 diagonal swipe = Slip; swipe from Pause ignored
+  -   72 [phone-430x932] › tests/e2e/qa-abuse.spec.js:318:1 › AC-4.1 every screen reachable and back to Home without restart
+  -   73 [phone-430x932] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes
+  -   74 [phone-430x932] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×1
+  -   75 [phone-430x932] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4
+  -   76 [phone-430x932] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=default cpu×1
+  -   77 [phone-430x932] › tests/e2e/qa-screens.spec.js:22:1 › QA screens at 3 phone sizes: layout scan + screenshots
+  -   78 [phone-430x932] › tests/e2e/qa-settings-audio.spec.js:43:1 › AC-18.2 no audio before the first gesture; one tap → context running + menu track
+  -   79 [phone-430x932] › tests/e2e/qa-settings-audio.spec.js:66:1 › AC-18.7 background during battle suspends audio and pauses; visible again resumes audio, battle stays paused
+  -   80 [phone-430x932] › tests/e2e/qa-settings-audio.spec.js:101:1 › AC-19.1 entry points + AC-19.2 layout (and double taps on gear / Back)
+  -   81 [phone-430x932] › tests/e2e/qa-settings-audio.spec.js:166:1 › AC-19.3 Music − ×3 → 70% with 3 writes, reload keeps 70%; drag 70% → 20% writes once
+  -   82 [phone-430x932] › tests/e2e/qa-settings-audio.spec.js:214:1 › AC-19.4 Mute all: gains 0 with sliders unchanged; un-mute restores; double tap on the toggle stays consistent
+  -   83 [phone-430x932] › tests/e2e/qa-settings-audio.spec.js:249:1 › AC-19.5 Reduce motion toggled in Settings survives reload and gives 0 shakes / 0 flashes in the next battle
+  -   84 [phone-430x932] › tests/e2e/qa-settings-audio.spec.js:291:1 › AC-19.6 Vibration off → navigator.vibrate never called in battle; on → preview 20 and battle calls (20 hit, 80 Ignition)
+  -   85 [phone-430x932] › tests/e2e/qa-summon.spec.js:32:1 › AC-11.6 affordability at Jade 0 / 99 / 100 / 999 / 1000; disabled taps open nothing
+  -   86 [phone-430x932] › tests/e2e/qa-summon.spec.js:58:1 › AC-11.12 double tap on ×10, then double tap on Confirm (100 ms), then taps during the reveal: one summon only
+  -   87 [phone-430x932] › tests/e2e/qa-summon.spec.js:89:1 › AC-11.5 reload mid-reveal and page kill right after Confirm: results kept, Jade once, no replay, not re-rollable
+  -   88 [phone-430x932] › tests/e2e/qa-summon.spec.js:144:1 › AC-11.10 setItem throws → "Summon failed — no Jade was spent.", nothing changed
+  -   89 [phone-430x932] › tests/e2e/qa-summon.spec.js:169:1 › AC-11.4 rate table and AC-11.11 pity / first-×10 lines track the save
+  -   90 [phone-430x932] › tests/e2e/qa-summon.spec.js:209:1 › abuse: rotate during the reveal goes to results without a re-summon; Jade 999,999 fits the top bar
+  -   91 [phone-430x932] › tests/e2e/qa-tribust-lock.spec.js:32:1 › player: IGNITE during own Tri-Burst rush is rejected (not_now) and greyed; rush resolves on T+18 and knocks down
+  -   92 [phone-430x932] › tests/e2e/qa-tribust-lock.spec.js:83:1 › player: TRI-BURST and IGNITE during the ENEMY's rush are rejected (not_now), gauge stays 100; Slip still allowed
+  -   93 [phone-430x932] › tests/e2e/qa-vfx-audio.spec.js:30:1 › AC-17.5/17.6/17.8/18.4 positive control (reduce motion OFF): flashes ≤3 per rolling 1 s, particles ≤150, overlays hide ≤160 ms after freeze_end, BGM ducks
+  -   94 [phone-430x932] › tests/e2e/qa-vfx-audio.spec.js:86:1 › AC-17.5 / AC-19.5 reduce motion ON: 0 screen flashes and 0 shakes for the whole battle; Ignition keeps overlay, form name, sprite swap
+  -   95 [phone-430x932] › tests/e2e/qa-vfx-audio.spec.js:103:1 › AC-17.6 quality forced low: live particles never exceed 60
+  -   96 [phone-430x932] › tests/e2e/qa-vfx-audio.spec.js:121:3 › AC-17.6 stress (high): synthetic VFX load never exceeds the particle cap
+  -   97 [phone-430x932] › tests/e2e/qa-vfx-audio.spec.js:121:3 › AC-17.6 stress (low): synthetic VFX load never exceeds the particle cap
+  -   98 [phone-430x932] › tests/e2e/qa-visuals.spec.js:50:1 › AC-8.2(c) Umbral look comes from enemies.json `variant` only
+  -   99 [phone-430x932] › tests/e2e/qa-visuals.spec.js:73:1 › silhouette sheets (colour / black / Umbral) and mirror-match rims for the by-eye review
+  -  100 [phone-430x932] › tests/e2e/qa-visuals.spec.js:88:3 › summon ★3 orb, reveal frame and results frame (seed 1)
+  -  101 [phone-430x932] › tests/e2e/qa-visuals.spec.js:88:3 › summon ★4 orb, reveal frame and results frame (seed 8)
+  -  102 [phone-430x932] › tests/e2e/qa-visuals.spec.js:88:3 › summon ★5 orb, reveal frame and results frame (seed 7)
+[phone-430x932] tap → press feedback: 0.4 ms
+  ✓  103 [phone-430x932] › tests/e2e/smoke.spec.js:6:1 › flow: title → home → stage → story → team → battle → pause/retreat → result → back (11.8s)
+tutorial prompts seen: battle_start, enemy_windup, tag_ready, chain_possible
+stage_001 record: {"cleared":true,"clears":1,"best_time_s":30.4,"missions_completed":["mission_001_a","mission_001_b"]} tutorial {"completed":true}
+  ✓  104 [phone-430x932] › tests/e2e/smoke.spec.js:127:1 › stage_001 tutorial: follow every prompt and win (48.0s)
+  ✓  105 [phone-430x932] › tests/e2e/smoke.spec.js:199:1 › default renderer (WebGL) boots to battle with no console errors (22.2s)
+  ✓  106 [phone-430x932] › tests/e2e/smoke.spec.js:210:1 › stage_001 tutorial: Slip prompt, Perfect Slip → Riposte prompt holds the window (AC-9.4.1, AC-9.4.2) (9.2s)
+  ✓  107 [phone-430x932] › tests/e2e/smoke.spec.js:342:1 › BUG-2-03: double tap on every pause/confirm/result button does one thing only (19.8s)
+  ✓  108 [phone-430x932] › tests/e2e/smoke.spec.js:435:1 › BUG-2-04 UI guard: an unknown character id in the in-memory team never crashes Home/Team/Story/Battle (4.8s)
+[phone-430x932] float samples: 246, max floating texts at once: 7, overlaps: 0
+  ✓  109 [phone-430x932] › tests/e2e/smoke.spec.js:508:1 › BUG-2-09/2-10: intro and floating battle texts never overlap each other or the name labels (17.5s)
+  ✓  110 [phone-430x932] › tests/e2e/smoke.spec.js:568:1 › BUG-2-06: stage list rows never overlap (all stages cleared) (2.5s)
+lock seen: {"igniteAlpha":0.5,"igniteVisible":true}
+  ✓  111 [phone-430x932] › tests/e2e/smoke.spec.js:598:1 › Tri-Burst lock (GDD §5.0): IGNITE is greyed while a rush runs (5.5s)
+[phone-430x932] rates panel maxScroll=0
+  ✓  112 [phone-430x932] › tests/e2e/smoke.spec.js:674:1 › Summon: fresh save — pity + first-×10 lines, rates, confirm (armed, one summon), save before reveal, results, Home/Team updated (6.3s)
+  ✓  113 [phone-430x932] › tests/e2e/smoke.spec.js:784:1 › Summon: affordability (AC-11.6) and save failure (AC-11.10) (11.6s)
+[phone-430x932] BUG-2-11 frames=60 problems=0
+  ✓  114 [phone-430x932] › tests/e2e/smoke.spec.js:835:1 › BUG-2-11: longest names at melee range and both walls — labels apart, nothing off screen (live frames) (12.9s)
+burst looks: {"charging":{"vis":"charging","label":"TRI\nBURST","alpha":0.75},"ready":{"vis":"ready","label":"TRI\nBURST","alpha":1},"locked":{"vis":"locked","label":"WAIT"}}
+  ✓  115 [phone-430x932] › tests/e2e/smoke.spec.js:905:1 › TRI-BURST: charging, ready and locked look different (label + shape), locked during the enemy rush (5.9s)
+  ✓  116 [phone-430x932] › tests/e2e/smoke.spec.js:963:1 › Settings from Home (AC-19.1–19.4): gear double tap, layout, − ×3 = 3 writes, drag = 1 write, mute gains, reload (5.3s)
+  ✓  117 [phone-430x932] › tests/e2e/smoke.spec.js:1063:1 › Pause → Settings → Back (AC-19.1, R4-4): double tap safe, battle paused throughout, timer unchanged (8.3s)
+[phone-430x932] vfx {"stats":{"played":44,"shakes":0,"flashes":0},"particlesMax":24,"cap":150} hooks ui_press,ui_transition,fight,card_fist,hit_fist,combo_up,card_bolt,hit_bolt
+  ✓  118 [phone-430x932] › tests/e2e/smoke.spec.js:1103:1 › Audio + VFX wiring: music per scene, hit/riposte hooks, battle ducks, VFX stats; reduce motion → 0 shakes/flashes (AC-19.5) (24.4s)
+[phone-430x932] BUG-3-03 frames=92 problems=0 
+  ✓  119 [phone-430x932] › tests/e2e/smoke.spec.js:1184:1 › BUG-3-03: callouts never cover the combo / hit counter (reserved zones; busy live frames) (11.5s)
+  ✓  120 [phone-430x932] › tests/e2e/smoke.spec.js:1237:1 › Home save-repair notice: shown for a team repair, not for settings_repaired, never the damaged text (3.0s)
+  ✓  121 [phone-430x932] › tests/e2e/smoke.spec.js:1257:1 › AC-19.6: Vibration off → navigator.vibrate never called in battle; on → called with §14 durations (17.7s)
+[phone-430x932] BUG-4-01 drawn until 118 ms, hidden at 135 ms after freeze_end
+  ✓  122 [phone-430x932] › tests/e2e/smoke.spec.js:1274:1 › BUG-4-01: Tri-Burst overlay hidden ≤ 160 ms after freeze_end (positive control: drawn before it) (10.4s)
+  ✓  123 [phone-430x932] › tests/e2e/smoke.spec.js:1313:1 › Placeholder art: silhouette sheet (black / colour / Umbral) and data-driven Umbral look in stage_003 + stage_005 (19.6s)
+  ✓  124 [phone-430x932] › tests/e2e/smoke.spec.js:1352:1 › Summon rarity tiers on screen: orb rings 1/2/3 and frames per rarity in the results (13.2s)
+  ✓  125 [phone-430x932] › tests/e2e/smoke.spec.js:1384:1 › Settings → Licenses: shows every bundled package notice, scrolls, 44 px targets, Back to Settings (2.8s)
+  ✓  126 [phone-430x932] › tests/e2e/smoke.spec.js:1424:1 › Summon reveal: the Jade balance advances pull by pull (never the final value early) (16.2s)
+
+  Slow test file: [phone-430x932] › tests/e2e/smoke.spec.js (5.2m)
+  Slow test file: [phone-360x640] › tests/e2e/smoke.spec.js (5.1m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  39 skipped
+  87 passed (22.1m)
+exit=0

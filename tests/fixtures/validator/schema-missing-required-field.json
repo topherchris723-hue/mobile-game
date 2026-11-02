@@ -1,0 +1,17 @@
+{
+  "name": "schema-missing-required-field",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "delete",
+      "path": [
+        "characters",
+        0,
+        "base_stats"
+      ]
+    }
+  ],
+  "expect": {
+    "errorRule": "schema"
+  }
+}

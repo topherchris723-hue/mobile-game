@@ -1,0 +1,20 @@
+{
+  "name": "rule7-banned-term-case-insensitive",
+  "file": "story.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "scenes",
+        0,
+        "lines",
+        0,
+        "text"
+      ],
+      "value": "Their KI flared across the ring."
+    }
+  ],
+  "expect": {
+    "errorRule": "7-banned-terms"
+  }
+}

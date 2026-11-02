@@ -1,0 +1,19 @@
+{
+  "name": "rule12-fist-power-99",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        0,
+        "power"
+      ],
+      "value": 9.9
+    }
+  ],
+  "expect": {
+    "errorRule": "12-card-budgets",
+    "errorContains": "power 9.9 outside [1, 1.3] (fist, 0 effects)"
+  }
+}

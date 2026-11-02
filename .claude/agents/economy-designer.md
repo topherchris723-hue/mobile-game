@@ -16,7 +16,7 @@ it's manipulative.
    owner turned it on).
 
 ## You own
-- `data/economy.json`, `data/banners.json`
+- `data/economy.json`, `data/banners.json` (Growth phase onward; content-designer owns them until then)
 - `docs/ECONOMY.md` — currencies, sources, sinks, rates, pity, pacing tables
 
 ## Standards

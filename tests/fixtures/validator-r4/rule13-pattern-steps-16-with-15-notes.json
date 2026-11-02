@@ -1,0 +1,22 @@
+{
+  "name": "rule13-pattern-steps-16-with-15-notes",
+  "ops": [
+    {
+      "file": "audio.json",
+      "op": "delete",
+      "path": [
+        "sounds",
+        "bgm_menu",
+        "pattern",
+        "tracks",
+        0,
+        "notes",
+        15
+      ]
+    }
+  ],
+  "expect": {
+    "errorRule": "13-licensing",
+    "errorContains": "notes has 15 entries, steps is 16"
+  }
+}

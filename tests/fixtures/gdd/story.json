@@ -1,0 +1,352 @@
+{
+  "version": 1,
+  "scenes": [
+    {
+      "id": "scene_001_pre",
+      "background": "bg_highcliff_gate",
+      "lines": [
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "High above the clouds, the Highcliff Open begins. Nine peaks. One ring. Every fighter in the world wants in."
+        },
+        {
+          "speaker": "char_tavi_001",
+          "side": "left",
+          "expression": "grin",
+          "text": "We made it! Lark, Dunmore, look at that ring! I'm gonna win it!"
+        },
+        {
+          "speaker": "char_lark_001",
+          "side": "left",
+          "expression": "smirk",
+          "text": "We're late, the gate's closing, and you're already shouting. Classic."
+        },
+        {
+          "speaker": "char_rook_001",
+          "side": "right",
+          "expression": "smug",
+          "text": "Three nobodies from the valley? I count... zero chances. Turn around."
+        },
+        {
+          "speaker": "char_dunmore_001",
+          "side": "left",
+          "expression": "worried",
+          "text": "He seems confident. I'm sorry, Tavi, but you did ask for this."
+        },
+        {
+          "speaker": "char_tavi_001",
+          "side": "left",
+          "expression": "determined",
+          "text": "Zero chances? Then watch me light one up!"
+        }
+      ]
+    },
+    {
+      "id": "scene_001_post",
+      "background": "bg_highcliff_gate",
+      "lines": [
+        {
+          "speaker": "char_rook_001",
+          "side": "right",
+          "expression": "angry",
+          "text": "Lucky. That was lucky. I want a rematch, and I'll bring a partner."
+        },
+        {
+          "speaker": "char_tavi_001",
+          "side": "left",
+          "expression": "grin",
+          "text": "Bring ten! We'll still burn through!"
+        },
+        {
+          "speaker": "npc",
+          "name": "Announcer",
+          "side": "center",
+          "expression": "shout",
+          "text": "WHAT AN UPSET! The valley trio is IN THE TOURNAMENT!"
+        },
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "Far above, a single star blinks out. Nobody notices. Yet."
+        }
+      ]
+    },
+    {
+      "id": "scene_002_pre",
+      "background": "bg_lantern_bridge",
+      "lines": [
+        {
+          "speaker": "npc",
+          "name": "Announcer",
+          "side": "center",
+          "expression": "shout",
+          "text": "Round two! Rook returns with the Lantern Monk, Pell! Tag match, folks!"
+        },
+        {
+          "speaker": "char_pell_001",
+          "side": "right",
+          "expression": "calm",
+          "text": "I heal anyone who falls. I also bet Rook a week of dishes that we win."
+        },
+        {
+          "speaker": "char_rook_001",
+          "side": "right",
+          "expression": "smug",
+          "text": "Two of us. Every move counted. This time, no luck."
+        },
+        {
+          "speaker": "char_lark_001",
+          "side": "left",
+          "expression": "smirk",
+          "text": "Good, I could use a real workout. Dunmore, guard my back?"
+        },
+        {
+          "speaker": "char_dunmore_001",
+          "side": "left",
+          "expression": "determined",
+          "text": "Always. Sorry in advance, Mister Monk."
+        }
+      ]
+    },
+    {
+      "id": "scene_002_post",
+      "background": "bg_lantern_bridge",
+      "lines": [
+        {
+          "speaker": "char_pell_001",
+          "side": "right",
+          "expression": "smile",
+          "text": "Dishes for a week... Well fought, valley friends."
+        },
+        {
+          "speaker": "char_rook_001",
+          "side": "right",
+          "expression": "shocked",
+          "text": "I miscounted. That's... never happened before."
+        },
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "The lanterns on the bridge flicker, then turn violet. The sky above the ring begins to go dark."
+        },
+        {
+          "speaker": "char_tavi_001",
+          "side": "left",
+          "expression": "shocked",
+          "text": "Uh... is the sun supposed to do that?"
+        }
+      ]
+    },
+    {
+      "id": "scene_003_pre",
+      "background": "bg_highcliff_ring_dusk",
+      "lines": [
+        {
+          "speaker": "char_thessa_001",
+          "side": "right",
+          "expression": "cold",
+          "text": "The tournament is over. My king claims every aura on this mountain."
+        },
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "Behind her, figures rise from the shadows: perfect, empty copies of Rook and Pell."
+        },
+        {
+          "speaker": "char_rook_001",
+          "side": "left",
+          "expression": "angry",
+          "text": "Hey! That's MY face! Nobody copies my moves!"
+        },
+        {
+          "speaker": "char_thessa_001",
+          "side": "right",
+          "expression": "cold",
+          "text": "Umbral echoes. They fight like your friends, but they feel nothing."
+        },
+        {
+          "speaker": "char_tavi_001",
+          "side": "left",
+          "expression": "determined",
+          "text": "Then we'll knock some feeling into them! Team, let's go!"
+        }
+      ]
+    },
+    {
+      "id": "scene_003_post",
+      "background": "bg_highcliff_ring_dusk",
+      "lines": [
+        {
+          "speaker": "char_thessa_001",
+          "side": "right",
+          "expression": "surprised",
+          "text": "You broke them... with that much heart? Interesting."
+        },
+        {
+          "speaker": "char_thessa_001",
+          "side": "right",
+          "expression": "cold",
+          "text": "Corvane waits at the summit. The champion stands in your way. Go, if you dare."
+        },
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "Thessa melts into the dark. For a moment, she looks almost relieved."
+        },
+        {
+          "speaker": "char_lark_001",
+          "side": "left",
+          "expression": "nervous",
+          "text": "The champion? Solenne herself? Today just keeps getting better."
+        }
+      ]
+    },
+    {
+      "id": "scene_004_pre",
+      "background": "bg_highcliff_summit",
+      "lines": [
+        {
+          "speaker": "char_solenne_001",
+          "side": "right",
+          "expression": "stern",
+          "text": "Nine years I have held this ring. I will not send children to face a king."
+        },
+        {
+          "speaker": "char_tavi_001",
+          "side": "left",
+          "expression": "angry",
+          "text": "We're not children! We beat his shadows!"
+        },
+        {
+          "speaker": "char_solenne_001",
+          "side": "right",
+          "expression": "proud",
+          "text": "Then prove it. Beat Rook, Pell and me. If you can, the summit is yours."
+        },
+        {
+          "speaker": "char_rook_001",
+          "side": "right",
+          "expression": "smirk",
+          "text": "Round three. This time I count better."
+        },
+        {
+          "speaker": "char_dunmore_001",
+          "side": "left",
+          "expression": "worried",
+          "text": "Oh dear. The champion. I'll apologize extra hard."
+        }
+      ]
+    },
+    {
+      "id": "scene_004_post",
+      "background": "bg_highcliff_summit",
+      "lines": [
+        {
+          "speaker": "char_solenne_001",
+          "side": "right",
+          "expression": "laugh",
+          "text": "Ha... HA! It has been years since anyone made me sweat!"
+        },
+        {
+          "speaker": "char_solenne_001",
+          "side": "right",
+          "expression": "serious",
+          "text": "Go. But know this: Corvane wants my aura most of all. Do not let him take it."
+        },
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "Lightning splits the summit. A crown of black shards hangs in the sky."
+        },
+        {
+          "speaker": "char_corvane_001",
+          "side": "right",
+          "expression": "smile",
+          "text": "How kind of you to tire her out for me."
+        }
+      ]
+    },
+    {
+      "id": "scene_005_pre",
+      "background": "bg_starless_summit",
+      "lines": [
+        {
+          "speaker": "char_corvane_001",
+          "side": "right",
+          "expression": "smile",
+          "text": "Welcome, little sparks. My herald. My new shadow. And me. A three-course meal."
+        },
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "Behind him stands an umbral echo of Solenne, glowing with stolen sunlight."
+        },
+        {
+          "speaker": "char_thessa_001",
+          "side": "right",
+          "expression": "sad",
+          "text": "...Forgive me. I still serve the crown. For now."
+        },
+        {
+          "speaker": "char_tavi_001",
+          "side": "left",
+          "expression": "angry",
+          "text": "You took the champion's light? I'm taking it BACK!"
+        },
+        {
+          "speaker": "char_lark_001",
+          "side": "left",
+          "expression": "determined",
+          "text": "Final delivery, everyone. Make it loud!"
+        },
+        {
+          "speaker": "char_dunmore_001",
+          "side": "left",
+          "expression": "determined",
+          "text": "For once, I'm not sorry at all."
+        }
+      ]
+    },
+    {
+      "id": "scene_005_post",
+      "background": "bg_highcliff_summit",
+      "lines": [
+        {
+          "speaker": "char_corvane_001",
+          "side": "right",
+          "expression": "shocked",
+          "text": "My crown... cracked by a mechanic, a courier and a quarryman? Impossible!"
+        },
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "The shard crown shatters. Stolen auras rush back across the nine peaks like dawn."
+        },
+        {
+          "speaker": "char_thessa_001",
+          "side": "right",
+          "expression": "sad",
+          "text": "He's gone. I... think I'm free. Thank you."
+        },
+        {
+          "speaker": "char_rook_001",
+          "side": "right",
+          "expression": "smirk",
+          "text": "Fine. I counted every hit. You earned it. I'm on your team now."
+        },
+        {
+          "speaker": "char_tavi_001",
+          "side": "left",
+          "expression": "grin",
+          "text": "WOOO! Next year, we win the whole tournament!"
+        },
+        {
+          "speaker": "narrator",
+          "side": "center",
+          "text": "A new fighter joins you: Rook, the Thousand-Step Rook!"
+        }
+      ]
+    }
+  ]
+}

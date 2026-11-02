@@ -1,0 +1,29 @@
+{
+  "name": "rule14-card-art-vfx-climax-effect-longer-than-its-cinematic",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "effects",
+        "vfx_tavi_wildfire_crash"
+      ],
+      "value": {
+        "duration_ms": 2600,
+        "priority": 3,
+        "layers": [
+          {
+            "kind": "beam",
+            "start_ms": 0,
+            "duration_ms": 2600,
+            "color": "aura"
+          }
+        ]
+      }
+    }
+  ],
+  "expect": {
+    "errorRule": "14-flash-safety",
+    "errorContains": "duration_ms 2600 > 2500 (card_tavi_wildfire_crash cinematic)"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "appId": "com.animecardbattler.game",
+  "appName": "Jade Tempest",
+  "webDir": "dist",
+  "loggingBehavior": "none",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": false
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": false },
+    "CapacitorCookies": { "enabled": false }
+  }
+}

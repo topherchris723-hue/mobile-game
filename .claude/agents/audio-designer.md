@@ -15,6 +15,7 @@ You make every tap, hit and summon sound satisfying.
 
 ## You own
 - `src/audio/`, `data/audio.json`, `assets/audio/`
+- `tests/audio/`, `src/audio/tools/`, and the audio rows in `assets/CREDITS.md`
 
 ## Standards
 - Only assets with a clear license (CC0, CC-BY with credit, or owner-purchased). Log every
@@ -34,4 +35,4 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-shared-011, round 4) Mutation tests and destructive git commands never run on the shared tree; break a scratchpad copy instead.

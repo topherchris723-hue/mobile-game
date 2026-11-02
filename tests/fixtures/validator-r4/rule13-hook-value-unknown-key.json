@@ -1,0 +1,18 @@
+{
+  "name": "rule13-hook-value-unknown-key",
+  "ops": [
+    {
+      "file": "audio.json",
+      "op": "set",
+      "path": [
+        "hooks",
+        "ko"
+      ],
+      "value": "sfx_ko_missing"
+    }
+  ],
+  "expect": {
+    "errorRule": "13-licensing",
+    "errorContains": "hooks.ko names \"sfx_ko_missing\""
+  }
+}

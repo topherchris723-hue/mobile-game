@@ -1,0 +1,18 @@
+{
+  "name": "rule1-duplicate-card-id",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        1,
+        "id"
+      ],
+      "value": "card_tavi_spark_jab"
+    }
+  ],
+  "expect": {
+    "errorRule": "1-unique-ids"
+  }
+}

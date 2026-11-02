@@ -1,0 +1,29 @@
+{
+  "name": "ok-rule10-star3-hp-16000-and-18000-boundaries",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "base_stats",
+        "hp"
+      ],
+      "value": 16000
+    },
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        1,
+        "base_stats",
+        "hp"
+      ],
+      "value": 18000
+    }
+  ],
+  "expect": {
+    "errorRule": null
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "warning-rule11-hp-below-30",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "ignition",
+        "triggers",
+        0,
+        "value"
+      ],
+      "value": 30
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": "11-ignition",
+    "warningContains": "hp_below_pct 30 outside [40, 60]"
+  }
+}

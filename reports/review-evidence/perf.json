@@ -1,0 +1,50 @@
+[
+ {
+  "renderer": "canvas",
+  "throttle": 1,
+  "title": {
+   "n": 121,
+   "median": 16.7,
+   "p95": 16.7,
+   "max": 16.8
+  },
+  "battle": {
+   "n": 720,
+   "median": 16.7,
+   "p95": 16.8,
+   "max": 33.3
+  }
+ },
+ {
+  "renderer": "canvas",
+  "throttle": 4,
+  "title": {
+   "n": 121,
+   "median": 16.7,
+   "p95": 16.7,
+   "max": 16.8
+  },
+  "battle": {
+   "n": 370,
+   "median": 33.3,
+   "p95": 50.1,
+   "max": 133.4
+  }
+ },
+ {
+  "renderer": "default",
+  "throttle": 1,
+  "title": {
+   "n": 32,
+   "median": 66.7,
+   "p95": 83.3,
+   "max": 83.4
+  },
+  "battle": {
+   "n": 86,
+   "median": 133.4,
+   "p95": 166.7,
+   "max": 183.3
+  }
+ }
+]

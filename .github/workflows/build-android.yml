@@ -50,6 +50,9 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # Rejects a tampered gradle-wrapper.jar (the wrapper is committed in android/).
+      - uses: gradle/actions/wrapper-validation@v4
+
       - name: Install dependencies
         run: npm ci
 
@@ -79,23 +82,55 @@ jobs:
             echo "::error::Reviewed commit is not part of this build's history."; exit 1
           fi
           # Game files must be identical to what the reviewer saw.
-          if ! git diff --quiet "$REVIEWED" HEAD -- src data assets index.html styles package.json package-lock.json capacitor.config.json; then
+          if ! git diff --quiet "$REVIEWED" HEAD -- src data assets index.html styles package.json package-lock.json capacitor.config.json android; then
             echo "::error::Game files changed after the review. A new review is required."
-            git diff --stat "$REVIEWED" HEAD -- src data assets index.html styles package.json package-lock.json capacitor.config.json
+            git diff --stat "$REVIEWED" HEAD -- src data assets index.html styles package.json package-lock.json capacitor.config.json android
             exit 1
           fi
           echo "Release gate passed: reviewed commit $REVIEWED"
 
       # ---------------- Android project ----------------
-      - name: Create Android project if missing
+      # The android/ project is committed (app identity: appId, version, icons, portrait, permissions).
+      # Never regenerate it here: `cap add` would bring back the template icon and INTERNET permission.
+      - name: Check app identity (source)
         run: |
-          if [ ! -d android ]; then npx cap add android; fi
-          npx cap sync android
+          if [ ! -d android ]; then echo "::error::android/ project is missing (it is committed, see docs/RELEASE.md)."; exit 1; fi
+          npm run android:check
+
+      - name: Android SDK packages (API 36)
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+          echo "AAPT=$ANDROID_HOME/build-tools/36.0.0/aapt" >> "$GITHUB_ENV"
+
+      - name: Copy web build into the Android project
+        run: npx cap sync android
+
+      # Round 7 (gameplay-programmer): the shipped licence notices (dist/THIRD_PARTY_LICENSES.txt, Settings → Licenses)
+      # list the native dependencies from the reviewed android/third-party/native-deps.json. Fail the build if Gradle's
+      # real release runtime classpath has a module or project that list does not cover (or a version it does not match).
+      - name: Native licence notices cover the runtime classpath
+        working-directory: android
+        run: |
+          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath --no-daemon > ../native-runtime-classpath.txt
+          node ../scripts/check-native-licenses.mjs ../native-runtime-classpath.txt
+          # For the list's reviewer: the NOTICE shipped inside the Cordova framework artifact (best effort, never fails).
+          for f in $(find ~/.gradle/caches -path '*org.apache.cordova*' \( -name '*.aar' -o -name '*.jar' \) 2>/dev/null); do
+            unzip -p "$f" 'META-INF/NOTICE*' 2>/dev/null | head -20 || true
+          done
 
       - name: Build debug APK
         if: env.BUILD_TYPE == 'debug'
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon
+
+      - name: Check debug APK (merged manifest, version, size)
+        if: env.BUILD_TYPE == 'debug'
+        run: |
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          node android/tools/check-identity.mjs --apk "$APK"
+          ls -l "$APK"
+          echo "Largest entries:"; unzip -lv "$APK" | sort -k1 -n -r | head -15
 
       - name: Upload debug APK
         if: env.BUILD_TYPE == 'debug'
@@ -103,6 +138,7 @@ jobs:
         with:
           name: app-debug-${{ github.sha }}
           path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
 
       - name: Build release AAB and APK
         if: env.BUILD_TYPE == 'release'
@@ -136,6 +172,7 @@ jobs:
             --ks-key-alias "$KEY_ALIAS" --key-pass "pass:$KEY_PASS" \
             --out signed/app-release.apk "$RUNNER_TEMP/aligned.apk"
           "$BT/apksigner" verify signed/app-release.apk
+          node android/tools/check-identity.mjs --apk signed/app-release.apk
 
           rm -f "$RUNNER_TEMP/release.jks"
           ls -lh signed/

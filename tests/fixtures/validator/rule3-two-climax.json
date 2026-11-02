@@ -1,0 +1,20 @@
+{
+  "name": "rule3-two-climax",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "deck",
+        4,
+        "count"
+      ],
+      "value": 2
+    }
+  ],
+  "expect": {
+    "errorRule": "3-deck"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "warning-rule15-event-not-in-vfx-event-keys",
+  "ops": [
+    {
+      "file": "vfx.json",
+      "op": "set",
+      "path": [
+        "events",
+        "made_up"
+      ],
+      "value": []
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": "15-key-coverage",
+    "warningContains": "events key \"made_up\" is not in VFX_EVENT_KEYS"
+  }
+}

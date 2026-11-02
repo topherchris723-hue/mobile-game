@@ -1,0 +1,19 @@
+{
+  "name": "rule12-climax-hitstun-09",
+  "file": "cards.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "cards",
+        4,
+        "hitstun_s"
+      ],
+      "value": 0.9
+    }
+  ],
+  "expect": {
+    "errorRule": "12-card-budgets",
+    "errorContains": "hitstun_s 0.9 outside [1, 1] (climax)"
+  }
+}

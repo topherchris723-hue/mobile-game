@@ -1,0 +1,9 @@
+{
+  "name": "rule13-procedural-without-audio-json-row",
+  "ops": [],
+  "credits": "# Asset Credits\n\n| File | Type | Source / author | License | Commercial use OK? | Added round |\n|---|---|---|---|---|---|\n| — | — | — | — | — | — |\n",
+  "expect": {
+    "errorRule": "13-licensing",
+    "errorContains": "File \"data/audio.json\" and License \"self-made\""
+  }
+}

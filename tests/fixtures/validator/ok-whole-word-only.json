@@ -1,0 +1,21 @@
+{
+  "name": "ok-whole-word-only",
+  "file": "story.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "scenes",
+        0,
+        "lines",
+        0,
+        "text"
+      ],
+      "value": "The kids skied past the bankside heroes' kiosk."
+    }
+  ],
+  "expect": {
+    "errorRule": null,
+    "warningRule": null
+  }
+}

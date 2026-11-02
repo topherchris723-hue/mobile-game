@@ -1,0 +1,17 @@
+{
+ "cards": 52,
+ "neverPlayed": [],
+ "playedButNoHitOrEffect": [],
+ "events": {
+  "ignition": 3704,
+  "tri_burst": 2181,
+  "tri_burst_hit": 6204,
+  "perfect_slip": 4322,
+  "riposte": 4260,
+  "tag": 9708,
+  "tag_strike": 458,
+  "climax_cinematic": 2157,
+  "effect": 17633,
+  "ko": 3891
+ }
+}

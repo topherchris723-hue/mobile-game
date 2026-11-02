@@ -1,0 +1,18 @@
+{
+  "name": "rule9-sparks-in-epithet",
+  "file": "characters.json",
+  "ops": [
+    {
+      "op": "set",
+      "path": [
+        "characters",
+        0,
+        "epithet"
+      ],
+      "value": "Little SPARKS"
+    }
+  ],
+  "expect": {
+    "errorRule": "9-name-only-terms"
+  }
+}
