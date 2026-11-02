@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Jade Tempest app icon + splash generator (release-engineer, round 7).
+// Fyrenza app icon + splash generator (release-engineer, round 7).
 //
 // All art is drawn here as SVG (self-made, no fonts, no images, no third-party art) and rendered to
 // PNG with the project's own Playwright Chromium. Run:  npm run android:icons

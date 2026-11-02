@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 // Google Play: since 2026-08-31 new apps and updates must target API 36 (Android 16).
 // Verified on developer.android.com/google/play/requirements/target-sdk on 2026-10-24.
 export const MIN_TARGET_SDK = 36;
-const EXPECTED_APP_NAME = 'Jade Tempest';
+const EXPECTED_APP_NAME = 'Fyrenza';
 const DENSITIES = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi'];
 const ICON_FILES = ['ic_launcher', 'ic_launcher_round', 'ic_launcher_foreground', 'ic_launcher_background', 'ic_launcher_monochrome'];
 
