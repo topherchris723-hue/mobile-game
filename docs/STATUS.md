@@ -77,6 +77,11 @@ lesson and a hard rule at the next `/retro`.
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
   currency and storm-of-power tone. Trademark check by compliance-checker before release.
+- Round 7 (owner asked for an original name; Producer picks): new title **Fyrenza** (coined word; in-game
+  title "Fyrenza", store title "Fyrenza: Card Duels"). Only candidate compliance rated CLEAR
+  (reports/compliance/round-7-title.md); Kovanta/Tenvaro hold contained live marks (VANTA, VARO), Aurenko
+  echoes franchise names. Internal testing only until a human registry search (USPTO/EUIPO/WIPO/UK IPO,
+  classes 9/28/41) clears it before any public track; registry hosts are unreachable from this container.
 - Round 7: for the release gate, the "exact commit" is the last commit that changes anything
   shipped or tested (src/, data/, scripts/, tests/, android/, assets/, index.html, styles/,
   package*.json, configs, workflows). Commits that only add reports/ evidence or docs/STATUS.md do
