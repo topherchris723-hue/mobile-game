@@ -1,0 +1,16 @@
+
+Running 5 tests using 1 worker
+
+[perf canvas cpu×4] frames=942 median=17.0 ms p95=26.0 ms max=70.9 ms; work median=4.2 p95=8.2 ms; auto quality → low: no
+  ✓  1 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4 (21.4s)
+[perf canvas cpu×4] frames=951 median=16.8 ms p95=26.6 ms max=83.0 ms; work median=4.0 p95=8.5 ms; auto quality → low: no
+  ✓  2 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4 (21.4s)
+[perf canvas cpu×4] frames=900 median=17.4 ms p95=29.5 ms max=129.7 ms; work median=4.5 p95=9.2 ms; auto quality → low: no
+  ✓  3 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4 (21.6s)
+[perf canvas cpu×4] frames=878 median=17.7 ms p95=30.4 ms max=88.8 ms; work median=4.8 p95=10.1 ms; auto quality → low: no
+  ✓  4 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4 (21.7s)
+[perf canvas cpu×4] frames=918 median=16.9 ms p95=29.1 ms max=81.0 ms; work median=4.2 p95=10.0 ms; auto quality → low: no
+  ✓  5 [phone-360x640] › tests/e2e/qa-perf.spec.js:20:5 › AC-17.7 perf: renderer=canvas cpu×4 (21.4s)
+
+  5 passed (1.9m)
+exit=0

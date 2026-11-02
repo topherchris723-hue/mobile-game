@@ -90,3 +90,53 @@ Evidence: the command above (run on the `9082d67` export), and the proof run on 
 **Failing checks:** unit suite (601/602, BUG-7-01) and placeholder sweep (3 unlogged hits, BUG-7-02).
 
 QA RESULT: FAIL
+
+---
+
+# Re-check on d09623e
+
+**Commit tested: `d09623e`.** All runs were on a clean `git archive d09623e` export (`…/scratchpad/r7b/tree`, `node_modules` linked). The export's QA specs are byte-identical to mine, and the main working tree was clean. Evidence: `reports/screenshots/round-7/qa/recheck-d09623e/` (screens, `e2e-full.log`, `perf5.log`).
+
+## Re-tests
+
+| Bug | Status | Evidence |
+|---|---|---|
+| BUG-7-01 unit suite red on a clean checkout | **VERIFIED FIXED** | On the export (no `android/capacitor-cordova-android-plugins/` folder exists): `npx vitest run` → **602/602, 45 files**. `third-party-native.test.js` → 13/13 (it still runs; nothing is skipped). **Negative proof:** dropping one entry from `android/third-party/native-deps.json` in the export → `Failed Tests 6` incl. "the reviewed list covers every runtime dependency …"; restoring it → 13/13 |
+| BUG-7-02 placeholder hits | **VERIFIED FIXED** | Sweep below = 0 hits. The banned-term grep has only 2 hits left, both "martial-arts" in the store copy (`store/listing.md:40,46`), the genre word the GDD allows; reviewed by hand. The quoted banned lists are gone |
+
+## Regression pass (proportional)
+
+| Check | Result |
+|---|---|
+| `npx vitest run` (full) | **602/602** |
+| Full `npx playwright test` | **88/88 passed**, 40 skipped by design (QA specs run once in the 360 project); exit 0 |
+| `validate-data` | PASS, 10 files, 0 errors, 0 warnings |
+| `npm run android:check` | `check-identity: PASS (46 checks, source only)` |
+| Busy-frame scan, 3 sizes | 155 / 139 / 154 frames, 0 overlaps |
+| Screens / console | layout scan 0 problems; 0 console errors |
+| Release bundle | clean build: all 13 hook names = 0; `VITE_TEST_HOOKS=1`: `__TEST__` 3, `silhouetteSheet` 1 (> 0); clean again: 0 |
+| Banned terms | 44 terms, 75 files: 2 hits, both "martial-arts" (allowed genre word); name-only: 0 |
+| **AC-17.7 absolute** (release candidate) | 5 dedicated runs, Canvas, 4× CPU: p95 **26.0, 26.6, 29.1, 29.5, 30.4 ms → median 29.1 ms ≤ 33.3 → PASS**. The in-suite run gave 29.9 ms. Game-work p95 8.2–10.1 ms. WebGL / real device: NOT VERIFIED (this container has no GPU) |
+
+**Placeholder sweep (command and output):**
+```
+$ grep -rniE "prototype|placeholder|working title|\bTBD\b|\bTODO\b|lorem" src/ui/strings.json data/ index.html store/
+hits=0
+```
+- `data/` includes `data/schemas/`.
+- `dist/`: `dist/THIRD_PARTY_LICENSES.txt`, `dist/third-party-packages.json` and `dist/index.html` have 0 hits.
+- In `dist/assets/*.js`, the only matches are JS identifiers (`Object.prototype`, `getPrototypeOf`, `isPrototypeOf`, `setPrototypeOf`, `boolOrEmptySchema`). The player-facing filter `grep -hoiE "[^A-Za-z.](RE)[^A-Za-z(]" | grep -viE "prototype[.,)]|\.prototype|isPrototypeOf|getPrototypeOf|setPrototypeOf"` returns 0.
+- Proof that filter can fail: a probe file with `t("Title: placeholder art")` next to `Object.prototype.x; getPrototypeOf(a)` → it reports ` placeholder` only.
+
+## Counts (re-check)
+
+| Severity | Count |
+|---|---|
+| BLOCKER | 0 |
+| MAJOR | 0 |
+| MINOR | 0 |
+| POLISH | 0 |
+
+Failing checks: none. Re-tested fixes: 2/2 VERIFIED FIXED (BUG-7-01, BUG-7-02).
+
+QA RESULT: PASS (d09623e)
