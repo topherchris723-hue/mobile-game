@@ -25,6 +25,13 @@ describe('native (Android) third-party notices', () => {
   it('the reviewed list covers every runtime dependency declared in the Gradle files, at the declared version', () => {
     const declared = declaredGradleDeps(ROOT);
     expect(declared.modules.length).toBeGreaterThanOrEqual(8); // not blind
+    // BUG-7-01: only committed files or installed node_modules, never the git-ignored, `cap sync`-generated
+    // android/capacitor-cordova-android-plugins/ (its build.gradle comes from the @capacitor/cli template instead).
+    for (const src of declared.sources) {
+      expect(src.indexOf('android/capacitor-cordova-android-plugins/'), src).not.toBe(0);
+      expect(src.indexOf('node_modules/') === 0 || src.indexOf('android/') === 0, src).toBe(true);
+    }
+    expect(declared.sources).toContain('node_modules/@capacitor/cli/assets/capacitor-cordova-android-plugins.tar.gz#build.gradle');
     expect(declared.projects.sort()).toEqual([':capacitor-android', ':capacitor-cordova-android-plugins']);
     const exact = {};
     for (const m of native.modules) exact[m.id] = m.version;
