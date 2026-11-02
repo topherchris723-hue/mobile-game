@@ -1,4 +1,4 @@
-# Jade Tempest: Visual Style Guide
+# Fyrenza: Visual Style Guide
 
 Owner: art-director. Version: round 4 (first version). Applies to placeholder art in code now and to any
 commissioned or tool-made art later. Read with GDD §2 (pillars), §5.9 (Ignition), §5.10 (Tri-Burst), §5.12 (aura
@@ -220,7 +220,7 @@ Rarity must be readable at a glance by **three cues at once: colour, star count 
 |---|---|---|---|
 | ★3 | Blue #5AA9FF orb, 1 ring | Single 2 px border, plain corners | Orb pops, no extra |
 | ★4 | Violet #B06BFF orb, 2 counter-rotating rings, 4 small diamond glints | **Double** border (2 px + 1 px inset), small notched corners | Rings spin 0.6 s, short violet burst |
-| ★5 | Gold #FFC23D orb inside a **jade-green storm** (swirling #3DDC97 → #FFC23D streaks; ties to the title "Jade Tempest"), 3 rings | **3 px gold border + inner glow + four corner gems** (small gold diamonds) + a light sweep across the frame every 2 s | Screen shake 4 px, rays fill the background, 1 white flash (120 ms) |
+| ★5 | Gold #FFC23D orb inside a **jade-green storm** (swirling #3DDC97 → #FFC23D streaks; ties to the Jade currency), 3 rings | **3 px gold border + inner glow + four corner gems** (small gold diamonds) + a light sweep across the frame every 2 s | Screen shake 4 px, rays fill the background, 1 white flash (120 ms) |
 
 - Rarity is never "rainbow". No dragon, crossing beams, or wish-orb motifs.
 - The reveal may **tease** upward (a blue orb flickers violet then gold) only if the final rarity is the higher one;

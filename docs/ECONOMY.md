@@ -1,4 +1,4 @@
-# Economy — Jade Tempest (milestone)
+# Economy — Fyrenza (milestone)
 
 Owner: economy-designer. Written in round 4 (Growth polish). Sources of truth: `data/economy.json`,
 `data/banners.json`, `data/stages.json` (rewards and missions), GDD §9, §11, §12, and the round-3 balance report
