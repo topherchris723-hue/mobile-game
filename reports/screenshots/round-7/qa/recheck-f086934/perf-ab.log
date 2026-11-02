@@ -1,0 +1,25 @@
+=== cycle 1 tree
+[perf canvas cpu×4] frames=952 median=16.9 ms p95=26.1 ms max=63.4 ms; work median=3.8 p95=8.7 ms; auto quality → low: no
+[perf canvas cpu×4] frames=939 median=16.9 ms p95=27.1 ms max=73.6 ms; work median=3.9 p95=8.6 ms; auto quality → low: no
+  2 passed (47.4s)
+=== cycle 1 base
+[perf canvas cpu×4] frames=977 median=16.7 ms p95=23.6 ms max=80.2 ms; work median=3.6 p95=7.6 ms; auto quality → low: no
+[perf canvas cpu×4] frames=944 median=16.7 ms p95=27.2 ms max=80.7 ms; work median=3.8 p95=8.1 ms; auto quality → low: no
+  2 passed (47.7s)
+=== cycle 2 tree
+[perf canvas cpu×4] frames=935 median=16.9 ms p95=27.5 ms max=110.6 ms; work median=3.9 p95=9.2 ms; auto quality → low: no
+[perf canvas cpu×4] frames=962 median=16.8 ms p95=25.1 ms max=120.6 ms; work median=3.7 p95=7.8 ms; auto quality → low: no
+  2 passed (47.8s)
+=== cycle 2 base
+[perf canvas cpu×4] frames=945 median=16.8 ms p95=25.5 ms max=75.0 ms; work median=3.7 p95=7.9 ms; auto quality → low: no
+[perf canvas cpu×4] frames=950 median=16.8 ms p95=26.7 ms max=71.9 ms; work median=3.8 p95=9.0 ms; auto quality → low: no
+  2 passed (47.3s)
+=== cycle 3 tree
+[perf canvas cpu×4] frames=942 median=16.8 ms p95=27.0 ms max=82.4 ms; work median=3.9 p95=8.7 ms; auto quality → low: no
+[perf canvas cpu×4] frames=917 median=17.1 ms p95=28.1 ms max=101.9 ms; work median=4.1 p95=8.7 ms; auto quality → low: no
+  2 passed (47.6s)
+=== cycle 3 base
+[perf canvas cpu×4] frames=935 median=16.8 ms p95=28.3 ms max=78.5 ms; work median=3.8 p95=9.5 ms; auto quality → low: no
+[perf canvas cpu×4] frames=948 median=16.9 ms p95=26.8 ms max=73.7 ms; work median=3.9 p95=8.2 ms; auto quality → low: no
+  2 passed (46.8s)
+done

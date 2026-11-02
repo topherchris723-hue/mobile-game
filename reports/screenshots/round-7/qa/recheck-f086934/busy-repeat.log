@@ -1,0 +1,41 @@
+=== run 1 tree
+[360x640] busy frames scanned=140, max arena texts in one frame=10, overlaps=0
+[390x844] busy frames scanned=176, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=176, max arena texts in one frame=10, overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+  1 passed (1.7m)
+=== run 1 base
+[360x640] busy frames scanned=140, max arena texts in one frame=10, overlaps=1
+[390x844] busy frames scanned=155, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=154, max arena texts in one frame=11, overlaps=0
+360x640 tick 786: "COMBO x2"(a1) × "NOONDAY HALO!"(a1) 11x1 [reports/screenshots/round-7/qa/360x640-busy-overlap-1.png]
+  ✘  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+    Error: floating-text overlaps in busy frames
+    [31m+   "360x640 tick 786: \"COMBO x2\"(a1) × \"NOONDAY HALO!\"(a1) 11x1 [reports/screenshots/round-7/qa/360x640-busy-overlap-1.png]",[39m
+    > 153 |   expect(report.filter((l) => / tick /.test(l)), 'floating-text overlaps in busy frames').toEqual([]);
+  1 failed
+=== run 2 tree
+[360x640] busy frames scanned=156, max arena texts in one frame=9, overlaps=0
+[390x844] busy frames scanned=174, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=155, max arena texts in one frame=11, overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+  1 passed (1.7m)
+=== run 2 base
+[360x640] busy frames scanned=157, max arena texts in one frame=9, overlaps=0
+[390x844] busy frames scanned=155, max arena texts in one frame=11, overlaps=0
+[430x932] busy frames scanned=138, max arena texts in one frame=9, overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+  1 passed (1.7m)
+=== run 3 tree
+[360x640] busy frames scanned=141, max arena texts in one frame=10, overlaps=0
+[390x844] busy frames scanned=136, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=156, max arena texts in one frame=11, overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+  1 passed (1.7m)
+=== run 3 base
+[360x640] busy frames scanned=139, max arena texts in one frame=10, overlaps=0
+[390x844] busy frames scanned=176, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=135, max arena texts in one frame=10, overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+  1 passed (1.7m)
+done

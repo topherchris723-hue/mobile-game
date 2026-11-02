@@ -1,12 +1,36 @@
-  -  2 [phone-430x932] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza")
-
-  1 skipped
-  1 passed (18.9s)
-  -  2 [phone-430x932] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza")
-
-  1 skipped
+=== bld run 1
+Running 1 test using 1 worker
+  ✓  1 [phone-360x640] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza") (15.8s)
+  1 passed (19.8s)
+=== bld run 2
+Running 1 test using 1 worker
+  ✓  1 [phone-360x640] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza") (14.5s)
   1 passed (18.4s)
-  -  2 [phone-430x932] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza")
-
-  1 skipped
-  1 passed (18.3s)
+=== bld run 3
+Running 1 test using 1 worker
+  ✓  1 [phone-360x640] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza") (14.4s)
+  1 passed (18.2s)
+=== n1 (must FAIL)
+  ✘  1 [phone-360x640] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza") (16ms)
+  1) [phone-360x640] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza") 
+    Expected: [32m"Fyrenza"[39m
+    Received: [31m"Jade Tempest"[39m
+      17 |   const problems = [];
+  1 failed
+    [phone-360x640] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza") 
+=== n6 (must FAIL)
+AC-1.1 browser problems:
+  360x640 Title: 0 texts equal "Fyrenza"; texts=["Jade Tempest","Fight for the Jade Throne","Tap to start"]
+  360x640 Title shows old title: "Jade Tempest"
+  390x844 Title: 0 texts equal "Fyrenza"; texts=["Jade Tempest","Fight for the Jade Throne","Tap to start"]
+  390x844 Title shows old title: "Jade Tempest"
+  430x932 Title: 0 texts equal "Fyrenza"; texts=["Jade Tempest","Fight for the Jade Throne","Tap to start"]
+  430x932 Title shows old title: "Jade Tempest"
+  ✘  1 [phone-360x640] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza") (14.3s)
+  1) [phone-360x640] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza") 
+    Error: 360x640 Title: 0 texts equal "Fyrenza"; texts=["Jade Tempest","Fight for the Jade Throne","Tap to start"]
+    360x640 Title shows old title: "Jade Tempest"
+    390x844 Title: 0 texts equal "Fyrenza"; texts=["Jade Tempest","Fight for the Jade Throne","Tap to start"]
+    390x844 Title shows old title: "Jade Tempest"
+    430x932 Title: 0 texts equal "Fyrenza"; texts=["Jade Tempest","Fight for the Jade Throne","Tap to start"]
+done
