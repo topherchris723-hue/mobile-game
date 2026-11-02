@@ -49,7 +49,7 @@ Ignite your inner fire in fast 1v1 card duels. Tap, dodge, tag in, transform.
 ```
 Fighters ablaze with inner fire clash in fast, flashy 1v1 card duels. Tap a card to throw a punch, swipe to slip past your rival's attack, and watch for the glowing IGNITE button that turns your fighter into a new, stronger form.
 
-Fyrenza is a real-time martial-arts card battler for one thumb, played in portrait.
+Fyrenza is a real-time fighting card battler for one thumb, played in portrait.
 
 How a fight works
 - Bring a team of three. One fights, two wait on the bench. Tag a teammate in when their portrait is ready.
