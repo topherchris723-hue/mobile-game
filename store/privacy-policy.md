@@ -1,7 +1,7 @@
 # Privacy policy — DRAFT for the owner to review
 
-Owner: compliance-checker (draft). Round 6. Drafted 2026-10-24 against build commit `bf48920`
-(clean `npm run build`, bundle `index-CPn8STYN.js`). This is not legal advice. The owner must review it,
+Owner: compliance-checker (draft). Round 6, re-checked round 7 (2026-11-02) against build commit `d09623e`
+(clean `npm run build`, bundle `index-vffBI31h.js`, Android project in `android/`). This is not legal advice. The owner must review it,
 fill in the bracketed fields, and host it at a public, non-PDF web address (for example GitHub Pages) before
 entering that address in Play Console. If the app ever adds ads, analytics, accounts, cloud saves, online play
 or purchases, this policy and the Data safety answers must be redone before that build ships.
@@ -9,7 +9,11 @@ or purchases, this policy and the Data safety answers must be redone before that
 Facts this draft relies on (evidence in `reports/compliance/round-6.md`, item 3):
 - The built app made 3 requests, all to its own files (page, script, stylesheet). It made 0 requests to any other
   server in a scripted session of about 25 seconds with 40 taps. A planted request was caught, so the probe can detect one.
-- `src/` contains no `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, analytics, ads or account code.
+- `src/` contains no `XMLHttpRequest`, `WebSocket`, `sendBeacon`, analytics, ads or account code. Its only `fetch` reads
+  the app's own bundled `THIRD_PARTY_LICENSES.txt` (Settings → Licenses). The Android app declares only the VIBRATE
+  permission; INTERNET is removed (round 7), and it has no Google services or Capacitor plugins.
+- The Android manifest keeps `android:allowBackup="true"`, so Android's own Auto Backup may copy the save to the
+  player's Google account. The developer never receives that copy. Section 2 of the policy says so.
 - The only thing stored is one local-storage entry, `game_save` (plus `game_save_corrupt_<time>` backups if a save
   is damaged). It holds game progress and settings only (GDD §13). The app sets no cookies.
 - The only device features used are vibration (haptics, can be turned off in Settings), the reduced-motion
@@ -38,7 +42,9 @@ To remember your progress, the game saves a small file on your device. It contai
 (fighters, team, cleared stages, missions, the in-game currency Jade, summon counters), your settings
 (volume, mute, vibration, reduce motion) and the dates this save was created and last changed. This file
 stays on your device. We cannot see it. If the save is damaged, the game keeps a backup copy of it on
-your device. Uninstalling the game or clearing its storage deletes all of this data.
+your device. If Android backup is turned on for your Google account, Android may include this file in
+your device backup; that backup is handled by Google, and we cannot access it. Uninstalling the game or
+clearing its storage deletes the data on your device.
 
 3. Device features
 The game can vibrate your device as feedback during fights. You can turn this off in Settings. The game
