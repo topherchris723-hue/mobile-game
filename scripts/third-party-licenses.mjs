@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import zlib from 'node:zlib';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -133,15 +134,19 @@ export function declaredGradleDeps(root) {
   const vars = {};
   const varText = fs.readFileSync(path.join(root, 'android', 'variables.gradle'), 'utf8');
   for (const m of varText.matchAll(/(\w+)\s*=\s*'([^']+)'/g)) vars[m[1]] = m[2];
+  // BUG-7-01: android/capacitor-cordova-android-plugins/ is git-ignored and only exists after `npx cap sync`, so its
+  // build.gradle is read from the template @capacitor/cli ships (cap sync copies it; with no Cordova plugins the
+  // dependency lines are identical). Only committed files and installed node_modules are read.
   const files = [
     'android/app/build.gradle',
-    'android/capacitor-cordova-android-plugins/build.gradle',
+    CORDOVA_PLUGINS_TEMPLATE + '#build.gradle',
     'node_modules/@capacitor/android/capacitor/build.gradle',
   ];
   const modules = [];
   const projects = [];
   for (const f of files) {
-    const text = fs.readFileSync(path.join(root, f), 'utf8');
+    const hash = f.indexOf('#');
+    const text = hash >= 0 ? readTarGzEntry(path.join(root, f.slice(0, hash)), f.slice(hash + 1)) : fs.readFileSync(path.join(root, f), 'utf8');
     for (const m of text.matchAll(/^\s*(?:implementation|api|runtimeOnly)\s+"([^":]+):([^":]+):([^"]+)"/gm)) {
       const v = m[3].replace(/^\$\{?(\w+)\}?$/, (_, k) => vars[k] || m[3]);
       const id = m[1] + ':' + m[2];
@@ -156,7 +161,27 @@ export function declaredGradleDeps(root) {
     const dir = path.join(root, d);
     if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir)) if (f.endsWith('.jar') || f.endsWith('.aar')) jars.push(d + '/' + f);
   }
-  return { modules: modules, projects: projects, jars: jars };
+  return { modules: modules, projects: projects, jars: jars, sources: files };
+}
+
+/** The Capacitor CLI template that `cap sync` copies to android/capacitor-cordova-android-plugins/. */
+export const CORDOVA_PLUGINS_TEMPLATE = 'node_modules/@capacitor/cli/assets/capacitor-cordova-android-plugins.tar.gz';
+
+/** Text of one file inside a .tar.gz (ustar; names with or without a leading "./"). Throws if it is not there. */
+export function readTarGzEntry(file, name) {
+  const buf = zlib.gunzipSync(fs.readFileSync(file));
+  let off = 0;
+  while (off + 512 <= buf.length) {
+    const header = buf.subarray(off, off + 512);
+    if (header.every((b) => b === 0)) break;
+    const field = (a, b) => header.subarray(a, b).toString('utf8').replace(/\0[\s\S]*$/, '');
+    const prefix = field(345, 500);
+    const entry = (prefix ? prefix + '/' : '') + field(0, 100);
+    const size = parseInt(field(124, 136).trim() || '0', 8);
+    if (entry.replace(/^\.\//, '') === name) return buf.subarray(off + 512, off + 512 + size).toString('utf8');
+    off += 512 + Math.ceil(size / 512) * 512;
+  }
+  throw new Error(name + ' not found in ' + file);
 }
 
 /** Packages whose notice block is missing from a notice text (test helper). */
