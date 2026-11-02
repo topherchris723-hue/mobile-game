@@ -1,0 +1,12 @@
+  -  2 [phone-430x932] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza")
+
+  1 skipped
+  1 passed (18.9s)
+  -  2 [phone-430x932] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza")
+
+  1 skipped
+  1 passed (18.4s)
+  -  2 [phone-430x932] › tests/e2e/qa-title.spec.js:13:1 › AC-1.1 title on screen: Title, Home, <title>, Licenses name the strings.json game_title ("Fyrenza")
+
+  1 skipped
+  1 passed (18.3s)
