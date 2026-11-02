@@ -1234,6 +1234,79 @@ test('BUG-3-03: callouts never cover the combo / hit counter (reserved zones; bu
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
+// BUG-7b-01 (round 7 QA loop 2): "COMBO x2" popped from 1.5× to 1× but its reserved zone was measured at 1×, so a
+// shout placed legally next to the zone was covered for ~160 ms. Deterministic check: trigger every animated arena
+// text through its real code path with the longest strings, sample its rendered bounds every frame of its life
+// (the pop peak is the first frame) and assert it never leaves the rectangle reserved for it.
+// Negative proof: UI_BREAK_PEAK_ZONES=1 re-measures the combo zones at 1× (the round-7 code) and must FAIL.
+test('BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats)', async ({ page }, testInfo) => {
+  const errors = watchErrors(page);
+  const S = JSON.parse(fs.readFileSync('src/ui/strings.json', 'utf8')).strings;
+  await bootWithSave(page, 2);
+  await startStage(page, 'stage_003');
+  const r = await page.evaluate(async ({ S, brk }) => {
+    const T = window.__TEST__;
+    const sc = T.game.scene.getScene('Battle');
+    const b = sc.battle;
+    for (const s of ['player', 'enemy']) for (const f of b.teams[s].fighters) f.hp = f.def.maxHp = 10 ** 7;
+    if (brk) sc.comboZones = sc.measureComboZones(1); // the round-7 behaviour: zones measured at rest scale
+    const raf = () => new Promise((res) => requestAnimationFrame(res));
+    const box = (o) => { const q = o.getBounds(); return { x: q.x, y: q.y, w: q.width, h: q.height }; };
+    const outside = (q, z) => Math.max(z.x - q.x, z.y - q.y, q.x + q.w - (z.x + z.w), q.y + q.h - (z.y + z.h));
+    const longest = (arr) => arr.filter(Boolean).reduce((m, s) => (s.length > m.length ? s : m), '');
+    const raw = T.data.raw;
+    const shoutStr = longest([...raw.cards.cards.map((c) => c.shout), ...raw.characters.characters.map((c) => c.shouts && c.shouts.tag_in)]);
+    const items = [];
+    // 1) combo counters: the real pop path (updateCombo) with the longest values (COMBO x99 / 999 HITS)
+    for (const o of [sc.comboText, sc.comboHits, sc.enemyCombo]) { sc.tweens.killTweensOf(o); o.setAlpha(0).setScale(1); }
+    sc.comboShown = { player: 0, enemy: 0 };
+    sc.updateCombo({ teams: { player: { chain: { cards: 99, hits: 999 } }, enemy: { chain: { cards: 99, hits: 0 } } } });
+    items.push({ name: 'COMBO x99 (player)', tx: sc.comboText, zone: sc.comboZones[0], until: 400 });
+    items.push({ name: '999 HITS', tx: sc.comboHits, zone: sc.comboZones[1], until: 400 });
+    items.push({ name: 'COMBO x99 (enemy)', tx: sc.enemyCombo, zone: sc.comboZones[2], until: 400 });
+    // 2) every float kind, through its real spawn function; its zone = the rectangle the placer reserved for it
+    const lastRect = () => { const it = sc.floats.items[sc.floats.items.length - 1]; return it && { ...it.rect }; };
+    const spawn = (name, fn) => { sc.floats.clear(); const tx = fn(); items.push(tx ? { name, tx, zone: lastRect(), until: 2000 } : { name, missing: true }); };
+    spawn('damage (pop 1.35)', () => sc.floatText(sc.bodyPos('player'), '99999', '#ffffff', 28, true));
+    spawn('TAG STRIKE!', () => sc.floatText(sc.bodyPos('enemy'), S.battle_tag_strike, '#ffffff', 18));
+    spawn('callout 48 K.O.!', () => sc.callout(S.battle_ko, '#ffffff', 48));
+    spawn('callout 30 PERFECT SLIP! (player)', () => sc.callout(S.battle_perfect_slip, '#ffffff', 30, 'player'));
+    spawn('callout 22 TRI-BURST BLOCKED!', () => sc.callout(S.battle_tri_burst_whiff_invulnerable, '#ffffff', 22));
+    spawn('shout (pop 1.1)', () => { sc.shout('player', shoutStr); return sc.shoutTxt.player; });
+    const res = {};
+    for (const it of items) res[it.name] = { worst: -Infinity, peakScale: 0, frames: 0, missing: !!it.missing };
+    const t0 = performance.now();
+    let frame = 0;
+    while (performance.now() - t0 < 2000) {
+      for (const it of items) {
+        if (it.missing || !it.tx.scene || performance.now() - t0 > it.until) continue;
+        const q = box(it.tx);
+        const o = res[it.name];
+        o.frames++;
+        o.peakScale = Math.max(o.peakScale, it.tx.scaleX);
+        const d = outside(q, it.zone);
+        if (d > o.worst) Object.assign(o, { worst: d, at: frame, box: q, zone: it.zone });
+      }
+      frame++;
+      await raf();
+    }
+    return { res, shoutStr };
+  }, { S, brk: !!process.env.UI_BREAK_PEAK_ZONES });
+  const bad = [];
+  for (const [name, o] of Object.entries(r.res)) {
+    console.log(`[${testInfo.project.name}] BUG-7b-01 ${name}: peak scale ${o.peakScale.toFixed(2)}, frames ${o.frames}, worst ${o.worst.toFixed(1)} px outside (frame ${o.at})`);
+    if (o.missing) bad.push(`${name}: not shown`);
+    else if (!(o.worst <= 0.5)) bad.push(`${name}: ${o.worst.toFixed(1)} px outside its zone at frame ${o.at} (box ${JSON.stringify(o.box)} zone ${JSON.stringify(o.zone)})`);
+  }
+  console.log(`[${testInfo.project.name}] BUG-7b-01 longest shout: "${r.shoutStr}"`);
+  // the pop was really sampled at its peak (first frame); otherwise this test proves nothing
+  expect(r.res['COMBO x99 (player)'].peakScale).toBeGreaterThan(1.45);
+  expect(r.res['COMBO x99 (enemy)'].peakScale).toBeGreaterThan(1.35);
+  expect(r.res['damage (pop 1.35)'].peakScale).toBeGreaterThan(1.3);
+  expect(bad, bad.join('\n')).toEqual([]);
+  expect(errors, errors.join('\n')).toEqual([]);
+});
+
 test('Home save-repair notice: shown for a team repair, not for settings_repaired, never the damaged text', async ({ page }) => {
   const errors = watchErrors(page);
   const homeTexts = () => page.evaluate(() => window.__TEST__.activeScene().children.list.flatMap((o) => (o.list || [o])).filter((o) => o.type === 'Text').map((o) => o.text));
