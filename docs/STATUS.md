@@ -73,6 +73,12 @@ lesson and a hard rule at the next `/retro`.
   name for our game" — drop "Jade Tempest" (and the old shortlist's trademark-risky names). The
   Producer picks a new, original title (owner delegated decisions in round 3); it must pass
   compliance-checker's word-by-word trademark search before any build ships it.
+- Round 7 (owner, 2026-11-02): asked "Cant we make the art with chatgpt"; after the Producer explained the
+  plan and risks, owner answered "Yes". Written owner approval to add **owner-generated ChatGPT (OpenAI) images**
+  as an allowed art source in assets/CREDITS.md, under conditions: art-director writes the prompts from the
+  briefs (no franchise names/styles); owner generates and uploads; each image logged in CREDITS.md (tool, date,
+  prompt file, owner as generator); compliance-checker runs the look-echo check on every image before it ships;
+  start with portraits + one battle pose per fighter, moves stay code-animated (approved feel kept). Round 8 goal.
 
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
