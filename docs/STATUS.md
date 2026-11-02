@@ -69,6 +69,10 @@ lesson and a hard rule at the next `/retro`.
   playtest) or a blocker the rules forbid deciding.
 - Round 3 (owner, after first phone playtest of the private web build): "Bro im linking it its
   good" — the owner likes the current build. Keep the core feel; changes should build on it.
+- Round 7 (owner, 2026-11-02, asked about the title after compliance FAIL): "I want an original
+  name for our game" — drop "Jade Tempest" (and the old shortlist's trademark-risky names). The
+  Producer picks a new, original title (owner delegated decisions in round 3); it must pass
+  compliance-checker's word-by-word trademark search before any build ships it.
 
 ## Decisions made without the owner
 - Round 3 (delegated by owner): working title **Jade Tempest** — ties into the game's Jade
