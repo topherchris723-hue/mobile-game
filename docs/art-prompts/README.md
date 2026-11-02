@@ -77,6 +77,10 @@ Three things keep all 8 fighters looking like one game:
    portrait A as the **second** picture. The prompt tells ChatGPT to keep the same face, hair and colours.
    (For Tavi, the style picture and portrait A are the same file. Attach it once.)
 
+**Tavi: boy or girl?** Our design does not say. The prompts only say "teenage mechanic". Whatever you get in
+Tavi's portrait A and like is the answer. Pictures B, C and D then keep the same Tavi. We write it into the
+design in round 8.
+
 If later pictures start to look different (thinner lines, soft painting, 3D look), start a new chat,
 attach the style picture again, and paste the prompt again.
 
@@ -138,6 +142,7 @@ If you make a better one later, use `_v2`, `_v3`. Do not overwrite an old file.
 
 1. Open this link (it opens the upload page for the right folder, and makes the folder if it is not there):
    `https://github.com/topherchris723-hue/mobile-game/upload/claude/new-session-uo46wt/assets/art/incoming`
+   If that link says the branch doesn't exist, tell Claude — the branch name can change between sessions.
 2. Tap **choose your files**, pick the pictures.
 3. In the message box write, for example: `art: tavi A+B, ChatGPT, 2026-11-05`.
 4. Tap **Commit changes**.

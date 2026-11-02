@@ -3,7 +3,8 @@
 Aura Blaze (flame, #FF6A3D) · ★3 · Ignition: Overheat Form · Brief: `docs/art-briefs/char_tavi_001.md`
 How to use: `docs/art-prompts/README.md`. **Make picture A first: it becomes the style picture for all fighters.**
 
-Note for the team: the brief's belt wrench is left out of these prompts (look-echo, see the end of this file).
+Note for the team: Producer decision (round 7): no wrench. A small coil of copper fuse cord on the belt replaces it
+in B and D (portraits A and C are cut above the belt). Brief and victory pose change in round 8.
 
 ---
 
@@ -37,10 +38,11 @@ CHARACTER: Tavi, a small, wiry teenage mechanic, about 4.5 heads tall (young pro
 POSE: fighting stance, bouncing on the balls of the feet, feet wider than the shoulders, knees bent, both fists up near the chin, leaning slightly toward the right. Wide grin, one eyebrow raised.
 SILHOUETTE: (1) ONE long thick copper braid from the back of the head down to the waist, swinging out BEHIND the body (to the left side of the image). (2) A charcoal work jacket tied around the waist: the sleeves knot in front, and the body of the jacket flares out behind the hips like a short cape, so the hips look wide under a narrow chest.
 Colours: braid and hair copper #C7662B (shadow #8A4419); white tank top #F4F1EA; jacket charcoal #3A3A46 (shadow #26262F) with orange trim #FFB13D on cuffs, collar and knot; dark work trousers #2E2A3A rolled up once at the ankle; mismatched high-top sneakers: left shoe ochre #E0A030, right shoe teal #2FA7A0, both with white soles #F4F1EA; skin #E8B48F (shadow #C48A66); small scar on the chin.
+Belt detail: a small coil of copper fuse cord (#C7662B, shadow #8A4419) clipped to the belt at one hip, like a rolled-up fuse. No other tools.
 Rim light: a thin orange-gold rim (#FFB13D) on the right edge of the body.
 Mood: a street kid's boxing gym, taped hands and chalk dust.
 
-AVOID: no hat; no red or crimson shirt or jacket; no open vest over a bare chest; no scar under the eye; no spiky pink, red or golden hair; no scarf; no headband; no wristbands with symbols; no orange or blue martial-arts uniform; no black kung-fu trousers with slippers; no Chinese-collar shirt; no dragon motif; no tools or weapons in the hands; no fire on the body.
+AVOID: no hat; no red or crimson shirt or jacket; no open vest over a bare chest; no scar under the eye; no spiky pink, red or golden hair; no scarf; no headband; no wristbands with symbols; no orange or blue martial-arts uniform; no black kung-fu trousers with slippers; no Chinese-collar shirt; no dragon motif; no wrench or spanner anywhere; no tools or weapons in the hands; no fire on the body.
 
 If images are attached: the first one is the style picture; copy only its drawing style (outline thickness, flat cel shading, colour brightness), not its pose. If it shows this same character (Tavi), also keep exactly the same face, hair, skin and colours.
 ```
@@ -75,9 +77,10 @@ CHARACTER: Tavi, a small, wiry teenage mechanic, about 4.5 heads tall, in a powe
 POSE: aggressive fighting stance, feet wider than the shoulders, knees bent, right fist pulled back by the hip, left fist forward, leaning toward the right. Mouth open in a shout.
 The change: the ONE long braid swings out behind the body (to the left of the image) and has become a burning fuse: copper hair (#C7662B) near the head, turning into flat cartoon flame shapes in orange #FF6A3D and gold #FFB13D, with a white-hot tip #FFF4D6. The hair on the head stays copper and smooth. The charcoal jacket tied around the waist (#3A3A46, orange trim #FFB13D, sleeves knotted in front, flaring behind the hips like a short cape) has edges glowing white-hot #FFF4D6.
 Other colours: white tank top #F4F1EA; dark work trousers #2E2A3A rolled at the ankle; left high-top ochre #E0A030, right high-top teal #2FA7A0, white soles; skin #E8B48F; small chin scar.
+Belt detail: the small coil of copper fuse cord (#C7662B) clipped at one hip glows at its loose end (#FFB13D). No other tools.
 Rim light: orange-gold #FFB13D on the right edge of the body.
 
-AVOID: hair on the head never turns gold or yellow and never spikes up; no flames outlining the whole body; no red or crimson clothes; no hat; no scarf; no headband; no martial-arts uniform; no dragon motif; no tools or weapons in the hands.
+AVOID: hair on the head never turns gold or yellow and never spikes up; no flames outlining the whole body; no red or crimson clothes; no hat; no scarf; no headband; no martial-arts uniform; no dragon motif; no wrench or spanner anywhere; no tools or weapons in the hands.
 
 If images are attached: the first one is the style picture; copy only its drawing style (outline thickness, flat cel shading, colour brightness), not its pose. The second one (if any) is Tavi's own portrait: keep exactly the same face, hair, skin and colours.
 ```
@@ -92,15 +95,16 @@ If images are attached: the first one is the style picture; copy only its drawin
 - `Same character, same style. Fix: the jacket is tied around the waist, not worn.` (picture B and D)
 - `Same character, same style. Fix: the two shoes are different colours: left ochre yellow, right teal.`
 - `Same character, same style. Fix: show the whole body, feet near the bottom, nothing cut off.`
+- `Same character, same style. Fix: no wrench. Only a small coil of copper fuse cord clipped to the belt.` (B and D)
 - `Same picture. Fix: remove all text and letters.`
 
 ## Look-echo notes (for the team)
 
 Signature combination in these prompts: single long copper braid + charcoal work jacket with orange trim, tied at
-the waist + white tank top + taped fists + mismatched ochre/teal high-tops. The brief's round-7 check (braided
-martial artist in a red shirt) stays OK: no red top, no kung-fu clothes.
-New this round: the brief's **belt wrench** together with the **workwear tied at the waist** and the **mechanic** role
-matches two signature elements of a famous wrench-carrying mechanic heroine (tied-sleeve work suit + wrench). The
-wrench is therefore **left out** of every prompt here. Recommendation for round 8 (art-director brief change, Producer
-to approve): replace the wrench in the brief and victory pose with an original prop, for example a coil of copper fuse
-cord clipped to the belt (fits "braid as a fuse").
+the waist + white tank top + taped fists + mismatched ochre/teal high-tops + coil of copper fuse cord on the belt.
+The brief's round-7 check (braided martial artist in a red shirt) stays OK: no red top, no kung-fu clothes.
+Round 7 (late): the brief's **belt wrench** together with the **workwear tied at the waist** matched two signature
+elements of a famous wrench-carrying mechanic heroine. **Changed** (Producer decision): the wrench is gone and a coil of
+copper fuse cord replaces it (fits "braid as a fuse"); prompts B and D (the ones that show the belt) also say "no wrench or spanner". Now 1 element
+(tied workwear) → **OK**. A fuse coil is not a signature prop of any known battle-franchise character found in the
+check. To do in round 8 (art-director): the same change in `docs/art-briefs/char_tavi_001.md` and its victory pose.
