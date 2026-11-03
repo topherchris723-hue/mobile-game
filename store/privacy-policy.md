@@ -1,7 +1,8 @@
 # Privacy policy — DRAFT for the owner to review
 
-Owner: compliance-checker (draft). Round 6, re-checked round 7 (2026-11-02) against build commit `d09623e`
-(clean `npm run build`, bundle `index-vffBI31h.js`, Android project in `android/`). This is not legal advice. The owner must review it,
+Owner: compliance-checker (draft). Round 6, re-checked round 7 (2026-11-02) against `d09623e` and again (2026-11-03)
+against build commit `6a4d7d0` (clean `npm run build`, bundle `index-CIYCSK_g.js`, Android project in `android/`;
+evidence `reports/compliance/round-7b.md` item 3). No privacy fact changed between the two commits. This is not legal advice. The owner must review it,
 fill in the bracketed fields, and host it at a public, non-PDF web address (for example GitHub Pages) before
 entering that address in Play Console. If the app ever adds ads, analytics, accounts, cloud saves, online play
 or purchases, this policy and the Data safety answers must be redone before that build ships.
