@@ -4,3 +4,9 @@
 - DONE: release bundle, own derivation reports/qa/round-7d-tools/hook-list.mjs: clean 0 for all distinctive hook/switch names (incl disableComboZones, cinFadeMs, disablePopClamp, disableShoutFit), hooks build >0, clean2 0. Generic names (data, game, save...) reviewed = game/Phaser fields. Planted must-FAIL: qaPlantA (sc.) + qaPlantB (scene.) -> my tool 1/1; project test fails for A only (misses scene. handle) -> POLISH coverage note
 - [running] vitest + full e2e in r7f/tree (phase1.sh)
 - [queued] phase2.sh (waits for e2e): shout-drop, smoke 7c01 x3+neg, shout-live x3+neg, perframe x3+neg, forced x3+neg, qa-busy x3, smoke 7b01 x3+neg, perf A/B 8v8 vs 1b34594, base shout-live
+- DONE: vitest 633/633 exit 0; full e2e 91 passed/41 skipped exit 0 (22.4m); bot 410/0 failed; AC-1.1 18/18 + 2 must-FAILs
+- natural live shout scan x3: 96/96 shown but ALL approved layout (no 2-line shout occurs naturally); neg shoutfit also 0 dropped -> natural check cannot fail; added forced injection to zz-qa-shout-live (queued phase3 after phase2; base 1b34594 run at end of phase2 uses forced variant)
+- DONE: shout-drop 0/184 dropped at 3 sizes; smoke BUG-7c-01 x3 green, neg UI_BREAK_SHOUT_FIT FAIL (66 dropped); perframe x3 0 overlaps, neg placer 5738; forced pop x3 0 combo overlaps (143/144/166 inj, 72/73/83 in reach), neg clamp 25; qa-busy x3 0 overlaps
+- DONE perf A/B 8v8 vs 1b34594: frame p95 26.30 vs 27.12 (-0.82), work 8.49 vs 8.76 (-0.27) PASS; abs median 25.35 PASS
+- DONE forced live shout x3: 111/111 injected 2-line shown, 0 overlaps; neg shoutfit 0/37 at 360; base 1b34594 0/37 at 360. attribution: 360 fit1 15-16/37 nearer other; approved 390 3-10/69, 430 3-7/69
+- DONE: report reports/qa/round-7d.md, verdict PASS (0/0/0, 2 POLISH: BUG-7d-01 shout attribution, BUG-7d-02 sc.-only derivation)

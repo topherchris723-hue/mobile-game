@@ -1,5 +1,7 @@
 // QA round 7d (tool, reports/qa/round-7d-tools/): BUG-7c-01 live re-check + speaker attribution of shouts. Based on the 7c per-frame tool.
 // Per shout: shown?, layout index (shoutFit), centre x vs the speaker's and the other fighter's head x ('far' = nearer the other fighter).
+// Forced part (natural play here only emits 1-line shouts): every 40 frames of the busy fight, the real sc.shout() is called with
+// the next data shout that wraps to 2 lines in the approved layout, alternating sides (precondition: >= 20 injected per size).
 // QA_BREAK=shoutfit -> sc.disableShoutFit (pre-fix behaviour, must show drops at 360x640).
 // Original header: Same scenario as qa-busy.spec.js
 // (stage_005, seed 777, Solenne/Corvane/Dunmore vs Umbral Solenne, in-page bot) but the arena text scan runs
@@ -21,6 +23,8 @@ test('QA 7d live shout scan (BUG-7c-01)', async ({ browser }, testInfo) => {
   let comboOverlaps = 0;
   const errs = [];
   const shoutTot = { asked: 0, shown: 0 };
+  const injTot = { asked: 0, shown: 0 };
+  let injMin = 1e9;
   for (const size of SIZES) {
     const { ctx, page } = await newPhone(browser, size);
     const errors = watchErrors(page);
@@ -64,8 +68,24 @@ test('QA 7d live shout scan (BUG-7c-01)', async ({ browser }, testInfo) => {
         if (dy) fire('touchmove', b, [b]);
         fire('touchend', b, []);
       };
+      const raw = T.data.raw;
+      const allS = [...new Set([...raw.cards.cards.map((c) => c.shout), ...raw.characters.characters.flatMap((c) => Object.values(c.shouts || {}))].filter(Boolean))];
+      const probe = sc.text(0, 0, 'x', 13, '#ffffff', { fontStyle: 'italic', strokeThickness: 3, wordWrap: { width: 150 } });
+      const oneH = probe.height;
+      const twoL = allS.filter((t) => probe.setText(t).height > oneH * 1.5);
+      probe.destroy();
+      T.qaInj = { twoLine: twoL.length, asked: 0, shown: 0, lost: {} };
+      let qk = 0;
       let n = 0;
       const loop = () => {
+        if (T.qaScan && T.qaScan.on && n % 40 === 20) {
+          const side = qk % 2 ? 'enemy' : 'player';
+          const str = twoL[qk % twoL.length];
+          qk++;
+          sc.shout(side, str);
+          T.qaInj.asked++;
+          if (sc.shoutTxt[side]) T.qaInj.shown++; else T.qaInj.lost[str] = (T.qaInj.lost[str] || 0) + 1;
+        }
         if (T.sceneKey !== 'Battle' || T.stopBusy) return;
         const b = sc.battle;
         for (const side of ['player', 'enemy']) for (const f of b.teams[side].fighters) if (!f.ko && f.hp < f.def.maxHp * 0.5) f.hp = f.def.maxHp;
@@ -128,7 +148,7 @@ test('QA 7d live shout scan (BUG-7c-01)', async ({ browser }, testInfo) => {
     await page.waitForFunction(() => { const s = window.__TEST__.battleState(); return s.teams.enemy.activeSlot === 1 && !s.freeze; }, null, { timeout: 10000 });
     await page.evaluate(() => { window.__TEST__.qaScan.on = true; window.__TEST__.qaPops.length = 0; });
     await page.waitForTimeout(SECS * 1000);
-    const res = await page.evaluate(() => { const T = window.__TEST__; T.qaScan.on = false; T.stopBusy = true; return { Q: T.qaScan, pops: T.qaPops, sh: T.qaShouts }; });
+    const res = await page.evaluate(() => { const T = window.__TEST__; T.qaScan.on = false; T.stopBusy = true; return { Q: T.qaScan, pops: T.qaPops, sh: T.qaShouts, inj: T.qaInj }; });
     const Q = res.Q;
     const keys = Object.keys(Q.overlaps);
     const nOv = keys.reduce((m, k) => m + Q.overlaps[k], 0);
@@ -145,6 +165,8 @@ test('QA 7d live shout scan (BUG-7c-01)', async ({ browser }, testInfo) => {
     lines.push(`${size.name}: frames=${Q.frames} (cine skipped ${Q.cineFrames}) maxTexts=${Q.maxN} overlapFrames=${nOv} comboOverlapFrames=${nCombo} distinct=${keys.length} comboVsHitsPopFrames=${Q.comboHitsPop}`);
     lines.push(`${size.name}: shouts asked=${res.sh.asked} shown=${res.sh.shown} dropped=${JSON.stringify(res.sh.dropped)} fits=${JSON.stringify(res.sh.fits)} nearerOtherByFit=${JSON.stringify(res.sh.farByFit)}`);
     for (const f of res.sh.far) lines.push(`${size.name}:   nearer-other: ${f}`);
+    lines.push(`${size.name}: injected 2-line shouts asked=${res.inj.asked} shown=${res.inj.shown} (2-line strings in data ${res.inj.twoLine}) lost=${JSON.stringify(res.inj.lost)}`);
+    injTot.asked += res.inj.asked; injTot.shown += res.inj.shown; injMin = Math.min(injMin, res.inj.asked);
     shoutTot.asked += res.sh.asked; shoutTot.shown += res.sh.shown;
     lines.push(`${size.name}: ${pp('player')} | ${pp('enemy')}`);
     for (const k of keys) lines.push(`${size.name}:   ${Q.overlaps[k]}x ${k}`);
@@ -153,11 +175,12 @@ test('QA 7d live shout scan (BUG-7c-01)', async ({ browser }, testInfo) => {
     errs.push(...errors.map((e) => size.name + ' ' + e));
     await ctx.close();
   }
-  lines.push(`TOTAL shouts asked=${shoutTot.asked} shown=${shoutTot.shown}`);
+  lines.push(`TOTAL shouts asked=${shoutTot.asked} shown=${shoutTot.shown} (of them injected 2-line: asked=${injTot.asked} shown=${injTot.shown})`);
   lines.push(`TOTAL overlapFrames=${totalOverlaps} comboOverlapFrames=${comboOverlaps} consoleErrors=${errs.length} break=${process.env.QA_BREAK || 'none'}`);
   fs.mkdirSync(OUT, { recursive: true });
   fs.appendFileSync(`${OUT}/shout-live.txt`, lines.join('\n') + '\n---\n');
   console.log(lines.join('\n'));
+  expect(injMin, 'precondition: >= 20 forced 2-line shouts per size').toBeGreaterThanOrEqual(20);
   expect(errs).toEqual([]);
   expect(totalOverlaps, lines.join('\n')).toBe(0);
   expect(shoutTot.shown, 'shouts requested = shown (live)\n' + lines.join('\n')).toBe(shoutTot.asked);

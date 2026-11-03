@@ -1,0 +1,163 @@
+=== npx playwright test tests/e2e/zz-qa-pop-forced.spec.js --project phone-360x640
+
+Running 1 test using 1 worker
+
+360x640: natural clamped pops (10 s): {"1.455 by float":6}
+360x640: injections=47 insideUnclampedReach=24 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=720 comboOverlapFrames=0 allOverlapFrames=0
+390x844: natural clamped pops (10 s): {}
+390x844: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=720 comboOverlapFrames=0 allOverlapFrames=0
+430x932: natural clamped pops (10 s): {}
+430x932: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=720 comboOverlapFrames=0 allOverlapFrames=0
+TOTAL comboOverlapFrames=0 injections=143 insideUnclampedReach=72 consoleErrors=0 break=none
+  ✓  1 [phone-360x640] › tests/e2e/zz-qa-pop-forced.spec.js:15:1 › QA 7c forced combo pop per-frame (BUG-7b-01) (1.9m)
+
+  1 passed (1.9m)
+exit 0
+=== npx playwright test tests/e2e/zz-qa-pop-forced.spec.js --project phone-360x640
+
+Running 1 test using 1 worker
+
+360x640: natural clamped pops (10 s): {"1.455 by float":6}
+360x640: injections=48 insideUnclampedReach=24 notPlaced=1 peaks min=1 median=1.4 max=1.5 frames=720 comboOverlapFrames=0 allOverlapFrames=0
+390x844: natural clamped pops (10 s): {}
+390x844: injections=48 insideUnclampedReach=25 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=722 comboOverlapFrames=0 allOverlapFrames=0
+430x932: natural clamped pops (10 s): {}
+430x932: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=726 comboOverlapFrames=0 allOverlapFrames=0
+TOTAL comboOverlapFrames=0 injections=144 insideUnclampedReach=73 consoleErrors=0 break=none
+  ✓  1 [phone-360x640] › tests/e2e/zz-qa-pop-forced.spec.js:15:1 › QA 7c forced combo pop per-frame (BUG-7b-01) (1.9m)
+
+  1 passed (1.9m)
+exit 0
+=== npx playwright test tests/e2e/zz-qa-pop-forced.spec.js --project phone-360x640
+
+Running 1 test using 1 worker
+
+360x640: natural clamped pops (10 s): {"1.455 by float":6}
+360x640: injections=48 insideUnclampedReach=26 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=720 comboOverlapFrames=0 allOverlapFrames=0
+390x844: natural clamped pops (10 s): {}
+390x844: injections=69 insideUnclampedReach=34 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=1055 comboOverlapFrames=0 allOverlapFrames=0
+430x932: natural clamped pops (10 s): {}
+430x932: injections=49 insideUnclampedReach=23 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=743 comboOverlapFrames=0 allOverlapFrames=0
+TOTAL comboOverlapFrames=0 injections=166 insideUnclampedReach=83 consoleErrors=0 break=none
+  ✓  1 [phone-360x640] › tests/e2e/zz-qa-pop-forced.spec.js:15:1 › QA 7c forced combo pop per-frame (BUG-7b-01) (1.9m)
+
+  1 passed (1.9m)
+exit 0
+=== npx playwright test tests/e2e/zz-qa-pop-forced.spec.js --project phone-360x640
+
+Running 1 test using 1 worker
+
+360x640: natural clamped pops (10 s): {}
+360x640: injections=68 insideUnclampedReach=31 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=1048 comboOverlapFrames=9 allOverlapFrames=9
+360x640:   1x "COMBO x7" x "NOONDAY HALO!"
+360x640:   1x "COMBO x4" x "NINE PEAKS... DAWN!"
+360x640:   1x "COMBO x6" x "NINE PEAKS... DAWN!"
+360x640:   1x "COMBO x8" x "NOONDAY HALO!"
+360x640:   1x "COMBO x2" x "NOONDAY HALO!"
+360x640:   1x "COMBO x3" x "NOONDAY HALO!"
+360x640:   1x "COMBO x4" x "NOONDAY HALO!"
+360x640:   1x "COMBO x5" x "NOONDAY HALO!"
+360x640:   1x "COMBO x6" x "NOONDAY HALO!"
+360x640:   first: frame 189: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+360x640:   first: frame 251: "COMBO x4"(s1.50) x "NINE PEAKS... DAWN!"(s1.00) 15.0x0.8
+360x640:   first: frame 280: "COMBO x6"(s1.50) x "NINE PEAKS... DAWN!"(s1.00) 13.5x0.8
+360x640:   first: frame 312: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+360x640:   first: frame 437: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+360x640:   first: frame 561: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+390x844: natural clamped pops (10 s): {}
+390x844: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=720 comboOverlapFrames=7 allOverlapFrames=7
+390x844:   1x "COMBO x7" x "NOONDAY HALO!"
+390x844:   1x "COMBO x8" x "NOONDAY HALO!"
+390x844:   3x "COMBO x4" x "NOONDAY HALO!"
+390x844:   1x "COMBO x2" x "NOONDAY HALO!"
+390x844:   1x "COMBO x3" x "NOONDAY HALO!"
+390x844:   first: frame 174: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+390x844:   first: frame 297: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+390x844:   first: frame 302: "COMBO x4"(s1.50) x "NOONDAY HALO!"(s0.99) 107.1x0.2
+390x844:   first: frame 303: "COMBO x4"(s1.50) x "NOONDAY HALO!"(s1.00) 107.6x0.2
+390x844:   first: frame 422: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+390x844:   first: frame 546: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+430x932: natural clamped pops (10 s): {}
+430x932: injections=66 insideUnclampedReach=33 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=998 comboOverlapFrames=9 allOverlapFrames=9
+430x932:   1x "COMBO x7" x "NOONDAY HALO!"
+430x932:   1x "COMBO x8" x "NOONDAY HALO!"
+430x932:   1x "COMBO x2" x "NOONDAY HALO!"
+430x932:   1x "COMBO x3" x "NOONDAY HALO!"
+430x932:   3x "COMBO x5" x "NOONDAY HALO!"
+430x932:   1x "COMBO x4" x "NOONDAY HALO!"
+430x932:   1x "COMBO x6" x "NOONDAY HALO!"
+430x932:   first: frame 188: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+430x932:   first: frame 311: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+430x932:   first: frame 436: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+430x932:   first: frame 560: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+430x932:   first: frame 563: "COMBO x5"(s1.50) x "NOONDAY HALO!"(s0.99) 107.1x0.2
+430x932:   first: frame 564: "COMBO x5"(s1.50) x "NOONDAY HALO!"(s0.99) 106.9x0.2
+TOTAL comboOverlapFrames=25 injections=182 insideUnclampedReach=88 consoleErrors=0 break=clamp
+  ✘  1 [phone-360x640] › tests/e2e/zz-qa-pop-forced.spec.js:15:1 › QA 7c forced combo pop per-frame (BUG-7b-01) (1.9m)
+
+
+  1) [phone-360x640] › tests/e2e/zz-qa-pop-forced.spec.js:15:1 › QA 7c forced combo pop per-frame (BUG-7b-01) 
+
+    Error: 360x640: natural clamped pops (10 s): {}
+    360x640: injections=68 insideUnclampedReach=31 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=1048 comboOverlapFrames=9 allOverlapFrames=9
+    360x640:   1x "COMBO x7" x "NOONDAY HALO!"
+    360x640:   1x "COMBO x4" x "NINE PEAKS... DAWN!"
+    360x640:   1x "COMBO x6" x "NINE PEAKS... DAWN!"
+    360x640:   1x "COMBO x8" x "NOONDAY HALO!"
+    360x640:   1x "COMBO x2" x "NOONDAY HALO!"
+    360x640:   1x "COMBO x3" x "NOONDAY HALO!"
+    360x640:   1x "COMBO x4" x "NOONDAY HALO!"
+    360x640:   1x "COMBO x5" x "NOONDAY HALO!"
+    360x640:   1x "COMBO x6" x "NOONDAY HALO!"
+    360x640:   first: frame 189: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+    360x640:   first: frame 251: "COMBO x4"(s1.50) x "NINE PEAKS... DAWN!"(s1.00) 15.0x0.8
+    360x640:   first: frame 280: "COMBO x6"(s1.50) x "NINE PEAKS... DAWN!"(s1.00) 13.5x0.8
+    360x640:   first: frame 312: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    360x640:   first: frame 437: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    360x640:   first: frame 561: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+    390x844: natural clamped pops (10 s): {}
+    390x844: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=720 comboOverlapFrames=7 allOverlapFrames=7
+    390x844:   1x "COMBO x7" x "NOONDAY HALO!"
+    390x844:   1x "COMBO x8" x "NOONDAY HALO!"
+    390x844:   3x "COMBO x4" x "NOONDAY HALO!"
+    390x844:   1x "COMBO x2" x "NOONDAY HALO!"
+    390x844:   1x "COMBO x3" x "NOONDAY HALO!"
+    390x844:   first: frame 174: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    390x844:   first: frame 297: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    390x844:   first: frame 302: "COMBO x4"(s1.50) x "NOONDAY HALO!"(s0.99) 107.1x0.2
+    390x844:   first: frame 303: "COMBO x4"(s1.50) x "NOONDAY HALO!"(s1.00) 107.6x0.2
+    390x844:   first: frame 422: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    390x844:   first: frame 546: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+    430x932: natural clamped pops (10 s): {}
+    430x932: injections=66 insideUnclampedReach=33 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=998 comboOverlapFrames=9 allOverlapFrames=9
+    430x932:   1x "COMBO x7" x "NOONDAY HALO!"
+    430x932:   1x "COMBO x8" x "NOONDAY HALO!"
+    430x932:   1x "COMBO x2" x "NOONDAY HALO!"
+    430x932:   1x "COMBO x3" x "NOONDAY HALO!"
+    430x932:   3x "COMBO x5" x "NOONDAY HALO!"
+    430x932:   1x "COMBO x4" x "NOONDAY HALO!"
+    430x932:   1x "COMBO x6" x "NOONDAY HALO!"
+    430x932:   first: frame 188: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    430x932:   first: frame 311: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    430x932:   first: frame 436: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    430x932:   first: frame 560: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+    430x932:   first: frame 563: "COMBO x5"(s1.50) x "NOONDAY HALO!"(s0.99) 107.1x0.2
+    430x932:   first: frame 564: "COMBO x5"(s1.50) x "NOONDAY HALO!"(s0.99) 106.9x0.2
+    TOTAL comboOverlapFrames=25 injections=182 insideUnclampedReach=88 consoleErrors=0 break=clamp
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m0[39m
+    Received: [31m25[39m
+
+      205 |   expect(errs).toEqual([]);
+      206 |   expect(nearReach, 'precondition: placed texts inside the unclamped pop reach').toBeGreaterThan(10);
+    > 207 |   expect(total, lines.join('\n')).toBe(0);
+          |                                   ^
+      208 | });
+      209 |
+        at /tmp/claude-0/-home-user-mobile-game/0ccd7f5b-40f0-5bc7-95d2-5aaebf0b5643/scratchpad/r7f/tools/tests/e2e/zz-qa-pop-forced.spec.js:207:35
+
+  1 failed
+    [phone-360x640] › tests/e2e/zz-qa-pop-forced.spec.js:15:1 › QA 7c forced combo pop per-frame (BUG-7b-01) 
+exit 1

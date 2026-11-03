@@ -1,0 +1,11 @@
+=== npx playwright test tests/e2e/zz-qa-shout-drop.spec.js --project phone-360x640
+
+Running 1 test using 1 worker
+
+360x640: shouts=92 twoLine=33 dropped(side-attempts)=0 [1L 0, 2L 0] upperBand={"top":46,"bottom":150}
+390x844: shouts=92 twoLine=33 dropped(side-attempts)=0 [1L 0, 2L 0] upperBand={"top":46,"bottom":289}
+430x932: shouts=92 twoLine=33 dropped(side-attempts)=0 [1L 0, 2L 0] upperBand={"top":46,"bottom":290}
+  ✓  1 [phone-360x640] › tests/e2e/zz-qa-shout-drop.spec.js:9:1 › QA 7c shout drop probe (17.0s)
+
+  1 passed (20.9s)
+exit 0

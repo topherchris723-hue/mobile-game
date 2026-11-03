@@ -1,0 +1,10 @@
+
+ RUN  v5.0.5 /tmp/claude-0/-home-user-mobile-game/0ccd7f5b-40f0-5bc7-95d2-5aaebf0b5643/scratchpad/r7f/tree
+
+
+ Test Files  47 passed (47)
+      Tests  633 passed (633)
+   Start at  01:03:29
+   Duration  81.10s (import 53%, tests 46%, transform 1%)
+
+VITEST EXIT 0

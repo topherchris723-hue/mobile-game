@@ -1,0 +1,34 @@
+360x640: frames=1061 (cine skipped 439) maxTexts=9 overlapFrames=0 comboOverlapFrames=0 distinct=0 comboVsHitsPopFrames=52
+360x640: shouts asked=69 shown=32 dropped={"MELTDOWN... METEOOOR!":2,"SORRY... MOUNTAIN DROP!":2,"LIGHT THE HUNDRED LANTERNS!":2,"BEHOLD... A THOUSAND DAWNS!":2,"BLACK SUN... REQUIEM.":1,"THAT'S TEN! ENDGAME!":1,"CHECKMATE! GAME OVER!":1,"THE SUN BOWS TO NO ONE!":1,"LET THE STARS GO OUT!":1,"THE LAST STAR... FALLS!":1,"Ready or not, I'm ON FIRE!":1,"My turn! Heat coming through!":1,"Told you! Nobody outburns me!":1,"EVERYBODY, FULL HEAT!":1,"Package for you: one beating!":1,"I'm sorry in advance. Truly.":1,"Is everyone all right? Good.":1,"FRIENDS, GET BEHIND ME!":1,"Peace first. Then, if needed, fists.":1,"Calm returns. I win the bet.":1,"LANTERNS, LIGHT THE WAY!":1,"Few words. Many bruises.":1,"SWALLOW THEM, NIGHT!":1,"I already counted your losses.":1,"Your move. Wrong move.":1,"Show me you deserve this ring.":1,"Rise again. Come back stronger.":1,"TOGETHER, LIKE A SUNRISE!":1,"Your aura will look lovely on me.":1,"Step aside. The king arrives.":1,"Impossible... my crown...":1,"Another trophy for the collection.":1,"SERVANTS, DEVOUR THEM!":1} fits=[32,0,0] nearerOtherByFit=[1,0,0]
+360x640:   nearer-other: player fit0 "Watch closely." cx=194 me=116 other=244 x=143..245
+360x640: injected 2-line shouts asked=37 shown=0 (2-line strings in data 33) lost={"MELTDOWN... METEOOOR!":2,"SORRY... MOUNTAIN DROP!":2,"LIGHT THE HUNDRED LANTERNS!":2,"BEHOLD... A THOUSAND DAWNS!":2,"BLACK SUN... REQUIEM.":1,"THAT'S TEN! ENDGAME!":1,"CHECKMATE! GAME OVER!":1,"THE SUN BOWS TO NO ONE!":1,"LET THE STARS GO OUT!":1,"THE LAST STAR... FALLS!":1,"Ready or not, I'm ON FIRE!":1,"My turn! Heat coming through!":1,"Told you! Nobody outburns me!":1,"EVERYBODY, FULL HEAT!":1,"Package for you: one beating!":1,"I'm sorry in advance. Truly.":1,"Is everyone all right? Good.":1,"FRIENDS, GET BEHIND ME!":1,"Peace first. Then, if needed, fists.":1,"Calm returns. I win the bet.":1,"LANTERNS, LIGHT THE WAY!":1,"Few words. Many bruises.":1,"SWALLOW THEM, NIGHT!":1,"I already counted your losses.":1,"Your move. Wrong move.":1,"Show me you deserve this ring.":1,"Rise again. Come back stronger.":1,"TOGETHER, LIKE A SUNRISE!":1,"Your aura will look lovely on me.":1,"Step aside. The king arrives.":1,"Impossible... my crown...":1,"Another trophy for the collection.":1,"SERVANTS, DEVOUR THEM!":1}
+360x640: player pops=13 full=6 clamped=7 min=1.311 median=1.455 mean=1.465 | enemy pops=0 full=0 clamped=0 min=- median=- mean=0.000
+360x640: pops [{"who":"player","max":1.5,"peak":1.455,"tick":225},{"who":"player","max":1.5,"peak":1.455,"tick":336},{"who":"player","max":1.5,"peak":1.455,"tick":368},{"who":"player","max":1.5,"peak":1.455,"tick":668},{"who":"player","max":1.5,"peak":1.311,"tick":786},{"who":"player","max":1.5,"peak":1.455,"tick":832},{"who":"player","max":1.5,"peak":1.455,"tick":858}]
+390x844: frames=1191 (cine skipped 310) maxTexts=10 overlapFrames=0 comboOverlapFrames=0 distinct=0 comboVsHitsPopFrames=54
+390x844: shouts asked=69 shown=69 dropped={} fits=[69,0,0] nearerOtherByFit=[24,0,0]
+390x844:   nearer-other: enemy fit0 "THE SUN BOWS TO NO ONE!" cx=273 me=308 other=243 x=189..357
+390x844:   nearer-other: enemy fit0 "THE LAST STAR... FALLS!" cx=111 me=308 other=251 x=46..176
+390x844:   nearer-other: enemy fit0 "My turn! Heat coming through!" cx=81 me=307 other=237 x=3..158
+390x844:   nearer-other: player fit0 "Told you! Nobody outburns me!" cx=279 me=182 other=244 x=215..343
+390x844:   nearer-other: player fit0 "Watch closely." cx=260 me=182 other=244 x=209..311
+390x844:   nearer-other: enemy fit0 "EVERYBODY, FULL HEAT!" cx=98 me=306 other=243 x=30..166
+390x844:   nearer-other: player fit0 "NINE PEAKS... DAWN!" cx=281 me=242 other=308 x=205..357
+390x844:   nearer-other: player fit0 "Package for you: one beating!" cx=281 me=237 other=308 x=205..357
+390x844:   nearer-other: enemy fit0 "I'm sorry in advance. Truly." cx=85 me=314 other=246 x=10..160
+390x844:   nearer-other: enemy fit0 "FRIENDS, GET BEHIND ME!" cx=84 me=308 other=242 x=3..166
+390x844:   nearer-other: enemy fit0 "Calm returns. I win the bet." cx=83 me=314 other=262 x=3..164
+390x844:   nearer-other: enemy fit0 "Few words. Many bruises." cx=115 me=308 other=238 x=52..178
+390x844: injected 2-line shouts asked=37 shown=37 (2-line strings in data 33) lost={}
+390x844: player pops=14 full=14 clamped=0 min=1.5 median=1.5 mean=1.500 | enemy pops=0 full=0 clamped=0 min=- median=- mean=0.000
+390x844: pops []
+430x932: frames=1061 (cine skipped 439) maxTexts=10 overlapFrames=0 comboOverlapFrames=0 distinct=0 comboVsHitsPopFrames=52
+430x932: shouts asked=69 shown=69 dropped={} fits=[69,0,0] nearerOtherByFit=[3,0,0]
+430x932:   nearer-other: enemy fit0 "My turn! Heat coming through!" cx=279 me=307 other=252 x=202..357
+430x932:   nearer-other: enemy fit0 "I already counted your losses." cx=277 me=308 other=253 x=196..357
+430x932:   nearer-other: enemy fit0 "Another trophy for the collection." cx=82 me=307 other=238 x=3..160
+430x932: injected 2-line shouts asked=37 shown=37 (2-line strings in data 33) lost={}
+430x932: player pops=13 full=13 clamped=0 min=1.5 median=1.5 mean=1.500 | enemy pops=0 full=0 clamped=0 min=- median=- mean=0.000
+430x932: pops []
+TOTAL shouts asked=207 shown=170 (of them injected 2-line: asked=111 shown=74)
+TOTAL overlapFrames=0 comboOverlapFrames=0 consoleErrors=0 break=none
+---

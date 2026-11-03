@@ -1,0 +1,33 @@
+=== cycle 1 tools
+[perf canvas cpu×4] frames=974 median=16.7 ms p95=24.7 ms max=72.3 ms; work median=3.4 p95=8.0 ms; auto quality → low: no
+[perf canvas cpu×4] frames=967 median=16.7 ms p95=24.4 ms max=80.4 ms; work median=3.4 p95=7.6 ms; auto quality → low: no
+  2 passed (46.1s)
+=== cycle 1 base
+[perf canvas cpu×4] frames=966 median=16.7 ms p95=25.8 ms max=66.2 ms; work median=3.4 p95=8.1 ms; auto quality → low: no
+[perf canvas cpu×4] frames=923 median=17.0 ms p95=29.8 ms max=76.6 ms; work median=3.7 p95=9.9 ms; auto quality → low: no
+  2 passed (46.6s)
+=== cycle 2 tools
+[perf canvas cpu×4] frames=938 median=16.7 ms p95=27.2 ms max=105.2 ms; work median=3.5 p95=9.3 ms; auto quality → low: no
+[perf canvas cpu×4] frames=969 median=16.6 ms p95=24.7 ms max=89.1 ms; work median=3.2 p95=7.9 ms; auto quality → low: no
+  2 passed (47.0s)
+=== cycle 2 base
+[perf canvas cpu×4] frames=941 median=17.0 ms p95=26.3 ms max=71.2 ms; work median=3.5 p95=8.6 ms; auto quality → low: no
+[perf canvas cpu×4] frames=924 median=17.0 ms p95=28.8 ms max=89.8 ms; work median=3.8 p95=9.3 ms; auto quality → low: no
+  2 passed (46.1s)
+=== cycle 3 tools
+[perf canvas cpu×4] frames=943 median=16.8 ms p95=27.9 ms max=83.6 ms; work median=3.5 p95=8.4 ms; auto quality → low: no
+[perf canvas cpu×4] frames=957 median=16.8 ms p95=24.8 ms max=77.4 ms; work median=3.5 p95=7.8 ms; auto quality → low: no
+  2 passed (47.2s)
+=== cycle 3 base
+[perf canvas cpu×4] frames=956 median=16.8 ms p95=26.2 ms max=82.0 ms; work median=3.5 p95=8.3 ms; auto quality → low: no
+[perf canvas cpu×4] frames=962 median=16.7 ms p95=25.0 ms max=78.1 ms; work median=3.5 p95=8.0 ms; auto quality → low: no
+  2 passed (46.2s)
+=== cycle 4 tools
+[perf canvas cpu×4] frames=895 median=17.6 ms p95=30.8 ms max=77.0 ms; work median=4.2 p95=10.3 ms; auto quality → low: no
+[perf canvas cpu×4] frames=953 median=16.9 ms p95=25.9 ms max=83.4 ms; work median=3.7 p95=8.6 ms; auto quality → low: no
+  2 passed (47.9s)
+=== cycle 4 base
+[perf canvas cpu×4] frames=959 median=16.8 ms p95=27.2 ms max=70.4 ms; work median=3.7 p95=8.5 ms; auto quality → low: no
+[perf canvas cpu×4] frames=949 median=16.8 ms p95=27.9 ms max=81.4 ms; work median=3.6 p95=9.4 ms; auto quality → low: no
+  2 passed (47.5s)
+done

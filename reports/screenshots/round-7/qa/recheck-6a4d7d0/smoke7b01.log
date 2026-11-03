@@ -1,0 +1,209 @@
+=== npx playwright test tests/e2e/smoke.spec.js -g BUG-7b-01
+
+Running 2 tests using 1 worker
+
+[phone-360x640] BUG-7b-01 A damage (pop 1.35): peak scale 1.35, frames 51, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A TAG STRIKE!: peak scale 1.00, frames 51, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 48 K.O.!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 30 PERFECT SLIP! (player): peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 22 TRI-BURST BLOCKED!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A shout (pop 1.1) longest: peak scale 1.10, frames 74, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A shout (pop 1.1) NOONDAY HALO!: peak scale 1.10, frames 1, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 B free pop: player 1.5 (scale 1.5), enemy 1.4 (scale 1.4)
+[phone-360x640] BUG-7b-01 C placed 3, inside the unclamped reach 3, peaks {"player":1,"enemy":1.0370370149612427}, frames 25, problems 0 
+[phone-360x640] BUG-7b-01 longest shout: "My turn! Heat coming through!"; shouts that wrap to 2 lines: 33/92
+  ✓  1 [phone-360x640] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) (8.4s)
+[phone-430x932] BUG-7b-01 A damage (pop 1.35): peak scale 1.35, frames 51, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A TAG STRIKE!: peak scale 1.00, frames 51, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 48 K.O.!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 30 PERFECT SLIP! (player): peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 22 TRI-BURST BLOCKED!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A shout (pop 1.1) longest: peak scale 1.10, frames 74, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A shout (pop 1.1) NOONDAY HALO!: peak scale 1.10, frames 1, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 B free pop: player 1.5 (scale 1.5), enemy 1.4 (scale 1.4)
+[phone-430x932] BUG-7b-01 C placed 4, inside the unclamped reach 3, peaks {"player":1,"enemy":1.0370370149612427}, frames 25, problems 0 
+[phone-430x932] BUG-7b-01 longest shout: "My turn! Heat coming through!"; shouts that wrap to 2 lines: 33/92
+  ✓  2 [phone-430x932] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) (8.4s)
+
+  2 passed (20.4s)
+exit 0
+=== npx playwright test tests/e2e/smoke.spec.js -g BUG-7b-01
+
+Running 2 tests using 1 worker
+
+[phone-360x640] BUG-7b-01 A damage (pop 1.35): peak scale 1.35, frames 51, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A TAG STRIKE!: peak scale 1.00, frames 51, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 48 K.O.!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 30 PERFECT SLIP! (player): peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 22 TRI-BURST BLOCKED!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A shout (pop 1.1) longest: peak scale 1.10, frames 74, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A shout (pop 1.1) NOONDAY HALO!: peak scale 1.10, frames 73, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 B free pop: player 1.5 (scale 1.5), enemy 1.4 (scale 1.4)
+[phone-360x640] BUG-7b-01 C placed 3, inside the unclamped reach 3, peaks {"player":1,"enemy":1.0370370149612427}, frames 25, problems 0 
+[phone-360x640] BUG-7b-01 longest shout: "My turn! Heat coming through!"; shouts that wrap to 2 lines: 33/92
+  ✓  1 [phone-360x640] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) (8.6s)
+[phone-430x932] BUG-7b-01 A damage (pop 1.35): peak scale 1.35, frames 51, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A TAG STRIKE!: peak scale 1.00, frames 51, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 48 K.O.!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 30 PERFECT SLIP! (player): peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 22 TRI-BURST BLOCKED!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A shout (pop 1.1) longest: peak scale 1.10, frames 74, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A shout (pop 1.1) NOONDAY HALO!: peak scale 1.10, frames 1, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 B free pop: player 1.5 (scale 1.5), enemy 1.4 (scale 1.4)
+[phone-430x932] BUG-7b-01 C placed 4, inside the unclamped reach 3, peaks {"player":1,"enemy":1.0370370149612427}, frames 25, problems 0 
+[phone-430x932] BUG-7b-01 longest shout: "My turn! Heat coming through!"; shouts that wrap to 2 lines: 33/92
+  ✓  2 [phone-430x932] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) (8.5s)
+
+  2 passed (20.7s)
+exit 0
+=== npx playwright test tests/e2e/smoke.spec.js -g BUG-7b-01
+
+Running 2 tests using 1 worker
+
+[phone-360x640] BUG-7b-01 A damage (pop 1.35): peak scale 1.35, frames 51, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A TAG STRIKE!: peak scale 1.00, frames 51, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 48 K.O.!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 30 PERFECT SLIP! (player): peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 22 TRI-BURST BLOCKED!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A shout (pop 1.1) longest: peak scale 1.10, frames 74, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A shout (pop 1.1) NOONDAY HALO!: peak scale 1.10, frames 1, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 B free pop: player 1.5 (scale 1.5), enemy 1.4 (scale 1.4)
+[phone-360x640] BUG-7b-01 C placed 3, inside the unclamped reach 3, peaks {"player":1,"enemy":1.0370370149612427}, frames 25, problems 0 
+[phone-360x640] BUG-7b-01 longest shout: "My turn! Heat coming through!"; shouts that wrap to 2 lines: 33/92
+  ✓  1 [phone-360x640] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) (8.6s)
+[phone-430x932] BUG-7b-01 A damage (pop 1.35): peak scale 1.35, frames 51, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A TAG STRIKE!: peak scale 1.00, frames 51, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 48 K.O.!: peak scale 1.30, frames 64, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 30 PERFECT SLIP! (player): peak scale 1.30, frames 64, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 22 TRI-BURST BLOCKED!: peak scale 1.30, frames 64, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A shout (pop 1.1) longest: peak scale 1.10, frames 73, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A shout (pop 1.1) NOONDAY HALO!: peak scale 1.10, frames 1, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 B free pop: player 1.5 (scale 1.5), enemy 1.4 (scale 1.4)
+[phone-430x932] BUG-7b-01 C placed 4, inside the unclamped reach 3, peaks {"player":1,"enemy":1.0370370149612427}, frames 25, problems 0 
+[phone-430x932] BUG-7b-01 longest shout: "My turn! Heat coming through!"; shouts that wrap to 2 lines: 33/92
+  ✓  2 [phone-430x932] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) (8.4s)
+
+  2 passed (20.7s)
+exit 0
+=== npx playwright test tests/e2e/smoke.spec.js -g BUG-7b-01
+
+Running 2 tests using 1 worker
+
+[phone-360x640] BUG-7b-01 A damage (pop 1.35): peak scale 1.35, frames 51, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A TAG STRIKE!: peak scale 1.00, frames 51, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 48 K.O.!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 30 PERFECT SLIP! (player): peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A callout 22 TRI-BURST BLOCKED!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A shout (pop 1.1) longest: peak scale 1.10, frames 74, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 A shout (pop 1.1) NOONDAY HALO!: peak scale 1.10, frames 1, worst -1.0 px outside (frame 0)
+[phone-360x640] BUG-7b-01 B free pop: player 1.5 (scale 1.5), enemy 1.4 (scale 1.4)
+[phone-360x640] BUG-7b-01 C placed 3, inside the unclamped reach 3, peaks {"player":1.5,"enemy":1.4}, frames 25, problems 12 frame 1: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"; frame 1: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"; frame 1: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+[phone-360x640] BUG-7b-01 longest shout: "My turn! Heat coming through!"; shouts that wrap to 2 lines: 33/92
+  ✘  1 [phone-360x640] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) (8.5s)
+[phone-430x932] BUG-7b-01 A damage (pop 1.35): peak scale 1.35, frames 51, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A TAG STRIKE!: peak scale 1.00, frames 51, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 48 K.O.!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 30 PERFECT SLIP! (player): peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A callout 22 TRI-BURST BLOCKED!: peak scale 1.30, frames 65, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A shout (pop 1.1) longest: peak scale 1.10, frames 74, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 A shout (pop 1.1) NOONDAY HALO!: peak scale 1.10, frames 1, worst -1.0 px outside (frame 0)
+[phone-430x932] BUG-7b-01 B free pop: player 1.5 (scale 1.5), enemy 1.4 (scale 1.4)
+[phone-430x932] BUG-7b-01 C placed 4, inside the unclamped reach 3, peaks {"player":1.5,"enemy":1.4}, frames 25, problems 12 frame 1: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"; frame 1: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"; frame 1: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+[phone-430x932] BUG-7b-01 longest shout: "My turn! Heat coming through!"; shouts that wrap to 2 lines: 33/92
+  ✘  2 [phone-430x932] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) (8.5s)
+
+
+  1) [phone-360x640] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) 
+
+    Error: frame 1: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"
+    frame 1: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"
+    frame 1: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+    frame 1: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+    frame 2: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"
+    frame 2: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"
+    frame 2: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+    frame 2: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+    frame 3: "COMBO x99" (scale 1.30) × "NOONDAY HALO!"
+    frame 3: "COMBO x99" (scale 1.24) × "NOONDAY HALO!"
+    frame 3: "COMBO x99" (scale 1.24) × "NOONDAY HALO!"
+    frame 4: "COMBO x99" (scale 1.12) × "NOONDAY HALO!"
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 14[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "frame 1: \"COMBO x99\" (scale 1.50) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 1: \"COMBO x99\" (scale 1.50) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 1: \"COMBO x99\" (scale 1.40) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 1: \"COMBO x99\" (scale 1.40) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 2: \"COMBO x99\" (scale 1.50) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 2: \"COMBO x99\" (scale 1.50) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 2: \"COMBO x99\" (scale 1.40) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 2: \"COMBO x99\" (scale 1.40) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 3: \"COMBO x99\" (scale 1.30) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 3: \"COMBO x99\" (scale 1.24) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 3: \"COMBO x99\" (scale 1.24) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 4: \"COMBO x99\" (scale 1.12) × \"NOONDAY HALO!\"",[39m
+    [31m+ ][39m
+
+      1382 |   expect(r.C.nearPeak, 'scenario C really puts texts where the old pop reached').toBeGreaterThan(0);
+      1383 |   expect(r.C.frames).toBeGreaterThan(5);
+    > 1384 |   expect(r.C.problems, r.C.problems.join('\n')).toEqual([]);
+           |                                                 ^
+      1385 |   expect(errors, errors.join('\n')).toEqual([]);
+      1386 | });
+      1387 |
+        at /tmp/claude-0/-home-user-mobile-game/0ccd7f5b-40f0-5bc7-95d2-5aaebf0b5643/scratchpad/r7f/tools/tests/e2e/smoke.spec.js:1384:49
+
+  2) [phone-430x932] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) 
+
+    Error: frame 1: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"
+    frame 1: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"
+    frame 1: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+    frame 1: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+    frame 2: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"
+    frame 2: "COMBO x99" (scale 1.50) × "NOONDAY HALO!"
+    frame 2: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+    frame 2: "COMBO x99" (scale 1.40) × "NOONDAY HALO!"
+    frame 3: "COMBO x99" (scale 1.28) × "NOONDAY HALO!"
+    frame 3: "COMBO x99" (scale 1.23) × "NOONDAY HALO!"
+    frame 3: "COMBO x99" (scale 1.23) × "NOONDAY HALO!"
+    frame 4: "COMBO x99" (scale 1.13) × "NOONDAY HALO!"
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 14[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "frame 1: \"COMBO x99\" (scale 1.50) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 1: \"COMBO x99\" (scale 1.50) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 1: \"COMBO x99\" (scale 1.40) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 1: \"COMBO x99\" (scale 1.40) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 2: \"COMBO x99\" (scale 1.50) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 2: \"COMBO x99\" (scale 1.50) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 2: \"COMBO x99\" (scale 1.40) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 2: \"COMBO x99\" (scale 1.40) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 3: \"COMBO x99\" (scale 1.28) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 3: \"COMBO x99\" (scale 1.23) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 3: \"COMBO x99\" (scale 1.23) × \"NOONDAY HALO!\"",[39m
+    [31m+   "frame 4: \"COMBO x99\" (scale 1.13) × \"NOONDAY HALO!\"",[39m
+    [31m+ ][39m
+
+      1382 |   expect(r.C.nearPeak, 'scenario C really puts texts where the old pop reached').toBeGreaterThan(0);
+      1383 |   expect(r.C.frames).toBeGreaterThan(5);
+    > 1384 |   expect(r.C.problems, r.C.problems.join('\n')).toEqual([]);
+           |                                                 ^
+      1385 |   expect(errors, errors.join('\n')).toEqual([]);
+      1386 | });
+      1387 |
+        at /tmp/claude-0/-home-user-mobile-game/0ccd7f5b-40f0-5bc7-95d2-5aaebf0b5643/scratchpad/r7f/tools/tests/e2e/smoke.spec.js:1384:49
+
+  2 failed
+    [phone-360x640] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) 
+    [phone-430x932] › tests/e2e/smoke.spec.js:1246:1 › BUG-7b-01: every animated arena text stays inside its reserved zone at its peak scale (combo pop, floats) 
+exit 1

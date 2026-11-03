@@ -1,0 +1,159 @@
+=== npx playwright test tests/e2e/smoke.spec.js -g BUG-7c-01
+
+Running 2 tests using 1 worker
+
+[BUG-7c-01] 360x640: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [118,66,0]; smallest 13 px; problems 0
+[BUG-7c-01] 360x640: both sides at once beside the counters: requested 66, shown 66
+[BUG-7c-01] 390x844: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [184,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 390x844: both sides at once beside the counters: requested 66, shown 66
+[BUG-7c-01] 430x932: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [184,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 430x932: both sides at once beside the counters: requested 66, shown 66
+  ✓  1 [phone-360x640] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932 (17.2s)
+  -  2 [phone-430x932] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932
+
+  1 skipped
+  1 passed (22.2s)
+exit 0
+=== npx playwright test tests/e2e/smoke.spec.js -g BUG-7c-01
+
+Running 2 tests using 1 worker
+
+[BUG-7c-01] 360x640: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [118,66,0]; smallest 13 px; problems 0
+[BUG-7c-01] 360x640: both sides at once beside the counters: requested 66, shown 66
+[BUG-7c-01] 390x844: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [184,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 390x844: both sides at once beside the counters: requested 66, shown 66
+[BUG-7c-01] 430x932: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [184,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 430x932: both sides at once beside the counters: requested 66, shown 66
+  ✓  1 [phone-360x640] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932 (17.0s)
+  -  2 [phone-430x932] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932
+
+  1 skipped
+  1 passed (20.4s)
+exit 0
+=== npx playwright test tests/e2e/smoke.spec.js -g BUG-7c-01
+
+Running 2 tests using 1 worker
+
+[BUG-7c-01] 360x640: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [118,66,0]; smallest 13 px; problems 0
+[BUG-7c-01] 360x640: both sides at once beside the counters: requested 66, shown 66
+[BUG-7c-01] 390x844: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [184,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 390x844: both sides at once beside the counters: requested 66, shown 66
+[BUG-7c-01] 430x932: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [184,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 430x932: both sides at once beside the counters: requested 66, shown 66
+  ✓  1 [phone-360x640] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932 (17.1s)
+  -  2 [phone-430x932] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932
+
+  1 skipped
+  1 passed (20.7s)
+exit 0
+=== npx playwright test tests/e2e/smoke.spec.js -g BUG-7c-01
+
+Running 2 tests using 1 worker
+
+[BUG-7c-01] 360x640: shouts 92 (2-line in the approved wrap 33), requested 184, shown 118, dropped 66; layouts used [118,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 360x640   dropped player:2L:MELTDOWN... METEOOOR!
+[BUG-7c-01] 360x640   dropped enemy:2L:MELTDOWN... METEOOOR!
+[BUG-7c-01] 360x640   dropped player:2L:SORRY... MOUNTAIN DROP!
+[BUG-7c-01] 360x640   dropped enemy:2L:SORRY... MOUNTAIN DROP!
+[BUG-7c-01] 360x640   dropped player:2L:LIGHT THE HUNDRED LANTERNS!
+[BUG-7c-01] 360x640: both sides at once beside the counters: requested 66, shown 0; lost e.g. MELTDOWN... METEOOOR! | SORRY... MOUNTAIN DROP! / SORRY... MOUNTAIN DROP! | LIGHT THE HUNDRED LANTERNS! / LIGHT THE HUNDRED LANTERNS! | BEHOLD... A THOUSAND DAWNS!
+[BUG-7c-01] 390x844: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [184,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 390x844: both sides at once beside the counters: requested 66, shown 66
+[BUG-7c-01] 430x932: shouts 92 (2-line in the approved wrap 33), requested 184, shown 184, dropped 0; layouts used [184,0,0]; smallest 13 px; problems 0
+[BUG-7c-01] 430x932: both sides at once beside the counters: requested 66, shown 66
+  ✘  1 [phone-360x640] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932 (17.2s)
+  -  2 [phone-430x932] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932
+
+
+  1) [phone-360x640] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932 
+
+    Error: 360x640: shouts requested but not shown
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  -  1[39m
+    [31m+ Received  + 68[39m
+
+    [32m- Array [][39m
+    [31m+ Array [[39m
+    [31m+   "player:2L:MELTDOWN... METEOOOR!",[39m
+    [31m+   "enemy:2L:MELTDOWN... METEOOOR!",[39m
+    [31m+   "player:2L:SORRY... MOUNTAIN DROP!",[39m
+    [31m+   "enemy:2L:SORRY... MOUNTAIN DROP!",[39m
+    [31m+   "player:2L:LIGHT THE HUNDRED LANTERNS!",[39m
+    [31m+   "enemy:2L:LIGHT THE HUNDRED LANTERNS!",[39m
+    [31m+   "player:2L:BEHOLD... A THOUSAND DAWNS!",[39m
+    [31m+   "enemy:2L:BEHOLD... A THOUSAND DAWNS!",[39m
+    [31m+   "player:2L:BLACK SUN... REQUIEM.",[39m
+    [31m+   "enemy:2L:BLACK SUN... REQUIEM.",[39m
+    [31m+   "player:2L:THAT'S TEN! ENDGAME!",[39m
+    [31m+   "enemy:2L:THAT'S TEN! ENDGAME!",[39m
+    [31m+   "player:2L:CHECKMATE! GAME OVER!",[39m
+    [31m+   "enemy:2L:CHECKMATE! GAME OVER!",[39m
+    [31m+   "player:2L:THE SUN BOWS TO NO ONE!",[39m
+    [31m+   "enemy:2L:THE SUN BOWS TO NO ONE!",[39m
+    [31m+   "player:2L:LET THE STARS GO OUT!",[39m
+    [31m+   "enemy:2L:LET THE STARS GO OUT!",[39m
+    [31m+   "player:2L:THE LAST STAR... FALLS!",[39m
+    [31m+   "enemy:2L:THE LAST STAR... FALLS!",[39m
+    [31m+   "player:2L:Ready or not, I'm ON FIRE!",[39m
+    [31m+   "enemy:2L:Ready or not, I'm ON FIRE!",[39m
+    [31m+   "player:2L:My turn! Heat coming through!",[39m
+    [31m+   "enemy:2L:My turn! Heat coming through!",[39m
+    [31m+   "player:2L:Told you! Nobody outburns me!",[39m
+    [31m+   "enemy:2L:Told you! Nobody outburns me!",[39m
+    [31m+   "player:2L:EVERYBODY, FULL HEAT!",[39m
+    [31m+   "enemy:2L:EVERYBODY, FULL HEAT!",[39m
+    [31m+   "player:2L:Package for you: one beating!",[39m
+    [31m+   "enemy:2L:Package for you: one beating!",[39m
+    [31m+   "player:2L:I'm sorry in advance. Truly.",[39m
+    [31m+   "enemy:2L:I'm sorry in advance. Truly.",[39m
+    [31m+   "player:2L:Is everyone all right? Good.",[39m
+    [31m+   "enemy:2L:Is everyone all right? Good.",[39m
+    [31m+   "player:2L:FRIENDS, GET BEHIND ME!",[39m
+    [31m+   "enemy:2L:FRIENDS, GET BEHIND ME!",[39m
+    [31m+   "player:2L:Peace first. Then, if needed, fists.",[39m
+    [31m+   "enemy:2L:Peace first. Then, if needed, fists.",[39m
+    [31m+   "player:2L:Calm returns. I win the bet.",[39m
+    [31m+   "enemy:2L:Calm returns. I win the bet.",[39m
+    [31m+   "player:2L:LANTERNS, LIGHT THE WAY!",[39m
+    [31m+   "enemy:2L:LANTERNS, LIGHT THE WAY!",[39m
+    [31m+   "player:2L:Few words. Many bruises.",[39m
+    [31m+   "enemy:2L:Few words. Many bruises.",[39m
+    [31m+   "player:2L:SWALLOW THEM, NIGHT!",[39m
+    [31m+   "enemy:2L:SWALLOW THEM, NIGHT!",[39m
+    [31m+   "player:2L:I already counted your losses.",[39m
+    [31m+   "enemy:2L:I already counted your losses.",[39m
+    [31m+   "player:2L:Your move. Wrong move.",[39m
+    [31m+   "enemy:2L:Your move. Wrong move.",[39m
+    [31m+   "player:2L:Show me you deserve this ring.",[39m
+    [31m+   "enemy:2L:Show me you deserve this ring.",[39m
+    [31m+   "player:2L:Rise again. Come back stronger.",[39m
+    [31m+   "enemy:2L:Rise again. Come back stronger.",[39m
+    [31m+   "player:2L:TOGETHER, LIKE A SUNRISE!",[39m
+    [31m+   "enemy:2L:TOGETHER, LIKE A SUNRISE!",[39m
+    [31m+   "player:2L:Your aura will look lovely on me.",[39m
+    [31m+   "enemy:2L:Your aura will look lovely on me.",[39m
+    [31m+   "player:2L:Step aside. The king arrives.",[39m
+    [31m+   "enemy:2L:Step aside. The king arrives.",[39m
+    [31m+   "player:2L:Impossible... my crown...",[39m
+    [31m+   "enemy:2L:Impossible... my crown...",[39m
+    [31m+   "player:2L:Another trophy for the collection.",[39m
+    [31m+   "enemy:2L:Another trophy for the collection.",[39m
+    [31m+   "player:2L:SERVANTS, DEVOUR THEM!",[39m
+    [31m+   "enemy:2L:SERVANTS, DEVOUR THEM!",[39m
+    [31m+ ][39m
+
+      1510 |   expect(s360.twoLine, 'the 360×640 case really has 2-line shouts (precondition)').toBeGreaterThan(10);
+      1511 |   for (const r of results) {
+    > 1512 |     expect(r.dropped, `${r.size}: shouts requested but not shown`).toEqual([]);
+           |                                                                    ^
+      1513 |     expect(r.shown).toBe(r.requested);
+      1514 |     expect(r.pairs.shown, `${r.size}: both shouts at once`).toBe(r.pairs.requested);
+      1515 |     expect(r.problems, r.problems.slice(0, 10).join('\n')).toEqual([]);
+        at /tmp/claude-0/-home-user-mobile-game/0ccd7f5b-40f0-5bc7-95d2-5aaebf0b5643/scratchpad/r7f/tools/tests/e2e/smoke.spec.js:1512:68
+
+  1 failed
+    [phone-360x640] › tests/e2e/smoke.spec.js:1400:1 › BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932 
+  1 skipped
+exit 1

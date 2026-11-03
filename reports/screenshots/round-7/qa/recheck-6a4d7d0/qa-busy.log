@@ -1,0 +1,42 @@
+=== npx playwright test tests/e2e/qa-busy.spec.js --project phone-360x640
+
+Running 1 test using 1 worker
+
+[360x640] busy frames scanned=157, max arena texts in one frame=9, overlaps=0
+[390x844] busy frames scanned=156, max arena texts in one frame=11, overlaps=0
+[430x932] busy frames scanned=154, max arena texts in one frame=11, overlaps=0
+430x932: frames=154 maxTexts=11 overlaps=0
+390x844: frames=156 maxTexts=11 overlaps=0
+360x640: frames=157 maxTexts=9 overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+
+  1 passed (1.7m)
+exit 0
+=== npx playwright test tests/e2e/qa-busy.spec.js --project phone-360x640
+
+Running 1 test using 1 worker
+
+[360x640] busy frames scanned=156, max arena texts in one frame=9, overlaps=0
+[390x844] busy frames scanned=135, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=154, max arena texts in one frame=9, overlaps=0
+430x932: frames=154 maxTexts=9 overlaps=0
+390x844: frames=135 maxTexts=10 overlaps=0
+360x640: frames=156 maxTexts=9 overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+
+  1 passed (1.7m)
+exit 0
+=== npx playwright test tests/e2e/qa-busy.spec.js --project phone-360x640
+
+Running 1 test using 1 worker
+
+[360x640] busy frames scanned=156, max arena texts in one frame=9, overlaps=0
+[390x844] busy frames scanned=174, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=135, max arena texts in one frame=10, overlaps=0
+430x932: frames=135 maxTexts=10 overlaps=0
+390x844: frames=174 maxTexts=10 overlaps=0
+360x640: frames=156 maxTexts=9 overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+
+  1 passed (1.7m)
+exit 0

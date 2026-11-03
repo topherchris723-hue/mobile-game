@@ -1,0 +1,3 @@
+360x640: shouts=92 twoLine=33 dropped(side-attempts)=0 [1L 0, 2L 0] upperBand={"top":46,"bottom":150}
+390x844: shouts=92 twoLine=33 dropped(side-attempts)=0 [1L 0, 2L 0] upperBand={"top":46,"bottom":289}
+430x932: shouts=92 twoLine=33 dropped(side-attempts)=0 [1L 0, 2L 0] upperBand={"top":46,"bottom":290}
