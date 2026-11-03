@@ -3,10 +3,10 @@
 Maintained by the Producer (main Claude Code session). Newest round at the top.
 
 ## Current state
-- **Phase:** Launch — round 7: renaming the game (owner wants an original title), then re-review
+- **Phase:** Launch — milestone release candidate PASSED review (round 7); waiting on owner (playtest, signing key, Play Console)
 - **Round:** 7
 - **Core battle loop passed QA:** yes (round 2, QA loop 2: 0 blocker / 0 major)
-- **Last release verdict:** FAIL (round 6, commit 48fb519; 1 blocker, 2 major)
+- **Last release verdict:** PASS (round 7, build commit 6a4d7d0; 0 blocker, 0 major, 1 minor, 3 polish)
 - **Unity port started:** no
 
 ## Producer standing rules (from owner feedback, round 3 — read every round)
@@ -45,17 +45,13 @@ Maintained by the Producer (main Claude Code session). Newest round at the top.
   https://claude.ai/artifact/Mhc2SgVEgtoxFb5nHeqjXh
 
 ## Open issues
-- Owner to pick a working title (GDD §1): Jade Tempest, Meridian Burst, Heavenbreak,
-  Thunderclap Trio, Ironroar. Trademark check by compliance-checker before release.
+- Human trademark registry clearance for "Fyrenza" before any public track (owner, paid).
 - Store screenshots must be recaptured from real play at 1080×1920 (no test-hook values) into
   store/screenshots/0.1.0/ per store/screenshot-plan.md (ui-developer, with release-engineer round).
-- Do not upload the listing or make the feature graphic until the "Jade Tempest" trademark check
-  passes (compliance-checker).
 - AC-17.7 perf NOT VERIFIED here (shared container noise; WebGL unmeasurable) — needs a real
   low-end Android phone before release.
 - One unreproduced intermittent failure in the VFX/audio e2e (likely a ducking timing check
   within ~1 frame of its limit) — watch.
-- Trademark check for "Jade Tempest" pending (compliance-checker, Launch).
 
 ## Owner feedback
 Write anything you liked or disliked here, in your own words. Every line becomes a
@@ -142,6 +138,29 @@ lesson and a hard rule at the next `/retro`.
 ---
 
 ## Round log
+
+### Round 7 — Launch fixes + original title + re-review (result)
+- **Result:** owner moved to a new Claude account; work continued on branch `claude/new-session-uo46wt` (from
+  `ccr-cec3f30c-jcym5v`). Owner asked for an original name → **Fyrenza** (store "Fyrenza: Card Duels"; only one
+  of 4 coined candidates rated CLEAR). Renamed on every surface with automated AC-1.1 tests.
+- **QA loops:** 7b FAIL (BUG-7b-01 combo pop overlap) → 7c FAIL (BUG-7c-02 test switch in bundle, BUG-7c-01 2-line
+  shouts dropped at 360×640) → 7d **PASS** on 6a4d7d0. Compliance 7b on 6a4d7d0: **8 PASS / 0 FAIL** (title internal
+  testing only until human registry clearance).
+- **Release review (6a4d7d0): VERDICT: PASS** — R-1 MINOR enemy COMBO behind tutorial box; R-2 Vigor/QUEUED
+  label spacing, R-3 ragged Licenses text, R-4 Playwright browser pin (polish).
+- **Build:** CI debug APK built (run 41569241238, artifact app-debug-c5fdba6…). Release build was started; it needs the
+  owner's signing secrets. `reports/HANDOFF.md` written.
+- **Round-8 prep:** owner approved ChatGPT art; art-director wrote `docs/art-prompts/` (28 prompts; Solenne hair →
+  dark brown, Tavi wrench → fuse-cord coil, Rook "street brawler").
+- **Retro:** 17 new lessons, 25 hard-rule lines in 9 playbooks (stricter only; release-reviewer untouched; one
+  placeholder line removed). Ownership-list fixes proposed (see Next).
+- **Interruptions:** container restarted twice (QA and ui-dev runs re-done).
+- **Milestone: 6/7 done; left: owner playtest + signed AAB upload (owner §8 items); next stage: Growth — real art.**
+- **Next:** Round 8 — art: art-director adds owner-approved ChatGPT source to CREDITS allowed list; brief updates
+  (Solenne hair, Tavi coil); import owner's images (portraits + one battle pose, moves stay code-animated); compliance
+  look-echo per image; fix R-1 (+ R-2/R-3/BUG-7d-01 polish); R-4 Playwright pin; ownership-list fixes from the retro
+  (art-director docs/art-prompts/, release-engineer assets/app-icon/, qa/compliance round-<N>* reports, design reports);
+  commit franchise list + secret-scan pattern files. Re-run QA, compliance, release review on the new build.
 
 ### Round 7 (continued, new session) — original title (plan)
 - **Goal:** owner asked for an original game name (replaces "Jade Tempest"), then finish the round-7 gate.
