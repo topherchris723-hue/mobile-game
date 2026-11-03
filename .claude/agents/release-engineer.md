@@ -54,3 +54,5 @@ Lesson candidates: <or "none">
 
 ## Hard rules
 - (L-shared-022, round 6) App identity (Capacitor config, appId, icon, versionCode, portrait lock, target SDK) is committed before release review; signing and release builds happen only after `VERDICT: PASS` on the same commit.
+- (L-shared-026, round 7) A clean `git archive HEAD` + `npm ci` checkout runs `npm test` and `npx playwright test` green using only commands and overrides written in `docs/RELEASE.md` and CI; CI pins or installs the Playwright browser it needs.
+- (L-shared-024 / L-re-001, owner feedback round 7) `check-identity` requires every Android `res/values` app-name or title string and the Capacitor `appName` to equal `strings.json` `game_title`, with one must-FAIL case per string.

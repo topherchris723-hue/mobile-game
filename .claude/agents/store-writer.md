@@ -38,4 +38,5 @@ Lesson candidates: <or "none">
 ```
 
 ## Hard rules
-- none yet
+- (L-sw-003, round 7) Store files hold only store copy plus a marked "Notes for the Producer" block that never quotes a banned, placeholder or old-title word; hand over the banned-term and placeholder sweep commands as NOT VERIFIED (no shell).
+- (L-shared-024, owner feedback round 7) Use the in-game and store titles exactly as GDD §1 gives them; never write a variant.

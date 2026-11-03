@@ -53,8 +53,10 @@ Rule: For every timer, cooldown, gauge, window, meter and counter in the GDD, st
 Status: PROMOTED (round 2); merged into playbook "READY checklist" item 2 (round 3 step C)
 
 ### L-gd-004: Keep the GDD §3 banned-term list complete and clear every new name, word by word
-Seen: 2 (rounds 1, 6: compliance FAIL — "Jade Tempest" contains Atari's live TEMPEST mark and a
-  Monster Hunter weapon name; the round-1/3 search only checked the exact phrase)
+Seen: 3 (rounds 1, 6: compliance FAIL — "Jade Tempest" contains Atari's live TEMPEST mark and a
+  Monster Hunter weapon name; the round-1/3 search only checked the exact phrase; round 7: the
+  designer's coined candidates Kovanta and Tenvaro held live marks inside them (VANTA, VARO) and a
+  sound-alike (COVANTA), found only by compliance-checker)
 Severity of what it caused: MAJOR (compliance FAIL item 1; title needs legal clearance or a change)
 What happened: Round 1 notes items 4 and 7 — §3 missed nine well-known franchise terms
   (Spirit Bomb … Stand); the title "Overpeak" was already in use; "Ascension" and "Spark" echoed
@@ -70,7 +72,12 @@ Rule: When writing or updating §3, go through each franchise named in the brief
   in game classes 9/28/41, store and game databases, and franchise wikis. Record each query and
   result. Any live mark on a distinctive word = not cleared; the title then needs human legal
   clearance (owner, CLAUDE.md §8) or a change.
-Status: PROMOTED (round 6)
+  Round 7 widening (owner feedback, L-shared-024): a coined word has no "words" to split, so also search
+  every contained part of 3+ letters (KO+VANTA, TEN+VARO), 1-letter variants and sound-alikes (K↔C,
+  Y↔I, PH↔F) in the registries and franchise wikis. First test whether each registry host is reachable
+  and record which ones were not. If none is reachable, write "internal testing only until human
+  clearance" next to every candidate.
+Status: PROMOTED (round 6); re-promoted with the coined-word widening (round 7, owner feedback)
 
 ### L-gd-005: State schema validation as NOT VERIFIED and hand over the exact command
 Seen: 1 (round 1)
@@ -143,3 +150,15 @@ Rule: Every AC's first line states its class (W / X / P, GDD §15.4). W examples
   X uses inline literals, and P computes expectations from live data. Keep the GDD reference numbers
   equal to FX-GDD. An AC with a live content number and no class is a defect.
 Status: ACTIVE; in playbook "READY checklist" item 3 (round 3 step C)
+
+### L-gd-009: A rename AC names every surface the name appears on, each with a must-FAIL case
+Seen: 1 (round 7)
+Severity of what it caused: — (near miss; the AC worked)
+What happened: Round 7 — AC-1.1 for the Fyrenza rename listed every surface: `strings.json`,
+  `index.html`, `capacitor.config.json`, Android `res/values`, the licence notice and `store/`. That is
+  why QA's and the programmer's tests caught `title_activity_main`, which release-engineer's
+  `check-identity` did not check (L-re-001).
+Root cause: Not a defect. Recorded so the next rename AC is written the same way.
+Rule: Every rename AC lists each surface by exact path (find them with `grep -rni "<old name>"` over
+  the whole repo, minus `reports/`), with one must-FAIL case per surface (old name put back there).
+Status: ACTIVE

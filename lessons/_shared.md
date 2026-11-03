@@ -17,10 +17,19 @@ Rule: Never write "works" or "fixed" without evidence: a test name, a command ou
 Status: ACTIVE
 
 ### L-shared-003: Stay in your lane
-Seen: 0
-Severity of what it caused: —
+Seen: 1 (round 7: store-writer edited `store/privacy-policy.md` (compliance-checker's); the Producer
+  edited `store/listing.md`, `store/privacy-policy.md`, `docs/art-prompts/char_rook_001.md`,
+  `docs/ECONOMY.md` and `docs/STYLE_GUIDE.md` directly)
+Severity of what it caused: — (no bug; ownership became unclear)
+What happened: Round 7 rename — the Producer's plan gave store-writer "store/*", which includes the
+  privacy policy that compliance-checker owns. The Producer fixed a banned-grep hit and a prompt word
+  itself instead of routing them to the owner.
+Root cause: Rename tasks touch text in many owners' files, and the round plan assigned by folder
+  ("store/*") instead of by the "You own" lists.
 Rule: Only change files you own. If something outside your files is wrong, describe it in
-  your report for the Producer instead of editing it.
+  your report for the Producer instead of editing it. Producer side: task prompts list owned files by
+  exact path from the agent's "You own" list, never by folder glob; when the Producer edits a file
+  itself, the commit message names the owning agent.
 Status: ACTIVE
 
 ### L-shared-004: Original and licensed only — assets AND code libraries
@@ -83,7 +92,8 @@ Rule: Before creating or editing a data file, look up its path in GDD §15.1. If
 Status: PROMOTED (round 4; Producer rule proposed for CLAUDE.md)
 
 ### L-shared-008: Check names and text against the banned-term list read fresh from GDD §3
-Seen: 1 (round 1)
+Seen: 2 (round 1; round 7: compliance-checker's 97-term extended franchise list was lost with its session
+  scratchpad and rebuilt from memory as 115 patterns, compliance 7b lesson 2)
 Severity of what it caused: MINOR (caught inside the round; IP risk)
 What happened: Round 1 notes items 4 and 7 — GDD §3 lacked Spirit Bomb, Solar Flare, Chakra, Jutsu,
   Rasengan, Bankai, Hollow, Quirk, Stand; content-designer's own scan caught "Stand" in two shouts;
@@ -94,7 +104,10 @@ Rule: Every round, copy the banned-term list from the current GDD §3 (do not re
   check every new name, shout, card name, title and store text against it. Treat "Stand" and
   "Hollow" per GDD §3 (banned only as a power/form/mechanic name). If you find a franchise term
   that is not on the list, do not use it and report it so game-designer adds it to §3.
-Status: ACTIVE
+  Round 7 widening: any extended franchise list used by a check (beyond the §3 list) is committed to
+  the repo, in GDD §3 or in a file that GDD §3 names (game-designer owns it; Producer picks the path).
+  It is never kept only in a scratchpad, and never rebuilt from memory. Checks read it from that file.
+Status: PROMOTED (round 7: game-designer, compliance-checker)
 
 ### L-shared-009: Changing an interface (state field, enum value, event, reject reason) means updating and testing every consumer in the same hand-off
 Seen: 5 (round 2: BUG-2-07; triBurstLock hand-off; round 3: QA probe broke on TutorialController
@@ -146,8 +159,9 @@ Rule: For every `*_chance`, rate or probability in data:
 Status: PROMOTED (round 3)
 
 ### L-shared-011: Never use git commands that hide or discard other agents' work in the shared tree
-Seen: 3 (round 3: balance-analyst `git stash`; WIP commits mixing agents' files; round 4: WIP commit
-  picked up files in the middle of audio-designer's mutation test)
+Seen: 4 (round 3: balance-analyst `git stash`; WIP commits mixing agents' files; round 4: WIP commit
+  picked up files in the middle of audio-designer's mutation test; round 7: two container restarts —
+  WIP commits caught release-engineer and ui-developer mid-task, see L-shared-027)
 Severity of what it caused: MINOR (work looked lost; no data lost)
 What happened: Round-3 notes — the balance-analyst ran `git stash` in the shared working tree, which
   made other agents' changes look lost. WIP commits made during usage-limit pauses swept up whatever
@@ -305,8 +319,10 @@ Rule: In the Launch phase, before release review, the release-engineer prepares 
 Status: PROMOTED (round 6; Producer rule proposed for CLAUDE.md §4)
 
 ### L-shared-023: The release candidate shows no placeholder, prototype or test values
-Seen: 2 (round 6: reviewer R-4 "working title — prototype" on the title screen; store-writer found the
-  existing screenshots showed test-hook values)
+Seen: 3 (round 6: reviewer R-4 "working title — prototype" on the title screen; store-writer found the
+  existing screenshots showed test-hook values; round 7: BUG-7-02 — "prototype" in
+  `data/schemas/banners.schema.json`, "working title" and "placeholder" in internal notes inside
+  `store/listing.md`, see L-sw-003)
 Severity of what it caused: MINOR
 What happened: R-4 — `strings.json` `game_subtitle` still read "working title — prototype" at review.
   The store-writer found that the existing screenshots were taken with test hooks (unreal values) and
@@ -317,3 +333,92 @@ Rule: Before calling the reviewer (Launch phase), grep `src/ui/strings.json`, `d
   `store/` for `prototype|placeholder|working title|TBD|TODO|lorem|test`, and resolve every hit or log it
   as an accepted decision. Store screenshots come only from a release build (no hooks).
 Status: PROMOTED (round 6)
+
+### L-shared-024: The game's title is an original, coined name, cleared mark by mark, and read from one source
+Seen: 1 (round 7)
+Severity of what it caused: OWNER FEEDBACK
+What happened: Round 7, owner (2026-11-02), after the "Jade Tempest" compliance FAIL: "I want an original
+  name for our game". The old shortlist was dropped. game-designer proposed coined names. Compliance found
+  live marks inside two of them (KO+VANTA, TEN+VARO) and franchise echoes in a third (Aurenko), and
+  rated only "Fyrenza" CLEAR. The registry hosts (USPTO, EUIPO, WIPO, UK IPO) and the aggregator pages
+  could not be reached from the container. The rename then had to reach six surfaces (strings.json,
+  index.html, capacitor.config.json, Android res/values, the licence notice, store/).
+Root cause: The earlier title was a phrase of common words chosen for theme, not originality. The
+  word-by-word search (L-gd-004) did not cover marks hidden inside a coined word or sound-alikes. The
+  title was copied by hand into each surface.
+Rule:
+  - game-designer proposes only coined or clearly transformed titles. Each one is searched as a whole, by
+    every contained part of 3+ letters, by 1-letter variants and by sound-alikes (K↔C, Y↔I, PH↔F),
+    against trademark registries (classes 9/28/41) and franchise wikis. Record each query.
+  - compliance-checker rates a live mark contained in the word, a sound-alike live mark or a franchise
+    syllable echo as RISK (never CLEAR). While the official registries are unreachable, a title result
+    holds for internal testing only. It needs a human registry clearance (owner, CLAUDE.md §8) before any
+    public track.
+  - Every surface takes the title from one source (`src/ui/strings.json` `game_title`; store title from
+    GDD §1). A test fails if any player-visible surface shows a different or old title. This covers
+    `index.html`, the Capacitor `appName`, every Android `res/values` app-name string and the licence
+    notice.
+  - Never bring back a name that compliance rated FAIL or RISK without a new compliance check.
+Status: PROMOTED (round 7, owner feedback: game-designer, compliance-checker, store-writer, ui-developer,
+  release-engineer, gameplay-programmer)
+
+### L-shared-025: ChatGPT-made art is allowed only under the owner's conditions
+Seen: 1 (round 7)
+Severity of what it caused: OWNER FEEDBACK
+What happened: Round 7, the owner asked "Cant we make the art with chatgpt". The Producer explained the
+  plan and the risks, and the owner answered "Yes". Conditions (docs/STATUS.md, owner feedback):
+  art-director writes the prompts from the briefs, with no franchise names or styles; the owner generates
+  and uploads; each image is logged in `assets/CREDITS.md` (tool, date, prompt file, owner as generator);
+  compliance-checker runs the look-echo check on every image before it ships; start with portraits plus
+  one battle pose per fighter; moves stay code-animated. In the same round, compliance found
+  "street fighter" in the Rook prompt (a franchise name) and the Producer changed it.
+Root cause: Not a defect. This is an owner approval with conditions that every agent touching art must
+  follow. The prompt incident shows that prompts are a new IP surface.
+Rule:
+  - No generated image ships before `assets/CREDITS.md` has (a) the owner-approved ChatGPT/OpenAI source
+    in its allowed list, written by art-director and quoting the owner's approval, and (b) one row per
+    image: tool, date, prompt file in `docs/art-prompts/`, owner as generator.
+  - Prompts come from `docs/art-briefs/`. They contain no franchise, studio, game or artist names, no
+    style references to them, no game title and no on-screen words. Before hand-off, art-director runs
+    the committed franchise list (L-shared-008) over `docs/art-prompts/`, case-insensitive, and pastes
+    the hit count.
+  - compliance-checker runs the look-echo check (L-ad-001) on every generated image before it ships.
+  - Scope this milestone: portraits plus one battle pose per fighter. Moves, hits and effects stay
+    code-animated (the approved feel, L-shared-014).
+  - Changing any of these conditions needs the owner's written approval.
+Status: PROMOTED (round 7, owner feedback: art-director, compliance-checker, ui-developer, vfx-developer)
+
+### L-shared-026: "Green" means green on a clean checkout with documented commands only
+Seen: 2 (round 7: BUG-7-01 MAJOR; reviewer R-4)
+Severity of what it caused: MAJOR (BUG-7-01: full unit suite red on the build commit and in CI)
+What happened: BUG-7-01 — `tests/data/third-party-native.test.js` read
+  `android/capacitor-cordova-android-plugins/build.gradle`. That file is git-ignored and only created by
+  `npx cap sync`, so `npm test` passed in the shared tree and failed on a `git archive` export and in the
+  release workflow, which runs `npm test` before `cap sync`. R-4 — after a clean `npm ci`, the Playwright
+  suite only runs with an undocumented `PW_CHROMIUM` override, because the lock file's Playwright 1.56.1
+  expects headless shell 1194 and only 1243 is installed.
+Root cause: Agents ran tests only in the shared working tree, which contains generated, ignored files
+  and a local browser setup. Nobody ran the suite on what git stores, with only the commands the repo
+  documents.
+Rule: Before handing off any change to tests, scripts, configs or dependencies, run `npm test` (and for
+  e2e changes `npx playwright test`) on a clean `git archive HEAD` export with `npm ci`, and paste the
+  result. Tests read only git-tracked files or files they create themselves. Any environment override a
+  run needs (e.g. `PW_CHROMIUM`) is written in `docs/RELEASE.md` and used by CI, or CI installs the
+  matching browser itself. Producer side: the Phase-6 gate logs (L-shared-020) come from such a clean
+  export.
+Status: PROMOTED (round 7: gameplay-programmer, release-engineer)
+
+### L-shared-027: Long runs go in the background with logs to files, so a restart loses nothing
+Seen: 2 (round 7: the container restarted twice during long QA and build runs)
+Severity of what it caused: MINOR (lost run time; WIP commits caught agents mid-task, L-shared-011)
+What happened: Round 7 — the container restarted twice. A full Playwright suite takes about 22 min. Runs
+  in the foreground lost their output, and the Producer's WIP commits took in half-finished work from
+  release-engineer and ui-developer.
+Root cause: Long jobs were run in the foreground with output only on screen, and work in progress had no
+  marker that a WIP commit could respect.
+Rule: Any run expected to take over 5 min (full e2e, perf A/B, bot runs, builds) runs in the background,
+  with its log written to a file under the scratchpad or the round's evidence folder. The report names
+  that log file. After a restart, read the log before re-running anything. Producer side: WIP commits
+  are labelled "(in progress)" with the agent name, and the agent's next task prompt lists the files
+  that WIP commit took in.
+Status: PROMOTED (round 7: qa-tester, ui-developer)

@@ -48,3 +48,5 @@ Lesson candidates: <or "none">
 
 ## Hard rules
 - (L-ad-001, round 6) Every character look gets the look-echo check (colours, pattern, hair, accessory vs well-known anime designs) recorded in the report; two matching signature elements = change one.
+- (L-ad-001, round 7) The look-echo compare also covers side characters and fighting-game leads, and counts props and held items as signature elements.
+- (L-shared-025 / L-ad-003, owner feedback round 7) Prompts come from the briefs, with no franchise, studio, game or artist names or styles, no game title and no on-screen words; run the committed franchise list over `docs/art-prompts/` before hand-off and paste the hit count (0); no generated image ships before `assets/CREDITS.md` has the owner-approved source on its allowed list and one row per image.

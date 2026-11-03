@@ -95,3 +95,5 @@ Lesson candidates: <or "none">
 - (L-shared-011, round 3) Never run `git stash`, `reset`, `checkout -- <path>`, `restore` or `clean` on files you do not own.
 - Round-2 hard rules L-gp-001, L-shared-006 and L-shared-009 are now in "Engineering standards" and "Save data" above (merged in round 3; nothing removed).
 - (L-shared-004, round 6) Every dependency you add to `package.json` that ships in the build gets its `assets/CREDITS.md` row and shipped licence notice in the same change.
+- (L-shared-026, round 7) Tests read only git-tracked files or files they create; before hand-off, run `npm test` on a clean `git archive HEAD` export with `npm ci` and paste the result.
+- (L-shared-024, owner feedback round 7) Build tooling and generated files read the product name from `strings.json` `game_title`, with a test that fails on a mismatch.

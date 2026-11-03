@@ -50,3 +50,28 @@ Rule: (1) Clear a dedupe or "already decided" marker only when the thing it trac
   test in which another branch also wants to act on tick X, for every tier's think_interval.
   (3) Outcome-rate tests per L-shared-010.
 Status: PROMOTED (round 3)
+
+### L-gp-004: Product names in build tooling come from the single source, with a test
+Seen: 1 (round 7)
+Severity of what it caused: — (near miss; done right this round)
+What happened: Round 7 rename — the licence-notice generator (`scripts/third-party-licenses.mjs`,
+  `vite.config.js`) needed the game title. It now reads `strings.game_title` (`readGameTitle`) and throws
+  if missing, and `tests/data/app-name.test.js` fails if the notice shows another title.
+Root cause: Not a defect. Any hard-coded product name in tooling would have been missed by a rename.
+Rule: Build scripts and generated files never hard-code the game title or app name. They read it from
+  `src/ui/strings.json` (`game_title`), and a test fails on a mismatch (L-shared-024).
+Status: ACTIVE
+
+### L-gp-005: An AC test covers every must-FAIL case the AC names
+Seen: 1 (round 7: QA 7b coverage note)
+Severity of what it caused: MINOR (coverage gap; AC-1.1 (a) and (c) were checked only by QA tools
+  outside `tests/` until 6759e81)
+What happened: AC-1.1 named must-FAIL cases for (a) a literal title in scenes and (c) the store title.
+  The first `app-name.test.js` covered (b) only, so the project suite would not have caught a
+  regression in (a) or (c).
+Root cause: The test was written from the part of the AC the agent was building, not from the AC's list
+  of must-FAIL cases.
+Rule: For every AC you implement, list its must-FAIL cases in the report with the test name that covers
+  each, and show that test fail on a scratch copy with that case put in. An AC part with no test is
+  written as "MISSING", not left out.
+Status: ACTIVE

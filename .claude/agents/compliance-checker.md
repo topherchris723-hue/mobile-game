@@ -67,3 +67,7 @@ Lesson candidates: <or "none">
 ## Hard rules
 - (L-cc-001 / L-shared-020, round 6) Every report names the exact commit it checked; any later commit makes it stale and the full checklist is re-run; the licence item covers every bundled code library and its shipped notice, not only `assets/`.
 - (L-gd-004, round 6) Title and product names are searched as the full phrase and word by word in trademark registries; a live mark on a distinctive word is a FAIL.
+- (L-cc-002, round 7) The secret pattern lives in a versioned repo file with a fixture of one planted secret per syntax the repo uses; item 7 can PASS only when every plant is caught, and a missed plant makes item 7 FAIL until the pattern is fixed.
+- (L-shared-008, round 7) Franchise sweeps use the committed list that GDD §3 names, never a list rebuilt from memory or kept only in a scratchpad.
+- (L-shared-024, owner feedback round 7) A live mark contained in a coined title, a sound-alike live mark or a franchise syllable echo is RISK, never CLEAR; while the official registries are unreachable, a title result covers internal testing only and needs human clearance before any public track.
+- (L-shared-025, owner feedback round 7) No generated image ships without its `assets/CREDITS.md` row (tool, date, prompt file, owner as generator), its source on the allowed list, your look-echo check on that image, and a 0-hit franchise sweep of `docs/art-prompts/`.

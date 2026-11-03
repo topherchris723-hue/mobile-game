@@ -20,7 +20,9 @@ Status: ACTIVE; merged into playbook "What you test" (round 3 step C)
 
 
 ### L-qa-002: Scan live, busy battle frames for layout bugs, not only screens at rest
-Seen: 1 (round 2)
+Seen: 3 (round 2; round 7: BUG-7b-01 — the ~120 ms sampled scan missed a 160 ms combo pop, so the
+  `d09623e` re-check gave a false PASS (caught in 2 of 7 runs); reviewer R-1 — the scan never ran in the
+  stage_001 tutorial, where the prompt box covers the enemy combo counter)
 Severity of what it caused: MINOR (BUG-2-10 escaped QA loop 1; the Producer found it from one screenshot)
 What happened: BUG-2-10 — floating damage texts overlapped shouts and name labels during fights.
   QA loop 1's layout scan only captured screens at rest, so it missed the bug. In loop 2 QA added
@@ -33,7 +35,13 @@ Rule: Every QA round with battle UI, run a live-frame scan: a bot-driven fight u
   every screen for raw `[key]` strings. Prove the scan fails with the placer disabled (L-shared-006)
   and paste the counts in the report.
   Round 3: worked. QA found BUG-3-03 itself, and BUG-2-11 is verified fixed with the longest names.
-Status: ACTIVE; merged into playbook "What you test" (round 3 step C)
+  Round 7 widening: "several times a second" is too coarse for tweens shorter than the sample gap.
+  Sample every rendered frame (hook `postrender`). Scan the overlay states too: the stage_001 tutorial
+  prompts, the intro banner and the cinematics, besides the stage_005 busy fight. A pair is exempt from
+  the overlap check only if a GDD rule or a Producer decision recorded in `docs/STATUS.md` names that
+  pair. List every exemption in the report with that source. No exemption for a pop or tween growing
+  past its reserve.
+Status: ACTIVE; merged into playbook "What you test" (round 3 step C); PROMOTED (round 7)
 
 ### L-qa-003: Tests that drive one side through hooks must switch that side's AI off and assert the precondition
 Seen: 1 (round 3)
@@ -103,3 +111,53 @@ Rule: Every QA PASS names the commit and includes a green `npm test` and full `n
   it. Count-based assertions derive the expected count from the source list (strings/targets), not a
   literal.
 Status: ACTIVE
+
+### L-qa-008: Build the release-bundle hook list from source on every run, never by hand
+Seen: 2 (round 7: BUG-7c-02 escape — `disableComboZones` shipped ungated since round 4 while QA's
+  hand-written list passed in rounds 4–7b; QA 7d BUG-7d-02 — the project test's derivation only matched
+  `sc.<name> =`)
+Severity of what it caused: MINOR (security-relevant rule broken for 3 rounds)
+What happened: QA's check 10 grepped `dist/` for a list of hook names typed into the spec. A scene switch
+  that specs set directly was never on the list. QA found it in 7c only after deriving the list from the
+  specs. In 7d, the new project test still depended on the `sc.` handle name.
+Root cause: A check whose list is written by hand only finds what its author remembered. A
+  "derivation" that matches one naming habit is still a hand list.
+Rule: Every run, build the hook/switch list from source: every key exposed in `src/ui/test-hooks.js`
+  plus every `<obj>.<prop> =` assignment in `tests/` whose property `src/` never assigns, whatever the
+  handle name. Expect 0 hits in a clean `npm run build` and > 0 with `VITE_TEST_HOOKS=1`. Prove the
+  derivation by planting an ungated switch in a scratch copy, set through a handle name no current spec
+  uses; the check must FAIL on it. Paste the list size and the plant's FAIL output.
+Status: PROMOTED (round 7)
+
+### L-qa-009: A layout fix is proven only by forcing its geometry; a natural scan is extra coverage
+Seen: 2 (round 7: QA 7c — the per-frame natural scan with the clamp disabled found 0 overlaps; QA 7d —
+  the natural fight never emitted a 2-line shout, so the BUG-7c-01 live scan's must-FAIL passed)
+Severity of what it caused: MINOR (near miss: two re-tests would have "passed" with no proof)
+What happened: In both loops QA noticed that its natural-play scan could not reach the bug's
+  conditions, so a passing scan said nothing about the fix. Only forced injections through the real
+  code paths (`spawnFloat` next to the zone, then `popCombo`; direct `shout()` of every string) failed
+  on the old code.
+Root cause: A re-test was judged by whether the scan passed, not by whether the bug's preconditions
+  occurred during it.
+Rule: Every layout or timing re-test (1) forces the bug's geometry or order through the real code path,
+  (2) prints the precondition count (e.g. "texts inside the unclamped reach: 87"; "2-line shouts
+  requested: 66") and asserts it is above a minimum fixed in advance, and (3) runs the must-FAIL with the
+  fix disabled, which must FAIL. If the must-FAIL passes, the re-test is not evidence and the bug stays
+  open. Natural scans run as well, as extra coverage.
+Status: PROMOTED (round 7)
+
+### L-qa-010: Count texts requested vs shown, and check each text sits by its owner
+Seen: 2 (round 7: BUG-7c-01 — 2-line shouts silently dropped at 360×640 since round 2/3, invisible to
+  every overlap scan; BUG-7d-01 — the one-line fallback shout often sits over the other fighter)
+Severity of what it caused: MINOR (content missing at the minimum supported size for ~5 rounds)
+What happened: Overlap scans look only at texts on screen, so a text the placer never shows passes
+  every scan. Once drops were fixed, the next gap was attribution: a shout drawn nearer the other
+  fighter.
+Root cause: QA checked how shown texts were placed, never whether the requested texts were shown, or
+  shown next to the right speaker.
+Rule: For every player-facing text the placer can skip (shouts, callouts, damage numbers), count
+  requested vs shown per size over every distinct string in `data/` and `strings.json` at 360×640,
+  390×844 and 430×932. A text that can never be shown at a supported size is a bug. For fighter-owned
+  text, also record the share drawn nearer its owner than the other fighter, next to the same share in
+  the approved round-3 layout.
+Status: PROMOTED (round 7)

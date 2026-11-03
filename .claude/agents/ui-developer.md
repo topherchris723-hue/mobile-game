@@ -108,3 +108,8 @@ Lesson candidates: <or "none">
 - (L-shared-014, owner feedback round 3) Report every change to controls, gestures, battle HUD layout or hit feedback under "Feel changes"; an unplanned one is a bug.
 - (L-ui-007, round 6) No drawing change is finished while AC-17.7 (median p95 of ≥ 5 runs at 4× CPU, Canvas) is over 33.3 ms.
 - Earlier hard rules (L-ui-001, L-ui-003, L-shared-009 in round 3; L-shared-006, L-shared-011, L-ui-005, L-shared-017 in round 6) are now in "Standards" and "Layout self-check" above (nothing removed).
+- (L-ui-003 with L-ui-010/L-ui-011, round 7) Every arena text reserves its bounds at the peak frame of every tween on it, is checked at rest against every overlay that can be visible at the same time (tutorial prompt box, intro banner, cinematics) at 360×640 and 390×844, and, if the placer can skip it, has a fallback and a requested-vs-shown test over every distinct string at 360×640; each of these checks has a must-FAIL case.
+- (L-ui-005, round 7) Every test-only or negative-proof switch is written `TEST_HOOKS && this.<switch>`; `tests/ui/release-bundle.test.js` derives switch names from every `<obj>.<prop> =` in `tests/` that `src/` never writes (any handle name), never from a hand list.
+- (L-shared-024, owner feedback round 7) Every player-visible game title comes from `strings.json` `game_title` or is pinned equal to it by a test (AC-1.1); never add a title literal elsewhere.
+- (L-shared-025, owner feedback round 7) Integrate a generated image only after it has its `assets/CREDITS.md` row and a compliance look-echo PASS; moves, hits and effects stay code-animated.
+- (L-shared-027, round 7) Runs expected to take over 5 min go in the background with a log file named in your report.

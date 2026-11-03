@@ -48,3 +48,4 @@ Lesson candidates: <or "none">
 - (L-shared-014, owner feedback round 3) The owner approved the round-3 feel: effects must not slow input response, hide the HUD or change hit timing; list every change to hit feedback under "Feel changes" in your report.
 - (L-shared-011, round 4) Mutation tests and destructive git commands never run on the shared tree; break a scratchpad copy instead.
 - (L-vfx-001, round 6) No effect change is finished while AC-17.7 (median p95 of ≥ 5 runs at 4× CPU, Canvas) is over 33.3 ms.
+- (L-shared-025, owner feedback round 7) Moves, hits and effects stay code-animated; generated images are only portraits and one battle pose per fighter.
