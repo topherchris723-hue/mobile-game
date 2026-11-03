@@ -1,134 +1,151 @@
 # Release Review
-Commit: 48fb51906897fe0e266c945f4f94ab0ef5aa71c0
-Date: 2026-10-24
-Reviewer run: 1
+Commit: 50aaab2b64625c367475e7f4ac9299e208bfdac6
+Date: 2026-11-03
+Reviewer run: 2
 
-Read first: `lessons/_shared.md`, `lessons/release-reviewer.md` (empty), `docs/GAME_BRIEF.md`, `docs/GDD.md`
-(§1–4, §9, §11, §14, §17.4–17.5). I did not read `reports/qa/`, `docs/STATUS.md`, agent reports or commit messages.
-Everything was run on a clean `git archive` export of the commit in a scratchpad. The shared tree was not touched,
-except for writing this file and `reports/review-evidence/`.
+Build under review: `6a4d7d0` (the build commit named by the Producer). I reviewed HEAD `50aaab2`. `git diff --stat 6a4d7d0 HEAD`
+shows no change to `src/`, `data/`, `index.html`, `styles/`, `android/`, `package*.json`, `vite.config.js` or `scripts/`.
+The diff only touches `reports/` (compliance and QA files), `store/privacy-policy.md` (header text) and
+`docs/art-prompts/char_rook_001.md` ("street fighter" changed to "street brawler", which removes a franchise echo from an
+image prompt). The release bundle built from HEAD is `index-CIYCSK_g.js`, which is the same hash that compliance recorded
+for `6a4d7d0`. So this verdict covers both `6a4d7d0` and `50aaab2`.
+
+Read first: `lessons/_shared.md`, `lessons/release-reviewer.md` (empty), `docs/GAME_BRIEF.md`, `docs/GDD.md` (§1–4, §11–14,
+§17–19). I did not read `reports/qa/`, `docs/STATUS.md`, agent reports or commit message bodies. I opened
+`reports/compliance/round-7b.md` only for checklist item E (which commit it names, and its FAIL count). I ran everything on a
+clean `git archive HEAD` export in the scratchpad. In the shared tree I wrote nothing except this file and
+`reports/review-evidence/run-2/`.
 
 ## Results
-A Stability: PASS. `npm ci` gave 0 vulnerabilities. `npm test` passed 570/570 tests in 40 files (`review-evidence/npm-test.log`).
-  `npm run build` succeeded (`npm-build.log`) and `npm run validate-data` passed with 0 errors. My own bot played 1,000
-  seeded battles: 200 per stage on stages 001–005, using 4 player modes (random-input fuzzer with pause and retreat, greedy
-  human-like bot, AI player of a random tier, idle player), random teams and resonance R0–R4. Result: 0 crashes,
-  0 NaN or negative values, 0 HP/Vigor/Burst over max, 0 stuck timers and 0 battles that never ended
-  (`bot-run.json`, `scripts/reviewer-bot.mjs`). Negative controls: a 100-tick cap reports "never ended", and an
-  injected `clamp() → -1` is caught as "x negative". Release-build playthrough at 360×640: Title → Story → dialogue
-  → Team → stage_001 tutorial battle won → Result → reload. There were 0 console errors and 0 page errors. The only
-  messages were Chromium software-GL warnings from the headless environment. Save after the win (Jade 1400,
-  stage_001 cleared, missions 2/3, tutorial done) was identical after closing and reloading the page, and stage 2
-  unlocked (`release-run/release-run.json`, `r08-result.png`, `r09-story-after-reload.png`).
+A Stability: PASS
+- Clean install: `npm ci` succeeded. `npm audit --omit=dev` found 0 vulnerabilities. The 6 moderate advisories are all in
+  the dev-only `@capacitor/cli` tool chain.
+- `npm test`: 633 of 633 tests passed in 47 files (`run-2/npm-test.log`).
+- `npm run build` succeeded. `npm run validate-data` passed (10 files, 0 errors). `npm run android:check` passed 46 checks
+  (`run-2/npm-build.log`).
+- Full Playwright suite: 91 of 91 passed, rc=0 (`run-2/e2e-full.log`). Local note: the lock-file Playwright 1.56.1 expects
+  chromium-1194, but only 1243 is installed here, so I ran the suite with the config's own `PW_CHROMIUM` override.
+- My own bot played 1,000 seeded battles (seeds 31000–31999), 200 on each of stages 001–005. It used 4 player modes:
+  random fuzzer with pause and retreat, greedy, AI player at a random tier, and idle. Teams were random, at R0–R4.
+  Result: 0 crashes, 0 NaN or negative values, 0 values over their maximum, 0 stuck timers and 0 battles that never ended
+  (`run-2/bot-run.json`).
+- Negative control for the bot: a 100-tick cap reports 20 of 20 battles as problems (`run-2/bot-negative-control.txt`).
+- Release-build playthrough with no test hooks (`window.__TEST__` absent) at 360×640: Title → Home → Story → dialogue →
+  Team → stage_001 won in 72 s real time → Result → page closed and reopened.
+  - 0 console errors and 0 page errors. The only messages were headless software-GL warnings.
+  - The save after the win (Jade 1400, stage_001 cleared, 2 missions, tutorial completed) was identical after the reload
+    (`saveIntact: true`, `run-2/release-run/`).
+- Screen walk at 5 sizes: 0 errors. Modal probe: while Pause or the Retreat confirm is open, taps on the cards, bench,
+  IGNITE and TRI-BURST under it change nothing (`run-2/modal-probe.json`).
 
-B Mobile: FAIL. Layout passes: all 20 screens and states captured at 360×640, 390×844, 430×932 and 768×1024
-  (`screens/`). I found no clipped or overlapping text or buttons. Every touch target is at least 44×44 at every size
-  and none is off screen. Minimum gap between targets is 8 px (`gaps.json`). The only target overlaps are modal dialogs
-  (pause, retreat, rates) over the HUD, and taps went to the modal. Safe-area insets are applied in
-  `styles/*.css`. First load: canvas shown 1.16 s cold (DOMContentLoaded 377 ms). Performance fails (R-2): with 4× CPU
-  throttling, p95 frame time is 36–50 ms, which breaks the project's own AC-17.7 and the 30 fps minimum.
+B Mobile: PASS
+- Every screen was captured at 360×640, 360×800, 390×844, 430×932 and 768×1024. Screens: title, home, story, dialogue,
+  team select, battle, pause, settings from pause, retreat confirm, result, summon, rates, confirm, reveal, results, team,
+  settings, licenses. Contact sheets are in `run-2/screens/*-all-screens.jpg`, and the full-size 360×640 shots are in
+  `run-2/screens/`.
+- Target audit (`targets-report.json`): 0 targets under 44 px and 0 targets off screen. The only overlaps reported are the
+  modal panels sitting over the battle HUD and the summon buttons. The probe shows those modals block input underneath.
+- Safe areas: the top bar and bottom buttons are inset at every size.
+- Performance on the release build, Canvas renderer, stage_001 with card spam, 3 runs (`run-2/perf.txt`):
+  - unthrottled: median 16.7 ms, p95 16.7–16.8 ms;
+  - 4× CPU throttle: median 16.7 ms, p95 33.3 ms (the limit is ≤ 33.3 ms), about 55 fps on average.
+  - The suite's heavy-effects run (stage_005 with Climax, Ignition and Tri-Burst) at 4× CPU: p95 27.8 ms.
+- First load: 891 ms cold from a local server (DOMContentLoaded 305 ms). Bundle size is 461 kB gzip.
+- NOT VERIFIED (cannot run here): WebGL frame time on a real phone. This headless container has only software GL, which
+  gives about 117 ms per frame in any build, so it does not show how a phone would run. The owner's pre-release playtest
+  on a real device covers this.
+- One minor layout issue was found (R-1).
 
-C Scope: PASS. The brief and GDD §4 milestone are present and working. Real-time 1v1 against AI. Teams of 3 with Tag.
-  Cards with Vigor cost that refill. Swipe to Dash and Slip. Combos, Perfect Slip and Riposte counter. Ignition
-  transformation. Tri-Burst team finisher. 8 original fighters (brief: 6–10). 5 story stages (brief: 3–5) with
-  unlocks, dialogue and Skip. Summon screen with rates, pity and reveal. Team screen, Settings, Result. In simulations
-  all 52 cards were played and every one landed hits. Ignition, Tri-Burst, Riposte, Tag Strike and Climax all fired
-  thousands of times (`cards.json`). The stage_001 tutorial prompts ("Tap a card to attack!", "He's stunned! Tap
-  another card to COMBO!") teach the controls in the first battle. There is no shop and no real money.
+C Scope: PASS
+- Brief milestone "Battle + summon screen", 6–10 fighters, 3–5 stages:
+  - 8 original fighters, all playable, with 52 cards. 5 story stages.
+  - Real-time 1v1 battles with teams of 3 and tagging.
+  - A card hand that costs Vigor, swipe to dash and Slip, combos, Perfect Slip / Riposte counters.
+  - Ignition transformations for 6 of 8 fighters (GDD §6 allows ★3 fighters without one) and the Tri-Burst team finisher.
+  - A summon screen with rates, pity, confirm, reveal and results. Plus team select, settings, licenses and a save.
+- GDD §4 flow: every screen can be reached, and every screen leads back to Home.
+- No shop and no real-money UI.
+- Every card is played in my AI-vs-AI runs, and every card produces a hit or an effect: 0 cards never played, 0 played with
+  no outcome. Counts: 3,704 Ignitions, 2,181 Tri-Bursts, 4,322 Perfect Slips, 4,260 Ripostes (`run-2/cards.json`).
+- First battle: the stage_001 tutorial prompts in turn for tap card, combo, Slip (with slow-mo), Vigor and Tag. A new player
+  is taught the controls inside the first battle.
 
-D Fairness & content: PASS, with a minor IP note (R-7).
-  - Displayed rates are ★5 3.00% (1.50% per featured fighter), ★4 17.00% (5.67% each) and ★3 80.00% (26.67% each).
-    Measured over 200,000 base pulls through the shipped `summon()`: 2.97 / 17.00 / 80.03%, and every fighter is
-    within 4σ of its displayed rate (`gacha.json`).
-  - Pity: the longest run without a ★5 in 100,000 chained pulls was 40, which matches "guaranteed within 40".
-  - Multi-pulls: in 5,000 runs, every first ×10 had a ★5 and every later ×10 had a ★4 or better.
-  - Not enough Jade: the summon is rejected and no Jade is taken.
-  - Balance: the greedy bot won 250/250 across all stages, the AI player won 241/250, and an idle player loses on
-    the timer. No stage is unwinnable and no character is broken.
-  - IP and licences: the banned-term scan of data and strings is clean (only hits are inside the store-listing
-    banned-term checklist itself). `assets/CREDITS.md` covers the procedural audio and the 6 bundled npm packages.
-    The repo ships no image, audio or font files.
+D Fairness & content: PASS
+- Displayed rates match the real rates (`run-2/gacha.json`). 200,000 seeded single pulls through the shipped `summon()`:
+  - ★5 2.97% / ★4 17.00% / ★3 80.03%, against 3.00 / 17.00 / 80.00 shown;
+  - each fighter is within 4σ of the rate shown (Solenne / Corvane 1.50%, ★4 5.67% each, ★3 26.67% each);
+  - 0 deviations.
+- Pity: 100,000 chained pulls; the longest gap between ★5s is exactly 40, and 30% of ★5s arrive on pull 40.
+- 5,000 fresh saves: every first ×10 gives at least one ★5, and every later ×10 gives at least one ★4.
+- Cost is consistent in 5,000 of 5,000 runs. An unaffordable summon is rejected with no charge.
+- Every stage can be won. A greedy bot wins stages 1–5 in 250 of 250 battles, and the AI-master player wins 48 of 50 on
+  stage 5. The idle player loses every time.
+- Content is original:
+  - Names checked by the validator against the GDD §3 banned list.
+  - No franchise names in `data/`, `src/` or `store/`.
+  - The Rook prompt no longer says "street fighter".
+- Assets: only the self-made icons and procedural audio, plus system fonts. Each one has a row in `assets/CREDITS.md`, and
+  the licence notices are shipped and shown in Settings → Licenses.
 
-E Release readiness: FAIL.
-  - No compliance report exists for this commit. The only report (`reports/compliance/round-6.md`) is for
-    `bf48920` and lists 2 FAIL items (R-1).
-  - No app icon and no Android app identity. There is no `capacitor.config.*` and no Capacitor dependency (R-3).
-  - The title screen shows "working title — prototype" (R-4).
-  - Version 0.1.0 is set. The release bundle contains no `__TEST__` hooks and I saw no debug or cheat UI.
-  - No secrets in the repo or the bundle. The only "password" strings in the bundle are Phaser and Ajv library
-    code, and the workflows use `secrets.*`.
+E Release readiness: PASS
+- Compliance: `reports/compliance/round-7b.md` names build commit `6a4d7d0` with 8 PASS and 0 FAIL. Since then nothing that
+  ships has changed (same bundle hash).
+- App identity:
+  - Capacitor `appName` and Android `app_name` are "Fyrenza"; `appId` is `com.animecardbattler.game`.
+  - `versionName` 0.1.0, `versionCode` 1, `targetSdk` 36, `minSdk` 24.
+  - Portrait lock is set. Adaptive and round icons are present.
+  - `INTERNET` permission is removed; `VIBRATE` is the only permission.
+- No debug UI in the release bundle:
+  - 0 occurrences of `__TEST__`, `?test`, `VITE_`, `localhost` or "Jade Tempest".
+  - "debug" and "prototype" hits are Phaser and ajv internals only.
+  - `?renderer=canvas` is an intended fallback.
+- Secrets: none found in the tree or the bundle, and no keystore or `.env` file. The signing gate in
+  `.github/workflows/build-android.yml` requires `VERDICT: PASS`.
+- Owner-only fields remain in `store/privacy-policy.md` (`[DEVELOPER NAME]`, `[CONTACT EMAIL]`, date). Filling them is a
+  CLAUDE.md §8 owner task and does not affect the build.
 
 ## Findings
-### R-1: No compliance report for the reviewed commit, and the latest report has 2 FAIL items
-Severity: BLOCKER
-Evidence: `reports/compliance/` contains only `round-6.md`, which says "Build checked: commit `bf48920`". Its summary
-table lists "1 IP — FAIL: title 'Jade Tempest' not cleared" and "2 Licenses — FAIL: bundled code libraries ship with
-no licence notice". `git diff --stat bf48920 48fb519` shows 31 changed files after that check, including
-`src/main.js`, `src/scenes/LicensesScene.js`, `vite.config.js` and `package.json`. Nobody has re-checked compliance
-on this commit, and the title FAIL still needs a registry-level trademark check or a title change.
-Suggested owner: compliance-checker (re-run on this exact commit); Producer (title decision per GDD §1)
+### R-1: Enemy "COMBO xN" counter is partly hidden behind the tutorial prompt box in the first battle
+Severity: MINOR
+Evidence:
+- `run-2/combo/390x844-cover-0.png` and `360x640-cover-0.png`, plus the numbers in `run-2/combo/combo-cover-by-name.json`.
+- What happens: during the stage_001 tutorial, the enemy combo counter (`BattleScene.enemyCombo` at `arena.top + 56`, depth
+  51) is drawn under the prompt box (`tutLayer`, depth 70, y = `arena.top + 12`, height ≥ 48). Up to 65% of the text height
+  is covered.
+- How often: 32 of 581 samples at 360×640 and about 12% of samples at 390×844. The player's "N HITS" line touches the box
+  edge by about 2 px.
+- Impact: it happens only while a tutorial prompt is shown, the prompt stays fully readable, and the player's own COMBO
+  counter was never covered in my runs.
+- Likely fix: move the combo rests below `tutRect` while the tutorial is active, or reserve the box in the rest-position
+  layout. The BUG-7b-01 pop clamp only limits scale, not the rest position.
+Suggested owner: ui-developer
 
-### R-2: Frame time over budget under CPU throttling (AC-17.7 fails, below 30 fps)
-Severity: MAJOR
-Evidence: The repo's own `tests/e2e/qa-perf.spec.js` "renderer=canvas cpu×4" failed in 3 of 3 runs on this commit,
-with p95 of 49.3, 39.6 and 36.5 ms against a limit of 33.3 ms (`review-evidence/qa-perf-run.log`, `e2e-full.log`).
-My own probe on the release build, stage_001 with card taps at 4× throttle, measured median 33.3 ms, p95 50.1 ms and
-max 133 ms (`perf.json`). Unthrottled Canvas holds 60 fps (median 16.7 ms). Real-device performance is NOT VERIFIED
-because this container has no GPU and its WebGL numbers are software-rendered and not representative. On the
-low-end proxy the GDD defines, the game drops below 30 fps.
-Suggested owner: vfx-developer / ui-developer
+### R-2: "Not enough Vigor" message runs into the bench portrait and the "QUEUED" tag sits on the Vigor bar
+Severity: POLISH
+Evidence: `run-2/combo/360x640-cover-0.png`, lower left. "Not enough Vigor" starts right at the Dunmore portrait's edge
+("DunmoreNot enough Vigor"). The "QUEUED" label overlaps the first Vigor segments. Both are readable.
+Suggested owner: ui-developer
 
-### R-3: No app icon or Android app configuration
-Severity: MAJOR
-Evidence: `git ls-tree -r HEAD` has no icon, adaptive-icon or manifest asset and no `capacitor.config.*`.
-`package.json` has no `@capacitor/*` dependency. `.github/workflows/build-android.yml` runs `npx cap add android`,
-which needs a Capacitor config with an appId and app name. As committed, the app has no icon, no package id and no
-Android versionCode.
+### R-3: Licenses text keeps the original hard line breaks
+Severity: POLISH
+Evidence: `run-2/screens/360x640-20-licenses.png`. The MIT text is wrapped to the screen and also broken at its original
+line ends, which gives ragged lines ("…to any / person obtaining a copy / of this software…"). The text is complete and
+scrollable.
+Suggested owner: ui-developer
+
+### R-4: Lock-file Playwright needs a browser build that this machine does not have
+Severity: POLISH (tooling, not shipped)
+Evidence: after a clean `npm ci`, `npx playwright test` fails at launch, because `@playwright/test` 1.56.1 expects
+chromium_headless_shell-1194 and only 1243 is installed. It works with `PW_CHROMIUM=<1243 headless shell>`. CI should pin
+the browser or run `npx playwright install` so a clean checkout is green without local knowledge.
 Suggested owner: release-engineer
 
-### R-4: Placeholder subtitle on the title screen
-Severity: MINOR
-Evidence: `review-evidence/screens/360x640-01-title.png` shows "working title — prototype" under the game name
-(`strings.json` `game_subtitle`). It must be removed or replaced before a store build. This is linked to the title
-decision in R-1.
-Suggested owner: ui-developer (after the Producer's title decision)
-
-### R-5: Committed e2e test is out of date (AC-19.1 expects 13 Settings targets, the screen has 14)
-Severity: MINOR
-Evidence: `npx playwright test` finished with 83 passed and 2 failed (`e2e-full.log`). One failure is R-2. The other is
-`qa-settings-audio.spec.js:104`, which expects 13 targets but gets 14 because a Licenses button was added and the
-spec was not updated. It fails the same way on rerun. The game screen is correct; the release test suite is red.
-Suggested owner: qa-tester
-
-### R-6: Summon reveal shows the final Jade balance before the results are revealed
-Severity: POLISH
-Evidence: `screens/360x640-16-summon-reveal.png` shows "2 / 10" with Jade 20 already displayed. That Jade came from
-duplicates that are only revealed later, so the counter gives away the results.
-Suggested owner: ui-developer
-
-### R-7: Rook's look may read as an echo of a famous anime design
-Severity: MINOR
-Evidence: `screens/sheet-color.png` shows Rook with a green body, a black-and-white checkered band and spiky black
-hair. Green-and-black checks are the signature pattern of a well-known anime protagonist. On its own this is
-probably transformed enough, but art-director should confirm or change the pattern before store screenshots are
-made.
-Suggested owner: art-director
-
-### R-8: Settings volume rows are cramped
-Severity: POLISH
-Evidence: `screens/360x640-19-settings.png`. The "Music" and "Sound effects" labels sit right under the previous
-row's −/+ buttons. The 8 px target gap is met, but the rows look crowded.
-Suggested owner: ui-developer
-
 ## Lesson candidates
-- Compliance was not re-run on the commit sent to review. Its last report already had 2 FAIL items, and 31 files
-  changed after it. Proposed rule for the Producer: do not call release-reviewer unless
-  `reports/compliance/*.md` names the exact HEAD commit and has 0 FAIL items.
-- The full Playwright suite was red at review time: a perf AC failed and one spec was stale. Proposed rule: the
-  Producer runs `npx playwright test` and `npm test` on the exact commit and attaches green results before calling
-  the reviewer. Every UI change that adds a target updates the specs that count targets (L-shared-009 part 3).
-- Checklist E needs an app icon and app identity, but CLAUDE.md §4 only calls release-engineer after a PASS. Proposed
-  rule: release-engineer prepares Capacitor config, icon and versionCode in the Launch phase, before release review.
-  Only signing and building stay after the PASS.
+- R-1: the float-placer and pop-clamp checks protect shouts and callouts from the combo counters, but nothing checks the
+  combo counters' rest positions against the tutorial box. Candidate rule for ui-developer and qa-tester: every fixed HUD
+  text in the arena gets a no-overlap check against every overlay that can be visible at the same time (tutorial box,
+  intro, cinematic), at 360×640 and 390×844, with a must-FAIL case.
+- R-4: "full Playwright green" depended on a local browser override. Logs attached to the Phase 6 entry condition
+  (L-shared-020) should come from a clean `npm ci` checkout using only documented commands.
 
-VERDICT: FAIL
+VERDICT: PASS

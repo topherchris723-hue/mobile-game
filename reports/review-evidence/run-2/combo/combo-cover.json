@@ -1,0 +1,332 @@
+[
+ {
+  "size": "360x640",
+  "samples": 612,
+  "overlapSamples": 55,
+  "steps": [],
+  "examples": [
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   }
+  ]
+ },
+ {
+  "size": "390x844",
+  "samples": 598,
+  "overlapSamples": 77,
+  "steps": [],
+  "examples": [
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     204,
+     81,
+     140,
+     38
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   }
+  ]
+ },
+ {
+  "size": "430x932",
+  "samples": 569,
+  "overlapSamples": 58,
+  "steps": [],
+  "examples": [
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 0.5,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   }
+  ]
+ }
+]

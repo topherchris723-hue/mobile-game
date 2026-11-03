@@ -1,0 +1,9 @@
+canvas 1 {'n': 721, 'median': 16.7, 'p95': 16.8, 'max': 16.8}
+canvas 4 {'n': 656, 'median': 16.7, 'p95': 33.3, 'max': 100}
+default 1 {'n': 99, 'median': 116.7, 'p95': 166.6, 'max': 183.3}
+canvas 1 {'n': 720, 'median': 16.7, 'p95': 16.7, 'max': 33.3}
+canvas 4 {'n': 669, 'median': 16.7, 'p95': 33.3, 'max': 66.6}
+default 1 {'n': 102, 'median': 116.7, 'p95': 133.4, 'max': 150}
+canvas 1 {'n': 720, 'median': 16.7, 'p95': 16.7, 'max': 33.4}
+canvas 4 {'n': 672, 'median': 16.7, 'p95': 33.3, 'max': 50}
+default 1 {'n': 95, 'median': 133.3, 'p95': 150, 'max': 166.7}

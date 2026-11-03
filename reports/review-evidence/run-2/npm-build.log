@@ -1,0 +1,41 @@
+
+> anime-card-battler@0.1.0 build
+> node scripts/build.js
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 167 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.71 kB │ gzip:   0.37 kB
+dist/third-party-packages.json      2.53 kB │ gzip:   0.47 kB
+dist/THIRD_PARTY_LICENSES.txt      24.98 kB │ gzip:   6.21 kB
+dist/assets/index-TY74gA2S.css      0.54 kB │ gzip:   0.30 kB
+dist/assets/index-CIYCSK_g.js   1,721.30 kB │ gzip: 461.20 kB
+
+✓ built in 1.63s
+
+Banned terms from GDD §3: 42 error terms, 2 warning terms (hollow, stand), name-only terms (spark, sparks)
+Data directory: /tmp/claude-0/-home-user-mobile-game/0ccd7f5b-40f0-5bc7-95d2-5aaebf0b5643/scratchpad/rv/data
+
+validate-data: PASS — 10 files, 0 errors, 0 warning(s)
+  ok   android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png exists
+  ok   android/app/src/main/res/mipmap-xhdpi/ic_launcher_background.png exists
+  ok   android/app/src/main/res/mipmap-xhdpi/ic_launcher_monochrome.png exists
+  ok   android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png exists
+  ok   android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png exists
+  ok   android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png exists
+  ok   android/app/src/main/res/mipmap-xxhdpi/ic_launcher_background.png exists
+  ok   android/app/src/main/res/mipmap-xxhdpi/ic_launcher_monochrome.png exists
+  ok   android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png exists
+  ok   android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png exists
+  ok   android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png exists
+  ok   android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_background.png exists
+  ok   android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_monochrome.png exists
+  ok   ic_launcher.xml adaptive icon has background, foreground and monochrome
+  ok   ic_launcher_round.xml adaptive icon has background, foreground and monochrome
+  ok   template vector launcher foreground removed
+  ok   no template splash folders left
+  ok   no template splash.png left
+  ok   drawable/splash.xml is the navy + crystal layer-list
+check-identity: PASS (46 checks, source only)

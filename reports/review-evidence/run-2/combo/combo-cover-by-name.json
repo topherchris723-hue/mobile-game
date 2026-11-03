@@ -1,0 +1,238 @@
+[
+ {
+  "size": "360x640",
+  "samples": 581,
+  "overlapSamples": 62,
+  "byName": {
+   "enemy COMBO xN": {
+    "n": 32,
+    "maxHiddenFrac": 0.65
+   },
+   "hits N HITS": {
+    "n": 30,
+    "maxHiddenFrac": 0.1
+   }
+  },
+  "steps": [],
+  "examples": [
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     204,
+     81,
+     140,
+     38
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     247,
+     87,
+     97,
+     26
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   },
+   {
+    "name": "enemy",
+    "text": "COMBO x2",
+    "alpha": 1,
+    "text_rect": [
+     244,
+     87,
+     100,
+     27
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     48
+    ]
+   }
+  ]
+ },
+ {
+  "size": "390x844",
+  "samples": 582,
+  "overlapSamples": 69,
+  "byName": {
+   "hits N HITS": {
+    "n": 69,
+    "maxHiddenFrac": 0.1
+   }
+  },
+  "steps": [],
+  "examples": [
+   {
+    "name": "hits",
+    "text": "3 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "3 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "3 HITS",
+    "alpha": 0.88,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "3 HITS",
+    "alpha": 0.58,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "3 HITS",
+    "alpha": 0.38,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   },
+   {
+    "name": "hits",
+    "text": "2 HITS",
+    "alpha": 1,
+    "text_rect": [
+     18,
+     114,
+     48,
+     21
+    ],
+    "box": [
+     16,
+     56,
+     328,
+     60
+    ]
+   }
+  ]
+ }
+]

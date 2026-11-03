@@ -1,0 +1,13 @@
+
+> anime-card-battler@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /tmp/claude-0/-home-user-mobile-game/0ccd7f5b-40f0-5bc7-95d2-5aaebf0b5643/scratchpad/rv
+
+
+ Test Files  47 passed (47)
+      Tests  633 passed (633)
+   Start at  02:15:41
+   Duration  79.92s (import 54%, tests 45%, transform 1%)
+

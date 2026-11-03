@@ -1,0 +1,92 @@
+{
+ "shown": {
+  "rarities": [
+   {
+    "rarity": 5,
+    "bp": 300,
+    "percentText": "3.00"
+   },
+   {
+    "rarity": 4,
+    "bp": 1700,
+    "percentText": "17.00"
+   },
+   {
+    "rarity": 3,
+    "bp": 8000,
+    "percentText": "80.00"
+   }
+  ],
+  "fighters": [
+   {
+    "id": "char_solenne_001",
+    "percentText": "1.50"
+   },
+   {
+    "id": "char_corvane_001",
+    "percentText": "1.50"
+   },
+   {
+    "id": "char_pell_001",
+    "percentText": "5.67"
+   },
+   {
+    "id": "char_thessa_001",
+    "percentText": "5.67"
+   },
+   {
+    "id": "char_rook_001",
+    "percentText": "5.67"
+   },
+   {
+    "id": "char_tavi_001",
+    "percentText": "26.67"
+   },
+   {
+    "id": "char_lark_001",
+    "percentText": "26.67"
+   },
+   {
+    "id": "char_dunmore_001",
+    "percentText": "26.67"
+   }
+  ]
+ },
+ "base": {
+  "N": 200000,
+  "rarityPct": {
+   "3": 80.034,
+   "4": 16.997,
+   "5": 2.969
+  },
+  "fighterPct": {
+   "char_tavi_001": 26.701,
+   "char_lark_001": 26.576,
+   "char_dunmore_001": 26.758,
+   "char_thessa_001": 5.59,
+   "char_rook_001": 5.67,
+   "char_pell_001": 5.737,
+   "char_corvane_001": 1.46,
+   "char_solenne_001": 1.508
+  },
+  "fails": []
+ },
+ "pity": {
+  "maxGapBetween5": 40,
+  "count5": 4285,
+  "pctAt40": 30.11,
+  "effective5Pct": 4.285
+ },
+ "multi": {
+  "runs": 5000,
+  "rejected": 0,
+  "firstX10Without5": 0,
+  "laterX10Without4": 0,
+  "costConsistent": 5000
+ },
+ "poor": {
+  "ok": false,
+  "reason": "insufficient_currency",
+  "jadeAfter": 50
+ }
+}

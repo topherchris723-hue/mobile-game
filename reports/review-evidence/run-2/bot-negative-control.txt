@@ -1,0 +1,4 @@
+{
+ "battles": 20,
+ "problems": 20,
+ "tally": {}
