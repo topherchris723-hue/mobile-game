@@ -1,7 +1,7 @@
 // UI smoke test: full flow at 360×640 and 430×932, gestures, pause/background, tutorial, summon (round 3),
 // touch-target sizes (GDD §14, AC-14.1), no console errors. Screenshots (UI_SHOTS=1 only) → reports/screenshots/round-3/.
 import { test, expect } from '@playwright/test';
-import { watchErrors, shot, rawShot, waitScene, target, tap, swipe, touchHold, padCenter, checkTargets, battleState, goToBattle } from './helpers.js';
+import { watchErrors, shot, rawShot, waitScene, target, tap, swipe, touchHold, padCenter, checkTargets, battleState, goToBattle, WRITE_SHOTS, SHOTS } from './helpers.js';
 
 test('flow: title → home → stage → story → team → battle → pause/retreat → result → back', async ({ page }, testInfo) => {
   const errors = watchErrors(page);
@@ -1280,10 +1280,8 @@ test('BUG-7b-01: every animated arena text stays inside its reserved zone at its
     spawn('callout 48 K.O.!', () => sc.callout(S.battle_ko, '#ffffff', 48));
     spawn('callout 30 PERFECT SLIP! (player)', () => sc.callout(S.battle_perfect_slip, '#ffffff', 30, 'player'));
     spawn('callout 22 TRI-BURST BLOCKED!', () => sc.callout(S.battle_tri_burst_whiff_invulnerable, '#ffffff', 22));
-    // the longest shout wraps to 2 lines; at 360×640 the upper band has no free 2-line row beside the 1× combo zones,
-    // so the placer drops it (priority 1, pre-existing since round 3; reported). Checked whenever it is shown.
+    // the longest shout wraps to 2 lines; at 360×640 it now falls back to one line (BUG-7c-01), so it must be shown
     spawn('shout (pop 1.1) longest', () => { sc.shout('player', shoutStr); return sc.shoutTxt.player; });
-    items[items.length - 1].mayDrop = true;
     const probe = sc.text(0, 0, 'x', 13, '#ffffff', { fontStyle: 'italic', strokeThickness: 3, wordWrap: { width: 150 } });
     const oneLine = probe.height;
     const allShouts = [...raw.cards.cards.map((c) => c.shout), ...raw.characters.characters.flatMap((c) => Object.values(c.shouts || {}))].filter(Boolean);
@@ -1385,6 +1383,140 @@ test('BUG-7b-01: every animated arena text stays inside its reserved zone at its
   expect(r.C.frames).toBeGreaterThan(5);
   expect(r.C.problems, r.C.problems.join('\n')).toEqual([]);
   expect(errors, errors.join('\n')).toEqual([]);
+});
+
+// BUG-7c-01 (round 7 QA loop 3): at 360×640 every shout that wrapped to 2 lines (13 px italic, 150 px wrap) found
+// no free row in the upper band beside the combo zones, so the placer silently dropped it (33 of 92 shouts, incl.
+// every Climax floating shout and 3 tag-in shouts). Requested vs shown, in a quiet arena, every distinct shout
+// string in data/ on both sides, at 360×640, 390×844 and 430×932: every one must be shown, fully inside the screen
+// and the upper band, clear of every fixed arena text, at ≥ 12 px. Where the approved layout fits (every shout at
+// 390×844 / 430×932, every 1-line shout at 360×640) it must still be the one used (approved feel).
+// Negative proof: UI_BREAK_SHOUT_FIT=1 keeps only the approved layout (the old behaviour) and must FAIL at 360×640.
+const SHOUT_SIZES = [
+  { name: '360x640', w: 360, h: 640, dpr: 2 },
+  { name: '390x844', w: 390, h: 844, dpr: 3 },
+  { name: '430x932', w: 430, h: 932, dpr: 3 },
+];
+test('BUG-7c-01: every shout in data/ can be shown (requested = shown) at 360×640, 390×844 and 430×932', async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone-360x640', 'opens its own contexts for all three sizes');
+  test.setTimeout(240000);
+  const brk = process.env.UI_BREAK_SHOUT_FIT === '1';
+  const results = [];
+  for (const size of SHOUT_SIZES) {
+    const ctx = await browser.newContext({
+      viewport: { width: size.w, height: size.h }, screen: { width: size.w, height: size.h },
+      deviceScaleFactor: size.dpr, isMobile: true, hasTouch: true, baseURL: testInfo.project.use.baseURL || 'http://127.0.0.1:4173',
+    });
+    const page = await ctx.newPage();
+    const errors = watchErrors(page);
+    await bootWithSave(page, 4);
+    await startStage(page, 'stage_005');
+    // the intro banner fades out 200 ms after FIGHT (no card or tag-in shout can happen before that)
+    await page.waitForFunction(() => { const sc = window.__TEST__.game.scene.getScene('Battle'); return !sc.introC && !sc.introFading; }, null, { timeout: 5000 });
+    const r = await page.evaluate(({ brk }) => {
+      const T = window.__TEST__;
+      const sc = T.game.scene.getScene('Battle');
+      sc.battle.paused = true;
+      if (brk) sc.disableShoutFit = true;
+      const raw = T.data.raw;
+      const all = [...new Set([...raw.cards.cards.map((c) => c.shout), ...raw.characters.characters.flatMap((c) => Object.values(c.shouts || {}))].filter(Boolean))];
+      const probe = sc.text(0, 0, 'x', 13, '#ffffff', { fontStyle: 'italic', strokeThickness: 3, wordWrap: { width: 150 } });
+      const oneLine = probe.height;
+      const box = (o) => { const q = o.getBounds(); return { x: q.x, y: q.y, w: q.width, h: q.height }; };
+      const hit = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+      const out = { W: sc.L.W, total: all.length, twoLine: 0, requested: 0, shown: 0, dropped: [], problems: [], fits: [0, 0, 0], notApproved: [], minSize: 99 };
+      const band = sc.floatBands().upper;
+      for (const s of all) {
+        const two = probe.setText(s).height > oneLine * 1.5;
+        if (two) out.twoLine++;
+        for (const side of ['player', 'enemy']) {
+          for (const it of sc.floats.items.slice()) if (it.onEvict) it.onEvict();
+          sc.floats.clear();
+          for (const o of [sc.comboText, sc.comboHits, sc.enemyCombo]) o.setAlpha(0);
+          sc.shoutTxt[side] = null;
+          out.requested++;
+          sc.shout(side, s);
+          const tx = sc.shoutTxt[side];
+          if (!tx) { out.dropped.push(`${side}:${two ? '2L' : '1L'}:${s}`); continue; }
+          out.shown++;
+          out.fits[tx.shoutFit]++;
+          if (tx.shoutFit !== 0 && (out.W > 360 || !two)) out.notApproved.push(`${side}:fit${tx.shoutFit}:${s}`);
+          out.minSize = Math.min(out.minSize, parseFloat(tx.style.fontSize));
+          // at its pop peak (scale 1.1) and at rest: inside the screen and the band, clear of every fixed text
+          for (const sca of [tx.scaleX, 1]) {
+            tx.setScale(sca);
+            const b = box(tx);
+            tx.setScale(1.1);
+            if (b.x < 0 || b.x + b.w > out.W) out.problems.push(`${side} "${s}" off screen x ${b.x.toFixed(1)}..${(b.x + b.w).toFixed(1)}`);
+            if (b.y < band.top - 0.5 || b.y + b.h > band.bottom + 0.5) out.problems.push(`${side} "${s}" outside the upper band y ${b.y.toFixed(1)}..${(b.y + b.h).toFixed(1)}`);
+            for (const a of sc.floatAvoid()) if (hit(b, a)) out.problems.push(`${side} "${s}" covers fixed text ${JSON.stringify(a)}`);
+          }
+        }
+      }
+      // both fighters shout at once (e.g. tag-in vs a card shout) while both counters show at rest: both stay shown
+      const counters = [sc.comboText, sc.comboHits, sc.enemyCombo];
+      counters[0].setText('COMBO x99'); counters[1].setText('999 HITS'); counters[2].setText('COMBO x99');
+      const twoL = all.filter((t) => probe.setText(t).height > oneLine * 1.5);
+      out.pairs = { requested: 0, shown: 0, lost: [] };
+      for (let k = 0; k < twoL.length; k++) {
+        for (const it of sc.floats.items.slice()) if (it.onEvict) it.onEvict();
+        sc.floats.clear();
+        for (const o of counters) { sc.tweens.killTweensOf(o); o.setAlpha(1).setScale(1); }
+        sc.shoutTxt.player = sc.shoutTxt.enemy = null;
+        const a = twoL[k];
+        const b = twoL[(k + 1) % twoL.length];
+        sc.shout('player', a);
+        sc.shout('enemy', b);
+        out.pairs.requested += 2;
+        const live = ['player', 'enemy'].filter((sd) => sc.shoutTxt[sd] && sc.shoutTxt[sd].scene);
+        out.pairs.shown += live.length;
+        if (live.length < 2) out.pairs.lost.push(`${a} | ${b}`);
+        const bx = live.map((sd) => box(sc.shoutTxt[sd]));
+        if (bx.length === 2 && hit(bx[0], bx[1])) out.problems.push(`pair overlap: ${a} | ${b}`);
+        for (const q of bx) for (const o of counters) if (hit(q, box(o))) out.problems.push(`pair covers ${o.text}: ${a} | ${b}`);
+      }
+      for (const o of counters) o.setAlpha(0);
+      probe.destroy();
+      for (const it of sc.floats.items.slice()) if (it.onEvict) it.onEvict();
+      sc.floats.clear();
+      return out;
+    }, { brk });
+    // screenshot (UI_SHOTS=1 only): a shout that wraps to 2 lines in the approved layout, both sides, counters showing
+    if (WRITE_SHOTS) {
+      await page.evaluate(() => {
+        const sc = window.__TEST__.game.scene.getScene('Battle');
+        sc.updateCombo({ teams: { player: { chain: { cards: 7, hits: 21 } }, enemy: { chain: { cards: 4, hits: 0 } } } });
+      });
+      await page.waitForTimeout(250); // the counters' pop has settled
+      await page.evaluate(() => {
+        const sc = window.__TEST__.game.scene.getScene('Battle');
+        sc.shout('player', 'My turn! Heat coming through!');
+        sc.shout('enemy', 'Step aside. The king arrives.');
+      });
+      await page.waitForTimeout(220);
+      await page.evaluate(() => window.__TEST__.game.scene.getScene('Battle').tweens.pauseAll());
+      await page.screenshot({ path: `${SHOTS}/${size.name}-57-battle-shout-2line.png` });
+    }
+    r.errors = errors;
+    results.push({ size: size.name, ...r });
+    await ctx.close();
+  }
+  for (const r of results) {
+    console.log(`[BUG-7c-01] ${r.size}: shouts ${r.total} (2-line in the approved wrap ${r.twoLine}), requested ${r.requested}, shown ${r.shown}, dropped ${r.dropped.length}; layouts used ${JSON.stringify(r.fits)}; smallest ${r.minSize} px; problems ${r.problems.length}`);
+    for (const d of r.dropped.slice(0, 5)) console.log(`[BUG-7c-01] ${r.size}   dropped ${d}`);
+    console.log(`[BUG-7c-01] ${r.size}: both sides at once beside the counters: requested ${r.pairs.requested}, shown ${r.pairs.shown}${r.pairs.lost.length ? '; lost e.g. ' + r.pairs.lost.slice(0, 3).join(' / ') : ''}`);
+  }
+  const s360 = results.find((r) => r.size === '360x640');
+  expect(s360.twoLine, 'the 360×640 case really has 2-line shouts (precondition)').toBeGreaterThan(10);
+  for (const r of results) {
+    expect(r.dropped, `${r.size}: shouts requested but not shown`).toEqual([]);
+    expect(r.shown).toBe(r.requested);
+    expect(r.pairs.shown, `${r.size}: both shouts at once`).toBe(r.pairs.requested);
+    expect(r.problems, r.problems.slice(0, 10).join('\n')).toEqual([]);
+    expect(r.notApproved, `${r.size}: the approved layout fits but was not used`).toEqual([]);
+    expect(r.minSize).toBeGreaterThanOrEqual(12);
+    expect(r.errors, r.errors.join('\n')).toEqual([]);
+  }
 });
 
 test('Home save-repair notice: shown for a team repair, not for settings_repaired, never the damaged text', async ({ page }) => {

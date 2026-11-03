@@ -13,7 +13,7 @@ import { sfx, haptic } from '../ui/feedback.js';
 import { setMusicContext, onBattleEvent, setPaused as setAudioPaused, resetDuck, endBattleMusic } from '../audio/index.js';
 import { createVfx } from '../vfx/index.js';
 import { cardColor } from '../ui/icons.js';
-import { FloatPlacer, COMBO_POP, fitPopScale, silhouetteExtent, placeFighters, placeNameLabels } from '../ui/float-placer.js';
+import { FloatPlacer, COMBO_POP, fitPopScale, shoutFits, silhouetteExtent, placeFighters, placeNameLabels } from '../ui/float-placer.js';
 import { HIT_DISCARD_TEXT_KEYS, TRI_BURST_WHIFF_TEXT_KEYS, WHIFF_TEXT_KEYS, reasonTextKey, CINEMATIC_FADE_MS, cinematicFadeAlpha } from '../ui/hud-state.js';
 import { TEST_HOOKS, testHooks, testSeedParam } from '../ui/test-hooks.js';
 
@@ -743,7 +743,8 @@ export class BattleScene extends BaseScene {
   /** Fixed texts the floating ones must not cover (ARENA_TEXT_REGISTRY in src/ui/float-placer.js). */
   floatAvoid() {
     const out = [this.fighters.player.nameRect(), this.fighters.enemy.nameRect()];
-    if (!this.disableComboZones) for (const z of this.comboZones || []) out.push(z);
+    // negative-proof switch for tests only (BUG-7c-02): compiled out of release builds like disablePopClamp
+    if (!(TEST_HOOKS && this.disableComboZones)) for (const z of this.comboZones || []) out.push(z);
     for (const tx of [this.comboText, this.comboHits, this.enemyCombo]) {
       if (tx && tx.alpha > 0.05 && tx.text) {
         const b = tx.getBounds();
@@ -792,6 +793,7 @@ export class BattleScene extends BaseScene {
       ttl: hold + fade + 160,
       priority: o.priority || 0,
       onEvict: evict,
+      noEvict: !!o.noEvict,
     });
     if (!res) {
       tx.destroy();
@@ -857,20 +859,39 @@ export class BattleScene extends BaseScene {
     const pos = this.fighters[side].headPos();
     const old = this.shoutTxt[side];
     if (old && old.scene && old.evict) old.evict();
-    this.shoutTxt[side] = this.spawnFloat({
-      x: pos.x,
-      y: this.floatBands().upper.bottom - 12,
-      str,
-      size: 13,
-      color: '#ffffff',
-      style: { fontStyle: 'italic', strokeThickness: 3, wordWrap: { width: 150 } },
-      bands: ['upper'],
-      priority: 1,
-      pop: 1.1,
-      hold: 900,
-      fade: 300,
-      depth: 58,
-    });
+    // BUG-7c-01: the approved layout first, exactly as before (it may evict an older shout, as always). Only when it
+    // finds no room: one line across the arena, then 12 px (shoutFits), first in free space only, then evicting
+    // as the approved layout would. Runs once per shout, never per frame. disableShoutFit = negative proof, test
+    // builds only (compiled out of release builds).
+    const fits = shoutFits(this.L.W);
+    const tries = [{ i: 0, noEvict: false }];
+    if (!(TEST_HOOKS && this.disableShoutFit)) {
+      for (let i = 1; i < fits.length; i++) tries.push({ i, noEvict: true });
+      for (let i = 1; i < fits.length; i++) tries.push({ i, noEvict: false });
+    }
+    let tx = null;
+    for (const { i, noEvict } of tries) {
+      tx = this.spawnFloat({
+        x: pos.x,
+        y: this.floatBands().upper.bottom - 12,
+        str,
+        size: fits[i].size,
+        color: '#ffffff',
+        style: { fontStyle: 'italic', strokeThickness: 3, wordWrap: { width: fits[i].wrap } },
+        bands: ['upper'],
+        priority: 1,
+        noEvict,
+        pop: 1.1,
+        hold: 900,
+        fade: 300,
+        depth: 58,
+      });
+      if (tx) {
+        tx.shoutFit = i;
+        break;
+      }
+    }
+    this.shoutTxt[side] = tx;
   }
 
   shoutChar(side, st, key) {
@@ -1009,7 +1030,7 @@ export class BattleScene extends BaseScene {
 
   updateCinematicFade(now) {
     if (this.cinHideAt === null || this.cinHideAt === undefined) return;
-    const k = cinematicFadeAlpha(now, this.cinHideAt, this.cinFadeMs || CINEMATIC_FADE_MS);
+    const k = cinematicFadeAlpha(now, this.cinHideAt, (TEST_HOOKS && this.cinFadeMs) || CINEMATIC_FADE_MS);
     if (k === null) {
       this.cinematic.setVisible(false).setAlpha(0);
       this.cinHideAt = null;

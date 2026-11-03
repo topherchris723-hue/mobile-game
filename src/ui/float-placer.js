@@ -19,7 +19,7 @@ export const ARENA_TEXT_REGISTRY = [
   { text: 'DODGE / TAG! / TAG STRIKE!', how: 'placed' },
   { text: 'IMMUNE (hit_discarded, whiff.rush_invulnerable)', how: 'placed' },
   { text: 'callouts: FIGHT!, PERFECT SLIP!, RIPOSTE!, K.O.!, TRI-BURST blocked/missed, Time up', how: 'placed' },
-  { text: 'fighter shouts (card, tag-in, intro shout lines)', how: 'placed' },
+  { text: 'fighter shouts (card, tag-in, intro shout lines)', how: 'placed (SHOUT_FITS fallback: one line, then 12 px; BUG-7c-01)' },
   { text: 'fighter name labels (both sides)', how: 'placer2 + avoid' },
   { text: 'combo counter COMBO xN (player)', how: 'reserve (1×) + pop clamped clear of live texts (fitPopScale)' },
   { text: 'hit counter N HITS (player)', how: 'reserve' },
@@ -28,6 +28,23 @@ export const ARENA_TEXT_REGISTRY = [
   { text: 'intro banner (names, VS, intro shout)', how: 'avoid' },
   { text: 'cinematic overlay title/sub (Ignition, Climax, Tri-Burst)', how: 'overlay (depth 80, covers the arena on purpose)' },
 ];
+
+/**
+ * Shout layouts, tried in order until the placer finds room (BUG-7c-01). The first one is the approved look
+ * (13 px italic, 150 px wrap) and is the only one used wherever it fits, so nothing changes there. At 360×640 the
+ * upper band has no 2-line row free beside the combo zones, so a shout that wraps to 2 lines tries one line across
+ * the arena (wrap = W − 16), and as a last resort 12 px: the playbook's minimum text size at 360 px width
+ * ("no text smaller than 12 px"), so a shout never becomes unreadable to fit. Pure, so it is unit-tested.
+ */
+export function shoutFits(W) {
+  const wide = Math.max(150, Math.round(W) - 16);
+  return [
+    { size: 13, wrap: 150 },
+    { size: 13, wrap: wide },
+    { size: 12, wrap: wide },
+  ];
+}
+export const SHOUT_MIN_SIZE = 12;
 
 /**
  * Approved start scale of the combo-counter pop (tweened down to 1 over 160 ms, Back.Out). BattleScene.popCombo
@@ -79,7 +96,7 @@ export class FloatPlacer {
 
   /**
    * opts: { w, h, x, y (wanted centre), bands: [{ top, bottom }], minX, maxX, avoid: [rect], now, ttl,
-   *         priority (higher wins), onEvict, step (px, default 4), xShift (default true) }
+   *         priority (higher wins), onEvict, step (px, default 4), xShift (default true), noEvict (default false) }
    * Returns { x, y } (the centre to draw at) or null if it cannot be shown without covering an `avoid`
    * rect or a higher-priority text.
    */
@@ -121,7 +138,9 @@ export class FloatPlacer {
         }
       }
     }
-    // No free spot: take the wanted spot in the first usable band and evict what is in the way.
+    // No free spot: take the wanted spot in the first usable band and evict what is in the way
+    // (unless the caller has a fallback layout to try first: noEvict).
+    if (opts.noEvict) return null;
     const band = opts.bands.find(usable);
     if (!band) return null;
     const y = Math.max(band.top + h / 2, Math.min(band.bottom - h / 2, opts.y));
