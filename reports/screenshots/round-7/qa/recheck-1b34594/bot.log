@@ -1,0 +1,4 @@
+TALLY {"stage_001":{"win":82,"lose":0,"draw":0,"maxReal":6353,"ko":82},"stage_002":{"win":82,"lose":0,"draw":0,"maxReal":10904,"ko":81,"timeout":1},"stage_003":{"win":61,"lose":21,"draw":0,"maxReal":13035,"timeout":33,"ko":49},"stage_004":{"win":52,"lose":30,"draw":0,"maxReal":13362,"timeout":28,"ko":54},"stage_005":{"win":50,"lose":32,"draw":0,"maxReal":13310,"timeout":42,"ko":40}}
+tri-burst rushes checked=571
+battles run=410 failed=0 avgTimerS=116.7 wallS=29.9
+exit 0

@@ -1,0 +1,76 @@
+
+Running 1 test using 1 worker
+
+360x640: shouts=92 twoLine=33 dropped(side-attempts)=66 [1L 0, 2L 66] upperBand={"top":46,"bottom":150}
+360x640:   player:2L:MELTDOWN... METEOOOR!
+360x640:   enemy:2L:MELTDOWN... METEOOOR!
+360x640:   player:2L:SORRY... MOUNTAIN DROP!
+360x640:   enemy:2L:SORRY... MOUNTAIN DROP!
+360x640:   player:2L:LIGHT THE HUNDRED LANTERNS!
+360x640:   enemy:2L:LIGHT THE HUNDRED LANTERNS!
+360x640:   player:2L:BEHOLD... A THOUSAND DAWNS!
+360x640:   enemy:2L:BEHOLD... A THOUSAND DAWNS!
+360x640:   player:2L:BLACK SUN... REQUIEM.
+360x640:   enemy:2L:BLACK SUN... REQUIEM.
+360x640:   player:2L:THAT'S TEN! ENDGAME!
+360x640:   enemy:2L:THAT'S TEN! ENDGAME!
+360x640:   player:2L:CHECKMATE! GAME OVER!
+360x640:   enemy:2L:CHECKMATE! GAME OVER!
+360x640:   player:2L:THE SUN BOWS TO NO ONE!
+360x640:   enemy:2L:THE SUN BOWS TO NO ONE!
+360x640:   player:2L:LET THE STARS GO OUT!
+360x640:   enemy:2L:LET THE STARS GO OUT!
+360x640:   player:2L:THE LAST STAR... FALLS!
+360x640:   enemy:2L:THE LAST STAR... FALLS!
+360x640:   player:2L:Ready or not, I'm ON FIRE!
+360x640:   enemy:2L:Ready or not, I'm ON FIRE!
+360x640:   player:2L:My turn! Heat coming through!
+360x640:   enemy:2L:My turn! Heat coming through!
+360x640:   player:2L:Told you! Nobody outburns me!
+360x640:   enemy:2L:Told you! Nobody outburns me!
+360x640:   player:2L:EVERYBODY, FULL HEAT!
+360x640:   enemy:2L:EVERYBODY, FULL HEAT!
+360x640:   player:2L:Package for you: one beating!
+360x640:   enemy:2L:Package for you: one beating!
+360x640:   player:2L:I'm sorry in advance. Truly.
+360x640:   enemy:2L:I'm sorry in advance. Truly.
+360x640:   player:2L:Is everyone all right? Good.
+360x640:   enemy:2L:Is everyone all right? Good.
+360x640:   player:2L:FRIENDS, GET BEHIND ME!
+360x640:   enemy:2L:FRIENDS, GET BEHIND ME!
+360x640:   player:2L:Peace first. Then, if needed, fists.
+360x640:   enemy:2L:Peace first. Then, if needed, fists.
+360x640:   player:2L:Calm returns. I win the bet.
+360x640:   enemy:2L:Calm returns. I win the bet.
+360x640:   player:2L:LANTERNS, LIGHT THE WAY!
+360x640:   enemy:2L:LANTERNS, LIGHT THE WAY!
+360x640:   player:2L:Few words. Many bruises.
+360x640:   enemy:2L:Few words. Many bruises.
+360x640:   player:2L:SWALLOW THEM, NIGHT!
+360x640:   enemy:2L:SWALLOW THEM, NIGHT!
+360x640:   player:2L:I already counted your losses.
+360x640:   enemy:2L:I already counted your losses.
+360x640:   player:2L:Your move. Wrong move.
+360x640:   enemy:2L:Your move. Wrong move.
+360x640:   player:2L:Show me you deserve this ring.
+360x640:   enemy:2L:Show me you deserve this ring.
+360x640:   player:2L:Rise again. Come back stronger.
+360x640:   enemy:2L:Rise again. Come back stronger.
+360x640:   player:2L:TOGETHER, LIKE A SUNRISE!
+360x640:   enemy:2L:TOGETHER, LIKE A SUNRISE!
+360x640:   player:2L:Your aura will look lovely on me.
+360x640:   enemy:2L:Your aura will look lovely on me.
+360x640:   player:2L:Step aside. The king arrives.
+360x640:   enemy:2L:Step aside. The king arrives.
+360x640:   player:2L:Impossible... my crown...
+360x640:   enemy:2L:Impossible... my crown...
+360x640:   player:2L:Another trophy for the collection.
+360x640:   enemy:2L:Another trophy for the collection.
+360x640:   player:2L:SERVANTS, DEVOUR THEM!
+360x640:   enemy:2L:SERVANTS, DEVOUR THEM!
+390x844: shouts=92 twoLine=33 dropped(side-attempts)=0 [1L 0, 2L 0] upperBand={"top":46,"bottom":289}
+430x932: shouts=92 twoLine=33 dropped(side-attempts)=0 [1L 0, 2L 0] upperBand={"top":46,"bottom":290}
+  ✓  1 [phone-360x640] › tests/e2e/zz-qa-shout-drop.spec.js:9:1 › QA 7c shout drop probe (17.2s)
+
+  1 passed (21.2s)
+exit 0

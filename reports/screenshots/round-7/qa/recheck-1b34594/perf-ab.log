@@ -1,0 +1,37 @@
+=== cycle 1 tools
+[perf canvas cpu×4] frames=888 median=17.4 ms p95=31.9 ms max=81.3 ms; work median=4.0 p95=10.5 ms; auto quality → low: yes
+[perf canvas cpu×4] frames=897 median=17.6 ms p95=32.4 ms max=105.2 ms; work median=4.2 p95=10.9 ms; auto quality → low: yes
+  2 passed (48.7s)
+=== cycle 1 base
+[perf canvas cpu×4] frames=925 median=16.9 ms p95=28.7 ms max=126.8 ms; work median=3.8 p95=9.0 ms; auto quality → low: no
+[perf canvas cpu×4] frames=909 median=17.2 ms p95=29.4 ms max=84.3 ms; work median=4.2 p95=9.9 ms; auto quality → low: no
+  2 passed (47.8s)
+=== cycle 2 tools
+[perf canvas cpu×4] frames=936 median=16.9 ms p95=26.9 ms max=81.5 ms; work median=3.7 p95=8.7 ms; auto quality → low: no
+[perf canvas cpu×4] frames=896 median=17.2 ms p95=31.4 ms max=84.9 ms; work median=4.1 p95=11.0 ms; auto quality → low: no
+  2 passed (47.8s)
+=== cycle 2 base
+[perf canvas cpu×4] frames=925 median=16.8 ms p95=28.6 ms max=80.3 ms; work median=3.8 p95=8.8 ms; auto quality → low: no
+[perf canvas cpu×4] frames=854 median=18.4 ms p95=33.8 ms max=121.2 ms; work median=4.5 p95=10.9 ms; auto quality → low: yes
+    Error: 4× throttled p95 ≤ 33.3 ms
+      53 |         test.info().annotations.push({ type: 'not-verified', description: `software WebGL median ${med.toFixed(1)} ms p95 ${p95.toFixed(1)} ms` });
+    > 55 |       else expect(p95, '4× throttled p95 ≤ 33.3 ms').toBeLessThanOrEqual(33.3);
+  1 failed
+  1 passed (47.7s)
+=== cycle 3 tools
+[perf canvas cpu×4] frames=848 median=18.4 ms p95=32.7 ms max=151.7 ms; work median=4.6 p95=11.0 ms; auto quality → low: no
+[perf canvas cpu×4] frames=895 median=17.6 ms p95=30.5 ms max=85.3 ms; work median=4.3 p95=10.2 ms; auto quality → low: no
+  2 passed (48.5s)
+=== cycle 3 base
+[perf canvas cpu×4] frames=914 median=17.1 ms p95=27.4 ms max=79.5 ms; work median=3.8 p95=9.6 ms; auto quality → low: no
+[perf canvas cpu×4] frames=875 median=17.6 ms p95=29.8 ms max=83.8 ms; work median=4.3 p95=9.3 ms; auto quality → low: no
+  2 passed (46.3s)
+=== cycle 4 tools
+[perf canvas cpu×4] frames=908 median=17.3 ms p95=29.6 ms max=77.0 ms; work median=3.8 p95=9.2 ms; auto quality → low: no
+[perf canvas cpu×4] frames=951 median=16.8 ms p95=29.2 ms max=90.5 ms; work median=3.5 p95=9.3 ms; auto quality → low: no
+  2 passed (47.6s)
+=== cycle 4 base
+[perf canvas cpu×4] frames=937 median=16.9 ms p95=27.8 ms max=111.1 ms; work median=3.7 p95=8.8 ms; auto quality → low: no
+[perf canvas cpu×4] frames=870 median=17.4 ms p95=31.8 ms max=86.5 ms; work median=4.1 p95=10.6 ms; auto quality → low: no
+  2 passed (47.6s)
+done

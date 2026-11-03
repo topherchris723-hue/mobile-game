@@ -1,0 +1,17 @@
+# QA 7c progress (1b34594)
+- tree: scratchpad/r7e/tree (git archive 1b34594), logs scratchpad/r7e/logs
+- [running] vitest + full playwright (bg)
+- DONE: banned-grep 0 hits (neg 4 hits); check-identity PASS 46 (neg FAIL); validate-data PASS; placeholder sweep 0 (neg 2/3)
+- DONE: app-name.test.js must-FAIL on real-tree copies: (a) literal -> 1 fail; (c) store "Fyrenza Arena" -> 2 fail; title_activity_main -> 2 fail; restored 18/18
+- tools: scratchpad/r7e/tools/tests/e2e/zz-qa-busy-perframe.spec.js, zz-qa-shout-drop.spec.js (to run after full e2e)
+- DONE: vitest 625/625 (47 files) exit 0
+- [running] full e2e (r7e/tree); then phase2.sh: perframe x3 + neg clamp + neg placer, shout-drop probe, qa-busy x3 (QA_SHOTS), smoke BUG-7b-01 x3 + neg, perf A/B 8v8 vs f086934 (r7e/base)
+- TODO after: build + dist hook grep, bot playthrough
+- DONE: full e2e 90 passed / 40 skipped, exit 0 (22.0m)
+- DONE perframe x3: 0 overlap frames all sizes (~1060-1190 frames/size); NEG placer FAIL (2141 frames); NEG clamp natural = 0 (scenario does not reach bug naturally) -> wrote zz-qa-pop-forced.spec.js (forced order A/B per-frame)
+- 360x640 pops clamped to 1.455 in natural play (limiter TBD by forced spec phase 0); 390/430 full 1.5
+- shout-drop: 360x640 every 2-line shout dropped (33/92 strings; runtime-affected: 10/52 card shouts = all Climax (shown anyway in cinematic sub), 3/8 tag_in: Tavi, Rook, Corvane). 390/430: 0 dropped. -> MINOR bug, ui-developer
+- DONE qa-busy x3 0 overlaps (fresh busy-findings); smoke BUG-7b-01 x3 green, NEG UI_BREAK_POP_CLAMP=1 FAIL 12 problems; [running] perf A/B
+- DONE perf A/B 8v8: frame p95 mean 30.57 vs 29.66 (+0.91), work 10.10 vs 9.61 (+0.49) PASS; abs median 30.95 PASS. [running] forced pop x3 + NEG
+- DONE build: clean dist hooks 0 (incl disablePopClamp=0); hooks build all >0 (disablePopClamp=1); clean2 0. disableComboZones=1 + popPeak=1 in release (ungated) -> classify. placeholder dist only identifiers. [running] bot
+- DONE: report reports/qa/round-7c.md written, verdict FAIL (BUG-7c-02 hook in dist; BUG-7c-01 shout drop)

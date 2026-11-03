@@ -1,0 +1,68 @@
+360x640: natural clamped pops (10 s): {"1.455 by float":4}
+360x640: injections=58 insideUnclampedReach=27 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=892 comboOverlapFrames=0 allOverlapFrames=0
+390x844: natural clamped pops (10 s): {}
+390x844: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=720 comboOverlapFrames=0 allOverlapFrames=0
+430x932: natural clamped pops (10 s): {}
+430x932: injections=66 insideUnclampedReach=33 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=998 comboOverlapFrames=0 allOverlapFrames=0
+TOTAL comboOverlapFrames=0 injections=172 insideUnclampedReach=84 consoleErrors=0 break=none
+---
+360x640: natural clamped pops (10 s): {"1.455 by float":6}
+360x640: injections=66 insideUnclampedReach=30 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=1002 comboOverlapFrames=0 allOverlapFrames=0
+390x844: natural clamped pops (10 s): {}
+390x844: injections=66 insideUnclampedReach=33 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=998 comboOverlapFrames=0 allOverlapFrames=0
+430x932: natural clamped pops (10 s): {}
+430x932: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=721 comboOverlapFrames=0 allOverlapFrames=0
+TOTAL comboOverlapFrames=0 injections=180 insideUnclampedReach=87 consoleErrors=0 break=none
+---
+360x640: natural clamped pops (10 s): {"1.455 by float":6}
+360x640: injections=66 insideUnclampedReach=32 notPlaced=0 peaks min=1 median=1.277 max=1.5 frames=998 comboOverlapFrames=0 allOverlapFrames=0
+390x844: natural clamped pops (10 s): {}
+390x844: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=719 comboOverlapFrames=0 allOverlapFrames=0
+430x932: natural clamped pops (10 s): {}
+430x932: injections=66 insideUnclampedReach=33 notPlaced=0 peaks min=1 median=1.4 max=1.5 frames=998 comboOverlapFrames=0 allOverlapFrames=0
+TOTAL comboOverlapFrames=0 injections=180 insideUnclampedReach=89 consoleErrors=0 break=none
+---
+360x640: natural clamped pops (10 s): {}
+360x640: injections=66 insideUnclampedReach=30 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=998 comboOverlapFrames=8 allOverlapFrames=8
+360x640:   1x "COMBO x7" x "NOONDAY HALO!"
+360x640:   1x "COMBO x8" x "NOONDAY HALO!"
+360x640:   1x "COMBO x2" x "NOONDAY HALO!"
+360x640:   1x "COMBO x3" x "NOONDAY HALO!"
+360x640:   3x "COMBO x5" x "NOONDAY HALO!"
+360x640:   1x "COMBO x4" x "NOONDAY HALO!"
+360x640:   first: frame 188: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+360x640:   first: frame 311: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.06) 114.3x0.8
+360x640:   first: frame 436: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+360x640:   first: frame 560: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+360x640:   first: frame 563: "COMBO x5"(s1.50) x "NOONDAY HALO!"(s0.99) 107.1x0.2
+360x640:   first: frame 564: "COMBO x5"(s1.50) x "NOONDAY HALO!"(s0.99) 106.9x0.2
+390x844: natural clamped pops (10 s): {}
+390x844: injections=66 insideUnclampedReach=33 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=998 comboOverlapFrames=9 allOverlapFrames=9
+390x844:   1x "COMBO x7" x "NOONDAY HALO!"
+390x844:   1x "COMBO x8" x "NOONDAY HALO!"
+390x844:   1x "COMBO x2" x "NOONDAY HALO!"
+390x844:   1x "COMBO x3" x "NOONDAY HALO!"
+390x844:   3x "COMBO x5" x "NOONDAY HALO!"
+390x844:   1x "COMBO x4" x "NOONDAY HALO!"
+390x844:   1x "COMBO x6" x "NOONDAY HALO!"
+390x844:   first: frame 188: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+390x844:   first: frame 311: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+390x844:   first: frame 436: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+390x844:   first: frame 560: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+390x844:   first: frame 563: "COMBO x5"(s1.50) x "NOONDAY HALO!"(s0.99) 107.1x0.2
+390x844:   first: frame 564: "COMBO x5"(s1.50) x "NOONDAY HALO!"(s0.99) 106.9x0.2
+430x932: natural clamped pops (10 s): {}
+430x932: injections=48 insideUnclampedReach=24 notPlaced=0 peaks min=1.4 median=1.5 max=1.5 frames=720 comboOverlapFrames=7 allOverlapFrames=7
+430x932:   1x "COMBO x7" x "NOONDAY HALO!"
+430x932:   1x "COMBO x8" x "NOONDAY HALO!"
+430x932:   3x "COMBO x4" x "NOONDAY HALO!"
+430x932:   1x "COMBO x2" x "NOONDAY HALO!"
+430x932:   1x "COMBO x3" x "NOONDAY HALO!"
+430x932:   first: frame 174: "COMBO x7"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+430x932:   first: frame 297: "COMBO x8"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+430x932:   first: frame 302: "COMBO x4"(s1.50) x "NOONDAY HALO!"(s0.99) 107.1x0.2
+430x932:   first: frame 303: "COMBO x4"(s1.50) x "NOONDAY HALO!"(s1.00) 107.6x0.2
+430x932:   first: frame 422: "COMBO x2"(s1.50) x "NOONDAY HALO!"(s1.05) 114.1x0.8
+430x932:   first: frame 546: "COMBO x3"(s1.50) x "NOONDAY HALO!"(s1.05) 113.8x0.8
+TOTAL comboOverlapFrames=24 injections=180 insideUnclampedReach=87 consoleErrors=0 break=clamp
+---

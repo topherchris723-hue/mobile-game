@@ -1,0 +1,42 @@
+=== qa-busy run 1
+
+Running 1 test using 1 worker
+
+[360x640] busy frames scanned=154, max arena texts in one frame=9, overlaps=0
+[390x844] busy frames scanned=153, max arena texts in one frame=11, overlaps=0
+[430x932] busy frames scanned=152, max arena texts in one frame=11, overlaps=0
+430x932: frames=152 maxTexts=11 overlaps=0
+390x844: frames=153 maxTexts=11 overlaps=0
+360x640: frames=154 maxTexts=9 overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+
+  1 passed (1.7m)
+exit 0
+=== qa-busy run 2
+
+Running 1 test using 1 worker
+
+[360x640] busy frames scanned=139, max arena texts in one frame=10, overlaps=0
+[390x844] busy frames scanned=134, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=154, max arena texts in one frame=11, overlaps=0
+430x932: frames=154 maxTexts=11 overlaps=0
+390x844: frames=134 maxTexts=10 overlaps=0
+360x640: frames=139 maxTexts=10 overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+
+  1 passed (1.7m)
+exit 0
+=== qa-busy run 3
+
+Running 1 test using 1 worker
+
+[360x640] busy frames scanned=138, max arena texts in one frame=10, overlaps=0
+[390x844] busy frames scanned=141, max arena texts in one frame=10, overlaps=0
+[430x932] busy frames scanned=154, max arena texts in one frame=11, overlaps=0
+430x932: frames=154 maxTexts=11 overlaps=0
+390x844: frames=141 maxTexts=10 overlaps=0
+360x640: frames=138 maxTexts=10 overlaps=0
+  ✓  1 [phone-360x640] › tests/e2e/qa-busy.spec.js:53:1 › QA busy battle frames: floating texts never overlap (BUG-2-10) at 3 sizes (1.6m)
+
+  1 passed (1.7m)
+exit 0
